@@ -14,13 +14,18 @@
       padding: 5px; border-radius: 5px; border: none;
     }
 
-    .banner {
-      height: 50vh;
-      background-size: cover;
-      display: flex;
-      align-items: center;
-      padding: 20px;
-    }
+ .banner {
+  height: 50vh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  padding: 0;
+}
 
     .banner h1 {
       background: rgba(0,0,0,0.7);
@@ -283,4 +288,27 @@
     flex-direction: row;
     gap: 8px;
   }
+}
+.banner-buttons {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 2;
+}
+
+.banner-buttons button {
+  padding: 8px 16px;
+  border: none;
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.banner-buttons button:hover {
+  background: #ff3333;
 }

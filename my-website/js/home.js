@@ -152,8 +152,8 @@ async function searchTMDB() {
 const myUploads = [
   {
     title: "My Uploaded Movie 1",
-    poster: "https://i.imgur.com/u6CwxxR.jpeg",
-    driveLink: "https://drive.google.com/file/d/1qsFN0ArAUa8VD2P54fd_p7ZUddOJ5FUB/preview"
+    poster: "https://i.imgur.com/Nm8ZzhK.jpeg",
+    driveLink: "https://drive.google.com/file/d/your-file-id/preview"
   },
   {
     title: "My Uploaded Movie 2",

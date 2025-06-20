@@ -148,40 +148,6 @@ async function searchTMDB() {
   });
 }
 
-// ✅ My Uploads from Google Drive
-const myUploads = [
-  {
-    title: "My Uploaded Movie 1",
-    poster: "https://i.imgur.com/Nm8ZzhK.jpeg",
-    driveLink: "https://drive.google.com/file/d/your-file-id/preview"
-  },
-  {
-    title: "My Uploaded Movie 2",
-    poster: "https://i.imgur.com/Nm8ZzhK.jpeg",
-    driveLink: "https://drive.google.com/file/d/your-file-id/preview"
-  }
-];
-
-function displayMyUploads() {
-  const container = document.getElementById('my-uploads-list');
-  container.innerHTML = '';
-  myUploads.forEach(item => {
-    const img = document.createElement('img');
-    img.src = item.poster;
-    img.alt = item.title;
-    img.title = item.title;
-    img.onclick = () => {
-      document.getElementById('modal-title').textContent = item.title;
-      document.getElementById('modal-description').textContent = 'Your own uploaded movie.';
-      document.getElementById('modal-image').src = item.poster;
-      document.getElementById('modal-rating').innerHTML = '★ ★ ★ ★ ★';
-      document.getElementById('modal-video').src = item.driveLink;
-      document.getElementById('modal').style.display = 'flex';
-    };
-    container.appendChild(img);
-  });
-}
-
 async function init() {
   const movies = await fetchTrending('movie');
   const tvShows = await fetchTrending('tv');
@@ -194,7 +160,6 @@ async function init() {
   displayList(movies, 'movies-list');
   displayList(tvShows, 'tvshows-list');
   displayList(anime, 'anime-list');
-  displayMyUploads(); // ✅ Your uploaded videos
 }
 
 init();

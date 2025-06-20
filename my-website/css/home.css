@@ -388,3 +388,13 @@ body { font-family: Arial, sans-serif; background: #111; color: #fff; }
   transform: scale(1.05);
   box-shadow: 0 0 12px white;
 }
+.animate-fadein {
+  opacity: 0;
+  animation: fadein 1s ease-in-out forwards;
+}
+
+@keyframes fadein {
+  to {
+    opacity: 1;
+  }
+}

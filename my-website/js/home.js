@@ -6,15 +6,21 @@ let bannerItems = [];
 let bannerIndex = 0;
 
 async function fetchTrending(type) {
-  const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
-  const data = await res.json();
-  return data.results;
+  let allResults = [];
+
+  for (let page = 1; page <= 5; page++) {
+    const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}&page=${page}`);
+    const data = await res.json();
+    allResults = allResults.concat(data.results);
+  }
+
+  return allResults;
 }
 
 async function fetchTrendingAnime() {
   let allResults = [];
 
-  for (let page = 1; page <= 3; page++) {
+  for (let page = 1; page <= 5; page++) {
     const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`);
     const data = await res.json();
     const filtered = data.results.filter(item =>
@@ -43,13 +49,13 @@ async function displayBanner(item) {
       <iframe width="100%" height="100%" src="${trailerUrl}?autoplay=1&mute=1&controls=0&showinfo=0&modestbranding=1&loop=1&playlist=${trailerUrl.split("/").pop()}"
         frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius: 8px; filter: brightness(0.7);"></iframe>
       <div class="banner-buttons">
-  <button class="btn-outline" onclick="nextBannerTrailer()">
-    <i class="fas fa-random"></i> Next Trailer
-  </button>
-  <button class="btn-solid" onclick="watchBannerMovie()">
-    <i class="fas fa-play"></i> Watch Full Movie
-  </button>
-</div>
+        <button class="btn-outline" onclick="nextBannerTrailer()">
+          <i class="fas fa-random"></i> Next Trailer
+        </button>
+        <button class="btn-solid" onclick="watchBannerMovie()">
+          <i class="fas fa-play"></i> Watch Full Movie
+        </button>
+      </div>
     `;
   } else {
     banner.style.backgroundImage = `url(${IMG_URL}${item.backdrop_path})`;
@@ -112,7 +118,6 @@ function changeServer() {
 
   document.getElementById('modal-video').src = embedURL;
 }
-
 
 function closeModal() {
   document.getElementById('modal').style.display = 'none';

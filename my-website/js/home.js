@@ -2,6 +2,8 @@ const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
 let currentItem;
+let bannerItems = [];
+let bannerIndex = 0;
 
 async function fetchTrending(type) {
   const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
@@ -24,7 +26,6 @@ async function fetchTrendingAnime() {
   return allResults;
 }
 
-// ✅ TRAILER FETCH FUNCTION
 async function fetchTrailer(id, mediaType) {
   const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
   const data = await res.json();
@@ -33,25 +34,32 @@ async function fetchTrailer(id, mediaType) {
 }
 
 async function displayBanner(item) {
-  document.getElementById('banner-title').textContent = item.title || item.name;
-
+  const banner = document.getElementById('banner');
   const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
   const trailerUrl = await fetchTrailer(item.id, mediaType);
 
-  const banner = document.getElementById('banner');
-
   if (trailerUrl) {
-    // Use a YouTube embed iframe instead of background image
     banner.innerHTML = `
       <iframe width="100%" height="100%" src="${trailerUrl}?autoplay=1&mute=1&controls=0&showinfo=0&modestbranding=1&loop=1&playlist=${trailerUrl.split("/").pop()}"
-        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius: 8px;">
-      </iframe>
+        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius: 8px; filter: brightness(0.7);"></iframe>
+      <div class="banner-buttons">
+        <button onclick="nextBannerTrailer()">Next Trailer</button>
+        <button onclick="watchBannerMovie()">Watch Full Movie</button>
+      </div>
     `;
   } else {
-    // Fallback to image if no trailer
     banner.style.backgroundImage = `url(${IMG_URL}${item.backdrop_path})`;
+    banner.innerHTML = `<h1 id="banner-title">${item.title || item.name}</h1>`;
   }
+}
 
+function nextBannerTrailer() {
+  bannerIndex = (bannerIndex + 1) % bannerItems.length;
+  displayBanner(bannerItems[bannerIndex]);
+}
+
+function watchBannerMovie() {
+  showDetails(bannerItems[bannerIndex]);
 }
 
 function displayList(items, containerId) {
@@ -66,7 +74,6 @@ function displayList(items, containerId) {
   });
 }
 
-// ✅ SHOW DETAILS with trailer logic
 async function showDetails(item) {
   currentItem = item;
 
@@ -143,7 +150,10 @@ async function init() {
   const tvShows = await fetchTrending('tv');
   const anime = await fetchTrendingAnime();
 
-  displayBanner(movies[Math.floor(Math.random() * movies.length)]);
+  bannerItems = movies;
+  bannerIndex = Math.floor(Math.random() * bannerItems.length);
+  displayBanner(bannerItems[bannerIndex]);
+
   displayList(movies, 'movies-list');
   displayList(tvShows, 'tvshows-list');
   displayList(anime, 'anime-list');

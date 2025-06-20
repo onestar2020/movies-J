@@ -104,10 +104,15 @@ function changeServer() {
     embedURL = `https://vidsrc.net/embed/${type}/?tmdb=${currentItem.id}`;
   } else if (server === "player.videasy.net") {
     embedURL = `https://player.videasy.net/${type}/${currentItem.id}`;
+  } else if (server === "multiembed") {
+    embedURL = `https://multiembed.mov/?video_id=${currentItem.id}&tmdb=1`;
+  } else if (server === "2embed") {
+    embedURL = `https://www.2embed.cc/embed/${type}?tmdb=${currentItem.id}`;
   }
 
   document.getElementById('modal-video').src = embedURL;
 }
+
 
 function closeModal() {
   document.getElementById('modal').style.display = 'none';

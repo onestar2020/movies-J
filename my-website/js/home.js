@@ -32,9 +32,26 @@ async function fetchTrailer(id, mediaType) {
   return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
 }
 
-function displayBanner(item) {
-  document.getElementById('banner').style.backgroundImage = `url(${IMG_URL}${item.backdrop_path})`;
+async function displayBanner(item) {
   document.getElementById('banner-title').textContent = item.title || item.name;
+
+  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+  const trailerUrl = await fetchTrailer(item.id, mediaType);
+
+  const banner = document.getElementById('banner');
+
+  if (trailerUrl) {
+    // Use a YouTube embed iframe instead of background image
+    banner.innerHTML = `
+      <iframe width="100%" height="100%" src="${trailerUrl}?autoplay=1&mute=1&controls=0&showinfo=0&modestbranding=1&loop=1&playlist=${trailerUrl.split("/").pop()}"
+        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius: 8px;">
+      </iframe>
+    `;
+  } else {
+    // Fallback to image if no trailer
+    banner.style.backgroundImage = `url(${IMG_URL}${item.backdrop_path})`;
+  }
+
 }
 
 function displayList(items, containerId) {

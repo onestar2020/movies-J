@@ -25,6 +25,15 @@ const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
   return allResults;
 }
 
+async function fetchTrailer(id, mediaType) {
+  const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
+  const data = await res.json();
+  const trailer = data.results.find(video => video.type === "Trailer" && video.site === "YouTube");
+  return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
+}
+
+
+}
 
     function displayBanner(item) {
       document.getElementById('banner').style.backgroundImage = `url(${IMG_URL}${item.backdrop_path})`;
@@ -43,14 +52,19 @@ const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
       });
     }
 
-    function showDetails(item) {
-      currentItem = item;
-      document.getElementById('modal-title').textContent = item.title || item.name;
-      document.getElementById('modal-description').textContent = item.overview;
-      document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
-      document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
-      changeServer();
-      document.getElementById('modal').style.display = 'flex';
+    async function showDetails(item) {
+  currentItem = item;
+
+  document.getElementById('modal-title').textContent = item.title || item.name;
+  document.getElementById('modal-description').textContent = item.overview;
+  document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
+  document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
+
+  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+  const trailerUrl = await fetchTrailer(item.id, mediaType);
+
+  document.getElementById('modal-video').src = trailerUrl || '';
+  document.getElementById('modal').style.display = 'flex';
     }
 
     function changeServer() {

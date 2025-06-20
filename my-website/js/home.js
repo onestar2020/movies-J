@@ -43,9 +43,13 @@ async function displayBanner(item) {
       <iframe width="100%" height="100%" src="${trailerUrl}?autoplay=1&mute=1&controls=0&showinfo=0&modestbranding=1&loop=1&playlist=${trailerUrl.split("/").pop()}"
         frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius: 8px; filter: brightness(0.7);"></iframe>
       <div class="banner-buttons">
-        <button onclick="nextBannerTrailer()">Next Trailer</button>
-        <button onclick="watchBannerMovie()">Watch Full Movie</button>
-      </div>
+  <button class="btn-outline" onclick="nextBannerTrailer()">
+    <i class="fas fa-random"></i> Next Trailer
+  </button>
+  <button class="btn-solid" onclick="watchBannerMovie()">
+    <i class="fas fa-play"></i> Watch Full Movie
+  </button>
+</div>
     `;
   } else {
     banner.style.backgroundImage = `url(${IMG_URL}${item.backdrop_path})`;

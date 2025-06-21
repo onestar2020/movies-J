@@ -147,5 +147,22 @@
   })();
   /*]]>/* */
   </script>
+
+  <!-- ✅ PopAds Manual Click Trigger -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.body.addEventListener("click", function () {
+        try {
+          const key = Object.keys(window).find(k => k.includes("bfb3f3a7a6194cc0ad141553bc11b150"));
+          const trigger = window[key];
+          if (typeof trigger === "function") {
+            trigger();
+          }
+        } catch (e) {
+          console.warn("PopAds manual trigger failed:", e);
+        }
+      }, { once: true });
+    });
+  </script>
 </body>
 </html>

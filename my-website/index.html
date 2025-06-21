@@ -22,7 +22,73 @@
 </head>
 
 <body>
-  <!-- Page content here (unchanged) -->
+  <div class="navbar">
+    <img src="images/logo.png" alt="Movies-J Logo" />
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
+    </div>
+  </div>
+
+  <div class="banner animate-fadein" id="banner">
+    <h1 id="banner-title"></h1>
+  </div>
+
+  <div class="row animate-fadein">
+    <h2>Trending Movies</h2>
+    <div class="list" id="movies-list"></div>
+  </div>
+
+  <div class="row animate-fadein">
+    <h2>Trending TV Shows</h2>
+    <div class="list" id="tvshows-list"></div>
+  </div>
+
+  <div class="row animate-fadein">
+    <h2>Trending Anime</h2>
+    <div class="list" id="anime-list"></div>
+  </div>
+
+
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()" style="color: red;">&times;</span>
+      <div class="modal-body">
+        <img id="modal-image" src="" alt="" />
+        <div class="modal-text">
+          <h2 id="modal-title"></h2>
+          <div class="stars" id="modal-rating"></div>
+          <p id="modal-description"></p>
+        </div>
+      </div>
+
+      <div class="server-selector">
+        <label for="server">Change Server:</label>
+        <select id="server" onchange="changeServer()">
+          <option value="vidsrc.cc">Vidsrc.cc</option>
+          <option value="vidsrc.me">Vidsrc.me</option>
+          <option value="player.videasy.net">Player.Videasy.net</option>
+          <option value="multiembed">MultiEmbed</option>
+          <option value="2embed">2Embed</option>
+        </select>
+      </div>
+
+      <small style="color: orange; margin-top: 8px; display: block; font-style: italic;">
+        ⚠️ Warning: Some streaming servers may contain ads not controlled by Movies-J.
+      </small>
+
+      <iframe id="modal-video" width="100%" height="400" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+
+  <div class="search-modal" id="search-modal">
+    <span class="close" onclick="closeSearchModal()" style="color: red;">&times;</span>
+    <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
+    <div class="results" id="search-results"></div>
+  </div>
 
   <footer class="footer animate-fadein">
     <div class="footer-content">
@@ -37,46 +103,5 @@
 
   <!-- ✅ Adsterra Popunder Script -->
   <script type='text/javascript' src='//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js'></script>
-
-  <!-- ✅ PopAds Script -->
-  <script type="text/javascript" data-cfasync="false">
-  /*<![CDATA[/* */
-  (function(){
-    var p=window,u="bfb3f3a7a6194cc0ad141553bc11b150",x=[
-      ["siteId",741*897-83-25+619+4545841],
-      ["minBid",0],
-      ["popundersPerIP","0"],
-      ["delayBetween",0],
-      ["default",false],
-      ["defaultPerDay",0],
-      ["topmostLayer","auto"]
-    ],h=[
-      "d3d3LmludGVsbGlnZW5jZWFkeC5jb20vSkFoelAvSEhSZ1FLL2pwcWdyaWQubWluLmpz",
-      "ZDJrbHg4N2Jnem5nY2UuY2xvdWRmcm9udC5uZXQvenQzLm1pbi5qcw=="
-    ],c=-1,d,b,y=function(){
-      clearTimeout(b);c++;
-      if(h[c]&&!(1776388359000<(new Date).getTime()&&1<c)){
-        d=p.document.createElement("script");
-        d.type="text/javascript";
-        d.async=!0;
-        var j=p.document.getElementsByTagName("script")[0];
-        d.src="https://"+atob(h[c]);
-        d.crossOrigin="anonymous";
-        d.onerror=y;
-        d.onload=function(){
-          clearTimeout(b);
-          p[u.slice(0,16)+u.slice(0,16)]||y()
-        };
-        b=setTimeout(y,5E3);
-        j.parentNode.insertBefore(d,j)
-      }
-    };
-    if(!p[u]){
-      try{Object.freeze(p[u]=x)}catch(e){}
-      y()
-    }
-  })();
-  /*]]>/* */
-  </script>
 </body>
 </html>

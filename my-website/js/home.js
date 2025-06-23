@@ -249,6 +249,9 @@ async function init() {
   addUploadedMovie("1gqZ_IawXvSj-iQJB6L64kGFkbBg95lGO", "Shaun of the Dead");
   addUploadedMovie("1c4YOkoSiIKvM3ruYXRR2auFrT6hRmAKz", "Smile 2");
   addUploadedMovie("1IKJK2TM13u64knIpX749GIbkxiQxxbzT", "Sting");
+  addUploadedMovie("1DDijEmLwM7tqjaQdrpwGzgtjSW0Sws8F", "Smile");
+  addUploadedMovie("1_PExsLNP3s9z1QtJJtpQnH_5u5dpQDxp", "The 5th Wave");
+  
 }
 
 init();

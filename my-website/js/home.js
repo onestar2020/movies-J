@@ -225,6 +225,8 @@ async function init() {
   addUploadedMovie("1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp", "The Hunger Games");
   addUploadedMovie("1P9y0rzcoDKj0BRA2gaLznP6BtYZlc-lV", "The Hunger Games: Catching Fire");
    addUploadedMovie("1wDCCXjqF9woZAXPMBnYrZnvP_31DBqFP", "The Hunger Games: Mockingjay - Part 2");
+   addUploadedMovie("1wfsA6vF6Xyy10qR5EeOQHf7HEj1VtyOt", "Kill Command");
+   addUploadedMovie("1kKzOIMcEq76IqmI4Z8AnV2gAkrDhAd15", "Maze Runner: The Death Cure");
   // You can add more uploaded movies here
   // addUploadedMovie("FILE_ID", "MOVIE_TITLE");
 }

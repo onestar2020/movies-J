@@ -223,7 +223,7 @@ async function init() {
 
   addUploadedMovie("1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH", "ARQ");
   addUploadedMovie("1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp", "The Hunger Games");
-  addUploadedMovie("1Ayf8DgWv7Rr6QtcFPFijML1imwZOcahV", "The Hunger Games: Catching Fire");
+  addUploadedMovie("1P9y0rzcoDKj0BRA2gaLznP6BtYZlc-lV", "The Hunger Games: Catching Fire");
   // You can add more uploaded movies here
   // addUploadedMovie("FILE_ID", "MOVIE_TITLE");
 }

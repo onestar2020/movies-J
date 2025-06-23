@@ -244,6 +244,7 @@ async function init() {
   addUploadedMovie("1wDCCXjqF9woZAXPMBnYrZnvP_31DBqFP", "The Hunger Games: Mockingjay - Part 2");
   addUploadedMovie("1wfsA6vF6Xyy10qR5EeOQHf7HEj1VtyOt", "Kill Command");
   addUploadedMovie("1kKzOIMcEq76IqmI4Z8AnV2gAkrDhAd15", "Maze Runner: The Death Cure");
+  addUploadedMovie("15ue4p4e14u7l_Bxhf5I2KH8BFAbAvi2C", "Morbius");
 }
 
 init();

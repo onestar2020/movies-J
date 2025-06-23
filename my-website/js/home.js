@@ -176,20 +176,32 @@ async function addUploadedMovie(fileId, title) {
     modal.classList.remove('server-enabled');
     modal.style.display = 'flex';
 
-    // Show trailer or fallback to Google Drive
     document.getElementById('modal-video').src = trailerUrl || `https://drive.google.com/file/d/${fileId}/preview`;
 
-    // Show the buttons if may trailer
     const switcher = document.getElementById('upload-switcher');
     switcher.style.display = trailerUrl ? 'block' : 'none';
 
-    // Buttons
-    document.getElementById('btn-watch-trailer').onclick = () => {
+    const btnTrailer = document.getElementById('btn-watch-trailer');
+    const btnDrive = document.getElementById('btn-watch-drive');
+
+    btnTrailer.onclick = () => {
       document.getElementById('modal-video').src = trailerUrl;
+      btnTrailer.classList.add('btn-solid');
+      btnTrailer.classList.remove('btn-outline');
+      btnDrive.classList.remove('btn-solid');
+      btnDrive.classList.add('btn-outline');
     };
-    document.getElementById('btn-watch-drive').onclick = () => {
+
+    btnDrive.onclick = () => {
       document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
+      btnDrive.classList.add('btn-solid');
+      btnDrive.classList.remove('btn-outline');
+      btnTrailer.classList.remove('btn-solid');
+      btnTrailer.classList.add('btn-outline');
     };
+
+    // Default to Drive player
+    btnDrive.click();
   };
 
   div.appendChild(img);

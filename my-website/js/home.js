@@ -255,6 +255,7 @@ async function init() {
   addUploadedMovie("1RIBLkQ6QpsUvIeCBZXq9cBG-pIkn5_h-", "The Mist");
   addUploadedMovie("1WW5wVra8gjiEaKzVy54SOwxLiRWq2zGs", "Final Destination Bloodlines");
   addUploadedMovie("10plK6C0pCWeITPOtII_nLfZCYrRAhRdB", "Kraken");
+  addUploadedMovie("1SzBfgO_0lRYF9IYWFdUWWfARdwNrdUKX", "A Working Man");
 }
 
 init();

@@ -251,7 +251,10 @@ async function init() {
   addUploadedMovie("1IKJK2TM13u64knIpX749GIbkxiQxxbzT", "Sting");
   addUploadedMovie("1DDijEmLwM7tqjaQdrpwGzgtjSW0Sws8F", "Smile");
   addUploadedMovie("1_PExsLNP3s9z1QtJJtpQnH_5u5dpQDxp", "The 5th Wave");
-  
+  addUploadedMovie("1RSaJWvJM4QjNG99iTDI4nhuqTHIO1GMz", "The Dark Tower");
+  addUploadedMovie("1RIBLkQ6QpsUvIeCBZXq9cBG-pIkn5_h-", "The Mist");
+  addUploadedMovie("1WW5wVra8gjiEaKzVy54SOwxLiRWq2zGs", "Final Destination Bloodlines");
+  addUploadedMovie("10plK6C0pCWeITPOtII_nLfZCYrRAhRdB", "Kraken");
 }
 
 init();

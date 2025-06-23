@@ -163,3 +163,12 @@ async function init() {
 }
 
 init();
+
+function playUploadedMovie(fileId, title) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-description').textContent = "My personal uploaded movie.";
+  document.getElementById('modal-image').src = "images/logo.png"; // or custom thumbnail
+  document.getElementById('modal-rating').innerHTML = "★ ★ ★ ★ ★";
+  document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
+  document.getElementById('modal').style.display = 'flex';
+}

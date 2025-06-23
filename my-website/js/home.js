@@ -164,11 +164,11 @@ async function init() {
 
 init();
 
-function playUploadedMovie(fileId = "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH", title = "My Upload Movie") {
+function playUploadedMovie(fileId = "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH", title = "ARQ") {
   document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-description').textContent = "My personal uploaded movie.";
+  document.getElementById('modal-description').textContent = "Trapped in a lab and stuck in a time loop, a disoriented couple fends off masked raiders while harboring a new energy source that could save humanity.";
   document.getElementById('modal-image').src = "images/logo.png"; // or custom thumbnail
-  document.getElementById('modal-rating').innerHTML = "★ ★ ★ ★ ★";
+  document.getElementById('modal-rating').innerHTML = "★ ★ ★ ";
   document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
   document.getElementById('modal').style.display = 'flex';
 }

@@ -158,20 +158,34 @@ async function addUploadedMovie(fileId, title) {
     console.warn("Movie not found or no poster:", title);
     return;
   }
+
+  const trailerRes = await fetch(`${BASE_URL}/movie/${movie.id}/videos?api_key=${API_KEY}`);
+  const trailerData = await trailerRes.json();
+  const trailer = trailerData.results.find(v => v.type === "Trailer" && v.site === "YouTube");
+  const trailerUrl = trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
+
   const container = document.getElementById('myupload-list');
   const div = document.createElement('div');
   const img = document.createElement('img');
   img.src = `${IMG_URL}${movie.poster_path}`;
   img.alt = title;
+
   img.onclick = () => {
     document.getElementById('modal-title').textContent = title;
     document.getElementById('modal-description').textContent = movie.overview || "No description available.";
     document.getElementById('modal-image').src = `${IMG_URL}${movie.poster_path}`;
     document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(movie.vote_average / 2));
-    document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
+
+    if (trailerUrl) {
+      document.getElementById('modal-video').src = `${trailerUrl}?autoplay=1&mute=0`;
+    } else {
+      document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+
     document.getElementById('modal').classList.remove('server-enabled');
     document.getElementById('modal').style.display = 'flex';
   };
+
   div.appendChild(img);
   container.appendChild(div);
 }

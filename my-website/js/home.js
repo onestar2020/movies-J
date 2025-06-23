@@ -245,6 +245,7 @@ async function init() {
   addUploadedMovie("1wfsA6vF6Xyy10qR5EeOQHf7HEj1VtyOt", "Kill Command");
   addUploadedMovie("1kKzOIMcEq76IqmI4Z8AnV2gAkrDhAd15", "Maze Runner: The Death Cure");
   addUploadedMovie("15ue4p4e14u7l_Bxhf5I2KH8BFAbAvi2C", "Morbius");
+  addUploadedMovie("1LOL4awRZjmH7YWcH2Wb4vNdwdKiJAbJ8", "Monkey Man");
 }
 
 init();

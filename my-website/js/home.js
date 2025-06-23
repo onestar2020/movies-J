@@ -247,6 +247,8 @@ async function init() {
   addUploadedMovie("15ue4p4e14u7l_Bxhf5I2KH8BFAbAvi2C", "Morbius");
   addUploadedMovie("16gtWQJpiPF9sEw9ans7x_Ukz2EBDLSKv", "Maze Runner: The Scorch Trials");
   addUploadedMovie("1gqZ_IawXvSj-iQJB6L64kGFkbBg95lGO", "Shaun of the Dead");
+  addUploadedMovie("1c4YOkoSiIKvM3ruYXRR2auFrT6hRmAKz", "Smile 2");
+  addUploadedMovie("1IKJK2TM13u64knIpX749GIbkxiQxxbzT", "Sting");
 }
 
 init();

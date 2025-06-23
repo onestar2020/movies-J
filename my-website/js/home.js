@@ -176,36 +176,53 @@ async function addUploadedMovie(fileId, title) {
     modal.classList.remove('server-enabled');
     modal.style.display = 'flex';
 
-    document.getElementById('modal-video').src = trailerUrl || `https://drive.google.com/file/d/${fileId}/preview`;
-
+    const previewURL = `https://drive.google.com/file/d/${fileId}/preview`;
+    const downloadURL = `https://drive.google.com/uc?id=${fileId}&export=download`;
+    const videoIframe = document.getElementById('modal-video');
     const switcher = document.getElementById('upload-switcher');
-    switcher.style.display = trailerUrl ? 'block' : 'none';
+    const downloadBtn = document.getElementById('btn-download');
 
-    const btnTrailer = document.getElementById('btn-watch-trailer');
-    const btnDrive = document.getElementById('btn-watch-drive');
+    const isMKV = title.toLowerCase().includes('.mkv');
 
-    btnTrailer.onclick = () => {
-      document.getElementById('modal-video').src = trailerUrl;
-      btnTrailer.classList.add('btn-solid');
-      btnTrailer.classList.remove('btn-outline');
-      btnDrive.classList.remove('btn-solid');
-      btnDrive.classList.add('btn-outline');
+    if (trailerUrl) {
+      videoIframe.src = trailerUrl;
+      switcher.style.display = 'block';
+    } else {
+      videoIframe.src = previewURL;
+      switcher.style.display = 'none';
+
+      const modalDesc = document.getElementById('modal-description');
+      modalDesc.innerHTML += `<br><br><span style="color: red; font-weight: bold;">⚠️ No preview available. Please download to watch.</span>`;
+    }
+
+    document.getElementById('btn-watch-trailer').onclick = () => {
+      videoIframe.src = trailerUrl;
+      highlightButton('btn-watch-trailer');
+    };
+    document.getElementById('btn-watch-drive').onclick = () => {
+      videoIframe.src = previewURL;
+      highlightButton('btn-watch-drive');
     };
 
-    btnDrive.onclick = () => {
-      document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
-      btnDrive.classList.add('btn-solid');
-      btnDrive.classList.remove('btn-outline');
-      btnTrailer.classList.remove('btn-solid');
-      btnTrailer.classList.add('btn-outline');
-    };
-
-    // Default to Drive player
-    btnDrive.click();
+    downloadBtn.href = downloadURL;
+    downloadBtn.style.display = 'inline-block';
   };
 
   div.appendChild(img);
   container.appendChild(div);
+}
+
+function highlightButton(activeId) {
+  const trailerBtn = document.getElementById('btn-watch-trailer');
+  const driveBtn = document.getElementById('btn-watch-drive');
+  trailerBtn.classList.remove('btn-solid');
+  trailerBtn.classList.add('btn-outline');
+  driveBtn.classList.remove('btn-solid');
+  driveBtn.classList.add('btn-outline');
+
+  const activeBtn = document.getElementById(activeId);
+  activeBtn.classList.remove('btn-outline');
+  activeBtn.classList.add('btn-solid');
 }
 
 async function init() {
@@ -224,11 +241,9 @@ async function init() {
   addUploadedMovie("1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH", "ARQ");
   addUploadedMovie("1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp", "The Hunger Games");
   addUploadedMovie("1P9y0rzcoDKj0BRA2gaLznP6BtYZlc-lV", "The Hunger Games: Catching Fire");
-   addUploadedMovie("1wDCCXjqF9woZAXPMBnYrZnvP_31DBqFP", "The Hunger Games: Mockingjay - Part 2");
-   addUploadedMovie("1wfsA6vF6Xyy10qR5EeOQHf7HEj1VtyOt", "Kill Command");
-   addUploadedMovie("1kKzOIMcEq76IqmI4Z8AnV2gAkrDhAd15", "Maze Runner: The Death Cure");
-  // You can add more uploaded movies here
-  // addUploadedMovie("FILE_ID", "MOVIE_TITLE");
+  addUploadedMovie("1wDCCXjqF9woZAXPMBnYrZnvP_31DBqFP", "The Hunger Games: Mockingjay - Part 2");
+  addUploadedMovie("1wfsA6vF6Xyy10qR5EeOQHf7HEj1VtyOt", "Kill Command");
+  addUploadedMovie("1kKzOIMcEq76IqmI4Z8AnV2gAkrDhAd15", "Maze Runner: The Death Cure");
 }
 
 init();

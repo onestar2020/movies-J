@@ -5,19 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Movies-J Official Site</title>
 
-  <!-- ✅ Modern Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-    }
-  </style>
-
   <link rel="stylesheet" href="css/home.css">
   <link rel="preload" href="css/home.css" as="style">
   <link rel="preload" href="js/home.js" as="script">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    .server-selector, .modal small {
+      display: none;
+    }
+    .server-enabled .server-selector,
+    .server-enabled small {
+      display: block;
+    }
+  </style>
   <script defer src="js/home.js"></script>
 </head>
 
@@ -53,7 +58,7 @@
     <h2>My Upload Movies</h2>
     <div class="list" id="myupload-list">
       <div onclick="playUploadedMovie('1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH', 'ARQ')">
-        <img src="images/logo.png" alt="My Test Movie" />
+        <img src="images/logo.png" alt="ARQ" />
       </div>
     </div>
   </div>
@@ -109,31 +114,25 @@
     </div>
   </footer>
 
+  <!-- Ad Scripts -->
   <script type='text/javascript' src='//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js'></script>
-
   <script type="text/javascript" data-cfasync="false">
-  (function(){
-    var p=window,
-        u="bfb3f3a7a6194cc0ad141553bc11b150",
-        x=[["siteId",25+619+4545841],["minBid",0],["popundersPerIP","1"],["delayBetween",0],["default",true],["defaultPerDay",0],["topmostLayer","auto"]],
-        h=["d3d3LmludGVsbGlnZW5jZWFkeC5jb20vSkFoelAvSEhSZ1FLL2pwcWdyaWQubWluLmpz","ZDJrbHg4N2Jnem5nY2UuY2xvdWRmcm9udC5uZXQvenQzLm1pbi5qcw=="],
-        c=-1,d,b,y=function(){
-          clearTimeout(b);c++;
-          if(h[c]&&!(1776388359000<(new Date).getTime()&&1<c)){
-            d=p.document.createElement("script");
-            d.type="text/javascript";
-            d.async=!0;
-            var j=p.document.getElementsByTagName("script")[0];
-            d.src="https://"+atob(h[c]);
-            d.crossOrigin="anonymous";
-            d.onerror=y;
-            d.onload=function(){clearTimeout(b);p[u.slice(0,16)+u.slice(0,16)]||y()};
-            b=setTimeout(y,5E3);
-            j.parentNode.insertBefore(d,j)
-          }
-        };
-    if(!p[u]){try{Object.freeze(p[u]=x)}catch(e){}y()}
-  })();
+    (function(){
+      var p=window,u="bfb3f3a7a6194cc0ad141553bc11b150",x=[["siteId",25+619+4545841],["minBid",0],["popundersPerIP","1"],["delayBetween",0],["default",true],["defaultPerDay",0],["topmostLayer","auto"]],
+      h=["d3d3LmludGVsbGlnZW5jZWFkeC5jb20vSkFoelAvSEhSZ1FLL2pwcWdyaWQubWluLmpz","ZDJrbHg4N2Jnem5nY2UuY2xvdWRmcm9udC5uZXQvenQzLm1pbi5qcw=="],c=-1,d,b,y=function(){
+        clearTimeout(b);c++;
+        if(h[c]&&!(1776388359000<(new Date).getTime()&&1<c)){
+          d=p.document.createElement("script");d.type="text/javascript";d.async=!0;
+          var j=p.document.getElementsByTagName("script")[0];
+          d.src="https://"+atob(h[c]);
+          d.crossOrigin="anonymous";d.onerror=y;
+          d.onload=function(){clearTimeout(b);p[u.slice(0,16)+u.slice(0,16)]||y()};
+          b=setTimeout(y,5000);
+          j.parentNode.insertBefore(d,j)
+        }
+      };
+      if(!p[u]){try{Object.freeze(p[u]=x)}catch(e){}y()}
+    })();
   </script>
 
   <script>
@@ -150,15 +149,15 @@
         }
       }, { once: true });
     });
-  </script>
 
-  <script>
     function playUploadedMovie(fileId, title) {
       document.getElementById('modal-title').textContent = title;
-      document.getElementById('modal-description').textContent = "My personal uploaded movie.";
+      document.getElementById('modal-description').textContent =
+        "Trapped in a lab and stuck in a time loop, a disoriented couple fends off masked raiders while harboring a new energy source that could save humanity.";
       document.getElementById('modal-image').src = "images/logo.png";
-      document.getElementById('modal-rating').innerHTML = "★ ★ ★ ★ ★";
+      document.getElementById('modal-rating').innerHTML = "★ ★ ★";
       document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
+      document.getElementById('modal').classList.remove('server-enabled');
       document.getElementById('modal').style.display = 'flex';
     }
   </script>

@@ -89,6 +89,7 @@ async function showDetails(item) {
   const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
   const trailerUrl = await fetchTrailer(item.id, mediaType);
   document.getElementById('modal-video').src = trailerUrl || '';
+  document.getElementById('modal').classList.add('server-enabled');
   document.getElementById('modal').style.display = 'flex';
 }
 
@@ -113,6 +114,7 @@ function changeServer() {
 function closeModal() {
   document.getElementById('modal').style.display = 'none';
   document.getElementById('modal-video').src = '';
+  document.getElementById('modal').classList.remove('server-enabled');
 }
 
 function openSearchModal() {
@@ -167,8 +169,9 @@ init();
 function playUploadedMovie(fileId = "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH", title = "ARQ") {
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-description').textContent = "Trapped in a lab and stuck in a time loop, a disoriented couple fends off masked raiders while harboring a new energy source that could save humanity.";
-  document.getElementById('modal-image').src = "images/logo.png"; // or custom thumbnail
+  document.getElementById('modal-image').src = "images/logo.png";
   document.getElementById('modal-rating').innerHTML = "★ ★ ★ ";
   document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
+  document.getElementById('modal').classList.remove('server-enabled');
   document.getElementById('modal').style.display = 'flex';
 }

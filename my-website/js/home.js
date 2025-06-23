@@ -164,7 +164,7 @@ async function init() {
 
 init();
 
-function playUploadedMovie(fileId, title) {
+function playUploadedMovie(fileId = "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH", title = "My Upload Movie") {
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-description').textContent = "My personal uploaded movie.";
   document.getElementById('modal-image').src = "images/logo.png"; // or custom thumbnail

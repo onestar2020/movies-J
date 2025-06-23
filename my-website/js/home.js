@@ -222,7 +222,7 @@ async function init() {
   displayList(anime, 'anime-list');
 
   addUploadedMovie("1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH", "ARQ");
-  addUploadedMovie("1UcRw2WISOsf7iNmFamZx9aviCUnKazW", "Alien: Romulus");
+  addUploadedMovie("1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp", "The Hunger Games");
 
   // You can add more uploaded movies here
   // addUploadedMovie("FILE_ID", "MOVIE_TITLE");

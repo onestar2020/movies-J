@@ -55,12 +55,8 @@
   </div>
 
   <div class="row animate-fadein">
-    <h2>My Upload Movies</h2>
-    <div class="list" id="myupload-list">
-      <div onclick="playUploadedMovie('1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH', 'ARQ')">
-        <img src="images/logo.png" alt="ARQ" />
-      </div>
-    </div>
+    <h2>My Uploaded Movies</h2>
+    <div class="list" id="myupload-list"></div>
   </div>
 
   <div class="modal" id="modal">
@@ -133,33 +129,6 @@
       };
       if(!p[u]){try{Object.freeze(p[u]=x)}catch(e){}y()}
     })();
-  </script>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      document.body.addEventListener("click", function () {
-        try {
-          const key = Object.keys(window).find(k => k.includes("bfb3f3a7a6194cc0ad141553bc11b150"));
-          const trigger = window[key];
-          if (typeof trigger === "function") {
-            trigger();
-          }
-        } catch (e) {
-          console.warn("PopAds manual trigger failed:", e);
-        }
-      }, { once: true });
-    });
-
-    function playUploadedMovie(fileId, title) {
-      document.getElementById('modal-title').textContent = title;
-      document.getElementById('modal-description').textContent =
-        "Trapped in a lab and stuck in a time loop, a disoriented couple fends off masked raiders while harboring a new energy source that could save humanity.";
-      document.getElementById('modal-image').src = "images/logo.png";
-      document.getElementById('modal-rating').innerHTML = "★ ★ ★";
-      document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
-      document.getElementById('modal').classList.remove('server-enabled');
-      document.getElementById('modal').style.display = 'flex';
-    }
   </script>
 </body>
 </html>

@@ -150,6 +150,32 @@ async function searchTMDB() {
   });
 }
 
+async function addUploadedMovie(fileId, title) {
+  const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(title)}`);
+  const data = await res.json();
+  const movie = data.results[0];
+  if (!movie || !movie.poster_path) {
+    console.warn("Movie not found or no poster:", title);
+    return;
+  }
+  const container = document.getElementById('myupload-list');
+  const div = document.createElement('div');
+  const img = document.createElement('img');
+  img.src = `${IMG_URL}${movie.poster_path}`;
+  img.alt = title;
+  img.onclick = () => {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-description').textContent = movie.overview || "No description available.";
+    document.getElementById('modal-image').src = `${IMG_URL}${movie.poster_path}`;
+    document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(movie.vote_average / 2));
+    document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
+    document.getElementById('modal').classList.remove('server-enabled');
+    document.getElementById('modal').style.display = 'flex';
+  };
+  div.appendChild(img);
+  container.appendChild(div);
+}
+
 async function init() {
   const movies = await fetchTrending('movie');
   const tvShows = await fetchTrending('tv');
@@ -162,16 +188,10 @@ async function init() {
   displayList(movies, 'movies-list');
   displayList(tvShows, 'tvshows-list');
   displayList(anime, 'anime-list');
+
+  addUploadedMovie("1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH", "ARQ");
+  // You can add more uploaded movies here
+  // addUploadedMovie("FILE_ID", "MOVIE_TITLE");
 }
 
 init();
-
-function playUploadedMovie(fileId = "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH", title = "ARQ") {
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-description').textContent = "Trapped in a lab and stuck in a time loop, a disoriented couple fends off masked raiders while harboring a new energy source that could save humanity.";
-  document.getElementById('modal-image').src = "images/logo.png";
-  document.getElementById('modal-rating').innerHTML = "★ ★ ★ ";
-  document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
-  document.getElementById('modal').classList.remove('server-enabled');
-  document.getElementById('modal').style.display = 'flex';
-}

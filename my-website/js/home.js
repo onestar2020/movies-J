@@ -246,6 +246,7 @@ async function init() {
   addUploadedMovie("1kKzOIMcEq76IqmI4Z8AnV2gAkrDhAd15", "Maze Runner: The Death Cure");
   addUploadedMovie("15ue4p4e14u7l_Bxhf5I2KH8BFAbAvi2C", "Morbius");
   addUploadedMovie("16gtWQJpiPF9sEw9ans7x_Ukz2EBDLSKv", "Maze Runner: The Scorch Trials");
+  addUploadedMovie("1gqZ_IawXvSj-iQJB6L64kGFkbBg95lGO", "Shaun of the Dead");
 }
 
 init();

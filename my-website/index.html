@@ -5,12 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Movies-J Official Site</title>
 
+  <!-- Fonts, Styles, Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/home.css">
   <link rel="preload" href="css/home.css" as="style">
   <link rel="preload" href="js/home.js" as="script">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom Style -->
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -22,11 +25,37 @@
     .server-enabled small {
       display: block;
     }
+    .btn-solid, .btn-outline {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .btn-solid {
+      background-color: #e50914;
+      color: white;
+      border: none;
+    }
+    .btn-outline {
+      background-color: transparent;
+      color: #e50914;
+      border: 1px solid #e50914;
+    }
+    .btn-solid:hover {
+      background-color: #b00610;
+    }
+    .btn-outline:hover {
+      background-color: #e50914;
+      color: white;
+    }
   </style>
+
   <script defer src="js/home.js"></script>
 </head>
 
 <body>
+  <!-- Navbar -->
   <div class="navbar">
     <img src="images/logo.png" alt="Movies-J Logo" />
     <div class="nav-links">
@@ -35,10 +64,12 @@
     </div>
   </div>
 
+  <!-- Banner -->
   <div class="banner animate-fadein" id="banner">
     <h1 id="banner-title"></h1>
   </div>
 
+  <!-- Sections -->
   <div class="row animate-fadein">
     <h2>Trending Movies</h2>
     <div class="list" id="movies-list"></div>
@@ -59,6 +90,7 @@
     <div class="list" id="myupload-list"></div>
   </div>
 
+  <!-- Modal -->
   <div class="modal" id="modal">
     <div class="modal-content">
       <span class="close" onclick="closeModal()" style="color: red;">&times;</span>
@@ -86,6 +118,11 @@
         ⚠️ Warning: Some streaming servers may contain ads not controlled by Movies-J.
       </small>
 
+      <div id="upload-switcher" style="display: none; margin-top: 10px;">
+        <button id="btn-watch-trailer" class="btn-solid" style="margin-right: 8px;">▶️ Watch Trailer</button>
+        <button id="btn-watch-drive" class="btn-outline">🎬 Watch Full Movie</button>
+      </div>
+
       <iframe id="modal-video" width="100%" height="400" frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowfullscreen>
@@ -93,12 +130,14 @@
     </div>
   </div>
 
+  <!-- Search Modal -->
   <div class="search-modal" id="search-modal">
     <span class="close" onclick="closeSearchModal()" style="color: red;">&times;</span>
     <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
     <div class="results" id="search-results"></div>
   </div>
 
+  <!-- Footer -->
   <footer class="footer animate-fadein">
     <div class="footer-content">
       <p>&copy; 2025 Movies-J. All rights reserved.</p>
@@ -110,7 +149,7 @@
     </div>
   </footer>
 
-  <!-- Ad Scripts -->
+  <!-- Ads -->
   <script type='text/javascript' src='//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js'></script>
   <script type="text/javascript" data-cfasync="false">
     (function(){

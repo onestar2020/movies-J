@@ -159,11 +159,7 @@ async function addUploadedMovie(fileId, title) {
     return;
   }
 
-  const trailerRes = await fetch(`${BASE_URL}/movie/${movie.id}/videos?api_key=${API_KEY}`);
-  const trailerData = await trailerRes.json();
-  const trailer = trailerData.results.find(v => v.type === "Trailer" && v.site === "YouTube");
-  const trailerUrl = trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
-
+  const trailerUrl = await fetchTrailer(movie.id, 'movie');
   const container = document.getElementById('myupload-list');
   const div = document.createElement('div');
   const img = document.createElement('img');
@@ -176,14 +172,24 @@ async function addUploadedMovie(fileId, title) {
     document.getElementById('modal-image').src = `${IMG_URL}${movie.poster_path}`;
     document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(movie.vote_average / 2));
 
-    if (trailerUrl) {
-      document.getElementById('modal-video').src = `${trailerUrl}?autoplay=1&mute=0`;
-    } else {
-      document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
-    }
+    const modal = document.getElementById('modal');
+    modal.classList.remove('server-enabled');
+    modal.style.display = 'flex';
 
-    document.getElementById('modal').classList.remove('server-enabled');
-    document.getElementById('modal').style.display = 'flex';
+    // Show trailer or fallback to Google Drive
+    document.getElementById('modal-video').src = trailerUrl || `https://drive.google.com/file/d/${fileId}/preview`;
+
+    // Show the buttons if may trailer
+    const switcher = document.getElementById('upload-switcher');
+    switcher.style.display = trailerUrl ? 'block' : 'none';
+
+    // Buttons
+    document.getElementById('btn-watch-trailer').onclick = () => {
+      document.getElementById('modal-video').src = trailerUrl;
+    };
+    document.getElementById('btn-watch-drive').onclick = () => {
+      document.getElementById('modal-video').src = `https://drive.google.com/file/d/${fileId}/preview`;
+    };
   };
 
   div.appendChild(img);

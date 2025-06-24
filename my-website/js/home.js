@@ -113,39 +113,24 @@ function showUploadedMovie(movie) {
   document.getElementById('modal-video').src = movie.trailer;
   document.getElementById('modal').style.display = 'flex';
 
-  const switcher = document.getElementById('upload-switcher');
-  switcher.style.display = 'block';
+  document.getElementById('upload-switcher').style.display = 'block';
   document.querySelector('.modal').classList.remove('server-enabled');
 
-  document.getElementById('btn-watch-trailer').onclick = () => {
-    document.getElementById('modal-video').src = movie.trailer;
-    setActiveButton('btn-watch-trailer');
-  };
-  document.getElementById('btn-watch-drive').onclick = () => {
-    document.getElementById('modal-video').src = movie.driveLink;
-    setActiveButton('btn-watch-drive');
-  };
+  // ✅ Set working buttons
+  document.getElementById('btn-trailer').href = movie.trailer || "#";
+  document.getElementById('btn-watch').href = movie.driveLink || "#";
+  document.getElementById('btn-download').href = movie.download || "#";
+
+  // Optional: show or hide download if not available
   const dlBtn = document.getElementById('btn-download');
   if (movie.download) {
-    dlBtn.href = movie.download;
     dlBtn.style.display = 'inline-block';
-    dlBtn.onclick = () => {
-      setActiveButton('btn-download');
-    };
   } else {
     dlBtn.style.display = 'none';
   }
-
-  setActiveButton('btn-watch-trailer');
 }
 
-function setActiveButton(id) {
-  document.querySelectorAll('.server-btn').forEach(btn => btn.classList.remove('active'));
-  const btn = document.getElementById(id);
-  if (btn) btn.classList.add('active');
-}
-
-// ===== SERVERS =====
+// ===== SERVER SWITCH =====
 function changeServer() {
   const server = document.getElementById('server').value;
   const type = currentItem.media_type === 'movie' ? 'movie' : 'tv';

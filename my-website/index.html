@@ -25,12 +25,15 @@
     .server-enabled small {
       display: block;
     }
-    .btn-solid, .btn-outline {
+    .btn-solid, .btn-outline, .btn {
       padding: 8px 16px;
       border-radius: 6px;
       font-size: 14px;
       cursor: pointer;
       transition: background 0.3s ease;
+      display: inline-block;
+      text-align: center;
+      text-decoration: none;
     }
     .btn-solid {
       background-color: #e50914;
@@ -54,48 +57,23 @@
       color: white !important;
       border: none !important;
     }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    @media (min-width: 600px) {
+      .button-group {
+        flex-direction: row;
+        justify-content: center;
+      }
+    }
   </style>
 
   <script defer src="js/home.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const myUploads = [
-        {
-          id: '1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH',
-          title: 'My Upload Movie',
-          image: 'images/logo.png',
-          downloadLink: 'https://drive.google.com/uc?export=download&id=1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH'
-        }
-      ];
-
-      function displayMyUploads() {
-        const container = document.getElementById('myupload-list');
-        myUploads.forEach(movie => {
-          const div = document.createElement('div');
-          div.onclick = () => playUploadedMovie(movie);
-          div.innerHTML = `<img src="${movie.image}" alt="${movie.title}" />`;
-          container.appendChild(div);
-        });
-      }
-
-      function playUploadedMovie(movie) {
-        document.getElementById('modal-title').textContent = movie.title;
-        document.getElementById('modal-description').textContent = "My personal uploaded movie.";
-        document.getElementById('modal-image').src = movie.image;
-        document.getElementById('modal-rating').innerHTML = "★ ★ ★ ★ ★";
-        document.getElementById('modal-video').src = `https://drive.google.com/file/d/${movie.id}/preview`;
-        document.getElementById('modal').style.display = 'flex';
-
-        document.getElementById('upload-switcher').style.display = 'block';
-        document.getElementById('btn-download').href = movie.downloadLink;
-        document.getElementById('btn-download').style.display = 'inline-block';
-
-        document.querySelector('.modal').classList.remove('server-enabled');
-      }
-
-      displayMyUploads();
-    });
-  </script>
 </head>
 <body>
   <!-- Navbar -->
@@ -168,13 +146,12 @@
         ⚠️ Warning: Some streaming servers may contain ads not controlled by Movies-J.
       </small>
 
-     <div class="button-group">
-  <a href="#" id="btn-trailer" target="_blank" class="btn">▶️ Watch Trailer</a>
-  <a href="#" id="btn-watch" target="_blank" class="btn">🎬 Watch Full Movie</a>
-  <a href="#" id="btn-download" target="_blank" class="btn">⬇️ Download This Movie</a>
-</div>
-
-
+      <!-- 🔘 BUTTONS -->
+      <div class="button-group">
+        <a href="#" id="btn-trailer" target="_blank" class="btn btn-outline">▶️ Watch Trailer</a>
+        <a href="#" id="btn-watch" target="_blank" class="btn btn-solid">🎬 Watch Full Movie</a>
+        <a href="#" id="btn-download" target="_blank" class="btn btn-outline">⬇️ Download This Movie</a>
+      </div>
     </div>
   </div>
 

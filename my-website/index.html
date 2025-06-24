@@ -89,10 +89,6 @@
           <a href="https://drive.google.com/file/d/yourfileID/preview" target="_blank" class="btn btn-solid">🎬 Watch Full Movie</a>
           <a href="https://drive.google.com/uc?export=download&id=yourfileID" target="_blank" class="btn btn-outline">⬇️ Download</a>
         </div>
-
-        <div style="margin-top:10px; color:#aaa;">
-          <strong>Change Server:</strong> Vidsrc.cc
-        </div>
       </div>
       <!-- Movie Card End -->
 
@@ -116,23 +112,7 @@
         <iframe id="modal-video" width="100%" height="400" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       </div>
 
-      <!-- Server selector shown only if .server-enabled is present -->
-      <div class="server-selector" id="server-selector">
-        <label for="server">Change Server:</label>
-        <select id="server" onchange="changeServer()">
-          <option value="vidsrc.cc">Vidsrc.cc</option>
-          <option value="vidsrc.me">Vidsrc.me</option>
-          <option value="player.videasy.net">Player.Videasy.net</option>
-          <option value="multiembed">MultiEmbed</option>
-          <option value="2embed">2Embed</option>
-        </select>
-      </div>
-
-      <small id="server-warning">
-        ⚠️ Warning: Some streaming servers may contain ads not controlled by Movies-J.
-      </small>
-
-      <!-- Buttons -->
+      <!-- Buttons only (no server selector) -->
       <div class="button-group" id="upload-buttons">
         <a href="#" id="btn-trailer" target="_blank" class="btn btn-outline" style="display:none;">▶️ Watch Trailer</a>
         <a href="#" id="btn-watch" target="_blank" class="btn btn-solid" style="display:none;">🎬 Watch Full Movie</a>

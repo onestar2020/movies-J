@@ -388,7 +388,6 @@ body { font-family: Arial, sans-serif; background: #111; color: #fff; }
   transform: scale(1.05);
   box-shadow: 0 0 12px white;
 }
-
 .animate-fadein {
   opacity: 0;
   animation: fadein 1s ease-in-out forwards;
@@ -398,17 +397,4 @@ body { font-family: Arial, sans-serif; background: #111; color: #fff; }
   to {
     opacity: 1;
   }
-}
-
-/* ✅ Rotate 90 Degrees Fullscreen Iframe */
-.rotate-90 {
-  transform: rotate(90deg);
-  transform-origin: center center;
-  width: 100vh !important;
-  height: 100vw !important;
-  position: fixed !important;
-  top: 0;
-  left: 0;
-  background-color: black;
-  z-index: 9999;
 }

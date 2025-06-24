@@ -391,3 +391,39 @@ body { font-family: Arial, sans-serif; background: #111; color: #fff; }
   transform: scale(1.03);
   box-shadow: 0 0 6px rgba(213, 0, 18, 0.5);
 }
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap; /* allow buttons to move down on small screen */
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 10px 15px;
+  background-color: #e50914;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 14px;
+  transition: background 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #b00610;
+}
+
+/* FOR MOBILE VIEW */
+@media (max-width: 600px) {
+  .button-group {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn {
+    width: 90%;
+    text-align: center;
+  }
+}

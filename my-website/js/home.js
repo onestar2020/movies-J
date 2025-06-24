@@ -119,17 +119,30 @@ function showUploadedMovie(movie) {
 
   document.getElementById('btn-watch-trailer').onclick = () => {
     document.getElementById('modal-video').src = movie.trailer;
+    setActiveButton('btn-watch-trailer');
   };
   document.getElementById('btn-watch-drive').onclick = () => {
     document.getElementById('modal-video').src = movie.driveLink;
+    setActiveButton('btn-watch-drive');
   };
   const dlBtn = document.getElementById('btn-download');
   if (movie.download) {
     dlBtn.href = movie.download;
     dlBtn.style.display = 'inline-block';
+    dlBtn.onclick = () => {
+      setActiveButton('btn-download');
+    };
   } else {
     dlBtn.style.display = 'none';
   }
+
+  setActiveButton('btn-watch-trailer');
+}
+
+function setActiveButton(id) {
+  document.querySelectorAll('.server-btn').forEach(btn => btn.classList.remove('active'));
+  const btn = document.getElementById(id);
+  if (btn) btn.classList.add('active');
 }
 
 // ===== SERVERS =====

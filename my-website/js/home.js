@@ -1,3 +1,4 @@
+// ===== CONFIG =====
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
@@ -5,7 +6,7 @@ let currentItem;
 let bannerItems = [];
 let bannerIndex = 0;
 
-// Trending fetchers
+// ===== FETCHERS =====
 async function fetchTrending(type) {
   let allResults = [];
   for (let page = 1; page <= 5; page++) {
@@ -21,15 +22,12 @@ async function fetchTrendingAnime() {
   for (let page = 1; page <= 5; page++) {
     const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`);
     const data = await res.json();
-    const filtered = data.results.filter(item =>
-      item.original_language === 'ja' && item.genre_ids.includes(16)
-    );
+    const filtered = data.results.filter(item => item.original_language === 'ja' && item.genre_ids.includes(16));
     allResults = allResults.concat(filtered);
   }
   return allResults;
 }
 
-// YouTube trailer fetch
 async function fetchTrailer(id, mediaType) {
   const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
   const data = await res.json();
@@ -37,7 +35,13 @@ async function fetchTrailer(id, mediaType) {
   return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
 }
 
-// Banner display
+async function fetchMovieDetailsByTitle(title) {
+  const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(title)}`);
+  const data = await res.json();
+  return data.results.length ? data.results[0] : null;
+}
+
+// ===== BANNER =====
 async function displayBanner(item) {
   const banner = document.getElementById('banner');
   const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
@@ -71,7 +75,6 @@ function watchBannerMovie() {
   showDetails(bannerItems[bannerIndex]);
 }
 
-// List display (for movies, tv, anime)
 function displayList(items, containerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
@@ -84,7 +87,7 @@ function displayList(items, containerId) {
   });
 }
 
-// Modal for TMDB items
+// ===== MODALS =====
 async function showDetails(item) {
   currentItem = item;
   const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
@@ -101,7 +104,6 @@ async function showDetails(item) {
   document.querySelector('.modal').classList.add('server-enabled');
 }
 
-// Modal for uploaded Google Drive movies
 function showUploadedMovie(movie) {
   currentItem = movie;
   document.getElementById('modal-title').textContent = movie.title;
@@ -130,36 +132,34 @@ function showUploadedMovie(movie) {
   }
 }
 
-// Server switching
+// ===== SERVERS =====
 function changeServer() {
   const server = document.getElementById('server').value;
-  const type = currentItem.media_type === "movie" ? "movie" : "tv";
-  let embedURL = "";
-  if (server === "vidsrc.cc") {
+  const type = currentItem.media_type === 'movie' ? 'movie' : 'tv';
+  let embedURL = '';
+  if (server === 'vidsrc.cc') {
     embedURL = `https://vidsrc.cc/v2/embed/${type}/${currentItem.id}`;
-  } else if (server === "vidsrc.me") {
+  } else if (server === 'vidsrc.me') {
     embedURL = `https://vidsrc.net/embed/${type}/?tmdb=${currentItem.id}`;
-  } else if (server === "player.videasy.net") {
+  } else if (server === 'player.videasy.net') {
     embedURL = `https://player.videasy.net/${type}/${currentItem.id}`;
-  } else if (server === "multiembed") {
+  } else if (server === 'multiembed') {
     embedURL = `https://multiembed.mov/?video_id=${currentItem.id}&tmdb=1`;
-  } else if (server === "2embed") {
+  } else if (server === '2embed') {
     embedURL = `https://www.2embed.cc/embed/${type}?tmdb=${currentItem.id}`;
   }
   document.getElementById('modal-video').src = embedURL;
 }
 
-// Search modal
+// ===== SEARCH =====
 function openSearchModal() {
   document.getElementById('search-modal').style.display = 'flex';
   document.getElementById('search-input').focus();
 }
-
 function closeSearchModal() {
   document.getElementById('search-modal').style.display = 'none';
   document.getElementById('search-results').innerHTML = '';
 }
-
 async function searchTMDB() {
   const query = document.getElementById('search-input').value;
   if (!query.trim()) {
@@ -183,38 +183,45 @@ async function searchTMDB() {
   });
 }
 
-// Custom uploaded movie loader (manual list)
-function loadUploadedMovies() {
-  const uploads = [
-    {
-      title: "Sample Upload 1",
-      poster: "https://image.tmdb.org/t/p/original/hTP1DtLGFamjfu8WqjnuQdP1n4i.jpg",
-      description: "A powerful anime series about war and freedom.",
-      rating: 4.8,
-      trailer: "https://www.youtube.com/embed/YOUR_YOUTUBE_ID",
-      driveLink: "https://drive.google.com/file/d/YOUR_FILE_ID/preview",
-      download: "https://drive.google.com/uc?id=YOUR_FILE_ID&export=download"
-    }
-    // Add more movies here
-  ];
+// ===== LOAD CUSTOM UPLOADS =====
+const uploads = [
+  {
+    title: "Interstellar",
+    id: "1a2b3c4d5EfGhIjKlmNOPqrsTuv",
+    download: "https://drive.google.com/uc?id=1a2b3c4d5EfGhIjKlmNOPqrsTuv&export=download"
+  },
+  // Add more
+];
 
+async function loadUploadedMovies() {
   const container = document.getElementById('myupload-list');
-  uploads.forEach(movie => {
+  container.innerHTML = '';
+
+  for (const movie of uploads) {
+    const tmdb = await fetchMovieDetailsByTitle(movie.title);
+    if (!tmdb) continue;
+
+    movie.poster = `${IMG_URL}${tmdb.poster_path}`;
+    movie.description = tmdb.overview;
+    movie.rating = tmdb.vote_average / 2;
+    movie.trailer = await fetchTrailer(tmdb.id, 'movie');
+    movie.driveLink = `https://drive.google.com/file/d/${movie.id}/preview`;
+
     const img = document.createElement('img');
     img.src = movie.poster;
     img.alt = movie.title;
     img.onclick = () => showUploadedMovie(movie);
     container.appendChild(img);
-  });
+  }
 }
 
-// Close modal
+// ===== MODAL CLOSE =====
 function closeModal() {
   document.getElementById('modal').style.display = 'none';
   document.getElementById('modal-video').src = '';
 }
 
-// Init
+// ===== INIT =====
 async function init() {
   const movies = await fetchTrending('movie');
   const tvShows = await fetchTrending('tv');

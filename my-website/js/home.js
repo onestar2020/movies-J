@@ -111,7 +111,7 @@ async function showDetails(item) {
   document.getElementById('btn-download').style.display = 'none';
 }
 
-// For uploaded movies — buttons shown
+// For uploaded movies — buttons shown and functional
 function showUploadedMovie(movie) {
   currentItem = movie;
   document.getElementById('modal-title').textContent = movie.title;

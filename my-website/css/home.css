@@ -404,3 +404,26 @@ body { font-family: Arial, sans-serif; background: #111; color: #fff; }
   font-weight: bold;
   text-shadow: 0 0 10px red;
 }
+/* === Upload Switcher Button Group (Enhancement) === */
+#upload-switcher {
+  display: none;
+  margin-top: 20px;
+  text-align: center;
+}
+
+#upload-switcher .server-btn {
+  padding: 10px 20px;
+  margin: 0 5px;
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#upload-switcher .server-btn:hover {
+  background: #e50914;
+  transform: scale(1.05);
+  box-shadow: 0 0 10px #e50914aa;
+}

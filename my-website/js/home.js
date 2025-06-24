@@ -101,6 +101,7 @@ async function showDetails(item) {
   document.getElementById('modal').style.display = 'flex';
 
   document.getElementById('upload-buttons').style.display = 'none';
+  document.querySelector('.modal').classList.add('server-enabled');
 }
 
 function showUploadedMovie(movie) {
@@ -130,6 +131,7 @@ function showUploadedMovie(movie) {
   }
 
   document.getElementById('upload-buttons').style.display = 'flex';
+  document.querySelector('.modal').classList.remove('server-enabled');
 }
 
 // ===== SEARCH =====

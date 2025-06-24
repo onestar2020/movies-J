@@ -398,3 +398,16 @@ body { font-family: Arial, sans-serif; background: #111; color: #fff; }
     opacity: 1;
   }
 }
+
+/* ✅ Rotate + Fullscreen Iframe Wrapper */
+.rotate-90 {
+  transform: rotate(90deg);
+  transform-origin: center center;
+  width: 100vh !important;
+  height: 100vw !important;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  background-color: black;
+  z-index: 9999;
+}

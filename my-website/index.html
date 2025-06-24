@@ -57,8 +57,46 @@
   </style>
 
   <script defer src="js/home.js"></script>
-</head>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const myUploads = [
+        {
+          id: '1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH',
+          title: 'My Upload Movie',
+          image: 'images/logo.png',
+          downloadLink: 'https://drive.google.com/uc?export=download&id=1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH'
+        }
+      ];
 
+      function displayMyUploads() {
+        const container = document.getElementById('myupload-list');
+        myUploads.forEach(movie => {
+          const div = document.createElement('div');
+          div.onclick = () => playUploadedMovie(movie);
+          div.innerHTML = `<img src="${movie.image}" alt="${movie.title}" />`;
+          container.appendChild(div);
+        });
+      }
+
+      function playUploadedMovie(movie) {
+        document.getElementById('modal-title').textContent = movie.title;
+        document.getElementById('modal-description').textContent = "My personal uploaded movie.";
+        document.getElementById('modal-image').src = movie.image;
+        document.getElementById('modal-rating').innerHTML = "★ ★ ★ ★ ★";
+        document.getElementById('modal-video').src = `https://drive.google.com/file/d/${movie.id}/preview`;
+        document.getElementById('modal').style.display = 'flex';
+
+        document.getElementById('upload-switcher').style.display = 'block';
+        document.getElementById('btn-download').href = movie.downloadLink;
+        document.getElementById('btn-download').style.display = 'inline-block';
+
+        document.querySelector('.modal').classList.remove('server-enabled');
+      }
+
+      displayMyUploads();
+    });
+  </script>
+</head>
 <body>
   <!-- Navbar -->
   <div class="navbar">

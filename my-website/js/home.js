@@ -5,6 +5,7 @@ const IMG_URL = 'https://image.tmdb.org/t/p/original';
 let currentItem;
 let bannerItems = [];
 let bannerIndex = 0;
+let currentServer = 'vidsrc.cc'; // default server for TMDB movies
 
 // ===== FETCHERS =====
 async function fetchTrending(type) {
@@ -94,14 +95,19 @@ async function showDetails(item) {
   const trailerUrl = await fetchTrailer(item.id, mediaType);
 
   document.getElementById('modal-title').textContent = item.title || item.name;
-  document.getElementById('modal-description').textContent = item.overview;
+  document.getElementById('modal-description').textContent = item.overview || '';
   document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
   document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
   document.getElementById('modal-video').src = trailerUrl || '';
   document.getElementById('modal').style.display = 'flex';
 
+  // Hide uploaded movie buttons, show server selector for TMDB movies
   document.getElementById('upload-buttons').style.display = 'none';
   document.querySelector('.modal').classList.add('server-enabled');
+
+  // Reset server select to default
+  const serverSelect = document.getElementById('server');
+  if(serverSelect) serverSelect.value = currentServer;
 }
 
 function showUploadedMovie(movie) {
@@ -130,8 +136,42 @@ function showUploadedMovie(movie) {
     btnDownload.style.display = 'none';
   }
 
+  // Hide TMDB server selector for uploaded movies
   document.getElementById('upload-buttons').style.display = 'flex';
   document.querySelector('.modal').classList.remove('server-enabled');
+}
+
+// ===== SERVER CHANGE HANDLER =====
+function changeServer() {
+  const select = document.getElementById('server');
+  currentServer = select.value;
+
+  // Only update iframe src if modal is open and current item is TMDB movie
+  if (!currentItem || document.getElementById('modal').style.display !== 'flex') return;
+  if (document.querySelector('.modal').classList.contains('server-enabled')) {
+    const mediaType = currentItem.media_type || (currentItem.first_air_date ? 'tv' : 'movie');
+    // Construct video URL based on server choice
+    let videoUrl = '';
+
+    // The actual embed URLs depend on the server's format, here are examples:
+    const id = currentItem.id;
+    if (currentServer === 'vidsrc.cc') {
+      videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
+    } else if (currentServer === 'vidsrc.me') {
+      videoUrl = `https://vidsrc.me/embed/${mediaType}/${id}`;
+    } else if (currentServer === 'player.videasy.net') {
+      videoUrl = `https://player.videasy.net/embed/${mediaType}/${id}`;
+    } else if (currentServer === 'multiembed') {
+      videoUrl = `https://multiembed.com/api/v1/movies/${id}`;
+    } else if (currentServer === '2embed') {
+      videoUrl = `https://2embed.org/embed/${mediaType}/${id}`;
+    } else {
+      // fallback to vidsrc.cc
+      videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
+    }
+
+    document.getElementById('modal-video').src = videoUrl;
+  }
 }
 
 // ===== SEARCH =====
@@ -151,7 +191,7 @@ async function searchTMDB() {
     document.getElementById('search-results').innerHTML = '';
     return;
   }
-  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${query}`);
+  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
   const data = await res.json();
   const container = document.getElementById('search-results');
   container.innerHTML = '';
@@ -194,6 +234,7 @@ async function loadUploadedMovies() {
     const img = document.createElement('img');
     img.src = movie.poster;
     img.alt = movie.title;
+    img.style.cursor = 'pointer';
     img.onclick = () => showUploadedMovie(movie);
     container.appendChild(img);
   }

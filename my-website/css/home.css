@@ -117,9 +117,11 @@ body { font-family: Arial, sans-serif; background: #111; color: #fff; }
   font-size: 24px;
 }
 
+/* Important: Always show server-selector */
 .server-selector {
   margin: 15px 0;
   text-align: left;
+  display: block !important;
 }
 
 /* Search Modal */
@@ -391,6 +393,7 @@ body { font-family: Arial, sans-serif; background: #111; color: #fff; }
   transform: scale(1.03);
   box-shadow: 0 0 6px rgba(213, 0, 18, 0.5);
 }
+
 .button-group {
   display: flex;
   justify-content: center;

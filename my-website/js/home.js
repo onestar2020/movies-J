@@ -5,6 +5,7 @@ let currentItem;
 let bannerItems = [];
 let bannerIndex = 0;
 
+// Trending fetchers
 async function fetchTrending(type) {
   let allResults = [];
   for (let page = 1; page <= 5; page++) {
@@ -28,6 +29,7 @@ async function fetchTrendingAnime() {
   return allResults;
 }
 
+// YouTube trailer fetch
 async function fetchTrailer(id, mediaType) {
   const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
   const data = await res.json();
@@ -35,6 +37,7 @@ async function fetchTrailer(id, mediaType) {
   return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
 }
 
+// Banner display
 async function displayBanner(item) {
   const banner = document.getElementById('banner');
   const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
@@ -68,6 +71,7 @@ function watchBannerMovie() {
   showDetails(bannerItems[bannerIndex]);
 }
 
+// List display (for movies, tv, anime)
 function displayList(items, containerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
@@ -80,18 +84,53 @@ function displayList(items, containerId) {
   });
 }
 
+// Modal for TMDB items
 async function showDetails(item) {
   currentItem = item;
+  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+  const trailerUrl = await fetchTrailer(item.id, mediaType);
+
   document.getElementById('modal-title').textContent = item.title || item.name;
   document.getElementById('modal-description').textContent = item.overview;
   document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
   document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
-  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-  const trailerUrl = await fetchTrailer(item.id, mediaType);
   document.getElementById('modal-video').src = trailerUrl || '';
   document.getElementById('modal').style.display = 'flex';
+
+  document.getElementById('upload-switcher').style.display = 'none'; // hide upload buttons
+  document.querySelector('.modal').classList.add('server-enabled'); // show server selector
 }
 
+// Modal for uploaded Google Drive movies
+function showUploadedMovie(movie) {
+  currentItem = movie;
+  document.getElementById('modal-title').textContent = movie.title;
+  document.getElementById('modal-description').textContent = movie.description;
+  document.getElementById('modal-image').src = movie.poster;
+  document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(movie.rating));
+  document.getElementById('modal-video').src = movie.trailer;
+  document.getElementById('modal').style.display = 'flex';
+
+  const switcher = document.getElementById('upload-switcher');
+  switcher.style.display = 'block';
+  document.querySelector('.modal').classList.remove('server-enabled'); // hide server selector
+
+  document.getElementById('btn-watch-trailer').onclick = () => {
+    document.getElementById('modal-video').src = movie.trailer;
+  };
+  document.getElementById('btn-watch-drive').onclick = () => {
+    document.getElementById('modal-video').src = movie.driveLink;
+  };
+  const dlBtn = document.getElementById('btn-download');
+  if (movie.download) {
+    dlBtn.href = movie.download;
+    dlBtn.style.display = 'inline-block';
+  } else {
+    dlBtn.style.display = 'none';
+  }
+}
+
+// Server switching
 function changeServer() {
   const server = document.getElementById('server').value;
   const type = currentItem.media_type === "movie" ? "movie" : "tv";
@@ -110,11 +149,7 @@ function changeServer() {
   document.getElementById('modal-video').src = embedURL;
 }
 
-function closeModal() {
-  document.getElementById('modal').style.display = 'none';
-  document.getElementById('modal-video').src = '';
-}
-
+// Search modal
 function openSearchModal() {
   document.getElementById('search-modal').style.display = 'flex';
   document.getElementById('search-input').focus();
@@ -148,6 +183,38 @@ async function searchTMDB() {
   });
 }
 
+// Custom uploaded movie loader (manual list)
+function loadUploadedMovies() {
+  const uploads = [
+    {
+      title: "Sample Upload 1",
+      poster: "https://drive.google.com/thumbnail?id=YOUR_FILE_ID&sz=w300",
+      description: "Your movie description here...",
+      rating: 4.8,
+      trailer: "https://www.youtube.com/embed/YOUR_YOUTUBE_ID",
+      driveLink: "https://drive.google.com/file/d/YOUR_FILE_ID/preview",
+      download: "https://drive.google.com/uc?id=YOUR_FILE_ID&export=download"
+    },
+    // Add more movies here
+  ];
+
+  const container = document.getElementById('myupload-list');
+  uploads.forEach(movie => {
+    const img = document.createElement('img');
+    img.src = movie.poster;
+    img.alt = movie.title;
+    img.onclick = () => showUploadedMovie(movie);
+    container.appendChild(img);
+  });
+}
+
+// Close modal
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+  document.getElementById('modal-video').src = '';
+}
+
+// Init
 async function init() {
   const movies = await fetchTrending('movie');
   const tvShows = await fetchTrending('tv');
@@ -160,6 +227,7 @@ async function init() {
   displayList(movies, 'movies-list');
   displayList(tvShows, 'tvshows-list');
   displayList(anime, 'anime-list');
+  loadUploadedMovies();
 }
 
 init();

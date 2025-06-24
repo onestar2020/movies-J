@@ -76,13 +76,11 @@ function displayList(items, containerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
   items.forEach(item => {
-    const div = document.createElement('div');
-    div.classList.add('movie-item');
-    div.innerHTML = `
-      <img src="${IMG_URL}${item.poster_path}" alt="${item.title || item.name}" />
-    `;
-    div.onclick = () => showDetails(item);
-    container.appendChild(div);
+    const img = document.createElement('img');
+    img.src = `${IMG_URL}${item.poster_path}`;
+    img.alt = item.title || item.name;
+    img.onclick = () => showDetails(item);
+    container.appendChild(img);
   });
 }
 
@@ -103,6 +101,7 @@ async function showDetails(item) {
   document.querySelector('.modal').classList.add('server-enabled');
 }
 
+// Modal for uploaded Google Drive movies
 function showUploadedMovie(movie) {
   currentItem = movie;
   document.getElementById('modal-title').textContent = movie.title;
@@ -112,9 +111,10 @@ function showUploadedMovie(movie) {
   document.getElementById('modal-video').src = movie.trailer;
   document.getElementById('modal').style.display = 'flex';
 
-  document.querySelector('.modal').classList.remove('server-enabled');
   const switcher = document.getElementById('upload-switcher');
   switcher.style.display = 'block';
+  document.querySelector('.modal').classList.remove('server-enabled');
+
   document.getElementById('btn-watch-trailer').onclick = () => {
     document.getElementById('modal-video').src = movie.trailer;
   };
@@ -130,6 +130,7 @@ function showUploadedMovie(movie) {
   }
 }
 
+// Server switching
 function changeServer() {
   const server = document.getElementById('server').value;
   const type = currentItem.media_type === "movie" ? "movie" : "tv";
@@ -148,6 +149,7 @@ function changeServer() {
   document.getElementById('modal-video').src = embedURL;
 }
 
+// Search modal
 function openSearchModal() {
   document.getElementById('search-modal').style.display = 'flex';
   document.getElementById('search-input').focus();
@@ -181,37 +183,38 @@ async function searchTMDB() {
   });
 }
 
+// Custom uploaded movie loader (manual list)
 function loadUploadedMovies() {
   const uploads = [
     {
-      title: "The Matrix",
-      poster: "https://image.tmdb.org/t/p/w500/qmDpIHrmpJINaRKAfWQfftjCdyi.jpg",
-      description: "A computer hacker learns about the true nature of reality and his role in the war against its controllers.",
-      rating: 4.5,
-      trailer: "https://www.youtube.com/embed/m8e-FF8MsqU",
-      driveLink: "https://drive.google.com/file/d/1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH/preview",
-      download: "https://drive.google.com/uc?id=1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH&export=download"
+      title: "Sample Upload 1",
+      poster: "https://image.tmdb.org/t/p/original/hTP1DtLGFamjfu8WqjnuQdP1n4i.jpg",
+      description: "A powerful anime series about war and freedom.",
+      rating: 4.8,
+      trailer: "https://www.youtube.com/embed/YOUR_YOUTUBE_ID",
+      driveLink: "https://drive.google.com/file/d/YOUR_FILE_ID/preview",
+      download: "https://drive.google.com/uc?id=YOUR_FILE_ID&export=download"
     }
+    // Add more movies here
   ];
 
   const container = document.getElementById('myupload-list');
-  container.innerHTML = '';
   uploads.forEach(movie => {
-    const div = document.createElement('div');
-    div.classList.add('movie-item');
-    div.innerHTML = `
-      <img src="${movie.poster}" alt="${movie.title}" />
-    `;
-    div.onclick = () => showUploadedMovie(movie);
-    container.appendChild(div);
+    const img = document.createElement('img');
+    img.src = movie.poster;
+    img.alt = movie.title;
+    img.onclick = () => showUploadedMovie(movie);
+    container.appendChild(img);
   });
 }
 
+// Close modal
 function closeModal() {
   document.getElementById('modal').style.display = 'none';
   document.getElementById('modal-video').src = '';
 }
 
+// Init
 async function init() {
   const movies = await fetchTrending('movie');
   const tvShows = await fetchTrending('tv');

@@ -100,12 +100,7 @@ async function showDetails(item) {
   document.getElementById('modal-video').src = trailerUrl || '';
   document.getElementById('modal').style.display = 'flex';
 
-  document.getElementById('upload-switcher').style.display = 'none';
-  document.querySelector('.modal').classList.remove('server-enabled');
-
-  document.getElementById('btn-trailer').style.display = 'none';
-  document.getElementById('btn-watch').style.display = 'none';
-  document.getElementById('btn-download').style.display = 'none';
+  document.getElementById('upload-buttons').style.display = 'none';
 }
 
 function showUploadedMovie(movie) {
@@ -117,22 +112,24 @@ function showUploadedMovie(movie) {
   document.getElementById('modal-video').src = movie.trailer;
   document.getElementById('modal').style.display = 'flex';
 
-  document.getElementById('upload-switcher').style.display = 'none';
-  document.querySelector('.modal').classList.remove('server-enabled');
+  const btnTrailer = document.getElementById('btn-trailer');
+  const btnWatch = document.getElementById('btn-watch');
+  const btnDownload = document.getElementById('btn-download');
 
-  document.getElementById('btn-trailer').style.display = 'inline-block';
-  document.getElementById('btn-watch').style.display = 'inline-block';
+  btnTrailer.href = movie.trailer || '#';
+  btnWatch.href = movie.driveLink || '#';
 
-  document.getElementById('btn-trailer').href = movie.trailer || "#";
-  document.getElementById('btn-watch').href = movie.driveLink || "#";
+  btnTrailer.style.display = 'inline-block';
+  btnWatch.style.display = 'inline-block';
 
-  const dlBtn = document.getElementById('btn-download');
   if (movie.download) {
-    dlBtn.style.display = 'inline-block';
-    dlBtn.href = movie.download;
+    btnDownload.href = movie.download;
+    btnDownload.style.display = 'inline-block';
   } else {
-    dlBtn.style.display = 'none';
+    btnDownload.style.display = 'none';
   }
+
+  document.getElementById('upload-buttons').style.display = 'flex';
 }
 
 // ===== SEARCH =====
@@ -140,10 +137,12 @@ function openSearchModal() {
   document.getElementById('search-modal').style.display = 'flex';
   document.getElementById('search-input').focus();
 }
+
 function closeSearchModal() {
   document.getElementById('search-modal').style.display = 'none';
   document.getElementById('search-results').innerHTML = '';
 }
+
 async function searchTMDB() {
   const query = document.getElementById('search-input').value;
   if (!query.trim()) {
@@ -217,7 +216,7 @@ async function init() {
   displayList(movies, 'movies-list');
   displayList(tvShows, 'tvshows-list');
   displayList(anime, 'anime-list');
-  loadUploadedMovies();
+  await loadUploadedMovies();
 }
 
 init();

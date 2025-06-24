@@ -199,7 +199,7 @@ async function searchTMDB() {
 // ===== LOAD CUSTOM UPLOADS =====
 const uploads = [
   { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
-  { title: "Inception", id: "1B2cd3EF4GhIjKlmNOPqRSTUVWxYz" }
+  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" }
 ];
 
 async function loadUploadedMovies() {

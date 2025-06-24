@@ -14,7 +14,10 @@
   <style>
     body { font-family: 'Poppins', sans-serif; }
     .server-selector, .modal small { display: none; }
-    .server-enabled .server-selector, .server-enabled small { display: block; }
+    .server-enabled .server-selector,
+    .server-enabled small {
+      display: block;
+    }
 
     .btn, .btn-solid, .btn-outline {
       padding: 10px 15px; border-radius: 5px; font-size: 14px;
@@ -32,7 +35,6 @@
     }
   </style>
 
-  <!-- Link to your updated JS -->
   <script defer src="js/home.js"></script>
 </head>
 <body>
@@ -88,6 +90,7 @@
         <iframe id="modal-video" width="100%" height="400" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       </div>
 
+      <!-- This will show only for non-uploaded movies -->
       <div class="server-selector">
         <label for="server">Change Server:</label>
         <select id="server" onchange="changeServer()">
@@ -99,11 +102,11 @@
         </select>
       </div>
 
-      <small style="color:orange;margin-top:8px;font-style:italic;">
+      <small>
         ⚠️ Warning: Some streaming servers may contain ads not controlled by Movies-J.
       </small>
 
-      <!-- BUTTONS (hidden by default, JS will show for uploaded movies) -->
+      <!-- Buttons -->
       <div class="button-group">
         <a href="#" id="btn-trailer" target="_blank" class="btn btn-outline" style="display:none;">▶️ Watch Trailer</a>
         <a href="#" id="btn-watch" target="_blank" class="btn btn-solid" style="display:none;">🎬 Watch Full Movie</a>

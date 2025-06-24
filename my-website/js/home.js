@@ -185,12 +185,8 @@ async function searchTMDB() {
 
 // ===== LOAD CUSTOM UPLOADS =====
 const uploads = [
-  {
-    title: "Interstellar",
-    id: "1a2b3c4d5EfGhIjKlmNOPqrsTuv",
-    download: "https://drive.google.com/uc?id=1a2b3c4d5EfGhIjKlmNOPqrsTuv&export=download"
-  },
-  // Add more
+  { title: "Interstellar", id: "1a2b3c4d5EfGhIjKlmNOPqrsTuv" },
+  { title: "Inception", id: "1B2cd3EF4GhIjKlmNOPqRSTUVWxYz" }
 ];
 
 async function loadUploadedMovies() {
@@ -201,11 +197,14 @@ async function loadUploadedMovies() {
     const tmdb = await fetchMovieDetailsByTitle(movie.title);
     if (!tmdb) continue;
 
+    const trailer = await fetchTrailer(tmdb.id, 'movie');
+
     movie.poster = `${IMG_URL}${tmdb.poster_path}`;
     movie.description = tmdb.overview;
     movie.rating = tmdb.vote_average / 2;
-    movie.trailer = await fetchTrailer(tmdb.id, 'movie');
+    movie.trailer = trailer;
     movie.driveLink = `https://drive.google.com/file/d/${movie.id}/preview`;
+    movie.download = `https://drive.google.com/uc?id=${movie.id}&export=download`;
 
     const img = document.createElement('img');
     img.src = movie.poster;

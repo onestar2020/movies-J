@@ -1,5 +1,5 @@
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
-const BASE_URL = 'https://api.themoviedb.org/3';
+const BASE_URL = 'https://tmdb-proxy-5qps.onrender.com/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
 let currentItem;
 let bannerItems = [];

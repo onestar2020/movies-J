@@ -82,12 +82,14 @@ function displayList(items, containerId) {
     const img = document.createElement('img');
     img.src = `${IMG_URL}${item.poster_path}`;
     img.alt = item.title || item.name;
-    img.onclick = () => showDetails(item);
+    img.onclick = () => showDetails(item); // Show details for trending, TV, anime (no buttons)
     container.appendChild(img);
   });
 }
 
 // ===== MODALS =====
+
+// For trending movies, TV shows, anime — buttons hidden
 async function showDetails(item) {
   currentItem = item;
   const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
@@ -102,8 +104,14 @@ async function showDetails(item) {
 
   document.getElementById('upload-switcher').style.display = 'none';
   document.querySelector('.modal').classList.add('server-enabled');
+
+  // Hide buttons for non-uploaded movies
+  document.getElementById('btn-trailer').style.display = 'none';
+  document.getElementById('btn-watch').style.display = 'none';
+  document.getElementById('btn-download').style.display = 'none';
 }
 
+// For uploaded movies — buttons shown
 function showUploadedMovie(movie) {
   currentItem = movie;
   document.getElementById('modal-title').textContent = movie.title;
@@ -116,15 +124,18 @@ function showUploadedMovie(movie) {
   document.getElementById('upload-switcher').style.display = 'block';
   document.querySelector('.modal').classList.remove('server-enabled');
 
-  // ✅ Set working buttons
+  // Show buttons
+  document.getElementById('btn-trailer').style.display = 'inline-block';
+  document.getElementById('btn-watch').style.display = 'inline-block';
+
+  // Set buttons href
   document.getElementById('btn-trailer').href = movie.trailer || "#";
   document.getElementById('btn-watch').href = movie.driveLink || "#";
-  document.getElementById('btn-download').href = movie.download || "#";
 
-  // Optional: show or hide download if not available
   const dlBtn = document.getElementById('btn-download');
   if (movie.download) {
     dlBtn.style.display = 'inline-block';
+    dlBtn.href = movie.download;
   } else {
     dlBtn.style.display = 'none';
   }
@@ -175,7 +186,7 @@ async function searchTMDB() {
     img.alt = item.title || item.name;
     img.onclick = () => {
       closeSearchModal();
-      showDetails(item);
+      showDetails(item); // Search results use regular modal (no buttons)
     };
     container.appendChild(img);
   });
@@ -207,7 +218,7 @@ async function loadUploadedMovies() {
     const img = document.createElement('img');
     img.src = movie.poster;
     img.alt = movie.title;
-    img.onclick = () => showUploadedMovie(movie);
+    img.onclick = () => showUploadedMovie(movie); // Uploaded movies show buttons
     container.appendChild(img);
   }
 }

@@ -1,5 +1,5 @@
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
-const BASE_URL = 'https://api.themoviedb.org/3';
+const BASE_URL = 'https://tmdb-proxy-5qps.onrender.com/api';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
 let currentItem;
 let bannerItems = [];
@@ -8,7 +8,7 @@ let bannerIndex = 0;
 async function fetchTrending(type) {
   let allResults = [];
   for (let page = 1; page <= 5; page++) {
-    const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}&page=${page}`);
+    const res = await fetch(`${BASE_URL}/trending/${type}/week?page=${page}`);
     const data = await res.json();
     allResults = allResults.concat(data.results);
   }
@@ -18,7 +18,7 @@ async function fetchTrending(type) {
 async function fetchTrendingAnime() {
   let allResults = [];
   for (let page = 1; page <= 5; page++) {
-    const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`);
+    const res = await fetch(`${BASE_URL}/trending/tv/week?page=${page}`);
     const data = await res.json();
     const filtered = data.results.filter(item =>
       item.original_language === 'ja' && item.genre_ids.includes(16)
@@ -29,7 +29,7 @@ async function fetchTrendingAnime() {
 }
 
 async function fetchTrailer(id, mediaType) {
-  const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
+  const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos`);
   const data = await res.json();
   const trailer = data.results.find(video => video.type === "Trailer" && video.site === "YouTube");
   return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;

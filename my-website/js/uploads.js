@@ -20,5 +20,4 @@ const uploads = [
   { title: "Predator: Killer of Killers", id: "1TtTXWUWA7Q2DUSNIa2vzTI-Ko9xevg0B" },
   { title: "Sneaks", id: "1JXM98DsuYU3Sp8I7PWQB2DKxCfvRjrIm" },
   { title: "Warfare", id: "1MMVOlPB6hSM7YWaVdZH8ZaphgBcuNjxb" },
-  { title: "Warfare", id: "1MMVOlPB6hSM7YWaVdZH8ZaphgBcuNjxb" },
 ];

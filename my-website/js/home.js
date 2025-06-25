@@ -50,7 +50,7 @@ async function displayBanner(item) {
 
   if (trailerUrl) {
     banner.innerHTML = `
-      <iframe width="100%" height="100%" src="${trailerUrl}?autoplay=1&mute=1&controls=0&showinfo=0&modestbranding=1&loop=1&playlist=${trailerUrl.split("/").pop()}"
+      <iframe width="100%" height="100%" src="${trailerUrl}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerUrl.split("/").pop()}"
         frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius: 8px; filter: brightness(0.7);"></iframe>
       <div class="banner-buttons">
         <button class="btn-outline" onclick="nextBannerTrailer()">
@@ -215,10 +215,8 @@ async function searchTMDB() {
 const uploads = [
   { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
   { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" },
-  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" },
-  { title: "The Hunger Games: Mockingjay - Part 2", id: "1wDCCXjqF9woZAXPMBnYrZnvP_31DBqFP" },
+  { title: "The Hunger Games: Mockingjay - Part 2", id: "1wDCCXjqF9woZAXPMBnYrZnvP_31DBqFP" }
 ];
-
 
 async function loadUploadedMovies() {
   const container = document.getElementById('myupload-list');

@@ -215,6 +215,7 @@ async function searchTMDB() {
 const uploads = [
   { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
   { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" },
+  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" },
   { title: "The Hunger Games: Mockingjay - Part 2", id: "1wDCCXjqF9woZAXPMBnYrZnvP_31DBqFP" },
 ];
 

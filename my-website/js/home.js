@@ -99,10 +99,7 @@ async function showDetails(item) {
   document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
   document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
   document.getElementById('modal-video').src = trailerUrl || '';
-  document.getElementById('modal').style.display = 'flex';
-
-  document.getElementById('upload-buttons').style.display = 'none';
-  document.querySelector('.modal').classList.add('server-enabled');
+  document.getElementById('modal-tmdb').style.display = 'flex';
 
   const serverSelect = document.getElementById('server');
   if (serverSelect) serverSelect.value = currentServer;
@@ -111,12 +108,12 @@ async function showDetails(item) {
 function showUploadedMovie(movie) {
   currentItem = movie;
 
-  document.getElementById('modal-title').textContent = movie.title;
-  document.getElementById('modal-description').textContent = movie.description;
-  document.getElementById('modal-image').src = movie.poster;
-  document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(movie.rating));
-  document.getElementById('modal-video').src = movie.trailer;
-  document.getElementById('modal').style.display = 'flex';
+  document.getElementById('upload-title').textContent = movie.title;
+  document.getElementById('upload-description').textContent = movie.description;
+  document.getElementById('upload-image').src = movie.poster;
+  document.getElementById('upload-rating').innerHTML = '★'.repeat(Math.round(movie.rating));
+  document.getElementById('upload-video').src = movie.trailer;
+  document.getElementById('modal-upload').style.display = 'flex';
 
   const btnTrailer = document.getElementById('btn-trailer');
   const btnWatch = document.getElementById('btn-watch');
@@ -134,9 +131,16 @@ function showUploadedMovie(movie) {
   } else {
     btnDownload.style.display = 'none';
   }
+}
 
-  document.getElementById('upload-buttons').style.display = 'flex';
-  document.querySelector('.modal').classList.remove('server-enabled');
+function closeModal() {
+  document.getElementById('modal-tmdb').style.display = 'none';
+  document.getElementById('modal-video').src = '';
+}
+
+function closeUploadModal() {
+  document.getElementById('modal-upload').style.display = 'none';
+  document.getElementById('upload-video').src = '';
 }
 
 // ===== SERVER CHANGE HANDLER =====
@@ -144,28 +148,27 @@ function changeServer() {
   const select = document.getElementById('server');
   currentServer = select.value;
 
-  if (!currentItem || document.getElementById('modal').style.display !== 'flex') return;
-  if (document.querySelector('.modal').classList.contains('server-enabled')) {
-    const mediaType = currentItem.media_type || (currentItem.first_air_date ? 'tv' : 'movie');
-    const id = currentItem.id;
-    let videoUrl = '';
+  if (!currentItem || document.getElementById('modal-tmdb').style.display !== 'flex') return;
 
-    if (currentServer === 'vidsrc.cc') {
-      videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
-    } else if (currentServer === 'vidsrc.me') {
-      videoUrl = `https://vidsrc.me/embed/${mediaType}/${id}`;
-    } else if (currentServer === 'player.videasy.net') {
-      videoUrl = `https://player.videasy.net/embed/${mediaType}/${id}`;
-    } else if (currentServer === 'multiembed') {
-      videoUrl = `https://multiembed.com/api/v1/movies/${id}`;
-    } else if (currentServer === '2embed') {
-      videoUrl = `https://2embed.org/embed/${mediaType}/${id}`;
-    } else {
-      videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
-    }
+  const mediaType = currentItem.media_type || (currentItem.first_air_date ? 'tv' : 'movie');
+  const id = currentItem.id;
+  let videoUrl = '';
 
-    document.getElementById('modal-video').src = videoUrl;
+  if (currentServer === 'vidsrc.cc') {
+    videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
+  } else if (currentServer === 'vidsrc.me') {
+    videoUrl = `https://vidsrc.me/embed/${mediaType}/${id}`;
+  } else if (currentServer === 'player.videasy.net') {
+    videoUrl = `https://player.videasy.net/embed/${mediaType}/${id}`;
+  } else if (currentServer === 'multiembed') {
+    videoUrl = `https://multiembed.com/api/v1/movies/${id}`;
+  } else if (currentServer === '2embed') {
+    videoUrl = `https://2embed.org/embed/${mediaType}/${id}`;
+  } else {
+    videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
   }
+
+  document.getElementById('modal-video').src = videoUrl;
 }
 
 // ===== SEARCH =====
@@ -235,12 +238,6 @@ async function loadUploadedMovies() {
     img.onclick = () => showUploadedMovie(movie);
     container.appendChild(img);
   }
-}
-
-// ===== MODAL CLOSE =====
-function closeModal() {
-  document.getElementById('modal').style.display = 'none';
-  document.getElementById('modal-video').src = '';
 }
 
 // ===== INIT =====

@@ -119,22 +119,24 @@ function showUploadedMovie(movie) {
   const btnWatch = document.getElementById('btn-watch');
   const btnDownload = document.getElementById('btn-download');
 
-  btnTrailer.href = movie.trailer || '#';
-  btnTrailer.removeAttribute('target'); // same tab
+  btnTrailer.style.display = 'inline-block';
+  btnWatch.style.display = 'inline-block';
+  btnDownload.style.display = movie.download ? 'inline-block' : 'none';
 
-  btnWatch.href = movie.driveLink || '#';
-  btnWatch.removeAttribute('target'); // same tab
+  btnTrailer.onclick = (e) => {
+    e.preventDefault();
+    document.getElementById('upload-video').src = movie.trailer;
+  };
+
+  btnWatch.onclick = (e) => {
+    e.preventDefault();
+    document.getElementById('upload-video').src = movie.driveLink;
+  };
 
   if (movie.download) {
     btnDownload.href = movie.download;
-    btnDownload.setAttribute('target', '_blank'); // open in new tab
-    btnDownload.style.display = 'inline-block';
-  } else {
-    btnDownload.style.display = 'none';
+    btnDownload.setAttribute('target', '_blank');
   }
-
-  btnTrailer.style.display = 'inline-block';
-  btnWatch.style.display = 'inline-block';
 }
 
 function closeModal() {

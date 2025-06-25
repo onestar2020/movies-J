@@ -101,7 +101,6 @@ async function showDetails(item) {
   document.getElementById('modal-video').src = trailerUrl || '';
   document.getElementById('modal').style.display = 'flex';
 
-  // Show server selector for TMDB movies only
   document.getElementById('upload-buttons').style.display = 'none';
   document.querySelector('.modal').classList.add('server-enabled');
 
@@ -111,6 +110,7 @@ async function showDetails(item) {
 
 function showUploadedMovie(movie) {
   currentItem = movie;
+
   document.getElementById('modal-title').textContent = movie.title;
   document.getElementById('modal-description').textContent = movie.description;
   document.getElementById('modal-image').src = movie.poster;
@@ -135,7 +135,6 @@ function showUploadedMovie(movie) {
     btnDownload.style.display = 'none';
   }
 
-  // Hide TMDB server selector for uploaded movies
   document.getElementById('upload-buttons').style.display = 'flex';
   document.querySelector('.modal').classList.remove('server-enabled');
 }
@@ -148,8 +147,8 @@ function changeServer() {
   if (!currentItem || document.getElementById('modal').style.display !== 'flex') return;
   if (document.querySelector('.modal').classList.contains('server-enabled')) {
     const mediaType = currentItem.media_type || (currentItem.first_air_date ? 'tv' : 'movie');
-    let videoUrl = '';
     const id = currentItem.id;
+    let videoUrl = '';
 
     if (currentServer === 'vidsrc.cc') {
       videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;

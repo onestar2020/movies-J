@@ -220,6 +220,7 @@ const uploads = [
   { title: "Maze Runner: The Death Cure", id: "1kKzOIMcEq76IqmI4Z8AnV2gAkrDhAd15" },
   { title: "Morbius", id: "15ue4p4e14u7l_Bxhf5I2KH8BFAbAvi2C" },
   { title: "Shaun of the Dead", id: "1gqZ_IawXvSj-iQJB6L64kGFkbBg95lGO" },
+   { title: "Smile 2", id: "1c4YOkoSiIKvM3ruYXRR2auFrT6hRmAKz" },
 ];
 
 async function loadUploadedMovies() {

@@ -214,9 +214,10 @@ async function searchTMDB() {
 // ===== LOAD CUSTOM UPLOADS =====
 const uploads = [
   { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
-  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" }
-   { title: "The Hunger Games: Catching Fire", id: "1P9y0rzcoDKj0BRA2gaLznP6BtYZlc-lV" }
+  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" },
+  { title: "The Hunger Games: Catching Fire", id: "1P9y0rzcoDKj0BRA2gaLznP6BtYZlc-lV" }
 ];
+
 
 async function loadUploadedMovies() {
   const container = document.getElementById('myupload-list');

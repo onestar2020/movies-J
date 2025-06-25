@@ -126,11 +126,13 @@ function showUploadedMovie(movie) {
   btnTrailer.onclick = (e) => {
     e.preventDefault();
     document.getElementById('upload-video').src = movie.trailer;
+    handleQuotaWarningCheck();
   };
 
   btnWatch.onclick = (e) => {
     e.preventDefault();
     document.getElementById('upload-video').src = movie.driveLink;
+    handleQuotaWarningCheck();
   };
 
   if (movie.download) {
@@ -212,8 +214,6 @@ async function searchTMDB() {
 }
 
 // ===== LOAD CUSTOM UPLOADS =====
-// uploads[] is defined externally in uploads.js
-
 async function loadUploadedMovies() {
   const container = document.getElementById('myupload-list');
   container.innerHTML = '';
@@ -242,6 +242,19 @@ async function loadUploadedMovies() {
     img.onclick = () => showUploadedMovie(movie);
     container.appendChild(img);
   }
+}
+
+// ===== HANDLE QUOTA WARNING (AUTO DETECTION) =====
+function handleQuotaWarningCheck() {
+  const warning = document.querySelector('#modal-upload .warning-text');
+  const iframe = document.getElementById('upload-video');
+
+  if (warning) warning.style.display = 'none';
+
+  setTimeout(() => {
+    const isLoaded = iframe?.contentWindow?.length !== 0;
+    if (!isLoaded && warning) warning.style.display = 'block';
+  }, 2000);
 }
 
 // ===== INIT =====

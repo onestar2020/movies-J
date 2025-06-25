@@ -205,7 +205,7 @@ async function searchTMDB() {
 const uploads = [
   { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
   { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" },
-  { title: "Interstellar", id: "1XyZxC5eY3Lxr5zXe_JR6pqzZZLGpAAhR" }
+  
 ];
 
 async function loadUploadedMovies() {

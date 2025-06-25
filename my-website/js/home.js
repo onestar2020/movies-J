@@ -213,35 +213,38 @@ async function searchTMDB() {
   });
 }
 
-// ===== LOAD CUSTOM UPLOADS FROM SHEET =====
-async function fetchUploadsFromSheet() {
-  try {
-    const res = await fetch('https://opensheet.elk.sh/14n8-JDwTp5Q2RUTuAjOQtm8WWCxiAVcNNqnTxW1Js80/Sheet1');
-    const data = await res.json();
-    const container = document.getElementById('uploads');
-    container.innerHTML = '';
+// ===== LOAD CUSTOM UPLOADS =====
+async function loadUploadedMovies() {
+  const container = document.getElementById('myupload-list');
+  container.innerHTML = '';
 
-    data.forEach(movie => {
-      const box = document.createElement('div');
-      box.classList.add("upload-box");
-      box.innerHTML = `
-        <h3>${movie.Title}</h3>
-        <iframe 
-          src="https://drive.google.com/file/d/${movie["File ID"]}/preview" 
-          width="100%" 
-          height="400" 
-          frameborder="0" 
-          allowfullscreen>
-        </iframe>
-      `;
-      container.appendChild(box);
-    });
-  } catch (error) {
-    console.error('Failed to load uploads from sheet:', error);
+  for (const movie of uploads) {
+    if (!movie.title || !movie.id) continue;
+    const tmdb = await fetchMovieDetailsByTitle(movie.title);
+    if (!tmdb || !tmdb.poster_path) {
+      console.warn(`TMDB not found or incomplete for: ${movie.title}`);
+      continue;
+    }
+
+    const trailer = await fetchTrailer(tmdb.id, 'movie');
+
+    movie.poster = `${IMG_URL}${tmdb.poster_path}`;
+    movie.description = tmdb.overview;
+    movie.rating = tmdb.vote_average / 2;
+    movie.trailer = trailer;
+    movie.driveLink = `https://drive.google.com/file/d/${movie.id}/preview`;
+    movie.download = `https://drive.google.com/uc?id=${movie.id}&export=download`;
+
+    const img = document.createElement('img');
+    img.src = movie.poster;
+    img.alt = movie.title;
+    img.style.cursor = 'pointer';
+    img.onclick = () => showUploadedMovie(movie);
+    container.appendChild(img);
   }
 }
 
-// ===== HANDLE QUOTA WARNING =====
+// ===== HANDLE QUOTA WARNING (AUTO DETECTION) =====
 function handleQuotaWarningCheck() {
   const warning = document.querySelector('#modal-upload .warning-text');
   const iframe = document.getElementById('upload-video');
@@ -268,7 +271,6 @@ async function init() {
   displayList(tvShows, 'tvshows-list');
   displayList(anime, 'anime-list');
   await loadUploadedMovies();
-  await fetchUploadsFromSheet();
 }
 
 init();

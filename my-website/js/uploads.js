@@ -1,24 +1,37 @@
-let uploads = [];
-
-async function loadUploadsFromSheet() {
-  try {
-    const res = await fetch('https://opensheet.elk.sh/14n8-JDwTp5Q2RUTuAjOQtm8WWCxiAVcNNqnTxW1Js80/Uploads');
-    const data = await res.json();
-
-    uploads = data
-      .filter(movie => movie.title && movie.id)
-      .map(movie => ({
-        title: movie.title,
-        id: movie.id
-      }));
-
-    // After loading, call the function to display uploaded movies
-    if (typeof loadUploadedMovies === 'function') {
-      loadUploadedMovies();
-    }
-  } catch (error) {
-    console.error('Failed to load uploads from sheet:', error);
-  }
-}
-
-loadUploadsFromSheet();
+// uploads.js
+const uploads = [
+  { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
+  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" },
+  { title: "The Hunger Games: The Ballad of Songbirds and Snakes", id: "1XVaQPU0WOJiLWG23whj9jHMsCCCWpw4S" },
+  { title: "Kill Command", id: "1wfsA6vF6Xyy10qR5EeOQHf7HEj1VtyOt" },
+  { title: "Maze Runner: The Death Cure", id: "1kKzOIMcEq76IqmI4Z8AnV2gAkrDhAd15" },
+  { title: "Morbius", id: "15ue4p4e14u7l_Bxhf5I2KH8BFAbAvi2C" },
+  { title: "Shaun of the Dead", id: "1gqZ_IawXvSj-iQJB6L64kGFkbBg95lGO" },
+  { title: "Smile 2", id: "1c4YOkoSiIKvM3ruYXRR2auFrT6hRmAKz" },
+  { title: "Smile", id: "1DDijEmLwM7tqjaQdrpwGzgtjSW0Sws8F" },
+  { title: "Sting", id: "1IKJK2TM13u64knIpX749GIbkxiQxxbzT" },
+  { title: "The Dark Tower", id: "1RSaJWvJM4QjNG99iTDI4nhuqTHIO1GMz" },
+  { title: "The Mist", id: "1RIBLkQ6QpsUvIeCBZXq9cBG-pIkn5_h-" },
+  { title: "A Working Man", id: "1SzBfgO_0lRYF9IYWFdUWWfARdwNrdUKX" },
+  { title: "Final Destination Bloodlines", id: "1WW5wVra8gjiEaKzVy54SOwxLiRWq2zGs" },
+  { title: "Kraken", id: "10plK6C0pCWeITPOtII_nLfZCYrRAhRdB" },
+  { title: "Echo Valley", id: "1LG2tPchnG6K8nwCIKAiafkIw2WxUGQLR" },
+  { title: "How to Train Your Dragon", id: "1piyv0TgMOghCPGVE2Wq3KLKoUrIKv0Z2" },
+  { title: "Predator: Killer of Killers", id: "1TtTXWUWA7Q2DUSNIa2vzTI-Ko9xevg0B" },
+  { title: "Sneaks", id: "1JXM98DsuYU3Sp8I7PWQB2DKxCfvRjrIm" },
+  { title: "Warfare", id: "1MMVOlPB6hSM7YWaVdZH8ZaphgBcuNjxb" },
+  { title: "Deep Cover", id: "1FkWF1R_8aF4FvjJe0I7c5BsruZMMuqS0" },
+  { title: "The Amateur", id: "1VTTrOwGXgleyx5HG6zjqMpCRYQ3Xu_eP" },
+  { title: "Sting", id: "1IKJK2TM13u64knIpX749GIbkxiQxxbzT" },
+  { title: "", id: "" },
+  { title: "", id: "" },
+  { title: "", id: "" },
+  { title: "", id: "" },
+  { title: "", id: "" },
+  { title: "", id: "" },
+  { title: "", id: "" },
+  { title: "", id: "" },
+  { title: "", id: "" },
+  { title: "", id: "" },
+  { title: "", id: "" },
+];

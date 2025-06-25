@@ -101,6 +101,7 @@ async function showDetails(item) {
   document.getElementById('modal-video').src = trailerUrl || '';
   document.getElementById('modal').style.display = 'flex';
 
+  // Show server selector for TMDB movies only
   document.getElementById('upload-buttons').style.display = 'none';
   document.querySelector('.modal').classList.add('server-enabled');
 
@@ -134,6 +135,7 @@ function showUploadedMovie(movie) {
     btnDownload.style.display = 'none';
   }
 
+  // Hide TMDB server selector for uploaded movies
   document.getElementById('upload-buttons').style.display = 'flex';
   document.querySelector('.modal').classList.remove('server-enabled');
 }
@@ -204,8 +206,7 @@ async function searchTMDB() {
 // ===== LOAD CUSTOM UPLOADS =====
 const uploads = [
   { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
-  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" },
-  
+  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" }
 ];
 
 async function loadUploadedMovies() {

@@ -5,7 +5,7 @@ const IMG_URL = 'https://image.tmdb.org/t/p/original';
 let currentItem;
 let bannerItems = [];
 let bannerIndex = 0;
-let currentServer = 'vidsrc.cc'; // default server for TMDB movies
+let currentServer = 'vidsrc.cc';
 
 // ===== FETCHERS =====
 async function fetchTrending(type) {
@@ -101,13 +101,11 @@ async function showDetails(item) {
   document.getElementById('modal-video').src = trailerUrl || '';
   document.getElementById('modal').style.display = 'flex';
 
-  // Hide uploaded movie buttons, show server selector for TMDB movies
   document.getElementById('upload-buttons').style.display = 'none';
   document.querySelector('.modal').classList.add('server-enabled');
 
-  // Reset server select to default
   const serverSelect = document.getElementById('server');
-  if(serverSelect) serverSelect.value = currentServer;
+  if (serverSelect) serverSelect.value = currentServer;
 }
 
 function showUploadedMovie(movie) {
@@ -136,7 +134,6 @@ function showUploadedMovie(movie) {
     btnDownload.style.display = 'none';
   }
 
-  // Hide TMDB server selector for uploaded movies
   document.getElementById('upload-buttons').style.display = 'flex';
   document.querySelector('.modal').classList.remove('server-enabled');
 }
@@ -146,15 +143,12 @@ function changeServer() {
   const select = document.getElementById('server');
   currentServer = select.value;
 
-  // Only update iframe src if modal is open and current item is TMDB movie
   if (!currentItem || document.getElementById('modal').style.display !== 'flex') return;
   if (document.querySelector('.modal').classList.contains('server-enabled')) {
     const mediaType = currentItem.media_type || (currentItem.first_air_date ? 'tv' : 'movie');
-    // Construct video URL based on server choice
     let videoUrl = '';
-
-    // The actual embed URLs depend on the server's format, here are examples:
     const id = currentItem.id;
+
     if (currentServer === 'vidsrc.cc') {
       videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
     } else if (currentServer === 'vidsrc.me') {
@@ -166,7 +160,6 @@ function changeServer() {
     } else if (currentServer === '2embed') {
       videoUrl = `https://2embed.org/embed/${mediaType}/${id}`;
     } else {
-      // fallback to vidsrc.cc
       videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
     }
 
@@ -211,7 +204,8 @@ async function searchTMDB() {
 // ===== LOAD CUSTOM UPLOADS =====
 const uploads = [
   { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
-  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" }
+  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" },
+  { title: "Interstellar", id: "1XyZxC5eY3Lxr5zXe_JR6pqzZZLGpAAhR" }
 ];
 
 async function loadUploadedMovies() {
@@ -220,7 +214,10 @@ async function loadUploadedMovies() {
 
   for (const movie of uploads) {
     const tmdb = await fetchMovieDetailsByTitle(movie.title);
-    if (!tmdb) continue;
+    if (!tmdb || !tmdb.poster_path) {
+      console.warn(`TMDB not found or incomplete for: ${movie.title}`);
+      continue;
+    }
 
     const trailer = await fetchTrailer(tmdb.id, 'movie');
 

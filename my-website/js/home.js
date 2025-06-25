@@ -216,6 +216,8 @@ const uploads = [
   { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
   { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" },
   { title: "The Hunger Games: The Ballad of Songbirds and Snakes", id: "1XVaQPU0WOJiLWG23whj9jHMsCCCWpw4S" },
+  { title: "Kill Command", id: "1wfsA6vF6Xyy10qR5EeOQHf7HEj1VtyOt" },
+  { title: "Maze Runner: The Death Cure", id: "1kKzOIMcEq76IqmI4Z8AnV2gAkrDhAd15" },
 ];
 
 async function loadUploadedMovies() {

@@ -80,10 +80,16 @@
   </div>
 
   <!-- Modal -->
- <div class="list" id="myupload-list">
-  <!-- dynamic content will be injected by home.js -->
-</div>
-
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()" style="color:red;font-size:24px;">×</span>
+      <div class="modal-body">
+        <img id="modal-image" src="" alt="" style="width:30%;border-radius:5px;" />
+        <div class="modal-text">
+          <h2 id="modal-title"></h2>
+          <div class="stars" id="modal-rating"></div>
+          <p id="modal-description"></p>
+        </div>
       </div>
 
       <div class="iframe-wrapper">

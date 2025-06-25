@@ -22,7 +22,7 @@ const uploads = [
   { title: "Warfare", id: "1MMVOlPB6hSM7YWaVdZH8ZaphgBcuNjxb" },
   { title: "Deep Cover", id: "1FkWF1R_8aF4FvjJe0I7c5BsruZMMuqS0" },
   { title: "The Amateur", id: "1VTTrOwGXgleyx5HG6zjqMpCRYQ3Xu_eP" },
-  { title: "Smile", id: "1DDijEmLwM7tqjaQdrpwGzgtjSW0Sws8F" },
+  { title: "Sting", id: "1IKJK2TM13u64knIpX749GIbkxiQxxbzT" },
   { title: "", id: "" },
   { title: "", id: "" },
   { title: "", id: "" },

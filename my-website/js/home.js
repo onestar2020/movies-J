@@ -230,7 +230,6 @@ const uploads = [
   { title: "Kraken", id: "10plK6C0pCWeITPOtII_nLfZCYrRAhRdB" },
   { title: "Echo Valley", id: "1LG2tPchnG6K8nwCIKAiafkIw2WxUGQLR" },
   { title: "How to Train Your Dragon", id: "1piyv0TgMOghCPGVE2Wq3KLKoUrIKv0Z2" },
-  { title: "Oppenheimer", id: "1mpcSaVvFoYRV06trKF3TK_rL2ht_3GVO" },
   { title: "Predator: Killer of Killers", id: "1TtTXWUWA7Q2DUSNIa2vzTI-Ko9xevg0B" },
   { title: "Sneaks", id: "1JXM98DsuYU3Sp8I7PWQB2DKxCfvRjrIm" },
   { title: "Warfare", id: "1MMVOlPB6hSM7YWaVdZH8ZaphgBcuNjxb" },

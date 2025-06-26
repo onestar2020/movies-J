@@ -21,5 +21,6 @@ const uploads = [
   { title: "Sneaks", id: "1JXM98DsuYU3Sp8I7PWQB2DKxCfvRjrIm" },
   { title: "Warfare", id: "1MMVOlPB6hSM7YWaVdZH8ZaphgBcuNjxb" },
   { title: "Deep Cover", id: "1FkWF1R_8aF4FvjJe0I7c5BsruZMMuqS0" },
-  { title: "The Amateur", id: "1VTTrOwGXgleyx5HG6zjqMpCRYQ3Xu_eP" }
+  { title: "The Amateur", id: "1VTTrOwGXgleyx5HG6zjqMpCRYQ3Xu_eP" },
+  { title: "K.O.", id: "1mI1iZeSxWTDAlrHkERhM7f7bd2wX3fx_" },
 ];

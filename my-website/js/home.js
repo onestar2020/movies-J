@@ -101,8 +101,73 @@ function displayList(items, containerId) {
   });
 }
 
-// ===== MODALS =====
-// ... (unchanged)
+// ===== UPLOADED MOVIES SECTION =====
+async function enrichUploads() {
+  enrichedUploads = await Promise.all(uploads.map(async (movie) => {
+    const details = await fetchMovieDetailsByTitle(movie.title);
+    return {
+      ...movie,
+      poster: details?.poster_path,
+      description: details?.overview || 'No description available.',
+      rating: details?.vote_average || 'N/A'
+    };
+  }));
+}
+
+function renderUploadedMoviesPage(page) {
+  const list = document.getElementById('myupload-list');
+  list.innerHTML = '';
+  const start = page * itemsPerPage;
+  const end = start + itemsPerPage;
+  const pageItems = enrichedUploads.slice(start, end);
+
+  pageItems.forEach(item => {
+    const img = document.createElement('img');
+    img.src = item.poster ? `${IMG_URL}${item.poster}` : 'images/logo.png';
+    img.alt = item.title;
+    img.onclick = () => openUploadModal(item);
+    list.appendChild(img);
+  });
+
+  document.getElementById('load-prev-uploaded').onclick = () => {
+    if (currentUploadPage > 0) {
+      currentUploadPage--;
+      renderUploadedMoviesPage(currentUploadPage);
+    }
+  };
+
+  document.getElementById('load-next-uploaded').onclick = () => {
+    if (end < enrichedUploads.length) {
+      currentUploadPage++;
+      renderUploadedMoviesPage(currentUploadPage);
+    }
+  };
+}
+
+// ===== UPLOADED MOVIE MODAL =====
+function openUploadModal(item) {
+  document.getElementById('upload-title').textContent = item.title;
+  document.getElementById('upload-rating').textContent = `⭐ ${item.rating}`;
+  document.getElementById('upload-description').textContent = item.description;
+  document.getElementById('upload-image').src = item.poster ? `${IMG_URL}${item.poster}` : 'images/logo.png';
+  document.getElementById('upload-video').src = `https://drive.google.com/file/d/${item.id}/preview`;
+
+  document.getElementById('btn-trailer').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(item.title)} trailer`;
+  document.getElementById('btn-trailer').style.display = 'inline-block';
+
+  document.getElementById('btn-watch').href = `https://drive.google.com/file/d/${item.id}/preview`;
+  document.getElementById('btn-watch').style.display = 'inline-block';
+
+  document.getElementById('btn-download').href = `https://drive.google.com/uc?export=download&id=${item.id}`;
+  document.getElementById('btn-download').style.display = 'inline-block';
+
+  document.getElementById('modal-upload').style.display = 'flex';
+}
+
+function closeUploadModal() {
+  document.getElementById('modal-upload').style.display = 'none';
+  document.getElementById('upload-video').src = '';
+}
 
 // ===== INIT =====
 async function init() {

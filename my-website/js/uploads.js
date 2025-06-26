@@ -23,4 +23,11 @@ const uploads = [
   { title: "Deep Cover", id: "1FkWF1R_8aF4FvjJe0I7c5BsruZMMuqS0" },
   { title: "The Amateur", id: "1VTTrOwGXgleyx5HG6zjqMpCRYQ3Xu_eP" },
   { title: "K.O.", id: "1mI1iZeSxWTDAlrHkERhM7f7bd2wX3fx_" },
+  { title: "Black Panther", id: "1wQzxwyEYz7sCvLmQw9vtnfm6H930V1PA" },
+  { title: "Venom", id: "1UPZMNDrpJUytSkRJknwTLeyUDC4l6yrG" },
+  { title: "Captain Marvel", id: "18tkVJm_1dW1WL2AknR2f7R5QitXURIQa" },
+  { title: "Avengers: Endgame", id: "1b7Shy_iaVrltNtc7SwlZUiHETiUC_04E" },
+  { title: "The Accountant 2", id: "1HFLyYJrz13ToC2qJNWmV095p03hhpCqO" },
+  { title: "KPop Demon Hunters", id: "1xPWoVGGBPxntrUDG-aJ5xs0RHWF5ciQR" },
+  { title: "The Phoenician Scheme", id: "1lNW4NObORgWmj8m8nO7EWc0UwcgLjp6j" },
 ];

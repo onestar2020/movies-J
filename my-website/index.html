@@ -51,19 +51,23 @@
       border-radius: 5px;
     }
 
-    .load-more-btn {
-      background-color: #ff3c3c;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 5px;
-      transition: background-color 0.3s ease;
+    .pagination-buttons {
+      text-align: center;
+      margin-top: 20px;
     }
 
-    .load-more-btn:hover {
-      background-color: #e62e2e;
+    .pagination-buttons button {
+      margin: 0 5px;
+      padding: 8px 16px;
+      background-color: #e50914;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .pagination-buttons button:hover {
+      background-color: #b00610;
     }
   </style>
 
@@ -106,8 +110,9 @@
   <div class="row">
     <h2>My Uploaded Movies</h2>
     <div class="list" id="myupload-list"></div>
-    <div style="text-align:center; margin-top: 15px;">
-      <button id="load-more-uploaded" class="load-more-btn">Load More</button>
+    <div class="pagination-buttons" id="upload-pagination">
+      <button id="load-prev-uploaded">⏮ Previous</button>
+      <button id="load-next-uploaded">Next ⏭</button>
     </div>
   </div>
 

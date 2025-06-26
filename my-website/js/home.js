@@ -8,7 +8,8 @@ let bannerIndex = 0;
 let currentServer = 'vidsrc.cc';
 
 let currentUploadPage = 0;
-const itemsPerPage = 10;
+const itemsPerPage = 12;
+let enrichedUploads = [];
 
 // ===== FETCHERS =====
 async function fetchTrending(type) {
@@ -212,47 +213,65 @@ async function searchTMDB() {
   });
 }
 
-// ===== PAGINATED LOAD FOR MY UPLOADS ONLY =====
-async function loadUploadedMoviesPaginated() {
+// ===== PAGINATED UPLOADS =====
+function renderUploadedMoviesPage(page) {
   const container = document.getElementById('myupload-list');
-  const start = currentUploadPage * itemsPerPage;
+  container.innerHTML = '';
+
+  const start = page * itemsPerPage;
   const end = start + itemsPerPage;
-  const currentBatch = uploads.slice(start, end);
+  const currentItems = enrichedUploads.slice(start, end);
 
-  for (const movie of currentBatch) {
-    if (!movie.title || !movie.id) continue;
-    const tmdb = await fetchMovieDetailsByTitle(movie.title);
-    if (!tmdb || !tmdb.poster_path) {
-      console.warn(`TMDB not found or incomplete for: ${movie.title}`);
-      continue;
-    }
-
-    const trailer = await fetchTrailer(tmdb.id, 'movie');
-
-    movie.poster = `${IMG_URL}${tmdb.poster_path}`;
-    movie.description = tmdb.overview;
-    movie.rating = tmdb.vote_average / 2;
-    movie.trailer = trailer;
-    movie.driveLink = `https://drive.google.com/file/d/${movie.id}/preview`;
-    movie.download = `https://drive.google.com/uc?id=${movie.id}&export=download`;
-
+  currentItems.forEach(movie => {
     const img = document.createElement('img');
     img.src = movie.poster;
     img.alt = movie.title;
     img.style.cursor = 'pointer';
     img.onclick = () => showUploadedMovie(movie);
     container.appendChild(img);
-  }
+  });
 
-  currentUploadPage++;
+  document.getElementById('upload-pagination').innerHTML = `
+    <button id="load-prev-uploaded" ${page === 0 ? 'disabled' : ''}>Previous</button>
+    <button id="load-next-uploaded" ${(end >= enrichedUploads.length) ? 'disabled' : ''}>Next</button>
+  `;
 
-  if (currentUploadPage * itemsPerPage >= uploads.length) {
-    const btn = document.getElementById('load-more-uploaded');
-    if (btn) btn.style.display = 'none';
+  document.getElementById('load-prev-uploaded').onclick = () => {
+    if (currentUploadPage > 0) {
+      currentUploadPage--;
+      renderUploadedMoviesPage(currentUploadPage);
+    }
+  };
+
+  document.getElementById('load-next-uploaded').onclick = () => {
+    if ((page + 1) * itemsPerPage < enrichedUploads.length) {
+      currentUploadPage++;
+      renderUploadedMoviesPage(currentUploadPage);
+    }
+  };
+}
+
+async function enrichUploads() {
+  enrichedUploads = [];
+  for (const movie of uploads) {
+    if (!movie.title || !movie.id) continue;
+    const tmdb = await fetchMovieDetailsByTitle(movie.title);
+    if (!tmdb || !tmdb.poster_path) continue;
+
+    const trailer = await fetchTrailer(tmdb.id, 'movie');
+
+    enrichedUploads.push({
+      ...movie,
+      poster: `${IMG_URL}${tmdb.poster_path}`,
+      description: tmdb.overview,
+      rating: tmdb.vote_average / 2,
+      trailer,
+      driveLink: `https://drive.google.com/file/d/${movie.id}/preview`,
+      download: `https://drive.google.com/uc?id=${movie.id}&export=download`
+    });
   }
 }
 
-// ===== HANDLE QUOTA WARNING =====
 function handleQuotaWarningCheck() {
   const warning = document.querySelector('#modal-upload .warning-text');
   const iframe = document.getElementById('upload-video');
@@ -276,12 +295,9 @@ async function init() {
   displayList(movies, 'movies-list');
   displayList(tvShows, 'tvshows-list');
   displayList(anime, 'anime-list');
-  await loadUploadedMoviesPaginated();
 
-  const loadMoreBtn = document.getElementById('load-more-uploaded');
-  if (loadMoreBtn) {
-    loadMoreBtn.addEventListener('click', loadUploadedMoviesPaginated);
-  }
+  await enrichUploads();
+  renderUploadedMoviesPage(currentUploadPage);
 }
 
 init();

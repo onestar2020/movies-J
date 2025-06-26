@@ -1,4 +1,4 @@
-const CACHE_NAME = 'movies-j-cache-v1';
+const CACHE_NAME = 'movies-j-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -15,6 +15,20 @@ const urlsToCache = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+  );
+});
+
+// Activate SW and delete old caches
+self.addEventListener('activate', event => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames =>
+      Promise.all(
+        cacheNames.map(name =>
+          cacheWhitelist.includes(name) ? null : caches.delete(name)
+        )
+      )
+    )
   );
 });
 

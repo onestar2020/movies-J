@@ -178,7 +178,7 @@ function changeServer() {
   document.getElementById('modal-video').src = videoUrl;
 }
 
-// ===== SEARCH (TMDB + UPLOADED) =====
+// ===== SEARCH (WITH BADGES) =====
 function openSearchModal() {
   document.getElementById('search-modal').style.display = 'flex';
   document.getElementById('search-input').focus();
@@ -195,12 +195,16 @@ async function searchTMDB() {
   container.innerHTML = '';
   if (!query) return;
 
-  // TMDB
   const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${query}`);
   const data = await res.json();
   const results = data.results.filter(item => item.poster_path);
 
   results.forEach(item => {
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'relative';
+    wrapper.style.display = 'inline-block';
+    wrapper.style.margin = '10px';
+
     const img = document.createElement('img');
     img.src = `${IMG_URL}${item.poster_path}`;
     img.alt = item.title || item.name;
@@ -208,12 +212,30 @@ async function searchTMDB() {
       closeSearchModal();
       showDetails(item);
     };
-    container.appendChild(img);
+
+    const badge = document.createElement('div');
+    badge.textContent = 'Free Server';
+    badge.style.position = 'absolute';
+    badge.style.top = '5px';
+    badge.style.left = '5px';
+    badge.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    badge.style.color = '#fff';
+    badge.style.fontSize = '12px';
+    badge.style.padding = '2px 6px';
+    badge.style.borderRadius = '3px';
+
+    wrapper.appendChild(img);
+    wrapper.appendChild(badge);
+    container.appendChild(wrapper);
   });
 
-  // Uploaded
   const localResults = enrichedUploads.filter(movie => movie.title.toLowerCase().includes(query));
   localResults.forEach(movie => {
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'relative';
+    wrapper.style.display = 'inline-block';
+    wrapper.style.margin = '10px';
+
     const img = document.createElement('img');
     img.src = movie.poster;
     img.alt = movie.title;
@@ -221,7 +243,21 @@ async function searchTMDB() {
       closeSearchModal();
       showUploadedMovie(movie);
     };
-    container.appendChild(img);
+
+    const badge = document.createElement('div');
+    badge.textContent = 'My Upload';
+    badge.style.position = 'absolute';
+    badge.style.top = '5px';
+    badge.style.left = '5px';
+    badge.style.backgroundColor = 'rgba(255,0,0,0.8)';
+    badge.style.color = '#fff';
+    badge.style.fontSize = '12px';
+    badge.style.padding = '2px 6px';
+    badge.style.borderRadius = '3px';
+
+    wrapper.appendChild(img);
+    wrapper.appendChild(badge);
+    container.appendChild(wrapper);
   });
 }
 

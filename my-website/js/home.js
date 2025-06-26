@@ -7,6 +7,9 @@ let bannerItems = [];
 let bannerIndex = 0;
 let currentServer = 'vidsrc.cc';
 
+let currentUploadPage = 0;
+const itemsPerPage = 10;
+
 // ===== FETCHERS =====
 async function fetchTrending(type) {
   let allResults = [];
@@ -160,11 +163,9 @@ function changeServer() {
 
   const mediaType = currentItem.media_type || (currentItem.first_air_date ? 'tv' : 'movie');
   const id = currentItem.id;
-  let videoUrl = '';
+  let videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
 
-  if (currentServer === 'vidsrc.cc') {
-    videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
-  } else if (currentServer === 'vidsrc.me') {
+  if (currentServer === 'vidsrc.me') {
     videoUrl = `https://vidsrc.me/embed/${mediaType}/${id}`;
   } else if (currentServer === 'player.videasy.net') {
     videoUrl = `https://player.videasy.net/embed/${mediaType}/${id}`;
@@ -172,8 +173,6 @@ function changeServer() {
     videoUrl = `https://multiembed.com/api/v1/movies/${id}`;
   } else if (currentServer === '2embed') {
     videoUrl = `https://2embed.org/embed/${mediaType}/${id}`;
-  } else {
-    videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
   }
 
   document.getElementById('modal-video').src = videoUrl;
@@ -213,12 +212,14 @@ async function searchTMDB() {
   });
 }
 
-// ===== LOAD CUSTOM UPLOADS =====
-async function loadUploadedMovies() {
+// ===== PAGINATED LOAD FOR MY UPLOADS ONLY =====
+async function loadUploadedMoviesPaginated() {
   const container = document.getElementById('myupload-list');
-  container.innerHTML = '';
+  const start = currentUploadPage * itemsPerPage;
+  const end = start + itemsPerPage;
+  const currentBatch = uploads.slice(start, end);
 
-  for (const movie of uploads) {
+  for (const movie of currentBatch) {
     if (!movie.title || !movie.id) continue;
     const tmdb = await fetchMovieDetailsByTitle(movie.title);
     if (!tmdb || !tmdb.poster_path) {
@@ -242,15 +243,20 @@ async function loadUploadedMovies() {
     img.onclick = () => showUploadedMovie(movie);
     container.appendChild(img);
   }
+
+  currentUploadPage++;
+
+  if (currentUploadPage * itemsPerPage >= uploads.length) {
+    const btn = document.getElementById('load-more-uploaded');
+    if (btn) btn.style.display = 'none';
+  }
 }
 
-// ===== HANDLE QUOTA WARNING (AUTO DETECTION) =====
+// ===== HANDLE QUOTA WARNING =====
 function handleQuotaWarningCheck() {
   const warning = document.querySelector('#modal-upload .warning-text');
   const iframe = document.getElementById('upload-video');
-
   if (warning) warning.style.display = 'none';
-
   setTimeout(() => {
     const isLoaded = iframe?.contentWindow?.length !== 0;
     if (!isLoaded && warning) warning.style.display = 'block';
@@ -270,7 +276,12 @@ async function init() {
   displayList(movies, 'movies-list');
   displayList(tvShows, 'tvshows-list');
   displayList(anime, 'anime-list');
-  await loadUploadedMovies();
+  await loadUploadedMoviesPaginated();
+
+  const loadMoreBtn = document.getElementById('load-more-uploaded');
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', loadUploadedMoviesPaginated);
+  }
 }
 
 init();

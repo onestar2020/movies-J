@@ -50,6 +50,21 @@
       font-size: 14px;
       border-radius: 5px;
     }
+
+    .load-more-btn {
+      background-color: #ff3c3c;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .load-more-btn:hover {
+      background-color: #e62e2e;
+    }
   </style>
 
   <!-- Scripts -->
@@ -87,9 +102,13 @@
     <div class="list" id="anime-list"></div>
   </div>
 
+  <!-- My Uploaded Movies Section with Pagination -->
   <div class="row">
     <h2>My Uploaded Movies</h2>
     <div class="list" id="myupload-list"></div>
+    <div style="text-align:center; margin-top: 15px;">
+      <button id="load-more-uploaded" class="load-more-btn">Load More</button>
+    </div>
   </div>
 
   <!-- TMDB Movie Modal -->

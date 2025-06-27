@@ -199,12 +199,28 @@ function playUploadedVideo() {
   document.getElementById('upload-video').src = `https://drive.google.com/file/d/${currentUpload.id}/preview`;
 }
 
-function watchUploadTrailer() {
+async function watchUploadTrailer() {
   if (!currentUpload) return;
-  const title = encodeURIComponent(currentUpload.title);
-  document.getElementById('upload-video').src = `https://www.youtube.com/embed?listType=search&list=${title}+official+trailer&autoplay=1`;
-}
 
+  const title = encodeURIComponent(currentUpload.title);
+  const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`);
+  const data = await res.json();
+  const movie = data.results[0];
+
+  if (movie && movie.id) {
+    const trailerRes = await fetch(`${BASE_URL}/movie/${movie.id}/videos?api_key=${API_KEY}`);
+    const trailerData = await trailerRes.json();
+    const trailer = trailerData.results.find(video => video.type === "Trailer" && video.site === "YouTube");
+
+    if (trailer) {
+      document.getElementById('upload-video').src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
+      return;
+    }
+  }
+
+  const searchUrl = `https://www.youtube.com/results?search_query=${title}+official+trailer`;
+  window.open(searchUrl, '_blank');
+}
 
 function closeUploadModal() {
   document.getElementById('upload-modal').style.display = 'none';

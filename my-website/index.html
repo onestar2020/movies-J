@@ -1,129 +1,29 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Movies-J Official Site</title>
-
-  <!-- Fonts, Styles, Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <title>My Website</title>
   <link rel="stylesheet" href="css/home.css">
+  <link rel="preload" href="css/home.css" as="style">
+  <link rel="preload" href="js/home.js" as="script">
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <!-- Utility Styles -->
-  <style>
-    body { font-family: 'Poppins', sans-serif; }
-
-    .server-selector, .modal small {
-      display: none;
-    }
-
-    .server-enabled .server-selector,
-    .server-enabled small {
-      display: block;
-    }
-
-    .btn, .btn-solid, .btn-outline {
-      padding: 10px 15px; border-radius: 5px; font-size: 14px;
-      cursor: pointer; text-decoration: none; display: inline-block;
-      transition: background 0.3s ease;
-    }
-
-    .btn-solid { background-color: #e50914; color: white; border: none; }
-    .btn-outline { background-color: transparent; color: #e50914; border: 1px solid #e50914; }
-    .btn-solid:hover { background-color: #b00610; }
-    .btn-outline:hover { background-color: #e50914; color: white; }
-
-    .button-group {
-      display: flex; gap: 10px; justify-content: center;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-
-    .warning-text {
-      background: #330000;
-      color: #ff9999;
-      padding: 10px;
-      margin-top: 12px;
-      border-left: 5px solid #ff0000;
-      font-size: 14px;
-      border-radius: 5px;
-    }
-
-    .pagination-buttons {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .pagination-buttons button {
-      margin: 0 5px;
-      padding: 8px 16px;
-      background-color: #e50914;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .pagination-buttons button:hover {
-      background-color: #b00610;
-    }
-
-    /* New search results section */
-    #new-search-results {
-      padding: 20px;
-      display: none;
-    }
-
-    #new-search-results h2 {
-      color: white;
-      margin-bottom: 15px;
-    }
-
-    #new-search-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    #new-search-list img {
-      width: 150px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-
-    #new-search-list img:hover {
-      transform: scale(1.05);
-    }
-  </style>
-
-  <!-- Scripts -->
-  <script src="js/uploads.js"></script>
   <script defer src="js/home.js"></script>
 </head>
+
 <body>
-  <!-- Navbar -->
   <div class="navbar">
     <img src="images/logo.png" alt="Movies-J Logo" />
     <div class="nav-links">
       <a href="index.html">Home</a>
-      <input
-        type="text"
-        id="new-search-input"
-        placeholder="Search for movies..."
-        oninput="handleNewSearch()"
-        style="padding: 6px 12px; border-radius: 4px; border: none;"
-      />
+      <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
     </div>
   </div>
 
-  <!-- Banner -->
-  <div class="banner animate-fadein" id="banner">
+  <div class="banner" id="banner">
     <h1 id="banner-title"></h1>
   </div>
 
-  <!-- Sections -->
   <div class="row">
     <h2>Trending Movies</h2>
     <div class="list" id="movies-list"></div>
@@ -139,91 +39,49 @@
     <div class="list" id="anime-list"></div>
   </div>
 
-  <!-- My Uploaded Movies Section -->
-  <div class="row">
-    <h2>My Uploaded Movies</h2>
-    <div class="list" id="myupload-list"></div>
-    <div class="pagination-buttons" id="upload-pagination">
-      <button id="load-prev-uploaded">⏮ Previous</button>
-      <button id="load-next-uploaded">Next ⏭</button>
-    </div>
-  </div>
-
-  <!-- TMDB Movie Modal -->
-  <div class="modal" id="modal-tmdb">
+  <div class="modal" id="modal">
     <div class="modal-content">
-      <span class="close" onclick="closeModal()">×</span>
+      <span class="close" onclick="closeModal()" style="color: red;">&times;</span>
       <div class="modal-body">
-        <img id="modal-image" src="" alt="" />
-        <div class="modal-text">
-          <h2 id="modal-title"></h2>
-          <div class="stars" id="modal-rating"></div>
-          <p id="modal-description"></p>
-        </div>
-      </div>
-      <div class="iframe-wrapper">
-        <iframe id="modal-video" width="100%" height="400" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-      </div>
-      <div class="warning-text">
-        ⚠️ This video is hosted on a third-party server. Ads may appear. If playback fails, try switching servers.
-      </div>
+  <img id="modal-image" src="" alt="" />
+  <div class="modal-text">
+    <h2 id="modal-title"></h2>
+    <div class="stars" id="modal-rating"></div>
+    <p id="modal-description"></p>
+  </div>
+</div>
+      
       <div class="server-selector">
         <label for="server">Change Server:</label>
         <select id="server" onchange="changeServer()">
           <option value="vidsrc.cc">Vidsrc.cc</option>
           <option value="vidsrc.me">Vidsrc.me</option>
-          <option value="player.videasy.net">Videasy</option>
-          <option value="multiembed">MultiEmbed</option>
-          <option value="2embed">2Embed</option>
+          <option value="player.videasy.net">Player.Videasy.net</option>
         </select>
-        <small>Note: Some servers may not work all the time.</small>
       </div>
+     <iframe id="modal-video" width="100%" height="400" frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen>
+</iframe>
     </div>
   </div>
 
-  <!-- Uploaded Movie Modal -->
-  <div class="modal" id="modal-upload">
-    <div class="modal-content">
-      <span class="close" onclick="closeUploadModal()">×</span>
-      <div class="modal-body">
-        <img id="upload-image" src="" alt="" />
-        <div class="modal-text">
-          <h2 id="upload-title"></h2>
-          <div class="stars" id="upload-rating"></div>
-          <p id="upload-description"></p>
-        </div>
-      </div>
-      <div class="iframe-wrapper">
-        <iframe id="upload-video" width="100%" height="400" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-      </div>
-      <div class="warning-text">
-        ⚠️ This video is hosted on Google Drive. If it fails to load, the daily playback quota may have been reached.
-        <br>💡 Try again later or click ⬇️ Download to watch offline.
-      </div>
-      <div class="button-group" id="upload-buttons">
-        <a href="#" id="btn-trailer" class="btn btn-outline" style="display:none;">▶️ Watch Trailer</a>
-        <a href="#" id="btn-watch" class="btn btn-solid" style="display:none;">🎬 Watch Full Movie</a>
-        <a href="#" id="btn-download" target="_blank" class="btn btn-outline" style="display:none;">⬇️ Download This Movie</a>
-      </div>
-    </div>
+  <div class="search-modal" id="search-modal">
+    <span class="close" onclick="closeSearchModal()" style="color: red;">&times;</span>
+    <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
+    <div class="results" id="search-results"></div>
   </div>
 
-  <!-- ✅ New Search Results Section -->
-  <div id="new-search-results">
-    <h2>🔍 Search Results</h2>
-    <div id="new-search-list"></div>
-  </div>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-content">
-      <p>&copy; 2025 Movies-J. All rights reserved.</p>
-      <div class="footer-links">
-        <a href="disclaimer.html">Disclaimer</a>
-        <a href="about.html">About Us</a>
-        <a href="contact.html">Contact Us</a>
-      </div>
+<footer class="footer">
+  <div class="footer-content">
+    <p>&copy; 2025 My Website. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="#">Disclaimer</a>
+      <a href="#">About Us</a>
+      <a href="#">Contact Us</a>
     </div>
-  </footer>
+  </div>
+</footer>
+
+  
 </body>
-</html>

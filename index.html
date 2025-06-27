@@ -25,7 +25,7 @@
     }
 
     .btn, .btn-solid, .btn-outline {
-      padding: 10px 15px; border-radius: 5px; font-size: 16px;
+      padding: 10px 15px; border-radius: 5px; font-size: 14px;
       cursor: pointer; text-decoration: none; display: inline-block;
       transition: background 0.3s ease;
     }
@@ -69,33 +69,6 @@
     .pagination-buttons button:hover {
       background-color: #b00610;
     }
-
-    #searchInput {
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      width: 300px;
-    }
-
-    #searchResults {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-
-    .movie-box iframe {
-      width: 100%;
-      height: 200px;
-      border-radius: 8px;
-    }
-
-    .ad-banner {
-      width: 100%;
-      text-align: center;
-      padding: 10px;
-      margin: 10px 0;
-    }
   </style>
 
   <!-- Scripts -->
@@ -108,17 +81,9 @@
     <img src="images/logo.png" alt="Movies-J Logo" />
     <div class="nav-links">
       <a href="index.html">Home</a>
-      <input type="text" id="searchInput" placeholder="Search..." />
+      <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
     </div>
   </div>
-
-  <!-- 📢 Top Banner Ad -->
-  <div class="ad-banner">
-    <script type='text/javascript' src='//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js'></script>
-  </div>
-
-  <!-- Search Results -->
-  <div id="searchResults"></div>
 
   <!-- Banner -->
   <div class="banner animate-fadein" id="banner">
@@ -199,6 +164,7 @@
         <iframe id="upload-video" width="100%" height="400" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       </div>
 
+      <!-- Quota Warning -->
       <div class="warning-text">
         ⚠️ This video is hosted on Google Drive. If it fails to load, the daily playback quota may have been reached.<br>
         💡 Tip: Please try again later, or click <strong>⬇️ Download This Movie</strong> below to watch it offline.
@@ -210,6 +176,13 @@
         <a href="#" id="btn-download" target="_blank" class="btn btn-outline" style="display:none;">⬇️ Download This Movie</a>
       </div>
     </div>
+  </div>
+
+  <!-- Search Modal -->
+  <div class="search-modal" id="search-modal">
+    <span class="close" onclick="closeSearchModal()" style="color:red;font-size:24px;">×</span>
+    <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
+    <div class="results" id="search-results"></div>
   </div>
 
   <!-- Footer -->

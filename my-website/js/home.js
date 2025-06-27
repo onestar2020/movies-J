@@ -146,7 +146,7 @@ function showUploadedMovie(movie) {
 
   btnWatch.onclick = (e) => {
     e.preventDefault();
-    loadAdScript(); // Load ad when Watch Full Movie is clicked
+    loadAdScript();
     document.getElementById('upload-video').src = movie.driveLink;
     handleQuotaWarningCheck();
   };
@@ -191,27 +191,17 @@ function changeServer() {
   document.getElementById('modal-video').src = videoUrl;
 }
 
-// ===== SEARCH =====
-function openSearchModal() {
-  document.getElementById('search-modal').style.display = 'flex';
-  document.getElementById('search-input').focus();
-}
-
-function closeSearchModal() {
-  document.getElementById('search-modal').style.display = 'none';
-  document.getElementById('search-results').innerHTML = '';
-}
-
-async function searchTMDB() {
-  const query = document.getElementById('search-input').value;
-  if (!query.trim()) {
-    document.getElementById('search-results').innerHTML = '';
-    return;
-  }
-  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-  const data = await res.json();
+// ===== SEARCH ALL (TMDB + UPLOADED) =====
+async function searchAll() {
+  const query = document.getElementById('search-input').value.toLowerCase();
   const container = document.getElementById('search-results');
   container.innerHTML = '';
+
+  if (!query.trim()) return;
+
+  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+  const data = await res.json();
+
   data.results.forEach(item => {
     if (!item.poster_path) return;
     const img = document.createElement('img');
@@ -220,6 +210,21 @@ async function searchTMDB() {
     img.onclick = () => {
       closeSearchModal();
       showDetails(item);
+    };
+    container.appendChild(img);
+  });
+
+  const matchedUploads = enrichedUploads.filter(movie =>
+    movie.title.toLowerCase().includes(query)
+  );
+
+  matchedUploads.forEach(movie => {
+    const img = document.createElement('img');
+    img.src = movie.poster;
+    img.alt = movie.title;
+    img.onclick = () => {
+      closeSearchModal();
+      showUploadedMovie(movie);
     };
     container.appendChild(img);
   });
@@ -313,3 +318,5 @@ async function init() {
 }
 
 init();
+
+document.getElementById('search-input').addEventListener('input', searchAll);

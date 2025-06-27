@@ -183,6 +183,4 @@ async function searchTMDB() {
   });
 }
 
-// The rest of your code remains the same...
-
 // =================== HOME.JS - END ===================

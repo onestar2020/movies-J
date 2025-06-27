@@ -1,3 +1,5 @@
+// =================== HOME.JS - START ===================
+
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
@@ -155,14 +157,14 @@ async function searchTMDB() {
   const tmdbResults = data.results.filter(item => item.poster_path);
 
   tmdbResults.forEach(item => {
-    const img = document.createElement('img');
-    img.src = `${IMG_URL}${item.poster_path}`;
-    img.alt = item.title || item.name;
-    img.onclick = () => {
-      closeSearchModal();
-      showDetails(item);
-    };
-    container.appendChild(img);
+    const div = document.createElement('div');
+    div.style.textAlign = 'center';
+    div.style.margin = '15px 0';
+    div.innerHTML = `
+      <img src="${IMG_URL}${item.poster_path}" alt="${item.title || item.name}" style="width:120px;border-radius:5px;cursor:pointer" onclick="closeSearchModal(); showDetails(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+      <p style="margin: 5px 0; font-size:14px;"><strong>${item.title || item.name}</strong><br><span style="font-size:12px; color:#00bcd4;">🎬 TMDB Result</span></p>
+    `;
+    container.appendChild(div);
   });
 
   uploads.forEach(upload => {
@@ -178,7 +180,7 @@ async function searchTMDB() {
              onclick="showUploadModal('${upload.id}')">
         <p style="margin: 5px 0; font-size:14px;">
           <strong>${upload.title}</strong><br>
-          <span style="font-size:12px; color:#aaa;">📁 My Upload</span>
+          <span style="font-size:12px; color:#aaa;">📁 My Uploaded</span>
         </p>
       `;
 
@@ -187,110 +189,4 @@ async function searchTMDB() {
   });
 }
 
-function showUploadModal(videoId) {
-  const upload = uploads.find(u => u.id === videoId);
-  if (!upload) return;
-
-  currentUpload = upload;
-  const title = encodeURIComponent(upload.title);
-
-  fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`)
-    .then(res => res.json())
-    .then(data => {
-      const movie = data.results[0] || {};
-
-      document.getElementById('upload-title').textContent = movie.title || upload.title;
-      document.getElementById('upload-description').textContent = movie.overview || "No description available.";
-      document.getElementById('upload-rating').innerHTML = movie.vote_average
-        ? '★'.repeat(Math.round(movie.vote_average / 2))
-        : 'Not rated';
-
-      document.getElementById('upload-trailer-btn').onclick = () => watchUploadTrailer();
-      document.getElementById('upload-watch-btn').onclick = () => playUploadedVideo();
-      document.getElementById('upload-download-btn').href = `https://drive.google.com/u/0/uc?id=${upload.id}&export=download`;
-
-      document.getElementById('upload-video').src = `https://drive.google.com/file/d/${upload.id}/preview`;
-
-      document.getElementById('upload-modal').style.display = 'flex';
-    });
-}
-
-function playUploadedVideo() {
-  if (!currentUpload) return;
-  document.getElementById('upload-video').src = `https://drive.google.com/file/d/${currentUpload.id}/preview`;
-}
-
-async function watchUploadTrailer() {
-  if (!currentUpload) return;
-
-  const title = encodeURIComponent(currentUpload.title);
-  const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`);
-  const data = await res.json();
-  const movie = data.results[0];
-
-  if (movie && movie.id) {
-    const trailerRes = await fetch(`${BASE_URL}/movie/${movie.id}/videos?api_key=${API_KEY}`);
-    const trailerData = await trailerRes.json();
-    const trailer = trailerData.results.find(video => video.type === "Trailer" && video.site === "YouTube");
-
-    if (trailer) {
-      document.getElementById('upload-video').src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
-      return;
-    }
-  }
-
-  const searchUrl = `https://www.youtube.com/results?search_query=${title}+official+trailer`;
-  window.open(searchUrl, '_blank');
-}
-
-function closeUploadModal() {
-  document.getElementById('upload-modal').style.display = 'none';
-  document.getElementById('upload-video').src = '';
-}
-
-async function loadUploadedMovies() {
-  const container = document.getElementById('uploaded-movies-list');
-  for (const upload of uploads) {
-    const title = encodeURIComponent(upload.title);
-    const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`);
-    const data = await res.json();
-    const movie = data.results[0];
-
-    const div = document.createElement('div');
-    div.classList.add('upload-item');
-
-    div.innerHTML = `
-      <div style="text-align:center">
-        <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : ''}" alt="${upload.title}" style="width:120px;border-radius:5px;cursor:pointer" onclick="showUploadModal('${upload.id}')">
-        <p style="margin: 5px 0"><strong>${upload.title}</strong></p>
-        ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
-        ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
-      </div>
-    `;
-
-    container.appendChild(div);
-  }
-}
-
-async function init() {
-  const movies = await fetchTrending('movie');
-  const tvShows = await fetchTrending('tv');
-  const anime = await fetchTrendingAnime();
-
-  await loadUploadedMovies();
-
-  const uploadItems = uploads.map(u => ({
-    title: u.title,
-    id: u.id,
-    isUpload: true
-  }));
-
-  const bannerPool = [...movies, ...tvShows, ...uploadItems];
-  displayBanner(bannerPool);
-
-  displayList(movies, 'movies-list');
-  displayList(tvShows, 'tvshows-list');
-  displayList(anime, 'anime-list');
-}
-
-init();
+// =================== HOME.JS - END ===================

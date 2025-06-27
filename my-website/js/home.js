@@ -11,7 +11,6 @@ async function fetchTrending(type) {
 
 async function fetchTrendingAnime() {
   let allResults = [];
-
   for (let page = 1; page <= 3; page++) {
     const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`);
     const data = await res.json();
@@ -20,11 +19,9 @@ async function fetchTrendingAnime() {
     );
     allResults = allResults.concat(filtered);
   }
-
   return allResults;
 }
 
-// ✅ TRAILER FETCH FUNCTION
 async function fetchTrailer(id, mediaType) {
   const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
   const data = await res.json();
@@ -33,8 +30,14 @@ async function fetchTrailer(id, mediaType) {
 }
 
 function displayBanner(item) {
-  document.getElementById('banner').style.backgroundImage = `url(${IMG_URL}${item.backdrop_path})`;
-  document.getElementById('banner-title').textContent = item.title || item.name;
+  const bannerTitle = document.getElementById('banner-title');
+  const trailerIframe = document.getElementById('trailer');
+  bannerTitle.textContent = item.title || item.name;
+  fetchTrailer(item.id, item.media_type || (item.first_air_date ? 'tv' : 'movie')).then(url => {
+    if (url) {
+      trailerIframe.src = `${url}?autoplay=1&mute=1&controls=0&loop=1&playlist=${url.split('/').pop()}`;
+    }
+  });
 }
 
 function displayList(items, containerId) {
@@ -49,18 +52,14 @@ function displayList(items, containerId) {
   });
 }
 
-// ✅ SHOW DETAILS with trailer logic
 async function showDetails(item) {
   currentItem = item;
-
   document.getElementById('modal-title').textContent = item.title || item.name;
   document.getElementById('modal-description').textContent = item.overview;
   document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
   document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
-
   const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
   const trailerUrl = await fetchTrailer(item.id, mediaType);
-
   document.getElementById('modal-video').src = trailerUrl || '';
   document.getElementById('modal').style.display = 'flex';
 }
@@ -69,7 +68,6 @@ function changeServer() {
   const server = document.getElementById('server').value;
   const type = currentItem.media_type === "movie" ? "movie" : "tv";
   let embedURL = "";
-
   if (server === "vidsrc.cc") {
     embedURL = `https://vidsrc.cc/v2/embed/${type}/${currentItem.id}`;
   } else if (server === "vidsrc.me") {
@@ -77,7 +75,6 @@ function changeServer() {
   } else if (server === "player.videasy.net") {
     embedURL = `https://player.videasy.net/${type}/${currentItem.id}`;
   }
-
   document.getElementById('modal-video').src = embedURL;
 }
 
@@ -102,10 +99,8 @@ async function searchTMDB() {
     document.getElementById('search-results').innerHTML = '';
     return;
   }
-
   const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${query}`);
   const data = await res.json();
-
   const container = document.getElementById('search-results');
   container.innerHTML = '';
   data.results.forEach(item => {
@@ -121,15 +116,49 @@ async function searchTMDB() {
   });
 }
 
+function showUploadModal(videoId) {
+  const uploadModal = document.getElementById('upload-modal');
+  const uploadFrame = document.getElementById('upload-video');
+  uploadFrame.src = `https://drive.google.com/file/d/${videoId}/preview`;
+  uploadModal.style.display = 'flex';
+}
+
+function closeUploadModal() {
+  const uploadModal = document.getElementById('upload-modal');
+  const uploadFrame = document.getElementById('upload-video');
+  uploadFrame.src = '';
+  uploadModal.style.display = 'none';
+}
+
+const uploads = [
+  { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
+  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFqYv4kBd" }
+];
+
+function loadUploadedMovies() {
+  const container = document.getElementById('uploaded-movies-list');
+  uploads.forEach(upload => {
+    const div = document.createElement('div');
+    div.classList.add('upload-item');
+    div.innerHTML = `
+      <div style="text-align:center">
+        <p style="margin: 5px 0">${upload.title}</p>
+        <button onclick="showUploadModal('${upload.id}')">Watch Full Movie</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
 async function init() {
   const movies = await fetchTrending('movie');
   const tvShows = await fetchTrending('tv');
   const anime = await fetchTrendingAnime();
-
   displayBanner(movies[Math.floor(Math.random() * movies.length)]);
   displayList(movies, 'movies-list');
   displayList(tvShows, 'tvshows-list');
   displayList(anime, 'anime-list');
+  loadUploadedMovies();
 }
 
 init();

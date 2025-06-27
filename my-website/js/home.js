@@ -202,8 +202,9 @@ function playUploadedVideo() {
 function watchUploadTrailer() {
   if (!currentUpload) return;
   const title = encodeURIComponent(currentUpload.title);
-  window.open(`https://www.youtube.com/results?search_query=${title}+official+trailer`, '_blank');
+  document.getElementById('upload-video').src = `https://www.youtube.com/embed?listType=search&list=${title}+official+trailer&autoplay=1`;
 }
+
 
 function closeUploadModal() {
   document.getElementById('upload-modal').style.display = 'none';

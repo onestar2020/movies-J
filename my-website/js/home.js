@@ -171,42 +171,41 @@ function changeServer() {
 }
 
 // ===== SEARCH =====
-function openSearchModal() {
-  const modal = document.getElementById('search-modal');
-  modal.style.display = 'flex';
-  requestAnimationFrame(() => {
-    document.getElementById('search-input').focus();
-  });
-}
+async function handleNewSearch() {
+  const query = document.getElementById('new-search-input').value.trim();
+  const resultsSection = document.getElementById('new-search-results');
+  const resultsList = document.getElementById('new-search-list');
 
-function closeSearchModal() {
-  document.getElementById('search-modal').style.display = 'none';
-  document.getElementById('search-results').innerHTML = '';
-}
-
-async function searchTMDB() {
-  const query = document.getElementById('search-input').value.trim();
-  const container = document.getElementById('search-results');
-  container.innerHTML = '';
-  if (!query) return;
+  if (!query) {
+    resultsSection.style.display = 'none';
+    resultsList.innerHTML = '';
+    return;
+  }
 
   try {
     const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
     const data = await res.json();
-    data.results.forEach(item => {
-      if (!item.poster_path) return;
+    const results = data.results.filter(item => item.poster_path);
+
+    resultsList.innerHTML = '';
+    results.forEach(item => {
       const img = document.createElement('img');
       img.src = `${IMG_URL}${item.poster_path}`;
       img.alt = item.title || item.name;
       img.onclick = () => {
-        closeSearchModal();
         showDetails(item);
+        resultsSection.style.display = 'none';
+        resultsList.innerHTML = '';
+        document.getElementById('new-search-input').value = '';
       };
-      container.appendChild(img);
+      resultsList.appendChild(img);
     });
-  } catch (err) {
-    console.error('Search error:', err);
-    container.innerHTML = `<p style="color:red;">Failed to fetch results.</p>`;
+
+    resultsSection.style.display = 'block';
+  } catch (error) {
+    console.error('Search failed:', error);
+    resultsSection.style.display = 'block';
+    resultsList.innerHTML = `<p style="color:red;">Error loading results.</p>`;
   }
 }
 

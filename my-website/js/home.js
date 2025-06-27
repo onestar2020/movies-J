@@ -53,7 +53,7 @@ function nextBannerTrailer() {
   playBannerTrailer();
 }
 
-function watchCurrentBanner() {
+function watchBannerMovie() {
   const item = bannerItems[bannerIndex];
   if (!item) return;
 
@@ -68,20 +68,6 @@ function displayBanner(items) {
   bannerItems = items;
   bannerIndex = 0;
   playBannerTrailer();
-
-  const bannerContainer = document.getElementById('banner');
-  let controls = document.getElementById('banner-controls');
-  if (!controls) {
-    controls = document.createElement('div');
-    controls.id = 'banner-controls';
-    controls.innerHTML = `
-      <div style="text-align:center; margin-top:10px">
-        <button onclick="nextBannerTrailer()">⏭ Next Trailer</button>
-        <button onclick="watchCurrentBanner()">▶ Full Watch</button>
-      </div>
-    `;
-    bannerContainer.appendChild(controls);
-  }
 }
 
 function displayList(items, containerId) {

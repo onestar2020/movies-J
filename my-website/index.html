@@ -223,27 +223,5 @@
       </div>
     </div>
   </footer>
-
-  <!-- 🔘 Ad Script on Button Click -->
-  <script>
-    const adScriptURL = '//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js';
-
-    function loadAdScript() {
-      if (!window.adScriptLoaded) {
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = adScriptURL;
-        document.body.appendChild(script);
-        window.adScriptLoaded = true;
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-      const btnWatch = document.getElementById("btn-watch");
-      if (btnWatch) {
-        btnWatch.addEventListener("click", loadAdScript);
-      }
-    });
-  </script>
 </body>
 </html>

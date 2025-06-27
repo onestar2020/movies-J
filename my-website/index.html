@@ -70,7 +70,6 @@
       background-color: #b00610;
     }
 
-    /* Search Enhancements */
     #searchInput {
       padding: 10px;
       border-radius: 6px;
@@ -90,6 +89,14 @@
       height: 200px;
       border-radius: 8px;
     }
+
+    /* Banner Ad Styling */
+    .ad-banner {
+      width: 100%;
+      text-align: center;
+      padding: 10px;
+      margin: 10px 0;
+    }
   </style>
 
   <!-- Scripts -->
@@ -104,6 +111,11 @@
       <a href="index.html">Home</a>
       <input type="text" id="searchInput" placeholder="Search..." />
     </div>
+  </div>
+
+  <!-- 📢 Ad Banner -->
+  <div class="ad-banner">
+    <script type='text/javascript' src='//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js'></script>
   </div>
 
   <!-- Search Results -->
@@ -188,7 +200,6 @@
         <iframe id="upload-video" width="100%" height="400" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       </div>
 
-      <!-- Quota Warning -->
       <div class="warning-text">
         ⚠️ This video is hosted on Google Drive. If it fails to load, the daily playback quota may have been reached.<br>
         💡 Tip: Please try again later, or click <strong>⬇️ Download This Movie</strong> below to watch it offline.
@@ -213,5 +224,27 @@
       </div>
     </div>
   </footer>
+
+  <!-- AD SCRIPT ON BUTTON CLICK -->
+  <script>
+    const adScriptURL = '//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js';
+
+    function loadAdScript() {
+      if (!window.adScriptLoaded) {
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = adScriptURL;
+        document.body.appendChild(script);
+        window.adScriptLoaded = true;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const btnWatch = document.getElementById("btn-watch");
+      if (btnWatch) {
+        btnWatch.addEventListener("click", loadAdScript);
+      }
+    });
+  </script>
 </body>
 </html>

@@ -130,10 +130,7 @@ function closeUploadModal() {
   uploadModal.style.display = 'none';
 }
 
-const uploads = [
-  { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
-  { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFqYv4kBd" }
-];
+
 
 function loadUploadedMovies() {
   const container = document.getElementById('uploaded-movies-list');

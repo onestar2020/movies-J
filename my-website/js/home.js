@@ -1,52 +1,89 @@
-// ===== CONFIG =====
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
+
 let currentItem;
 let bannerItems = [];
 let bannerIndex = 0;
-let currentServer = 'vidsrc.cc';
 
-let currentUploadPage = 0;
-const itemsPerPage = 12;
-let enrichedUploads = [];
+// ===== SEARCH FUNCTION =====
+async function handleNewSearch() {
+  const input = document.getElementById('new-search-input');
+  const query = input.value.trim();
+  const resultBox = document.getElementById('new-search-results');
+  const resultList = document.getElementById('new-search-list');
+  resultList.innerHTML = '';
 
-// ===== FETCHERS =====
-async function fetchTrending(type) {
-  let allResults = [];
-  for (let page = 1; page <= 5; page++) {
-    const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}&page=${page}`);
-    const data = await res.json();
-    allResults = allResults.concat(data.results);
+  if (!query) {
+    resultBox.style.display = 'none';
+    return;
   }
-  return allResults;
+
+  try {
+    const response = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+    const data = await response.json();
+
+    if (!data.results.length) {
+      resultList.innerHTML = `<p style="color: white;">No results found.</p>`;
+    }
+
+    data.results.forEach(item => {
+      if (!item.poster_path) return;
+
+      const img = document.createElement('img');
+      img.src = `${IMG_URL}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.onclick = () => showDetails(item);
+      resultList.appendChild(img);
+    });
+
+    resultBox.style.display = 'block';
+  } catch (err) {
+    console.error('❌ Search error:', err);
+    resultBox.style.display = 'block';
+    resultList.innerHTML = `<p style="color:red;">Failed to load results. Please try again later.</p>`;
+  }
 }
 
-async function fetchTrendingAnime() {
-  let allResults = [];
-  for (let page = 1; page <= 5; page++) {
-    const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`);
-    const data = await res.json();
-    const filtered = data.results.filter(item => item.original_language === 'ja' && item.genre_ids.includes(16));
-    allResults = allResults.concat(filtered);
-  }
-  return allResults;
+// ===== SHOW DETAILS MODAL =====
+async function showDetails(item) {
+  currentItem = item;
+  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+
+  document.getElementById('modal-title').textContent = item.title || item.name;
+  document.getElementById('modal-description').textContent = item.overview || '';
+  document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
+  document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round((item.vote_average || 0) / 2));
+
+  const trailerUrl = await fetchTrailer(item.id, mediaType);
+  document.getElementById('modal-video').src = trailerUrl || '';
+  document.getElementById('modal-tmdb').style.display = 'flex';
 }
 
+function closeModal() {
+  document.getElementById('modal-tmdb').style.display = 'none';
+  document.getElementById('modal-video').src = '';
+}
+
+// ===== TRAILER FETCH =====
 async function fetchTrailer(id, mediaType) {
-  const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
-  const data = await res.json();
-  const trailer = data.results.find(video => video.type === "Trailer" && video.site === "YouTube");
-  return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
+  try {
+    const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
+    const data = await res.json();
+    const trailer = data.results.find(v => v.type === "Trailer" && v.site === "YouTube");
+    return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
+  } catch {
+    return null;
+  }
 }
 
-async function fetchMovieDetailsByTitle(title) {
-  const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(title)}`);
-  const data = await res.json();
-  return data.results.length ? data.results[0] : null;
+// ===== INIT MOVIE DATA =====
+async function fetchTrending(type) {
+  const response = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
+  const data = await response.json();
+  return data.results || [];
 }
 
-// ===== BANNER =====
 async function displayBanner(item) {
   const banner = document.getElementById('banner');
   const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
@@ -84,6 +121,7 @@ function displayList(items, containerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
   items.forEach(item => {
+    if (!item.poster_path) return;
     const img = document.createElement('img');
     img.src = `${IMG_URL}${item.poster_path}`;
     img.alt = item.title || item.name;
@@ -92,197 +130,10 @@ function displayList(items, containerId) {
   });
 }
 
-// ===== MODALS =====
-async function showDetails(item) {
-  currentItem = item;
-  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-  const trailerUrl = await fetchTrailer(item.id, mediaType);
-
-  document.getElementById('modal-title').textContent = item.title || item.name;
-  document.getElementById('modal-description').textContent = item.overview || '';
-  document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
-  document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
-  document.getElementById('modal-video').src = trailerUrl || '';
-  document.getElementById('modal-tmdb').style.display = 'flex';
-
-  const serverSelect = document.getElementById('server');
-  if (serverSelect) serverSelect.value = currentServer;
-}
-
-function showUploadedMovie(movie) {
-  currentItem = movie;
-  document.getElementById('upload-title').textContent = movie.title;
-  document.getElementById('upload-description').textContent = movie.description;
-  document.getElementById('upload-image').src = movie.poster;
-  document.getElementById('upload-rating').innerHTML = '★'.repeat(Math.round(movie.rating));
-  document.getElementById('upload-video').src = movie.trailer;
-  document.getElementById('modal-upload').style.display = 'flex';
-
-  const btnTrailer = document.getElementById('btn-trailer');
-  const btnWatch = document.getElementById('btn-watch');
-  const btnDownload = document.getElementById('btn-download');
-
-  btnTrailer.style.display = 'inline-block';
-  btnWatch.style.display = 'inline-block';
-  btnDownload.style.display = movie.download ? 'inline-block' : 'none';
-
-  btnTrailer.onclick = (e) => {
-    e.preventDefault();
-    document.getElementById('upload-video').src = movie.trailer;
-    handleQuotaWarningCheck();
-  };
-
-  btnWatch.onclick = (e) => {
-    e.preventDefault();
-    document.getElementById('upload-video').src = movie.driveLink;
-    handleQuotaWarningCheck();
-  };
-
-  if (movie.download) {
-    btnDownload.href = movie.download;
-    btnDownload.setAttribute('target', '_blank');
-  }
-}
-
-function closeModal() {
-  document.getElementById('modal-tmdb').style.display = 'none';
-  document.getElementById('modal-video').src = '';
-}
-
-function closeUploadModal() {
-  document.getElementById('modal-upload').style.display = 'none';
-  document.getElementById('upload-video').src = '';
-}
-
-// ===== SERVER CHANGE HANDLER =====
-function changeServer() {
-  const select = document.getElementById('server');
-  currentServer = select.value;
-  if (!currentItem || document.getElementById('modal-tmdb').style.display !== 'flex') return;
-
-  const mediaType = currentItem.media_type || (currentItem.first_air_date ? 'tv' : 'movie');
-  const id = currentItem.id;
-  let videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
-  if (currentServer === 'vidsrc.me') videoUrl = `https://vidsrc.me/embed/${mediaType}/${id}`;
-  else if (currentServer === 'player.videasy.net') videoUrl = `https://player.videasy.net/embed/${mediaType}/${id}`;
-  else if (currentServer === 'multiembed') videoUrl = `https://multiembed.com/api/v1/movies/${id}`;
-  else if (currentServer === '2embed') videoUrl = `https://2embed.org/embed/${mediaType}/${id}`;
-  document.getElementById('modal-video').src = videoUrl;
-}
-
-// ===== SEARCH =====
-async function handleNewSearch() {
-  const query = document.getElementById('new-search-input').value.trim();
-  const resultsSection = document.getElementById('new-search-results');
-  const resultsList = document.getElementById('new-search-list');
-
-  if (!query) {
-    resultsSection.style.display = 'none';
-    resultsList.innerHTML = '';
-    return;
-  }
-
-  try {
-    const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    const results = data.results.filter(item => item.poster_path);
-
-    resultsList.innerHTML = '';
-    results.forEach(item => {
-      const img = document.createElement('img');
-      img.src = `${IMG_URL}${item.poster_path}`;
-      img.alt = item.title || item.name;
-      img.onclick = () => {
-        showDetails(item);
-        resultsSection.style.display = 'none';
-        resultsList.innerHTML = '';
-        document.getElementById('new-search-input').value = '';
-      };
-      resultsList.appendChild(img);
-    });
-
-    resultsSection.style.display = 'block';
-  } catch (error) {
-    console.error('Search failed:', error);
-    resultsSection.style.display = 'block';
-    resultsList.innerHTML = `<p style="color:red;">Error loading results.</p>`;
-  }
-}
-
-// ===== PAGINATED UPLOADS =====
-function renderUploadedMoviesPage(page) {
-  const container = document.getElementById('myupload-list');
-  container.innerHTML = '';
-
-  const start = page * itemsPerPage;
-  const end = start + itemsPerPage;
-  const currentItems = enrichedUploads.slice(start, end);
-
-  currentItems.forEach(movie => {
-    const img = document.createElement('img');
-    img.src = movie.poster;
-    img.alt = movie.title;
-    img.style.cursor = 'pointer';
-    img.onclick = () => showUploadedMovie(movie);
-    container.appendChild(img);
-  });
-
-  document.getElementById('upload-pagination').innerHTML = `
-    <button id="load-prev-uploaded" ${page === 0 ? 'disabled' : ''}>Previous</button>
-    <button id="load-next-uploaded" ${(end >= enrichedUploads.length) ? 'disabled' : ''}>Next</button>
-  `;
-
-  document.getElementById('load-prev-uploaded').onclick = () => {
-    if (currentUploadPage > 0) {
-      currentUploadPage--;
-      renderUploadedMoviesPage(currentUploadPage);
-    }
-  };
-
-  document.getElementById('load-next-uploaded').onclick = () => {
-    if ((page + 1) * itemsPerPage < enrichedUploads.length) {
-      currentUploadPage++;
-      renderUploadedMoviesPage(currentUploadPage);
-    }
-  };
-}
-
-async function enrichUploads() {
-  enrichedUploads = [];
-  for (const movie of uploads) {
-    if (!movie.title || !movie.id) continue;
-    const tmdb = await fetchMovieDetailsByTitle(movie.title);
-    if (!tmdb || !tmdb.poster_path) continue;
-
-    const trailer = await fetchTrailer(tmdb.id, 'movie');
-
-    enrichedUploads.push({
-      ...movie,
-      poster: `${IMG_URL}${tmdb.poster_path}`,
-      description: tmdb.overview,
-      rating: tmdb.vote_average / 2,
-      trailer,
-      driveLink: `https://drive.google.com/file/d/${movie.id}/preview`,
-      download: `https://drive.google.com/uc?id=${movie.id}&export=download`
-    });
-  }
-}
-
-function handleQuotaWarningCheck() {
-  const warning = document.querySelector('#modal-upload .warning-text');
-  const iframe = document.getElementById('upload-video');
-  if (warning) warning.style.display = 'none';
-  setTimeout(() => {
-    const isLoaded = iframe?.contentWindow?.length !== 0;
-    if (!isLoaded && warning) warning.style.display = 'block';
-  }, 2000);
-}
-
 // ===== INIT =====
 async function init() {
   const movies = await fetchTrending('movie');
   const tvShows = await fetchTrending('tv');
-  const anime = await fetchTrendingAnime();
 
   bannerItems = movies;
   bannerIndex = Math.floor(Math.random() * bannerItems.length);
@@ -290,10 +141,6 @@ async function init() {
 
   displayList(movies, 'movies-list');
   displayList(tvShows, 'tvshows-list');
-  displayList(anime, 'anime-list');
-
-  await enrichUploads();
-  renderUploadedMoviesPage(currentUploadPage);
 }
 
 init();

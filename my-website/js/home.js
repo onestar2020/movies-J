@@ -116,18 +116,35 @@ async function searchTMDB() {
   });
 }
 
-function showUploadModal(videoId) {
-  const uploadModal = document.getElementById('upload-modal');
-  const uploadFrame = document.getElementById('upload-video');
-  uploadFrame.src = `https://drive.google.com/file/d/${videoId}/preview`;
-  uploadModal.style.display = 'flex';
+function closeUploadModal() {
+  document.getElementById('upload-modal').style.display = 'none';
+  document.getElementById('upload-video').src = '';
 }
 
-function closeUploadModal() {
-  const uploadModal = document.getElementById('upload-modal');
-  const uploadFrame = document.getElementById('upload-video');
-  uploadFrame.src = '';
-  uploadModal.style.display = 'none';
+function showUploadModal(videoId) {
+  const upload = uploads.find(item => item.id === videoId);
+  if (!upload) return;
+
+  document.getElementById('upload-title').textContent = upload.title;
+  document.getElementById('upload-rating').innerHTML = upload.stars ? '★'.repeat(upload.stars) : '';
+  document.getElementById('upload-description').textContent = upload.description || '';
+
+  const video = document.getElementById('upload-video');
+  video.src = `https://drive.google.com/file/d/${upload.id}/preview`;
+
+  document.getElementById('upload-trailer-btn').onclick = () => {
+    if (upload.trailer) {
+      window.open(upload.trailer, '_blank');
+    }
+  };
+
+  document.getElementById('upload-watch-btn').onclick = () => {
+    video.src = `https://drive.google.com/file/d/${upload.id}/preview`;
+  };
+
+  document.getElementById('upload-download-btn').href = `https://drive.google.com/uc?id=${upload.id}&export=download`;
+
+  document.getElementById('upload-modal').style.display = 'flex';
 }
 
 async function loadUploadedMovies() {

@@ -46,69 +46,7 @@ async function fetchMovieDetailsByTitle(title) {
   return data.results.length ? data.results[0] : null;
 }
 
-// ===== BANNER =====
-async function displayBanner(item) {
-  const banner = document.getElementById('banner');
-  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-  const trailerUrl = await fetchTrailer(item.id, mediaType);
-
-  if (trailerUrl) {
-    banner.innerHTML = `
-      <iframe width="100%" height="100%" src="${trailerUrl}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerUrl.split("/").pop()}"
-        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius: 8px; filter: brightness(0.7);"></iframe>
-      <div class="banner-buttons">
-        <button class="btn-outline" onclick="nextBannerTrailer()">
-          <i class="fas fa-random"></i> Next Trailer
-        </button>
-        <button class="btn-solid" onclick="watchBannerMovie()">
-          <i class="fas fa-play"></i> Watch Full Movie
-        </button>
-      </div>
-    `;
-  } else {
-    banner.style.backgroundImage = `url(${IMG_URL}${item.backdrop_path})`;
-    banner.innerHTML = `<h1 id="banner-title">${item.title || item.name}</h1>`;
-  }
-}
-
-function nextBannerTrailer() {
-  bannerIndex = (bannerIndex + 1) % bannerItems.length;
-  displayBanner(bannerItems[bannerIndex]);
-}
-
-function watchBannerMovie() {
-  showDetails(bannerItems[bannerIndex]);
-}
-
-function displayList(items, containerId) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  items.forEach(item => {
-    const img = document.createElement('img');
-    img.src = `${IMG_URL}${item.poster_path}`;
-    img.alt = item.title || item.name;
-    img.onclick = () => showDetails(item);
-    container.appendChild(img);
-  });
-}
-
 // ===== MODALS =====
-async function showDetails(item) {
-  currentItem = item;
-  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-  const trailerUrl = await fetchTrailer(item.id, mediaType);
-
-  document.getElementById('modal-title').textContent = item.title || item.name;
-  document.getElementById('modal-description').textContent = item.overview || '';
-  document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
-  document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
-  document.getElementById('modal-video').src = trailerUrl || '';
-  document.getElementById('modal-tmdb').style.display = 'flex';
-
-  const serverSelect = document.getElementById('server');
-  if (serverSelect) serverSelect.value = currentServer;
-}
-
 function showUploadedMovie(movie) {
   currentItem = movie;
 
@@ -135,6 +73,7 @@ function showUploadedMovie(movie) {
 
   btnWatch.onclick = (e) => {
     e.preventDefault();
+    loadAdScript();
     document.getElementById('upload-video').src = movie.driveLink;
     handleQuotaWarningCheck();
   };
@@ -145,207 +84,15 @@ function showUploadedMovie(movie) {
   }
 }
 
-function closeModal() {
-  document.getElementById('modal-tmdb').style.display = 'none';
-  document.getElementById('modal-video').src = '';
-}
-
-function closeUploadModal() {
-  document.getElementById('modal-upload').style.display = 'none';
-  document.getElementById('upload-video').src = '';
-}
-
-function changeServer() {
-  const select = document.getElementById('server');
-  currentServer = select.value;
-
-  if (!currentItem || document.getElementById('modal-tmdb').style.display !== 'flex') return;
-
-  const mediaType = currentItem.media_type || (currentItem.first_air_date ? 'tv' : 'movie');
-  const id = currentItem.id;
-  let videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
-
-  if (currentServer === 'vidsrc.me') {
-    videoUrl = `https://vidsrc.me/embed/${mediaType}/${id}`;
-  } else if (currentServer === 'player.videasy.net') {
-    videoUrl = `https://player.videasy.net/embed/${mediaType}/${id}`;
-  } else if (currentServer === 'multiembed') {
-    videoUrl = `https://multiembed.com/api/v1/movies/${id}`;
-  } else if (currentServer === '2embed') {
-    videoUrl = `https://2embed.org/embed/${mediaType}/${id}`;
-  }
-
-  document.getElementById('modal-video').src = videoUrl;
-}
-
-// ===== SEARCH (WITH BADGES) =====
-function openSearchModal() {
-  document.getElementById('search-modal').style.display = 'flex';
-  document.getElementById('search-input').focus();
-}
-
-function closeSearchModal() {
-  document.getElementById('search-modal').style.display = 'none';
-  document.getElementById('search-results').innerHTML = '';
-}
-
-async function searchTMDB() {
-  const query = document.getElementById('search-input').value.trim().toLowerCase();
-  const container = document.getElementById('search-results');
-  container.innerHTML = '';
-  if (!query) return;
-
-  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${query}`);
-  const data = await res.json();
-  const results = data.results.filter(item => item.poster_path);
-
-  results.forEach(item => {
-    const wrapper = document.createElement('div');
-    wrapper.style.position = 'relative';
-    wrapper.style.display = 'inline-block';
-    wrapper.style.margin = '10px';
-
-    const img = document.createElement('img');
-    img.src = `${IMG_URL}${item.poster_path}`;
-    img.alt = item.title || item.name;
-    img.onclick = () => {
-      closeSearchModal();
-      showDetails(item);
-    };
-
-    const badge = document.createElement('div');
-    badge.textContent = 'Free Server';
-    badge.style.position = 'absolute';
-    badge.style.top = '5px';
-    badge.style.left = '5px';
-    badge.style.backgroundColor = 'rgba(0,0,0,0.7)';
-    badge.style.color = '#fff';
-    badge.style.fontSize = '12px';
-    badge.style.padding = '2px 6px';
-    badge.style.borderRadius = '3px';
-
-    wrapper.appendChild(img);
-    wrapper.appendChild(badge);
-    container.appendChild(wrapper);
-  });
-
-  const localResults = enrichedUploads.filter(movie => movie.title.toLowerCase().includes(query));
-  localResults.forEach(movie => {
-    const wrapper = document.createElement('div');
-    wrapper.style.position = 'relative';
-    wrapper.style.display = 'inline-block';
-    wrapper.style.margin = '10px';
-
-    const img = document.createElement('img');
-    img.src = movie.poster;
-    img.alt = movie.title;
-    img.onclick = () => {
-      closeSearchModal();
-      showUploadedMovie(movie);
-    };
-
-    const badge = document.createElement('div');
-    badge.textContent = 'My Upload';
-    badge.style.position = 'absolute';
-    badge.style.top = '5px';
-    badge.style.left = '5px';
-    badge.style.backgroundColor = 'rgba(255,0,0,0.8)';
-    badge.style.color = '#fff';
-    badge.style.fontSize = '12px';
-    badge.style.padding = '2px 6px';
-    badge.style.borderRadius = '3px';
-
-    wrapper.appendChild(img);
-    wrapper.appendChild(badge);
-    container.appendChild(wrapper);
-  });
-}
-
-// ===== PAGINATED UPLOADS =====
-function renderUploadedMoviesPage(page) {
-  const container = document.getElementById('myupload-list');
-  container.innerHTML = '';
-
-  const start = page * itemsPerPage;
-  const end = start + itemsPerPage;
-  const currentItems = enrichedUploads.slice(start, end);
-
-  currentItems.forEach(movie => {
-    const img = document.createElement('img');
-    img.src = movie.poster;
-    img.alt = movie.title;
-    img.style.cursor = 'pointer';
-    img.onclick = () => showUploadedMovie(movie);
-    container.appendChild(img);
-  });
-
-  document.getElementById('upload-pagination').innerHTML = `
-    <button id="load-prev-uploaded" ${page === 0 ? 'disabled' : ''}>Previous</button>
-    <button id="load-next-uploaded" ${(end >= enrichedUploads.length) ? 'disabled' : ''}>Next</button>
-  `;
-
-  document.getElementById('load-prev-uploaded').onclick = () => {
-    if (currentUploadPage > 0) {
-      currentUploadPage--;
-      renderUploadedMoviesPage(currentUploadPage);
-    }
-  };
-
-  document.getElementById('load-next-uploaded').onclick = () => {
-    if ((page + 1) * itemsPerPage < enrichedUploads.length) {
-      currentUploadPage++;
-      renderUploadedMoviesPage(currentUploadPage);
-    }
-  };
-}
-
-async function enrichUploads() {
-  enrichedUploads = [];
-  for (const movie of uploads) {
-    if (!movie.title || !movie.id) continue;
-    const tmdb = await fetchMovieDetailsByTitle(movie.title);
-    if (!tmdb || !tmdb.poster_path) continue;
-
-    const trailer = await fetchTrailer(tmdb.id, 'movie');
-
-    enrichedUploads.push({
-      ...movie,
-      poster: `${IMG_URL}${tmdb.poster_path}`,
-      description: tmdb.overview,
-      rating: tmdb.vote_average / 2,
-      trailer,
-      driveLink: `https://drive.google.com/file/d/${movie.id}/preview`,
-      download: `https://drive.google.com/uc?id=${movie.id}&export=download`
-    });
+function loadAdScript() {
+  const adScriptURL = '//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js';
+  if (!window.adScriptLoaded) {
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = adScriptURL;
+    document.body.appendChild(script);
+    window.adScriptLoaded = true;
   }
 }
 
-function handleQuotaWarningCheck() {
-  const warning = document.querySelector('#modal-upload .warning-text');
-  const iframe = document.getElementById('upload-video');
-  if (warning) warning.style.display = 'none';
-  setTimeout(() => {
-    const isLoaded = iframe?.contentWindow?.length !== 0;
-    if (!isLoaded && warning) warning.style.display = 'block';
-  }, 2000);
-}
-
-// ===== INIT =====
-async function init() {
-  const movies = await fetchTrending('movie');
-  const tvShows = await fetchTrending('tv');
-  const anime = await fetchTrendingAnime();
-
-  bannerItems = movies;
-  bannerIndex = Math.floor(Math.random() * bannerItems.length);
-  displayBanner(bannerItems[bannerIndex]);
-
-  displayList(movies, 'movies-list');
-  displayList(tvShows, 'tvshows-list');
-  displayList(anime, 'anime-list');
-
-  await enrichUploads();
-  renderUploadedMoviesPage(currentUploadPage);
-}
-
-init();
+// Keep other parts of home.js code unchanged

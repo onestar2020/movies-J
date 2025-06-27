@@ -111,7 +111,6 @@ async function showDetails(item) {
 
 function showUploadedMovie(movie) {
   currentItem = movie;
-
   document.getElementById('upload-title').textContent = movie.title;
   document.getElementById('upload-description').textContent = movie.description;
   document.getElementById('upload-image').src = movie.poster;
@@ -159,30 +158,25 @@ function closeUploadModal() {
 function changeServer() {
   const select = document.getElementById('server');
   currentServer = select.value;
-
   if (!currentItem || document.getElementById('modal-tmdb').style.display !== 'flex') return;
 
   const mediaType = currentItem.media_type || (currentItem.first_air_date ? 'tv' : 'movie');
   const id = currentItem.id;
   let videoUrl = `https://vidsrc.cc/embed/${mediaType}/${id}`;
-
-  if (currentServer === 'vidsrc.me') {
-    videoUrl = `https://vidsrc.me/embed/${mediaType}/${id}`;
-  } else if (currentServer === 'player.videasy.net') {
-    videoUrl = `https://player.videasy.net/embed/${mediaType}/${id}`;
-  } else if (currentServer === 'multiembed') {
-    videoUrl = `https://multiembed.com/api/v1/movies/${id}`;
-  } else if (currentServer === '2embed') {
-    videoUrl = `https://2embed.org/embed/${mediaType}/${id}`;
-  }
-
+  if (currentServer === 'vidsrc.me') videoUrl = `https://vidsrc.me/embed/${mediaType}/${id}`;
+  else if (currentServer === 'player.videasy.net') videoUrl = `https://player.videasy.net/embed/${mediaType}/${id}`;
+  else if (currentServer === 'multiembed') videoUrl = `https://multiembed.com/api/v1/movies/${id}`;
+  else if (currentServer === '2embed') videoUrl = `https://2embed.org/embed/${mediaType}/${id}`;
   document.getElementById('modal-video').src = videoUrl;
 }
 
 // ===== SEARCH =====
 function openSearchModal() {
-  document.getElementById('search-modal').style.display = 'flex';
-  document.getElementById('search-input').focus();
+  const modal = document.getElementById('search-modal');
+  modal.style.display = 'flex';
+  requestAnimationFrame(() => {
+    document.getElementById('search-input').focus();
+  });
 }
 
 function closeSearchModal() {
@@ -191,26 +185,29 @@ function closeSearchModal() {
 }
 
 async function searchTMDB() {
-  const query = document.getElementById('search-input').value;
-  if (!query.trim()) {
-    document.getElementById('search-results').innerHTML = '';
-    return;
-  }
-  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-  const data = await res.json();
+  const query = document.getElementById('search-input').value.trim();
   const container = document.getElementById('search-results');
   container.innerHTML = '';
-  data.results.forEach(item => {
-    if (!item.poster_path) return;
-    const img = document.createElement('img');
-    img.src = `${IMG_URL}${item.poster_path}`;
-    img.alt = item.title || item.name;
-    img.onclick = () => {
-      closeSearchModal();
-      showDetails(item);
-    };
-    container.appendChild(img);
-  });
+  if (!query) return;
+
+  try {
+    const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    data.results.forEach(item => {
+      if (!item.poster_path) return;
+      const img = document.createElement('img');
+      img.src = `${IMG_URL}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.onclick = () => {
+        closeSearchModal();
+        showDetails(item);
+      };
+      container.appendChild(img);
+    });
+  } catch (err) {
+    console.error('Search error:', err);
+    container.innerHTML = `<p style="color:red;">Failed to fetch results.</p>`;
+  }
 }
 
 // ===== PAGINATED UPLOADS =====

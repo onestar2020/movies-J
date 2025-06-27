@@ -130,21 +130,29 @@ function closeUploadModal() {
   uploadModal.style.display = 'none';
 }
 
-
-
-function loadUploadedMovies() {
+async function loadUploadedMovies() {
   const container = document.getElementById('uploaded-movies-list');
-  uploads.forEach(upload => {
+  for (const upload of uploads) {
+    const title = encodeURIComponent(upload.title);
+    const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`);
+    const data = await res.json();
+    const movie = data.results[0];
+
     const div = document.createElement('div');
     div.classList.add('upload-item');
+
     div.innerHTML = `
       <div style="text-align:center">
-        <p style="margin: 5px 0">${upload.title}</p>
+        <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : ''}" alt="${upload.title}" style="width:120px;border-radius:5px;cursor:pointer" onclick="showUploadModal('${upload.id}')">
+        <p style="margin: 5px 0"><strong>${upload.title}</strong></p>
+        ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
+        ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
         <button onclick="showUploadModal('${upload.id}')">Watch Full Movie</button>
       </div>
     `;
+
     container.appendChild(div);
-  });
+  }
 }
 
 async function init() {
@@ -155,7 +163,7 @@ async function init() {
   displayList(movies, 'movies-list');
   displayList(tvShows, 'tvshows-list');
   displayList(anime, 'anime-list');
-  loadUploadedMovies();
+  await loadUploadedMovies();
 }
 
 init();

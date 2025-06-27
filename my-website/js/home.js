@@ -53,7 +53,8 @@ function nextBannerTrailer() {
   playBannerTrailer();
 }
 
-function watchBannerMovie() {
+// ✅ Fix: Watch button function linked to banner item
+function watchCurrentBanner() {
   const item = bannerItems[bannerIndex];
   if (!item) return;
 
@@ -63,6 +64,7 @@ function watchBannerMovie() {
     showDetails(item);
   }
 }
+window.watchCurrentBanner = watchCurrentBanner;
 
 function displayBanner(items) {
   bannerItems = items;

@@ -10,7 +10,64 @@
   <link rel="stylesheet" href="css/home.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- Inline Custom CSS -->
+  <!-- Inline Fixes for Search Modal -->
+  <style>
+    .search-modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.95);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 80px;
+      overflow-y: auto;
+    }
+
+    .search-modal input {
+      width: 80%;
+      max-width: 500px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      margin-bottom: 20px;
+    }
+
+    .search-modal .results {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      width: 90%;
+      max-width: 1000px;
+    }
+
+    .search-modal img {
+      width: 150px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .search-modal img:hover {
+      transform: scale(1.05);
+    }
+
+    .search-modal .close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 30px;
+      color: red;
+      cursor: pointer;
+    }
+  </style>
+
+  <!-- Other Utility Styles -->
   <style>
     body { font-family: 'Poppins', sans-serif; }
 
@@ -106,7 +163,7 @@
     <div class="list" id="anime-list"></div>
   </div>
 
-  <!-- My Uploaded Movies Section with Pagination -->
+  <!-- My Uploaded Movies Section -->
   <div class="row">
     <h2>My Uploaded Movies</h2>
     <div class="list" id="myupload-list"></div>
@@ -119,9 +176,9 @@
   <!-- TMDB Movie Modal -->
   <div class="modal" id="modal-tmdb">
     <div class="modal-content">
-      <span class="close" onclick="closeModal()" style="color:red;font-size:24px;">×</span>
+      <span class="close" onclick="closeModal()">×</span>
       <div class="modal-body">
-        <img id="modal-image" src="" alt="" style="width:30%;border-radius:5px;" />
+        <img id="modal-image" src="" alt="" />
         <div class="modal-text">
           <h2 id="modal-title"></h2>
           <div class="stars" id="modal-rating"></div>
@@ -132,18 +189,18 @@
         <iframe id="modal-video" width="100%" height="400" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       </div>
       <div class="warning-text">
-        ⚠️ This video is hosted on a third-party server. Ads may appear, and we have no control over them. If playback fails, try switching the server below.
+        ⚠️ This video is hosted on a third-party server. Ads may appear. If playback fails, try switching servers.
       </div>
       <div class="server-selector">
-        <label for="server" style="color:#fff;font-weight:bold;">Change Server:</label>
-        <select id="server" onchange="changeServer()" style="margin-top:10px;padding:6px;border-radius:4px;">
+        <label for="server">Change Server:</label>
+        <select id="server" onchange="changeServer()">
           <option value="vidsrc.cc">Vidsrc.cc</option>
           <option value="vidsrc.me">Vidsrc.me</option>
           <option value="player.videasy.net">Videasy</option>
           <option value="multiembed">MultiEmbed</option>
           <option value="2embed">2Embed</option>
         </select>
-        <small style="color:#ccc;">Note: Some servers may not work all the time.</small>
+        <small>Note: Some servers may not work all the time.</small>
       </div>
     </div>
   </div>
@@ -151,9 +208,9 @@
   <!-- Uploaded Movie Modal -->
   <div class="modal" id="modal-upload">
     <div class="modal-content">
-      <span class="close" onclick="closeUploadModal()" style="color:red;font-size:24px;">×</span>
+      <span class="close" onclick="closeUploadModal()">×</span>
       <div class="modal-body">
-        <img id="upload-image" src="" alt="" style="width:30%;border-radius:5px;" />
+        <img id="upload-image" src="" alt="" />
         <div class="modal-text">
           <h2 id="upload-title"></h2>
           <div class="stars" id="upload-rating"></div>
@@ -163,13 +220,10 @@
       <div class="iframe-wrapper">
         <iframe id="upload-video" width="100%" height="400" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       </div>
-
-      <!-- Quota Warning -->
       <div class="warning-text">
-        ⚠️ This video is hosted on Google Drive. If it fails to load, the daily playback quota may have been reached.<br>
-        💡 Tip: Please try again later, or click <strong>⬇️ Download This Movie</strong> below to watch it offline.
+        ⚠️ This video is hosted on Google Drive. If it fails to load, the daily playback quota may be reached.
+        <br>💡 Try again later or click ⬇️ Download to watch offline.
       </div>
-
       <div class="button-group" id="upload-buttons">
         <a href="#" id="btn-trailer" class="btn btn-outline" style="display:none;">▶️ Watch Trailer</a>
         <a href="#" id="btn-watch" class="btn btn-solid" style="display:none;">🎬 Watch Full Movie</a>
@@ -178,9 +232,9 @@
     </div>
   </div>
 
-  <!-- Search Modal -->
+  <!-- ✅ FIXED Search Modal -->
   <div class="search-modal" id="search-modal">
-    <span class="close" onclick="closeSearchModal()" style="color:red;font-size:24px;">×</span>
+    <span class="close" onclick="closeSearchModal()">×</span>
     <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
     <div class="results" id="search-results"></div>
   </div>

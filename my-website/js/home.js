@@ -1,241 +1,132 @@
-const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
-const BASE_URL = 'https://api.themoviedb.org/3';
-const IMG_URL = 'https://image.tmdb.org/t/p/original';
-let currentItem;
-let currentUpload = null;
-let bannerItems = [];
-let bannerIndex = 0;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Website</title>
+  <link rel="stylesheet" href="css/home.css">
+  <link rel="preload" href="css/home.css" as="style">
+  <link rel="preload" href="js/home.js" as="script">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script defer src="js/uploads.js"></script>
+  <script defer src="js/home.js"></script>
+</head>
 
-async function fetchTrending(type) {
-  const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
-  const data = await res.json();
-  return data.results;
-}
+<body>
+  <div class="navbar">
+    <img src="images/logo.png" alt="Movies-J Logo" />
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
+    </div>
+  </div>
 
-async function fetchTrendingAnime() {
-  let allResults = [];
-  for (let page = 1; page <= 3; page++) {
-    const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`);
-    const data = await res.json();
-    const filtered = data.results.filter(item =>
-      item.original_language === 'ja' && item.genre_ids.includes(16)
-    );
-    allResults = allResults.concat(filtered);
-  }
-  return allResults;
-}
+  <div class="banner" id="banner">
+    <div class="banner-video">
+      <iframe id="trailer" width="100%" height="400"
+        src=""
+        frameborder="0"
+        allow="autoplay; encrypted-media"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <h1 id="banner-title">Now Playing</h1>
+    <div class="banner-buttons" style="text-align:center; margin-top: 10px;">
+      <button onclick="nextBannerTrailer()">⏭ Next Trailer</button>
+      <button onclick="watchBannerMovie()">▶ Watch Full</button>
+    </div>
+  </div>
 
-async function fetchTrailer(id, mediaType) {
-  const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
-  const data = await res.json();
-  const trailer = data.results.find(video => video.type === "Trailer" && video.site === "YouTube");
-  return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
-}
+  <div class="row">
+    <h2>Trending Movies</h2>
+    <div class="list" id="movies-list"></div>
+  </div>
 
-async function playBannerTrailer() {
-  const bannerTitle = document.getElementById('banner-title');
-  const trailerIframe = document.getElementById('trailer');
-  const item = bannerItems[bannerIndex];
+  <div class="row">
+    <h2>Trending TV Shows</h2>
+    <div class="list" id="tvshows-list"></div>
+  </div>
 
-  bannerTitle.textContent = item.title || item.name;
+  <div class="row">
+    <h2>Trending Anime</h2>
+    <div class="list" id="anime-list"></div>
+  </div>
 
-  if (item.isUpload) {
-    trailerIframe.src = `https://drive.google.com/file/d/${item.id}/preview`;
-  } else {
-    const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-    const url = await fetchTrailer(item.id, mediaType);
-    trailerIframe.src = url ? `${url}?autoplay=1&mute=1&controls=0&loop=1&playlist=${url.split('/').pop()}` : '';
-  }
-}
+  <div class="row">
+    <h2>My Uploaded Movies</h2>
+    <div class="list" id="uploaded-movies-list"></div>
+  </div>
 
-function nextBannerTrailer() {
-  bannerIndex = (bannerIndex + 1) % bannerItems.length;
-  playBannerTrailer();
-}
-
-// ✅ Fix: Watch button function linked to banner item
-function watchCurrentBanner() {
-  const item = bannerItems[bannerIndex];
-  if (!item) return;
-
-  if (item.isUpload) {
-    showUploadModal(item.id);
-  } else {
-    showDetails(item);
-  }
-}
-window.watchCurrentBanner = watchCurrentBanner;
-
-function displayBanner(items) {
-  bannerItems = items;
-  bannerIndex = 0;
-  playBannerTrailer();
-}
-
-function displayList(items, containerId) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  items.forEach(item => {
-    const img = document.createElement('img');
-    img.src = `${IMG_URL}${item.poster_path}`;
-    img.alt = item.title || item.name;
-    img.onclick = () => showDetails(item);
-    container.appendChild(img);
-  });
-}
-
-async function showDetails(item) {
-  currentItem = item;
-  document.getElementById('modal-title').textContent = item.title || item.name;
-  document.getElementById('modal-description').textContent = item.overview;
-  document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
-  document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
-  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-  const trailerUrl = await fetchTrailer(item.id, mediaType);
-  document.getElementById('modal-video').src = trailerUrl || '';
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function changeServer() {
-  const server = document.getElementById('server').value;
-  const type = currentItem.media_type === "movie" ? "movie" : "tv";
-  let embedURL = "";
-  if (server === "vidsrc.cc") {
-    embedURL = `https://vidsrc.cc/v2/embed/${type}/${currentItem.id}`;
-  } else if (server === "vidsrc.me") {
-    embedURL = `https://vidsrc.net/embed/${type}/?tmdb=${currentItem.id}`;
-  } else if (server === "player.videasy.net") {
-    embedURL = `https://player.videasy.net/${type}/${currentItem.id}`;
-  }
-  document.getElementById('modal-video').src = embedURL;
-}
-
-function closeModal() {
-  document.getElementById('modal').style.display = 'none';
-  document.getElementById('modal-video').src = '';
-}
-
-function openSearchModal() {
-  document.getElementById('search-modal').style.display = 'flex';
-  document.getElementById('search-input').focus();
-}
-
-function closeSearchModal() {
-  document.getElementById('search-modal').style.display = 'none';
-  document.getElementById('search-results').innerHTML = '';
-}
-
-async function searchTMDB() {
-  const query = document.getElementById('search-input').value;
-  if (!query.trim()) {
-    document.getElementById('search-results').innerHTML = '';
-    return;
-  }
-  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${query}`);
-  const data = await res.json();
-  const container = document.getElementById('search-results');
-  container.innerHTML = '';
-  data.results.forEach(item => {
-    if (!item.poster_path) return;
-    const img = document.createElement('img');
-    img.src = `${IMG_URL}${item.poster_path}`;
-    img.alt = item.title || item.name;
-    img.onclick = () => {
-      closeSearchModal();
-      showDetails(item);
-    };
-    container.appendChild(img);
-  });
-}
-
-function showUploadModal(videoId) {
-  const upload = uploads.find(u => u.id === videoId);
-  if (!upload) return;
-
-  currentUpload = upload;
-  const title = encodeURIComponent(upload.title);
-
-  fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`)
-    .then(res => res.json())
-    .then(data => {
-      const movie = data.results[0] || {};
-
-      document.getElementById('upload-title').textContent = movie.title || upload.title;
-      document.getElementById('upload-description').textContent = movie.overview || "No description available.";
-      document.getElementById('upload-rating').innerHTML = movie.vote_average
-        ? '★'.repeat(Math.round(movie.vote_average / 2))
-        : 'Not rated';
-
-      document.getElementById('upload-trailer-btn').onclick = () => watchUploadTrailer();
-      document.getElementById('upload-watch-btn').onclick = () => playUploadedVideo();
-      document.getElementById('upload-download-btn').href = `https://drive.google.com/u/0/uc?id=${upload.id}&export=download`;
-
-      document.getElementById('upload-video').src = `https://drive.google.com/file/d/${upload.id}/preview`;
-
-      document.getElementById('upload-modal').style.display = 'flex';
-    });
-}
-
-function playUploadedVideo() {
-  if (!currentUpload) return;
-  document.getElementById('upload-video').src = `https://drive.google.com/file/d/${currentUpload.id}/preview`;
-}
-
-function watchUploadTrailer() {
-  if (!currentUpload) return;
-  const title = encodeURIComponent(currentUpload.title);
-  window.open(`https://www.youtube.com/results?search_query=${title}+official+trailer`, '_blank');
-}
-
-function closeUploadModal() {
-  document.getElementById('upload-modal').style.display = 'none';
-  document.getElementById('upload-video').src = '';
-}
-
-async function loadUploadedMovies() {
-  const container = document.getElementById('uploaded-movies-list');
-  for (const upload of uploads) {
-    const title = encodeURIComponent(upload.title);
-    const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`);
-    const data = await res.json();
-    const movie = data.results[0];
-
-    const div = document.createElement('div');
-    div.classList.add('upload-item');
-
-    div.innerHTML = `
-      <div style="text-align:center">
-        <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : ''}" alt="${upload.title}" style="width:120px;border-radius:5px;cursor:pointer" onclick="showUploadModal('${upload.id}')">
-        <p style="margin: 5px 0"><strong>${upload.title}</strong></p>
-        ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
-        ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
-        <button onclick="showUploadModal('${upload.id}')">Watch Full Movie</button>
+  <!-- TMDB Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()" style="color: red;">&times;</span>
+      <div class="modal-body">
+        <img id="modal-image" src="" alt="" />
+        <div class="modal-text">
+          <h2 id="modal-title"></h2>
+          <div class="stars" id="modal-rating"></div>
+          <p id="modal-description"></p>
+        </div>
       </div>
-    `;
+      <div class="server-selector">
+        <label for="server">Change Server:</label>
+        <select id="server" onchange="changeServer()">
+          <option value="vidsrc.cc">Vidsrc.cc</option>
+          <option value="vidsrc.me">Vidsrc.me</option>
+          <option value="player.videasy.net">Player.Videasy.net</option>
+          <option value="multiembed.mov">MultiEmbed.mov</option>
+          <option value="2embed.to">2Embed.to</option>
+          <option value="zembed.net">Zembed.net</option>
+          <option value="curtstream.com">CurtStream</option>
+        </select>
+      </div>
+      <iframe id="modal-video" width="100%" height="400" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
 
-    container.appendChild(div);
-  }
-}
+  <!-- Uploaded Movie Modal -->
+  <div class="modal" id="upload-modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeUploadModal()" style="color: red;">&times;</span>
+      <div class="modal-body">
+        <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
+      </div>
+      <div class="modal-text">
+        <h2 id="upload-title"></h2>
+        <div class="stars" id="upload-rating"></div>
+        <p id="upload-description"></p>
+      </div>
+      <div style="text-align: center; margin-top: 10px;">
+        <button id="upload-trailer-btn">🎬 Watch Trailer</button>
+        <button id="upload-watch-btn">▶ Watch Full Movie</button>
+        <a id="upload-download-btn" href="#" target="_blank" download>
+          <button>⬇ Download</button>
+        </a>
+      </div>
+    </div>
+  </div>
 
-async function init() {
-  const movies = await fetchTrending('movie');
-  const tvShows = await fetchTrending('tv');
-  const anime = await fetchTrendingAnime();
+  <!-- Search Modal -->
+  <div class="search-modal" id="search-modal">
+    <span class="close" onclick="closeSearchModal()" style="color: red;">&times;</span>
+    <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
+    <div class="results" id="search-results"></div>
+  </div>
 
-  await loadUploadedMovies();
-
-  const uploadItems = uploads.map(u => ({
-    title: u.title,
-    id: u.id,
-    isUpload: true
-  }));
-
-  const bannerPool = [...movies, ...tvShows, ...uploadItems];
-  displayBanner(bannerPool);
-
-  displayList(movies, 'movies-list');
-  displayList(tvShows, 'tvshows-list');
-  displayList(anime, 'anime-list');
-}
-
-init();
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 My Website. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#">Disclaimer</a>
+        <a href="#">About Us</a>
+        <a href="#">Contact Us</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

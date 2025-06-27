@@ -5,7 +5,7 @@
   box-sizing: border-box;
 }
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins', 'Segoe UI', 'Helvetica Neue', sans-serif;
   background: #111;
   color: #fff;
 }
@@ -122,11 +122,14 @@ body {
 }
 .modal-content {
   background: #222;
-  padding: 20px;
-  width: 100%;
-  max-width: 800px;
-  border-radius: 10px;
   color: white;
+  border-radius: 10px;
+  max-width: 700px;
+  width: 100%;
+  margin: auto;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  padding: 20px;
   overflow-y: auto;
   max-height: 90vh;
   position: relative;
@@ -151,6 +154,20 @@ body {
 .modal-text p {
   line-height: 1.6;
 }
+.modal-text button {
+  background: #1f1f1f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin: 5px;
+  padding: 10px 16px;
+  font-size: 0.9em;
+}
+.modal-text button:hover {
+  background: #e50914;
+}
 .stars {
   color: gold;
   margin-bottom: 10px;
@@ -160,7 +177,8 @@ body {
   top: 10px;
   right: 20px;
   cursor: pointer;
-  font-size: 24px;
+  font-size: 28px;
+  padding: 5px 10px;
 }
 .server-selector {
   margin: 15px 0;
@@ -304,4 +322,13 @@ body {
   .footer-content {
     font-size: 14px;
   }
+}
+
+/* ===== SCROLLBAR ===== */
+.list::-webkit-scrollbar {
+  height: 6px;
+}
+.list::-webkit-scrollbar-thumb {
+  background: #e50914;
+  border-radius: 10px;
 }

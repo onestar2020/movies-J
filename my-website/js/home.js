@@ -129,21 +129,18 @@ function showUploadModal(videoId) {
     .then(data => {
       const movie = data.results[0] || {};
 
-      document.getElementById('upload-modal-title').textContent = movie.title || upload.title;
-      document.getElementById('upload-modal-description').textContent = movie.overview || "No description available.";
-      document.getElementById('upload-modal-rating').innerHTML = movie.vote_average
+      document.getElementById('upload-title').textContent = movie.title || upload.title;
+      document.getElementById('upload-description').textContent = movie.overview || "No description available.";
+      document.getElementById('upload-rating').innerHTML = movie.vote_average
         ? '★'.repeat(Math.round(movie.vote_average / 2))
         : 'Not rated';
 
-      document.getElementById('upload-modal-image').src = movie.poster_path
-        ? IMG_URL + movie.poster_path
-        : "images/logo.png";
-
       document.getElementById('upload-trailer-btn').style.display = movie.id ? "inline-block" : "none";
       document.getElementById('upload-download-btn').href = `https://drive.google.com/u/0/uc?id=${upload.id}&export=download`;
+      document.getElementById('upload-watch-btn').onclick = playUploadedVideo;
+      document.getElementById('upload-trailer-btn').onclick = watchUploadTrailer;
 
       document.getElementById('upload-video').src = `https://drive.google.com/file/d/${upload.id}/preview`;
-
       document.getElementById('upload-modal').style.display = 'flex';
     });
 }
@@ -175,15 +172,32 @@ async function loadUploadedMovies() {
     const div = document.createElement('div');
     div.classList.add('upload-item');
 
-    div.innerHTML = `
-      <div style="text-align:center">
-        <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : ''}" alt="${upload.title}" style="width:120px;border-radius:5px;cursor:pointer" onclick="showUploadModal('${upload.id}')">
-        <p style="margin: 5px 0"><strong>${upload.title}</strong></p>
-        ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
-        ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
-        <button onclick="showUploadModal('${upload.id}')">Watch Full Movie</button>
-      </div>
-    `;
+    const img = document.createElement('img');
+    img.src = movie?.poster_path ? IMG_URL + movie.poster_path : 'images/logo.png';
+    img.alt = upload.title;
+    img.style = "width:120px;border-radius:5px;cursor:pointer";
+    img.onclick = () => showUploadModal(upload.id);
+
+    const titleEl = document.createElement('p');
+    titleEl.innerHTML = `<strong>${upload.title}</strong>`;
+
+    const descEl = document.createElement('p');
+    descEl.style.fontSize = "12px";
+    descEl.textContent = movie?.overview ? movie.overview.slice(0, 100) + "..." : '';
+
+    const ratingEl = document.createElement('p');
+    ratingEl.style.color = "gold";
+    ratingEl.innerHTML = movie?.vote_average ? '★'.repeat(Math.round(movie.vote_average / 2)) : '';
+
+    const btn = document.createElement('button');
+    btn.textContent = "Watch Full Movie";
+    btn.onclick = () => showUploadModal(upload.id);
+
+    div.appendChild(img);
+    div.appendChild(titleEl);
+    div.appendChild(descEl);
+    div.appendChild(ratingEl);
+    div.appendChild(btn);
 
     container.appendChild(div);
   }

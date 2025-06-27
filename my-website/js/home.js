@@ -169,18 +169,20 @@ async function searchTMDB() {
     container.appendChild(div);
   });
 
-  uploads.forEach(upload => {
-    if (upload.title.toLowerCase().includes(query.toLowerCase())) {
-      const div = document.createElement('div');
-      div.style.textAlign = 'center';
-      div.style.marginTop = '15px';
-      div.innerHTML = `
-        <img src="https://drive.google.com/thumbnail?id=${upload.id}&sz=w200" alt="${upload.title}" style="width:120px;border-radius:5px;cursor:pointer" onclick="showUploadModal('${upload.id}')">
-        <p style="margin: 5px 0; font-size:14px;"><strong>${upload.title}</strong><br><span style="font-size:12px; color:#aaa;">📁 My Uploaded</span></p>
-      `;
-      container.appendChild(div);
-    }
-  });
+  if (typeof uploads !== 'undefined') {
+    uploads.forEach(upload => {
+      if (upload.title.toLowerCase().includes(query.toLowerCase())) {
+        const div = document.createElement('div');
+        div.style.textAlign = 'center';
+        div.style.marginTop = '15px';
+        div.innerHTML = `
+          <img src="https://drive.google.com/thumbnail?id=${upload.id}&sz=w200" alt="${upload.title}" style="width:120px;border-radius:5px;cursor:pointer" onclick="showUploadModal('${upload.id}')">
+          <p style="margin: 5px 0; font-size:14px;"><strong>${upload.title}</strong><br><span style="font-size:12px; color:#aaa;">📁 My Uploaded</span></p>
+        `;
+        container.appendChild(div);
+      }
+    });
+  }
 }
 
 // =================== HOME.JS - END ===================

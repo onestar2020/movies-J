@@ -144,17 +144,17 @@ function closeSearchModal() {
 }
 
 async function searchTMDB() {
-  const query = document.getElementById('search-input').value;
-  if (!query.trim()) {
-    document.getElementById('search-results').innerHTML = '';
-    return;
-  }
-  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${query}`);
-  const data = await res.json();
+  const query = document.getElementById('search-input').value.trim();
   const container = document.getElementById('search-results');
   container.innerHTML = '';
-  data.results.forEach(item => {
-    if (!item.poster_path) return;
+
+  if (!query) return;
+
+  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+  const data = await res.json();
+  const tmdbResults = data.results.filter(item => item.poster_path);
+
+  tmdbResults.forEach(item => {
     const img = document.createElement('img');
     img.src = `${IMG_URL}${item.poster_path}`;
     img.alt = item.title || item.name;
@@ -163,6 +163,27 @@ async function searchTMDB() {
       showDetails(item);
     };
     container.appendChild(img);
+  });
+
+  uploads.forEach(upload => {
+    if (upload.title.toLowerCase().includes(query.toLowerCase())) {
+      const div = document.createElement('div');
+      div.style.textAlign = 'center';
+      div.style.marginTop = '15px';
+
+      div.innerHTML = `
+        <img src="https://drive.google.com/thumbnail?id=${upload.id}&sz=w200" 
+             alt="${upload.title}" 
+             style="width:120px;border-radius:5px;cursor:pointer" 
+             onclick="showUploadModal('${upload.id}')">
+        <p style="margin: 5px 0; font-size:14px;">
+          <strong>${upload.title}</strong><br>
+          <span style="font-size:12px; color:#aaa;">📁 My Upload</span>
+        </p>
+      `;
+
+      container.appendChild(div);
+    }
   });
 }
 
@@ -250,7 +271,6 @@ async function loadUploadedMovies() {
     container.appendChild(div);
   }
 }
-
 
 async function init() {
   const movies = await fetchTrending('movie');

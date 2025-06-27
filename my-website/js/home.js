@@ -53,7 +53,7 @@ function nextBannerTrailer() {
   playBannerTrailer();
 }
 
-function watchBannerMovie() {
+function watchCurrentBanner() {
   const item = bannerItems[bannerIndex];
   if (!item) return;
 

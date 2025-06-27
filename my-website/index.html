@@ -8,9 +8,10 @@
   <link rel="preload" href="js/home.js" as="script">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script defer src="js/home.js"></script>
-  <script defer src="js/uploads.js"></script>
 
+  <!-- Correct order: uploads.js first -->
+  <script defer src="js/uploads.js"></script>
+  <script defer src="js/home.js"></script>
 </head>
 
 <body>
@@ -23,17 +24,16 @@
   </div>
 
   <div class="banner" id="banner">
-  <div class="banner-video">
-    <iframe id="trailer" width="100%" height="400"
-      src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&controls=0&loop=1&playlist=dQw4w9WgXcQ"
-      frameborder="0"
-      allow="autoplay; encrypted-media"
-      allowfullscreen>
-    </iframe>
+    <div class="banner-video">
+      <iframe id="trailer" width="100%" height="400"
+        src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&controls=0&loop=1&playlist=dQw4w9WgXcQ"
+        frameborder="0"
+        allow="autoplay; encrypted-media"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <h1 id="banner-title">Now Playing</h1>
   </div>
-  <h1 id="banner-title">Now Playing</h1>
-</div>
-
 
   <div class="row">
     <h2>Trending Movies</h2>
@@ -83,12 +83,24 @@
     </div>
   </div>
 
-  <!-- Modal for My Uploaded Movies -->
+  <!-- ✅ Modal for My Uploaded Movies -->
   <div class="modal" id="upload-modal">
     <div class="modal-content">
       <span class="close" onclick="closeUploadModal()" style="color: red;">&times;</span>
       <div class="modal-body">
         <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
+      </div>
+      <div class="modal-text">
+        <h2 id="upload-title"></h2>
+        <div class="stars" id="upload-rating"></div>
+        <p id="upload-description"></p>
+      </div>
+      <div style="text-align: center; margin-top: 10px;">
+        <button id="upload-trailer-btn">🎬 Watch Trailer</button>
+        <button id="upload-watch-btn">▶ Watch Full Movie</button>
+        <a id="upload-download-btn" href="#" target="_blank" download>
+          <button>⬇ Download</button>
+        </a>
       </div>
     </div>
   </div>

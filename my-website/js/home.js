@@ -244,13 +244,13 @@ async function loadUploadedMovies() {
         <p style="margin: 5px 0"><strong>${upload.title}</strong></p>
         ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
         ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
-        <button onclick="showUploadModal('${upload.id}')">Watch Full Movie</button>
       </div>
     `;
 
     container.appendChild(div);
   }
 }
+
 
 async function init() {
   const movies = await fetchTrending('movie');

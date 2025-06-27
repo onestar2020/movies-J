@@ -235,7 +235,7 @@ async function searchTMDB() {
       container.appendChild(div);
     }
   });
-}
+
 
 function showUploadModal(videoId) {
   const upload = uploads.find(u => u.id === videoId);

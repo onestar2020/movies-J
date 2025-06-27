@@ -2,6 +2,7 @@ const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
 let currentItem;
+let currentUpload = null;
 
 async function fetchTrending(type) {
   const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
@@ -116,35 +117,51 @@ async function searchTMDB() {
   });
 }
 
+function showUploadModal(videoId) {
+  const upload = uploads.find(u => u.id === videoId);
+  if (!upload) return;
+
+  currentUpload = upload;
+  const title = encodeURIComponent(upload.title);
+
+  fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`)
+    .then(res => res.json())
+    .then(data => {
+      const movie = data.results[0] || {};
+
+      document.getElementById('upload-modal-title').textContent = movie.title || upload.title;
+      document.getElementById('upload-modal-description').textContent = movie.overview || "No description available.";
+      document.getElementById('upload-modal-rating').innerHTML = movie.vote_average
+        ? '★'.repeat(Math.round(movie.vote_average / 2))
+        : 'Not rated';
+
+      document.getElementById('upload-modal-image').src = movie.poster_path
+        ? IMG_URL + movie.poster_path
+        : "images/logo.png";
+
+      document.getElementById('upload-trailer-btn').style.display = movie.id ? "inline-block" : "none";
+      document.getElementById('upload-download-btn').href = `https://drive.google.com/u/0/uc?id=${upload.id}&export=download`;
+
+      document.getElementById('upload-video').src = `https://drive.google.com/file/d/${upload.id}/preview`;
+
+      document.getElementById('upload-modal').style.display = 'flex';
+    });
+}
+
+function playUploadedVideo() {
+  if (!currentUpload) return;
+  document.getElementById('upload-video').src = `https://drive.google.com/file/d/${currentUpload.id}/preview`;
+}
+
+function watchUploadTrailer() {
+  if (!currentUpload) return;
+  const title = encodeURIComponent(currentUpload.title);
+  window.open(`https://www.youtube.com/results?search_query=${title}+official+trailer`, '_blank');
+}
+
 function closeUploadModal() {
   document.getElementById('upload-modal').style.display = 'none';
   document.getElementById('upload-video').src = '';
-}
-
-function showUploadModal(videoId) {
-  const upload = uploads.find(item => item.id === videoId);
-  if (!upload) return;
-
-  document.getElementById('upload-title').textContent = upload.title;
-  document.getElementById('upload-rating').innerHTML = upload.stars ? '★'.repeat(upload.stars) : '';
-  document.getElementById('upload-description').textContent = upload.description || '';
-
-  const video = document.getElementById('upload-video');
-  video.src = `https://drive.google.com/file/d/${upload.id}/preview`;
-
-  document.getElementById('upload-trailer-btn').onclick = () => {
-    if (upload.trailer) {
-      window.open(upload.trailer, '_blank');
-    }
-  };
-
-  document.getElementById('upload-watch-btn').onclick = () => {
-    video.src = `https://drive.google.com/file/d/${upload.id}/preview`;
-  };
-
-  document.getElementById('upload-download-btn').href = `https://drive.google.com/uc?id=${upload.id}&export=download`;
-
-  document.getElementById('upload-modal').style.display = 'flex';
 }
 
 async function loadUploadedMovies() {

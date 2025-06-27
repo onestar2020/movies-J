@@ -10,69 +10,11 @@
   <link rel="stylesheet" href="css/home.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- Inline Fixes for Search Modal -->
-  <style>
-    .search-modal {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0, 0, 0, 0.95);
-      z-index: 9999;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding-top: 80px;
-      overflow-y: auto;
-    }
-
-    .search-modal input {
-      width: 80%;
-      max-width: 500px;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: none;
-      margin-bottom: 20px;
-    }
-
-    .search-modal .results {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      width: 90%;
-      max-width: 1000px;
-    }
-
-    .search-modal img {
-      width: 150px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-
-    .search-modal img:hover {
-      transform: scale(1.05);
-    }
-
-    .search-modal .close {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      font-size: 30px;
-      color: red;
-      cursor: pointer;
-    }
-  </style>
-
-  <!-- Other Utility Styles -->
+  <!-- Utility Styles -->
   <style>
     body { font-family: 'Poppins', sans-serif; }
 
-    .server-selector,
-    .modal small {
+    .server-selector, .modal small {
       display: none;
     }
 
@@ -126,6 +68,34 @@
     .pagination-buttons button:hover {
       background-color: #b00610;
     }
+
+    /* New search results section */
+    #new-search-results {
+      padding: 20px;
+      display: none;
+    }
+
+    #new-search-results h2 {
+      color: white;
+      margin-bottom: 15px;
+    }
+
+    #new-search-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    #new-search-list img {
+      width: 150px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #new-search-list img:hover {
+      transform: scale(1.05);
+    }
   </style>
 
   <!-- Scripts -->
@@ -138,7 +108,13 @@
     <img src="images/logo.png" alt="Movies-J Logo" />
     <div class="nav-links">
       <a href="index.html">Home</a>
-      <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
+      <input
+        type="text"
+        id="new-search-input"
+        placeholder="Search for movies..."
+        oninput="handleNewSearch()"
+        style="padding: 6px 12px; border-radius: 4px; border: none;"
+      />
     </div>
   </div>
 
@@ -232,11 +208,10 @@
     </div>
   </div>
 
-  <!-- ✅ Working Search Modal -->
-  <div class="search-modal" id="search-modal">
-    <span class="close" onclick="closeSearchModal()">×</span>
-    <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
-    <div class="results" id="search-results"></div>
+  <!-- ✅ New Search Results Section -->
+  <div id="new-search-results">
+    <h2>🔍 Search Results</h2>
+    <div id="new-search-list"></div>
   </div>
 
   <!-- Footer -->

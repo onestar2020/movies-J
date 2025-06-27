@@ -155,56 +155,6 @@ async function searchTMDB() {
   const tmdbResults = data.results.filter(item => item.poster_path);
 
   tmdbResults.forEach(item => {
-    const wrapper = document.createElement('div');
-    wrapper.style.display = 'inline-block';
-    wrapper.style.width = '45%';
-    wrapper.style.margin = '2.5%';
-    wrapper.style.textAlign = 'center';
-
-    wrapper.innerHTML = `
-      <img src="${IMG_URL}${item.poster_path}" 
-           alt="${item.title || item.name}" 
-           style="width:100%; max-width:140px; border-radius:5px; cursor:pointer"
-           onclick="closeSearchModal(); showDetails(${JSON.stringify(item).replace(/"/g, '&quot;')})">
-      <p style="margin: 5px 0; font-size:14px;">
-        <strong>${item.title || item.name}</strong><br>
-        <span style="font-size:12px; color:#0af; font-weight:bold;">🎬 TMDB</span>
-      </p>
-    `;
-    container.appendChild(wrapper);
-  });
-
-  uploads.forEach(upload => {
-    if (upload.title.toLowerCase().includes(query.toLowerCase())) {
-      const wrapper = document.createElement('div');
-      wrapper.style.display = 'inline-block';
-      wrapper.style.width = '45%';
-      wrapper.style.margin = '2.5%';
-      wrapper.style.textAlign = 'center';
-
-      wrapper.innerHTML = `
-        <img src="https://drive.google.com/thumbnail?id=${upload.id}&sz=w200" 
-             alt="${upload.title}" 
-             style="width:100%; max-width:140px; border-radius:5px; cursor:pointer"
-             onclick="showUploadModal('${upload.id}')">
-        <p style="margin: 5px 0; font-size:14px;">
-          <strong>${upload.title}</strong><br>
-          <span style="font-size:12px; color:gold; font-weight:bold;">📁 My Upload</span>
-        </p>
-      `;
-      container.appendChild(wrapper);
-    }
-  });
-}
-
-
-  if (!query) return;
-
-  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-  const data = await res.json();
-  const tmdbResults = data.results.filter(item => item.poster_path);
-
-  tmdbResults.forEach(item => {
     const img = document.createElement('img');
     img.src = `${IMG_URL}${item.poster_path}`;
     img.alt = item.title || item.name;
@@ -235,7 +185,7 @@ async function searchTMDB() {
       container.appendChild(div);
     }
   });
-
+}
 
 function showUploadModal(videoId) {
   const upload = uploads.find(u => u.id === videoId);

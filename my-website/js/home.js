@@ -154,35 +154,39 @@ async function searchTMDB() {
 
   const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
   const data = await res.json();
-
-  const tmdbResults = data.results;
+  const tmdbResults = data.results.filter(item => item.poster_path);
 
   tmdbResults.forEach(item => {
-    const poster = item.poster_path ? `${IMG_URL}${item.poster_path}` : 'https://via.placeholder.com/120x180?text=No+Image';
     const div = document.createElement('div');
     div.style.textAlign = 'center';
     div.style.margin = '15px 0';
     div.innerHTML = `
-      <img src="${poster}" alt="${item.title || item.name}" style="width:120px;border-radius:5px;cursor:pointer" onclick='closeSearchModal(); showDetails(${JSON.stringify(item).replace(/'/g, "\'")})'>
+      <img src="${IMG_URL}${item.poster_path}" alt="${item.title || item.name}" style="width:120px;border-radius:5px;cursor:pointer" onclick="closeSearchModal(); showDetails(${JSON.stringify(item).replace(/"/g, '&quot;')})">
       <p style="margin: 5px 0; font-size:14px;"><strong>${item.title || item.name}</strong><br><span style="font-size:12px; color:#00bcd4;">🎬 TMDB Result</span></p>
     `;
     container.appendChild(div);
   });
 
-  if (typeof uploads !== 'undefined') {
-    uploads.forEach(upload => {
-      if (upload.title.toLowerCase().includes(query.toLowerCase())) {
-        const div = document.createElement('div');
-        div.style.textAlign = 'center';
-        div.style.marginTop = '15px';
-        div.innerHTML = `
-          <img src="https://drive.google.com/thumbnail?id=${upload.id}&sz=w200" alt="${upload.title}" style="width:120px;border-radius:5px;cursor:pointer" onclick="showUploadModal('${upload.id}')">
-          <p style="margin: 5px 0; font-size:14px;"><strong>${upload.title}</strong><br><span style="font-size:12px; color:#aaa;">📁 My Uploaded</span></p>
-        `;
-        container.appendChild(div);
-      }
-    });
-  }
+  uploads.forEach(upload => {
+    if (upload.title.toLowerCase().includes(query.toLowerCase())) {
+      const div = document.createElement('div');
+      div.style.textAlign = 'center';
+      div.style.marginTop = '15px';
+
+      div.innerHTML = `
+        <img src="https://drive.google.com/thumbnail?id=${upload.id}&sz=w200" 
+             alt="${upload.title}" 
+             style="width:120px;border-radius:5px;cursor:pointer" 
+             onclick="showUploadModal('${upload.id}')">
+        <p style="margin: 5px 0; font-size:14px;">
+          <strong>${upload.title}</strong><br>
+          <span style="font-size:12px; color:#aaa;">📁 My Uploaded</span>
+        </p>
+      `;
+
+      container.appendChild(div);
+    }
+  });
 }
 
 // =================== HOME.JS - END ===================

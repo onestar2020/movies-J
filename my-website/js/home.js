@@ -11,6 +11,17 @@ let currentUploadPage = 0;
 const itemsPerPage = 12;
 let enrichedUploads = [];
 
+// ===== ADS =====
+function loadAdScript() {
+  const existing = document.querySelector('script[src*="profitableratecpm"]');
+  if (!existing) {
+    const script = document.createElement('script');
+    script.src = "//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js";
+    script.type = "text/javascript";
+    document.body.appendChild(script);
+  }
+}
+
 // ===== FETCHERS =====
 async function fetchTrending(type) {
   let allResults = [];
@@ -135,6 +146,7 @@ function showUploadedMovie(movie) {
 
   btnWatch.onclick = (e) => {
     e.preventDefault();
+    loadAdScript(); // Load ad when Watch Full Movie is clicked
     document.getElementById('upload-video').src = movie.driveLink;
     handleQuotaWarningCheck();
   };

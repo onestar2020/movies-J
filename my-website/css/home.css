@@ -395,3 +395,54 @@ body {
     filter: drop-shadow(0 0 10px #e50914) drop-shadow(0 0 20px #e50914);
   }
 }
+/* ===== RIPPLE EFFECT FOR BUTTONS ===== */
+.modern-button,
+#upload-pagination button {
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-button::after,
+#upload-pagination button::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.modern-button:active::after,
+#upload-pagination button:active::after {
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  margin-top: -50px;
+  margin-left: -50px;
+}
+
+/* ===== GRADIENT ANIMATED LOGO ===== */
+.logo-effect.glow-gradient {
+  background: linear-gradient(45deg, #e50914, #ff0040, #e50914);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientMove 4s ease infinite;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(229, 9, 20, 0.3);
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

@@ -4,26 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Movies-J Official Site</title>
-  <link rel="stylesheet" href="css/home.css">
+
+  <!-- Preload (order matters: preload first, then stylesheet) -->
   <link rel="preload" href="css/home.css" as="style">
+  <link rel="stylesheet" href="css/home.css">
+
+  <!-- Scripts preload (non-blocking hint) -->
   <link rel="preload" href="js/home.js" as="script">
+  <link rel="preload" href="js/uploads.js" as="script">
+
+  <!-- Web Manifest and Favicon -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="images/logo.png" type="image/png">
   <meta name="theme-color" content="#000000">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
+  <!-- Navigation Bar -->
   <div class="navbar">
-    <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect" />
+    <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect glow-gradient" />
     <div class="nav-links">
       <a href="index.html">Home</a>
       <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
     </div>
   </div>
 
+  <!-- Banner -->
   <div class="banner" id="banner">
     <div class="banner-video">
-      <iframe id="trailer" width="100%" height="400" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <iframe id="trailer" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
     <h1 id="banner-title">Now Playing</h1>
     <div class="banner-buttons">
@@ -32,28 +43,17 @@
     </div>
   </div>
 
-  <div class="row">
-    <h2>Trending Movies</h2>
-    <div class="list" id="movies-list"></div>
-  </div>
-
-  <div class="row">
-    <h2>Trending TV Shows</h2>
-    <div class="list" id="tvshows-list"></div>
-  </div>
-
-  <div class="row">
-    <h2>Trending Anime</h2>
-    <div class="list" id="anime-list"></div>
-  </div>
-
+  <!-- Sections -->
+  <div class="row"><h2>Trending Movies</h2><div class="list" id="movies-list"></div></div>
+  <div class="row"><h2>Trending TV Shows</h2><div class="list" id="tvshows-list"></div></div>
+  <div class="row"><h2>Trending Anime</h2><div class="list" id="anime-list"></div></div>
   <div class="row">
     <h2>My Uploaded Movies</h2>
     <div class="list" id="uploaded-movies-list"></div>
     <div id="upload-pagination" style="text-align:center; margin-top:10px;"></div>
   </div>
 
-  <!-- Modal for TMDB Movies -->
+  <!-- TMDB Modal -->
   <div class="modal" id="modal">
     <div class="modal-content">
       <button class="close" onclick="closeModal()">&times;</button>
@@ -84,7 +84,7 @@
     </div>
   </div>
 
-  <!-- Modal for Uploaded Movies -->
+  <!-- Uploaded Modal -->
   <div class="modal" id="upload-modal">
     <div class="modal-content">
       <button class="close" onclick="closeUploadModal()">&times;</button>
@@ -116,6 +116,7 @@
     <div class="results" id="search-results"></div>
   </div>
 
+  <!-- Footer -->
   <footer class="footer">
     <div class="footer-content">
       <p>&copy; 2025 My Website. All rights reserved.</p>
@@ -127,7 +128,7 @@
     </div>
   </footer>
 
-  <!-- Scripts at the end for performance -->
+  <!-- Scripts -->
   <script src="js/uploads.js"></script>
   <script src="js/home.js"></script>
 </body>

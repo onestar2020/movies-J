@@ -338,6 +338,7 @@ body {
   border: 1px solid #4CAF50;
   border-radius: 8px;
 }
+
 /* ===== MODERN BUTTON STYLING ===== */
 .modern-button {
   padding: 8px 16px;
@@ -351,10 +352,10 @@ body {
   cursor: pointer;
   transition: background 0.3s ease;
 }
-
 .modern-button:hover {
   background: linear-gradient(90deg, #f40612, #b81d24);
 }
+
 /* ===== MODERN PAGINATION BUTTONS ===== */
 #upload-pagination button {
   background: linear-gradient(90deg, #e50914, #b81d24);
@@ -369,17 +370,28 @@ body {
   transition: all 0.3s ease;
   box-shadow: 0 4px 10px rgba(229, 9, 20, 0.3);
 }
-
 #upload-pagination button:hover {
   background: linear-gradient(90deg, #f40612, #a41a22);
   transform: scale(1.05);
 }
 
+/* ===== LOGO HOVER EFFECT ===== */
 .logo-effect {
   transition: all 0.3s ease;
+  display: inline-block;
 }
-
 .logo-effect:hover {
-  transform: scale(1.08);
-  filter: drop-shadow(0 0 8px #e50914);
+  transform: scale(1.08) rotate(1deg);
+  filter: drop-shadow(0 0 8px #e50914) drop-shadow(0 0 15px #e50914);
+  animation: logo-flicker 1s ease-in-out infinite alternate;
+}
+@keyframes logo-flicker {
+  0% {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px #e50914) drop-shadow(0 0 10px #e50914);
+  }
+  100% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 10px #e50914) drop-shadow(0 0 20px #e50914);
+  }
 }

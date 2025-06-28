@@ -78,8 +78,7 @@ function displayList(items, containerId) {
   container.innerHTML = '';
   items.forEach(item => {
     const img = document.createElement('img');
-    img.src = item.poster_path ? `${IMG_URL}${item.poster_path}` : 'images/default.jpg';
-
+    img.src = `${IMG_URL}${item.poster_path}`;
     img.alt = item.title || item.name;
     img.onclick = () => showDetails(item);
     container.appendChild(img);

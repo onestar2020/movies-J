@@ -5,6 +5,8 @@ let currentItem;
 let currentUpload = null;
 let bannerItems = [];
 let bannerIndex = 0;
+let currentUploadPage = 1;
+const uploadsPerPage = 12;
 
 async function fetchTrending(type) {
   const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
@@ -206,9 +208,8 @@ async function searchTMDB() {
     }
   });
 
-if (hasUploadedMatch) container.appendChild(uploadedSection);
-if (tmdbResults.length > 0) container.appendChild(tmdbSection);
-
+  if (hasUploadedMatch) container.appendChild(uploadedSection);
+  if (tmdbResults.length > 0) container.appendChild(tmdbSection);
 }
 
 function showUploadModal(videoId) {
@@ -271,9 +272,15 @@ function closeUploadModal() {
   document.getElementById('upload-video').src = '';
 }
 
-async function loadUploadedMovies() {
+async function loadUploadedMovies(page = 1) {
   const container = document.getElementById('uploaded-movies-list');
-  for (const upload of uploads) {
+  container.innerHTML = '';
+
+  const startIndex = (page - 1) * uploadsPerPage;
+  const endIndex = startIndex + uploadsPerPage;
+  const uploadsToDisplay = uploads.slice(startIndex, endIndex);
+
+  for (const upload of uploadsToDisplay) {
     const title = encodeURIComponent(upload.title);
     const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`);
     const data = await res.json();
@@ -281,17 +288,46 @@ async function loadUploadedMovies() {
 
     const div = document.createElement('div');
     div.classList.add('upload-item');
-
     div.innerHTML = `
       <div style="text-align:center">
-        <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : ''}" alt="${upload.title}" style="width:120px;border-radius:5px;cursor:pointer" onclick="showUploadModal('${upload.id}')">
+        <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : ''}" 
+             alt="${upload.title}" 
+             style="width:120px;border-radius:5px;cursor:pointer" 
+             onclick="showUploadModal('${upload.id}')">
         <p style="margin: 5px 0"><strong>${upload.title}</strong></p>
         ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
         ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
       </div>
     `;
-
     container.appendChild(div);
+  }
+
+  renderUploadPagination();
+}
+
+function renderUploadPagination() {
+  const paginationContainer = document.getElementById('upload-pagination');
+  paginationContainer.innerHTML = '';
+  const totalPages = Math.ceil(uploads.length / uploadsPerPage);
+
+  if (currentUploadPage > 1) {
+    const firstBtn = document.createElement('button');
+    firstBtn.textContent = '⏪ First Page';
+    firstBtn.onclick = () => {
+      currentUploadPage = 1;
+      loadUploadedMovies(currentUploadPage);
+    };
+    paginationContainer.appendChild(firstBtn);
+  }
+
+  if (currentUploadPage < totalPages) {
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Next Page ⏩';
+    nextBtn.onclick = () => {
+      currentUploadPage++;
+      loadUploadedMovies(currentUploadPage);
+    };
+    paginationContainer.appendChild(nextBtn);
   }
 }
 
@@ -300,7 +336,7 @@ async function init() {
   const tvShows = await fetchTrending('tv');
   const anime = await fetchTrendingAnime();
 
-  await loadUploadedMovies();
+  await loadUploadedMovies(currentUploadPage);
 
   const uploadItems = uploads.map(u => ({
     title: u.title,

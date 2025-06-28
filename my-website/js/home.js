@@ -91,10 +91,48 @@ async function showDetails(item) {
   document.getElementById('modal-description').textContent = item.overview;
   document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
   document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
-  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-  const trailerUrl = await fetchTrailer(item.id, mediaType);
-  document.getElementById('modal-video').src = trailerUrl || '';
+  document.getElementById('modal-video').src = '';
   document.getElementById('modal').style.display = 'flex';
+
+  const isTV = item.media_type === "tv" || item.first_air_date;
+
+  const seasonWrapper = document.querySelector('.season-episode-selectors');
+  const seasonSelect = document.getElementById('season-selector');
+  const episodeSelect = document.getElementById('episode-selector');
+
+  if (isTV) {
+    seasonWrapper.style.display = 'flex';
+
+    const res = await fetch(`${BASE_URL}/tv/${item.id}?api_key=${API_KEY}`);
+    const data = await res.json();
+
+    seasonSelect.innerHTML = '';
+    data.seasons.forEach(season => {
+      const option = document.createElement('option');
+      option.value = season.season_number;
+      option.textContent = season.name;
+      seasonSelect.appendChild(option);
+    });
+
+    seasonSelect.onchange = async () => {
+      const selectedSeason = seasonSelect.value;
+      const epRes = await fetch(`${BASE_URL}/tv/${item.id}/season/${selectedSeason}?api_key=${API_KEY}`);
+      const epData = await epRes.json();
+
+      episodeSelect.innerHTML = '';
+      epData.episodes.forEach(ep => {
+        const epOption = document.createElement('option');
+        epOption.value = ep.episode_number;
+        epOption.textContent = `Episode ${ep.episode_number}: ${ep.name}`;
+        episodeSelect.appendChild(epOption);
+      });
+    };
+
+    // Trigger default load for first season
+    seasonSelect.dispatchEvent(new Event('change'));
+  } else {
+    seasonWrapper.style.display = 'none';
+  }
 }
 
 function changeServer() {

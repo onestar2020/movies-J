@@ -1,5 +1,6 @@
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
+const uploads = []; // <== Add this line
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
 let currentItem;
 let currentUpload = null;
@@ -63,6 +64,8 @@ function watchCurrentBanner() {
     showUploadModal(item.id);
   } else {
     showDetails(item);
+    console.log("showDetails triggered:", item);
+
   }
 }
 
@@ -77,7 +80,7 @@ function displayList(items, containerId) {
   container.innerHTML = '';
   items.forEach(item => {
     const img = document.createElement('img');
-    img.src = `${IMG_URL}${item.poster_path}`;
+    img.src = item.poster_path ? `${IMG_URL}${item.poster_path}` : 'images/default.jpg';
     img.alt = item.title || item.name;
     img.onclick = () => showDetails(item);
     container.appendChild(img);

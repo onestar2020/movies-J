@@ -195,15 +195,27 @@ function changeServer(auto = false, index = 0) {
   }
 
   const iframe = document.getElementById("modal-video");
-  iframe.src = url;
+  iframe.src = ""; // clear old video first
+  iframe.setAttribute('title', 'Switching to server: ' + server);
+  iframe.src = url; // then load the new one
 
-  // Auto fallback: if load fails, try next
-    iframe.onerror = () => {
+  if (!auto) {
+    document.getElementById('active-server-label').textContent = `Now playing from: ${server}`;
+  }
+
+  iframe.onload = () => {
+    if (auto) {
+      document.getElementById('active-server-label').textContent = `Auto-selected server: ${server}`;
+    }
+  };
+
+  iframe.onerror = () => {
     if (auto && index + 1 < servers.length) {
       changeServer(true, index + 1);
     }
   };
 }
+
 
 
 

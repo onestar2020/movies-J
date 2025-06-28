@@ -374,3 +374,12 @@ body {
   background: linear-gradient(90deg, #f40612, #a41a22);
   transform: scale(1.05);
 }
+
+.logo-effect {
+  transition: all 0.3s ease;
+}
+
+.logo-effect:hover {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 8px #e50914);
+}

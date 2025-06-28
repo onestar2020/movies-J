@@ -154,7 +154,10 @@ function changeServer(auto = false, index = 0) {
     "autoembed.to", "2embed.cc", "dopebox.to", "sflix.to"
   ];
 
-  const server = auto ? servers[index] : document.getElementById("server").value;
+  const serverSelect = document.getElementById("server");
+const server = auto ? servers[index] : serverSelect.value;
+if (auto) serverSelect.value = servers[index];  // ← sync dropdown on auto
+
   const type = currentItem.media_type === "movie" ? "movie" : "tv";
   const isTV = type === "tv";
   const seasonSelect = document.getElementById('season-selector');

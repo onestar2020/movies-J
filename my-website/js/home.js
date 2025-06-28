@@ -206,8 +206,9 @@ async function searchTMDB() {
     }
   });
 
-  if (tmdbResults.length > 0) container.appendChild(tmdbSection);
-  if (hasUploadedMatch) container.appendChild(uploadedSection);
+if (hasUploadedMatch) container.appendChild(uploadedSection);
+if (tmdbResults.length > 0) container.appendChild(tmdbSection);
+
 }
 
 function showUploadModal(videoId) {

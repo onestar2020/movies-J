@@ -332,3 +332,9 @@ body {
   background: #e50914;
   border-radius: 10px;
 }
+.uploaded-highlight {
+  background: #1a1a1a;
+  padding: 10px;
+  border: 1px solid #4CAF50;
+  border-radius: 8px;
+}

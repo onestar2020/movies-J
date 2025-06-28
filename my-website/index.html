@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Website</title>
+  <title>Movies-J Official Site</title>
   <link rel="stylesheet" href="css/home.css">
   <link rel="preload" href="css/home.css" as="style">
   <link rel="preload" href="js/home.js" as="script">
@@ -11,15 +11,7 @@
   <link rel="icon" href="images/logo.png" type="image/png">
   <meta name="theme-color" content="#000000">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  </head>
-<body>
-...
-<!-- Move script tags here, at the end just before </body> -->
-<script src="js/uploads.js"></script>
-<script src="js/home.js"></script>
-</body>
-
+</head>
 <body>
   <div class="navbar">
     <img src="images/logo.png" alt="Movies-J Logo" />
@@ -34,7 +26,7 @@
       <iframe id="trailer" width="100%" height="400" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
     <h1 id="banner-title">Now Playing</h1>
-    <div class="banner-buttons" style="text-align:center; margin-top: 10px;">
+    <div class="banner-buttons">
       <button onclick="nextBannerTrailer()">⏭ Next Trailer</button>
       <button onclick="watchCurrentBanner()">▶ Watch Full</button>
     </div>
@@ -63,7 +55,7 @@
   <!-- Modal for TMDB Movies -->
   <div class="modal" id="modal">
     <div class="modal-content">
-      <button class="close" onclick="closeModal()" style="color: red; font-size: 20px;">&times;</button>
+      <button class="close" onclick="closeModal()">&times;</button>
       <div class="modal-body">
         <img id="modal-image" src="" alt="" />
         <div class="modal-text">
@@ -87,42 +79,38 @@
           ⚠ Ads shown in free movie servers are not controlled by this site.
         </p>
       </div>
-      <iframe id="modal-video" width="100%" height="400" frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen></iframe>
+      <iframe id="modal-video" width="100%" height="400" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
   </div>
 
-  <!-- Modern Modal for My Uploaded Movies -->
+  <!-- Modal for Uploaded Movies -->
   <div class="modal" id="upload-modal">
     <div class="modal-content">
-      <button class="close" onclick="closeUploadModal()" style="color: red; font-size: 20px;">&times;</button>
+      <button class="close" onclick="closeUploadModal()">&times;</button>
       <div class="modal-body" style="text-align: center;">
-        <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen style="border-radius: 10px; box-shadow: 0 0 8px rgba(0,0,0,0.3);"></iframe>
+        <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
       </div>
-      <div class="modal-text" style="padding: 15px; text-align: center;">
-        <h2 id="upload-title" style="margin: 10px 0; font-size: 1.5em;"></h2>
-        <div class="stars" id="upload-rating" style="color: gold; font-size: 1.2em;"></div>
-        <p id="upload-description" style="margin: 10px 0; font-size: 0.95em; color: #555;"></p>
-        <div style="margin-top: 15px;">
-          <button id="upload-trailer-btn" style="margin: 5px; padding: 10px 16px; font-size: 0.9em;">🎬 Watch Trailer</button>
-          <button id="upload-watch-btn" style="margin: 5px; padding: 10px 16px; font-size: 0.9em;">▶ Watch Full Movie</button>
-          <a id="upload-download-btn" href="#" target="_blank" download style="text-decoration: none;">
-            <button style="margin: 5px; padding: 10px 16px; font-size: 0.9em;">⬇ Download</button>
+      <div class="modal-text" style="text-align: center;">
+        <h2 id="upload-title"></h2>
+        <div class="stars" id="upload-rating"></div>
+        <p id="upload-description"></p>
+        <div>
+          <button id="upload-trailer-btn">🎬 Watch Trailer</button>
+          <button id="upload-watch-btn">▶ Watch Full Movie</button>
+          <a id="upload-download-btn" href="#" target="_blank" download>
+            <button>⬇ Download</button>
           </a>
         </div>
-        <div style="margin-top: 12px;">
-          <p style="font-size: 13px; color: #4CAF50;">
-            ✅ Uploaded via Google Drive. No external ads included.
-          </p>
-        </div>
+        <p style="font-size: 13px; color: #4CAF50; margin-top: 10px;">
+          ✅ Uploaded via Google Drive. No external ads included.
+        </p>
       </div>
     </div>
   </div>
 
   <!-- Search Modal -->
   <div class="search-modal" id="search-modal">
-    <button class="close" onclick="closeSearchModal()" style="color: red; font-size: 20px;">&times;</button>
+    <button class="close" onclick="closeSearchModal()">&times;</button>
     <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
     <div class="results" id="search-results"></div>
   </div>
@@ -137,5 +125,9 @@
       </div>
     </div>
   </footer>
+
+  <!-- Scripts at the end for performance -->
+  <script src="js/uploads.js"></script>
+  <script src="js/home.js"></script>
 </body>
 </html>

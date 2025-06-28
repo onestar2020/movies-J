@@ -206,44 +206,26 @@ if (auto) serverSelect.value = servers[index];  // ← sync dropdown on auto
     document.getElementById('active-server-label').textContent = `Now playing from: ${server}`;
   }
 
-    const iframe = document.getElementById("modal-video");
-  iframe.src = "";
-  iframe.setAttribute('title', 'Switching to server: ' + server);
-  iframe.src = url;
-
-  // Sync dropdown to show current auto server
-  if (auto) {
-    serverSelect.value = server;
-  }
-
-  // Display trying label
-  document.getElementById('active-server-label').textContent = auto
-    ? `Trying: ${server}...`
-    : `Now playing from: ${server}`;
-
-  // Set timeout-based fallback (even if no error is triggered)
+  // Auto switch fallback with timeout
   let fallbackTimer = setTimeout(() => {
     if (auto && index + 1 < servers.length) {
-      console.warn(`⚠ Timeout: ${server}, switching to next...`);
       changeServer(true, index + 1);
     }
-  }, 6000); // Wait 6 seconds max
+  }, 5000); // 5 seconds timeout fallback
 
   iframe.onload = () => {
     clearTimeout(fallbackTimer);
     if (auto) {
-      document.getElementById('active-server-label').textContent = `✅ Working: ${server}`;
+      document.getElementById('active-server-label').textContent = `Auto-selected server: ${server}`;
     }
   };
 
   iframe.onerror = () => {
     clearTimeout(fallbackTimer);
     if (auto && index + 1 < servers.length) {
-      console.warn(`⚠ Error loading: ${server}, switching...`);
       changeServer(true, index + 1);
     }
   };
-
 }
 
 

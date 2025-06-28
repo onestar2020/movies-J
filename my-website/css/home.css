@@ -107,6 +107,29 @@ body {
   filter: brightness(1.2);
 }
 
+/* ===== PAGINATION FOR UPLOADED MOVIES ===== */
+#upload-pagination {
+  margin-top: 10px;
+  text-align: center;
+}
+#upload-pagination button {
+  background-color: #e50914;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin: 0 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-weight: bold;
+}
+#upload-pagination button.active {
+  background-color: #b00610;
+}
+#upload-pagination button:hover {
+  background-color: #ff1b1b;
+}
+
 /* ===== MODAL ===== */
 .modal {
   position: fixed;

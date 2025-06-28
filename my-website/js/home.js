@@ -115,18 +115,28 @@ async function showDetails(item) {
     });
 
     seasonSelect.onchange = async () => {
-      const selectedSeason = seasonSelect.value;
-      const epRes = await fetch(`${BASE_URL}/tv/${item.id}/season/${selectedSeason}?api_key=${API_KEY}`);
-      const epData = await epRes.json();
+  const selectedSeason = seasonSelect.value;
+  const epRes = await fetch(`${BASE_URL}/tv/${item.id}/season/${selectedSeason}?api_key=${API_KEY}`);
+  const epData = await epRes.json();
 
-      episodeSelect.innerHTML = '';
-      epData.episodes.forEach(ep => {
-        const epOption = document.createElement('option');
-        epOption.value = ep.episode_number;
-        epOption.textContent = `Episode ${ep.episode_number}: ${ep.name}`;
-        episodeSelect.appendChild(epOption);
-      });
-    };
+  episodeSelect.innerHTML = '';
+  epData.episodes.forEach(ep => {
+    const epOption = document.createElement('option');
+    epOption.value = ep.episode_number;
+    epOption.textContent = `Episode ${ep.episode_number}: ${ep.name}`;
+    episodeSelect.appendChild(epOption);
+  });
+
+  // Auto-select episode 1
+  episodeSelect.selectedIndex = 0;
+
+  // ⏯ Update video after season loads
+  changeServer();
+
+  // Re-assign onchange handler (needed every time season changes)
+  episodeSelect.onchange = () => changeServer();
+};
+
 
     // Trigger default load for first season
     seasonSelect.dispatchEvent(new Event('change'));
@@ -138,30 +148,58 @@ async function showDetails(item) {
 function changeServer() {
   const server = document.getElementById('server').value;
   const type = currentItem.media_type === "movie" ? "movie" : "tv";
+  const isTV = type === "tv";
+
+  const seasonSelect = document.getElementById('season-selector');
+  const episodeSelect = document.getElementById('episode-selector');
+
+  const selectedSeason = seasonSelect?.value;
+  const selectedEpisode = episodeSelect?.value;
+
+  const tmdbId = currentItem.id;
   let embedURL = "";
 
   switch (server) {
     case "vidsrc.cc":
-      embedURL = `https://vidsrc.cc/v2/embed/${type}/${currentItem.id}`;
+      embedURL = isTV && selectedSeason && selectedEpisode
+        ? `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
+        : `https://vidsrc.cc/v2/embed/${type}/${tmdbId}`;
       break;
+
     case "vidsrc.me":
-      embedURL = `https://vidsrc.net/embed/${type}/?tmdb=${currentItem.id}`;
+      embedURL = isTV && selectedSeason && selectedEpisode
+        ? `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&season=${selectedSeason}&episode=${selectedEpisode}`
+        : `https://vidsrc.net/embed/${type}/?tmdb=${tmdbId}`;
       break;
+
     case "player.videasy.net":
-      embedURL = `https://player.videasy.net/${type}/${currentItem.id}`;
+      embedURL = isTV && selectedSeason && selectedEpisode
+        ? `https://player.videasy.net/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
+        : `https://player.videasy.net/${type}/${tmdbId}`;
       break;
+
     case "multiembed.mov":
-      embedURL = `https://multiembed.mov/${type}/${currentItem.id}`;
+      embedURL = isTV && selectedSeason && selectedEpisode
+        ? `https://multiembed.mov/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
+        : `https://multiembed.mov/${type}/${tmdbId}`;
       break;
+
     case "2embed.to":
-      embedURL = `https://www.2embed.to/embed/tmdb/${type}?id=${currentItem.id}`;
+      embedURL = isTV && selectedSeason && selectedEpisode
+        ? `https://www.2embed.to/embed/tmdb/tv?id=${tmdbId}&s=${selectedSeason}&e=${selectedEpisode}`
+        : `https://www.2embed.to/embed/tmdb/${type}?id=${tmdbId}`;
       break;
+
     case "zembed.net":
-      embedURL = `https://zembed.net/v/${currentItem.id}`;
+      embedURL = `https://zembed.net/v/${tmdbId}`;
       break;
+
     case "curtstream.com":
-      embedURL = `https://www.curtstream.com/embed/${type}/${currentItem.id}`;
+      embedURL = isTV && selectedSeason && selectedEpisode
+        ? `https://www.curtstream.com/embed/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
+        : `https://www.curtstream.com/embed/${type}/${tmdbId}`;
       break;
+
     default:
       embedURL = '';
   }

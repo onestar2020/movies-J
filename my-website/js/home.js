@@ -64,7 +64,6 @@ function watchCurrentBanner() {
     showUploadModal(item.id);
   } else {
     showDetails(item);
-    
   }
 }
 

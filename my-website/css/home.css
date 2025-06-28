@@ -395,13 +395,13 @@ body {
     filter: drop-shadow(0 0 10px #e50914) drop-shadow(0 0 20px #e50914);
   }
 }
+
 /* ===== RIPPLE EFFECT FOR BUTTONS ===== */
 .modern-button,
 #upload-pagination button {
   position: relative;
   overflow: hidden;
 }
-
 .modern-button::after,
 #upload-pagination button::after {
   content: "";
@@ -412,14 +412,12 @@ body {
   animation: ripple 0.6s linear;
   pointer-events: none;
 }
-
 @keyframes ripple {
   to {
     transform: scale(4);
     opacity: 0;
   }
 }
-
 .modern-button:active::after,
 #upload-pagination button:active::after {
   top: 50%;
@@ -430,19 +428,26 @@ body {
   margin-left: -50px;
 }
 
-/* ===== GRADIENT ANIMATED LOGO ===== */
-.logo-effect.glow-gradient {
-  background: linear-gradient(45deg, #e50914, #ff0040, #e50914);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradientMove 4s ease infinite;
-  font-weight: bold;
-  text-shadow: 0 0 10px rgba(229, 9, 20, 0.3);
+/* ===== SEASON & EPISODE SELECTORS ===== */
+.season-episode-selectors {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 15px;
 }
-
-@keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+.season-episode-selectors label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ff5e00;
+}
+.season-episode-selectors select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: #1f1f1f;
+  color: #fff;
+  border: 1px solid #444;
+  font-size: 14px;
+  width: 100%;
+  max-width: 250px;
 }

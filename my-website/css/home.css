@@ -428,26 +428,39 @@ body {
   margin-left: -50px;
 }
 
-/* ===== SEASON & EPISODE SELECTORS ===== */
+/* ===== MODERN SEASON & EPISODE SELECTORS ===== */
 .season-episode-selectors {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-top: 15px;
+  flex-direction: column;
+  gap: 10px;
+  background: #141414;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255, 94, 0, 0.1);
+  margin-top: 20px;
 }
+
 .season-episode-selectors label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
+  text-transform: uppercase;
   color: #ff5e00;
+  letter-spacing: 0.5px;
 }
+
 .season-episode-selectors select {
-  padding: 8px 12px;
-  border-radius: 6px;
-  background-color: #1f1f1f;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background-color: #222;
   color: #fff;
-  border: 1px solid #444;
-  font-size: 14px;
-  width: 100%;
-  max-width: 250px;
+  border: 1px solid #333;
+  font-size: 15px;
+  font-family: 'Poppins', sans-serif;
+  transition: border 0.3s, box-shadow 0.3s;
+  box-shadow: inset 0 0 6px rgba(255, 94, 0, 0.2);
+}
+.season-episode-selectors select:focus {
+  border-color: #ff5e00;
+  box-shadow: 0 0 8px rgba(255, 94, 0, 0.4);
+  outline: none;
 }

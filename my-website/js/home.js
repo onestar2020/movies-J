@@ -182,6 +182,10 @@ async function searchTMDB() {
     tmdbSection.appendChild(img);
   });
 
+  const hasUploadedMatch = uploads.some(upload =>
+    upload.title.toLowerCase().includes(query.toLowerCase())
+  );
+
   uploads.forEach(upload => {
     if (upload.title.toLowerCase().includes(query.toLowerCase())) {
       const div = document.createElement('div');
@@ -202,8 +206,8 @@ async function searchTMDB() {
     }
   });
 
-  if (tmdbSection.childNodes.length > 1) container.appendChild(tmdbSection);
-  if (uploadedSection.childNodes.length > 1) container.appendChild(uploadedSection);
+  if (tmdbResults.length > 0) container.appendChild(tmdbSection);
+  if (hasUploadedMatch) container.appendChild(uploadedSection);
 }
 
 function showUploadModal(videoId) {

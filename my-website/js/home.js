@@ -131,10 +131,12 @@ async function showDetails(item) {
   episodeSelect.selectedIndex = 0;
 
   // ⏯ Update video after season loads
-  changeServer();
+  changeServer(true, 0);
+
 
   // Re-assign onchange handler (needed every time season changes)
-  episodeSelect.onchange = () => changeServer();
+  episodeSelect.onchange = () => changeServer(true, 0);
+
 };
 
 
@@ -145,97 +147,68 @@ async function showDetails(item) {
   }
 }
 
-function changeServer() {
-  const server = document.getElementById('server').value;
+function changeServer(auto = false, index = 0) {
+  const servers = [
+    "vidsrc.cc", "vidsrc.me", "player.videasy.net", "multiembed.mov",
+    "2embed.to", "zembed.net", "curtstream.com", "vidsrc.pro",
+    "autoembed.to", "2embed.cc", "dopebox.to", "sflix.to"
+  ];
+
+  const server = auto ? servers[index] : document.getElementById("server").value;
   const type = currentItem.media_type === "movie" ? "movie" : "tv";
   const isTV = type === "tv";
-
   const seasonSelect = document.getElementById('season-selector');
   const episodeSelect = document.getElementById('episode-selector');
+  const season = seasonSelect?.value;
+  const episode = episodeSelect?.value;
+  const id = currentItem.id;
 
-  const selectedSeason = seasonSelect?.value;
-  const selectedEpisode = episodeSelect?.value;
-
-  const tmdbId = currentItem.id;
-  let embedURL = "";
+  let url = "";
 
   switch (server) {
     case "vidsrc.cc":
-      embedURL = isTV && selectedSeason && selectedEpisode
-        ? `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
-        : `https://vidsrc.cc/v2/embed/${type}/${tmdbId}`;
-      break;
-
+      url = isTV ? `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}` : `https://vidsrc.cc/v2/embed/${type}/${id}`; break;
     case "vidsrc.me":
-      embedURL = isTV && selectedSeason && selectedEpisode
-        ? `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&season=${selectedSeason}&episode=${selectedEpisode}`
-        : `https://vidsrc.net/embed/${type}/?tmdb=${tmdbId}`;
-      break;
-
+      url = isTV ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${season}&episode=${episode}` : `https://vidsrc.net/embed/${type}/?tmdb=${id}`; break;
     case "player.videasy.net":
-      embedURL = isTV && selectedSeason && selectedEpisode
-        ? `https://player.videasy.net/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
-        : `https://player.videasy.net/${type}/${tmdbId}`;
-      break;
-
+      url = isTV ? `https://player.videasy.net/tv/${id}/${season}/${episode}` : `https://player.videasy.net/${type}/${id}`; break;
     case "multiembed.mov":
-      embedURL = isTV && selectedSeason && selectedEpisode
-        ? `https://multiembed.mov/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
-        : `https://multiembed.mov/${type}/${tmdbId}`;
-      break;
-
+      url = isTV ? `https://multiembed.mov/tv/${id}/${season}/${episode}` : `https://multiembed.mov/${type}/${id}`; break;
     case "2embed.to":
-      embedURL = isTV && selectedSeason && selectedEpisode
-        ? `https://www.2embed.to/embed/tmdb/tv?id=${tmdbId}&s=${selectedSeason}&e=${selectedEpisode}`
-        : `https://www.2embed.to/embed/tmdb/${type}?id=${tmdbId}`;
-      break;
-
+      url = isTV ? `https://www.2embed.to/embed/tmdb/tv?id=${id}&s=${season}&e=${episode}` : `https://www.2embed.to/embed/tmdb/${type}?id=${id}`; break;
     case "zembed.net":
-      embedURL = `https://zembed.net/v/${tmdbId}`;
-      break;
-
+      url = `https://zembed.net/v/${id}`; break;
     case "curtstream.com":
-      embedURL = isTV && selectedSeason && selectedEpisode
-        ? `https://www.curtstream.com/embed/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
-        : `https://www.curtstream.com/embed/${type}/${tmdbId}`;
-      break;
-      case "vidsrc.pro":
-  embedURL = isTV && selectedSeason && selectedEpisode
-    ? `https://vidsrc.pro/embed/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
-    : `https://vidsrc.pro/embed/${type}/${tmdbId}`;
-  break;
-
-case "autoembed.to":
-  embedURL = isTV && selectedSeason && selectedEpisode
-    ? `https://autoembed.to/tv/tmdb/${tmdbId}/${selectedSeason}-${selectedEpisode}`
-    : `https://autoembed.to/movie/tmdb/${tmdbId}`;
-  break;
-
-case "2embed.cc":
-  embedURL = isTV && selectedSeason && selectedEpisode
-    ? `https://2embed.cc/embedtv/${tmdbId}/${selectedSeason}-${selectedEpisode}`
-    : `https://2embed.cc/embed/${tmdbId}`;
-  break;
-
-case "dopebox.to":
-  embedURL = isTV && selectedSeason && selectedEpisode
-    ? `https://dopebox.to/embedtv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
-    : `https://dopebox.to/embed/${tmdbId}`;
-  break;
-
-case "sflix.to":
-  embedURL = isTV && selectedSeason && selectedEpisode
-    ? `https://sflix.to/embed/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
-    : `https://sflix.to/embed/movie/${tmdbId}`;
-  break;
-
-
+      url = isTV ? `https://www.curtstream.com/embed/tv/${id}/${season}/${episode}` : `https://www.curtstream.com/embed/${type}/${id}`; break;
+    case "vidsrc.pro":
+      url = isTV ? `https://vidsrc.pro/embed/tv/${id}/${season}/${episode}` : `https://vidsrc.pro/embed/${type}/${id}`; break;
+    case "autoembed.to":
+      url = isTV ? `https://autoembed.to/tv/tmdb/${id}/${season}-${episode}` : `https://autoembed.to/movie/tmdb/${id}`; break;
+    case "2embed.cc":
+      url = isTV ? `https://2embed.cc/embedtv/${id}/${season}-${episode}` : `https://2embed.cc/embed/${id}`; break;
+    case "dopebox.to":
+      url = isTV ? `https://dopebox.to/embedtv/${id}/${season}/${episode}` : `https://dopebox.to/embed/${id}`; break;
+    case "sflix.to":
+      url = isTV ? `https://sflix.to/embed/tv/${id}/${season}/${episode}` : `https://sflix.to/embed/movie/${id}`; break;
     default:
-      embedURL = '';
+      url = "";
   }
 
-  document.getElementById('modal-video').src = embedURL;
+  const iframe = document.getElementById("modal-video");
+  iframe.src = url;
+
+  // Auto fallback: if load fails, try next
+    iframe.onerror = () => {
+    if (auto && index + 1 < servers.length) {
+      changeServer(true, index + 1);
+    }
+  };
 }
+
+
+
+  
+
 
 function closeModal() {
   document.getElementById('modal').style.display = 'none';

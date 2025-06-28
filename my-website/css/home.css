@@ -10,6 +10,39 @@ body {
   color: #fff;
 }
 
+/* ===== STATIC PAGES (About, Contact, Disclaimer) ===== */
+.page-container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 30px;
+  background: #1f1f1f;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(229, 9, 20, 0.2);
+}
+
+.page-container h1 {
+  font-size: 2em;
+  margin-bottom: 20px;
+  color: #ff5e00;
+  border-left: 5px solid #e50914;
+  padding-left: 15px;
+}
+
+.page-container p {
+  line-height: 1.8;
+  font-size: 1em;
+  color: #ddd;
+  margin-bottom: 15px;
+}
+
+.page-container a {
+  color: #4CAF50;
+  transition: color 0.3s;
+}
+.page-container a:hover {
+  color: #fff;
+}
+
 /* ===== NAVIGATION BAR ===== */
 .navbar {
   display: flex;
@@ -464,7 +497,6 @@ body {
   box-shadow: 0 0 8px rgba(255, 94, 0, 0.4);
   outline: none;
 }
-
 
 /* ===== ACCESSIBILITY: FOCUS STYLES ===== */
 button:focus-visible,

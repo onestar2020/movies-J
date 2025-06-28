@@ -65,11 +65,14 @@
           <p id="modal-description"></p>
 
           <div id="tv-controls" style="margin-top: 10px;">
-            <label for="tv-season-select">Season:</label>
-            <select id="tv-season-select" onchange="onSeasonChange()" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
+            <div class="season-episode-selectors" style="display: none;">
+  <label for="season-selector">Season:</label>
+  <select id="season-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
 
-            <label for="tv-episode-select">Episode:</label>
-            <select id="tv-episode-select" onchange="onEpisodeChange()" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
+  <label for="episode-selector">Episode:</label>
+  <select id="episode-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
+</div>
+
           </div>
         </div>
       </div>

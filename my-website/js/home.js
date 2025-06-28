@@ -199,6 +199,36 @@ function changeServer() {
         ? `https://www.curtstream.com/embed/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
         : `https://www.curtstream.com/embed/${type}/${tmdbId}`;
       break;
+      case "vidsrc.pro":
+  embedURL = isTV && selectedSeason && selectedEpisode
+    ? `https://vidsrc.pro/embed/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
+    : `https://vidsrc.pro/embed/${type}/${tmdbId}`;
+  break;
+
+case "autoembed.to":
+  embedURL = isTV && selectedSeason && selectedEpisode
+    ? `https://autoembed.to/tv/tmdb/${tmdbId}/${selectedSeason}-${selectedEpisode}`
+    : `https://autoembed.to/movie/tmdb/${tmdbId}`;
+  break;
+
+case "2embed.cc":
+  embedURL = isTV && selectedSeason && selectedEpisode
+    ? `https://2embed.cc/embedtv/${tmdbId}/${selectedSeason}-${selectedEpisode}`
+    : `https://2embed.cc/embed/${tmdbId}`;
+  break;
+
+case "dopebox.to":
+  embedURL = isTV && selectedSeason && selectedEpisode
+    ? `https://dopebox.to/embedtv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
+    : `https://dopebox.to/embed/${tmdbId}`;
+  break;
+
+case "sflix.to":
+  embedURL = isTV && selectedSeason && selectedEpisode
+    ? `https://sflix.to/embed/tv/${tmdbId}/${selectedSeason}/${selectedEpisode}`
+    : `https://sflix.to/embed/movie/${tmdbId}`;
+  break;
+
 
     default:
       embedURL = '';

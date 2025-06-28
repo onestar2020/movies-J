@@ -64,8 +64,7 @@ function watchCurrentBanner() {
     showUploadModal(item.id);
   } else {
     showDetails(item);
-    console.log("showDetails triggered:", item);
-
+    
   }
 }
 

@@ -147,8 +147,21 @@ async function searchTMDB() {
   const query = document.getElementById('search-input').value.trim();
   const container = document.getElementById('search-results');
   container.innerHTML = '';
-
   if (!query) return;
+
+  const tmdbSection = document.createElement('div');
+  const uploadedSection = document.createElement('div');
+
+  const tmdbHeader = document.createElement('h3');
+  tmdbHeader.textContent = '🎬 Search Results from TMDB';
+  tmdbHeader.style.margin = '10px 0';
+
+  const uploadHeader = document.createElement('h3');
+  uploadHeader.textContent = '📁 My Uploaded Movies';
+  uploadHeader.style.margin = '20px 0';
+
+  tmdbSection.appendChild(tmdbHeader);
+  uploadedSection.appendChild(uploadHeader);
 
   const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
   const data = await res.json();
@@ -158,11 +171,15 @@ async function searchTMDB() {
     const img = document.createElement('img');
     img.src = `${IMG_URL}${item.poster_path}`;
     img.alt = item.title || item.name;
+    img.style.width = '120px';
+    img.style.margin = '5px';
+    img.style.borderRadius = '5px';
+    img.style.cursor = 'pointer';
     img.onclick = () => {
       closeSearchModal();
       showDetails(item);
     };
-    container.appendChild(img);
+    tmdbSection.appendChild(img);
   });
 
   uploads.forEach(upload => {
@@ -172,19 +189,21 @@ async function searchTMDB() {
       div.style.marginTop = '15px';
 
       div.innerHTML = `
-        <img src="https://drive.google.com/thumbnail?id=${upload.id}&sz=w200" 
-             alt="${upload.title}" 
-             style="width:120px;border-radius:5px;cursor:pointer" 
+        <img src="https://drive.google.com/thumbnail?id=${upload.id}&sz=w200"
+             alt="${upload.title}"
+             style="width:120px;border-radius:5px;cursor:pointer"
              onclick="showUploadModal('${upload.id}')">
         <p style="margin: 5px 0; font-size:14px;">
           <strong>${upload.title}</strong><br>
-          <span style="font-size:12px; color:#aaa;">📁 My Upload</span>
+          <span style="font-size:12px; color:#4CAF50;">📁 Free Movie</span>
         </p>
       `;
-
-      container.appendChild(div);
+      uploadedSection.appendChild(div);
     }
   });
+
+  if (tmdbSection.childNodes.length > 1) container.appendChild(tmdbSection);
+  if (uploadedSection.childNodes.length > 1) container.appendChild(uploadedSection);
 }
 
 function showUploadModal(videoId) {
@@ -210,7 +229,6 @@ function showUploadModal(videoId) {
       document.getElementById('upload-download-btn').href = `https://drive.google.com/u/0/uc?id=${upload.id}&export=download`;
 
       document.getElementById('upload-video').src = `https://drive.google.com/file/d/${upload.id}/preview`;
-
       document.getElementById('upload-modal').style.display = 'flex';
     });
 }

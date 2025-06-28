@@ -11,9 +11,6 @@
   <link rel="icon" href="images/logo.png" type="image/png">
   <meta name="theme-color" content="#000000">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <script defer src="js/uploads.js"></script>
-  <script defer src="js/home.js"></script>
 </head>
 
 <body>
@@ -89,7 +86,7 @@
     </div>
   </div>
 
-  <!-- Modern Modal for My Uploaded Movies -->
+  <!-- Modal for Uploaded Movies -->
   <div class="modal" id="upload-modal">
     <div class="modal-content">
       <button class="close" onclick="closeUploadModal()" style="color: red; font-size: 20px;">&times;</button>
@@ -133,5 +130,9 @@
       </div>
     </div>
   </footer>
+
+  <!-- ✅ JavaScript loaded last -->
+  <script src="js/uploads.js"></script>
+  <script src="js/home.js"></script>
 </body>
 </html>

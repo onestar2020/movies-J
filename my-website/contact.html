@@ -1,16 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Contact Us - Movies-J</title>
   <link rel="stylesheet" href="css/home.css">
+  <link rel="icon" href="images/logo.png" type="image/png">
+  <meta name="theme-color" content="#000000">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-  <div class="container">
-    <h2>Contact Us</h2>
-    <p>If you have any concerns, suggestions, or requests regarding the content on our site, please contact us at:</p>
-    <p>Email: <a href="mailto:othertosixwan@gmail.com">othertosixwan@gmail.com</a></p>
-    <p>We usually respond within 24–48 hours. Your feedback helps us improve Movies-J for everyone.</p>
+  <!-- Navbar -->
+  <div class="navbar">
+    <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect glow-gradient" />
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
+    </div>
   </div>
+
+  <!-- Page Content -->
+  <div class="content-page">
+    <h1 style="text-align: center; margin-top: 30px;">Contact Us</h1>
+    <div style="max-width: 800px; margin: 20px auto; padding: 20px; background: #1c1c1c; border-radius: 10px; box-shadow: 0 0 10px rgba(255,255,255,0.1);">
+      <p style="line-height: 1.8;">
+        If you have any concerns, suggestions, or requests regarding the content on our site, please contact us at:
+        <br><br>
+        <strong>Email:</strong> <a href="mailto:othertosixwan@gmail.com" style="color: #4CAF50;">othertosixwan@gmail.com</a>
+        <br><br>
+        We usually respond within <strong>24–48 hours</strong>. Your feedback helps us improve <strong>Movies-J</strong> for everyone.
+      </p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 My Website. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="disclaimer.html">Disclaimer</a>
+        <a href="about.html">About Us</a>
+        <a href="contact.html">Contact Us</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Search Modal (optional for consistency) -->
+  <div class="search-modal" id="search-modal">
+    <button class="close" onclick="closeSearchModal()">&times;</button>
+    <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
+    <div class="results" id="search-results"></div>
+  </div>
+
+  <script src="js/home.js"></script>
 </body>
 </html>

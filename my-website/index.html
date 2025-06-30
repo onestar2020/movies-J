@@ -118,6 +118,7 @@
         <div>
           <button id="upload-trailer-btn">🎬 Watch Trailer</button>
           <button id="upload-watch-btn">▶ Watch Full Movie</button>
+          
           <a id="upload-download-btn" href="#" target="_blank" download>
             <button>⬇ Download</button>
           </a>
@@ -154,7 +155,22 @@
   <script src="js/uploads.js"></script>
   <script src="js/home.js"></script>
 
-  <!-- ProfitablerateCPM Ads -->
+  <!-- ProfitablerateCPM Ads (autoload on page load) -->
   <script type="text/javascript" src="//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js"></script>
+
+  <!-- Trigger ad when 'Watch Full Movie' is clicked -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const watchBtn = document.getElementById("upload-watch-btn");
+      if (watchBtn) {
+        watchBtn.addEventListener("click", function () {
+          const adScript = document.createElement('script');
+          adScript.src = "//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js";
+          adScript.type = "text/javascript";
+          document.body.appendChild(adScript);
+        });
+      }
+    });
+  </script>
 </body>
 </html>

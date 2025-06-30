@@ -34,4 +34,5 @@ const uploads = [
   { title: "Shadow Force", id: "1PVZlgl1s8_POQSeG1wFyjU8quZRiDvb9" },
   { title: "Sinners", id: "1kfegH8wXxO3MYbXu8ZBv_7dRFSc5Yvax" },
   { title: "Diablo", id: "1nwtSJKFK9a47g0CnCMIu8EMbSEXLhIrF" },
+  { title: "Red Land", id: "1V9zBN6XruePOanqnpXLg8bUyH5Z8BjkE" },
 ];

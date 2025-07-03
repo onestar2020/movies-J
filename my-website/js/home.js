@@ -286,7 +286,10 @@ async function searchTMDB() {
 
   const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
   const data = await res.json();
-  const tmdbResults = data.results.filter(item => item.poster_path);
+  const tmdbResults = data.results.filter(item =>
+  item.poster_path && (item.media_type === 'movie' || (!item.media_type && !item.first_air_date))
+);
+
 
   tmdbResults.forEach(item => {
   const img = document.createElement('img');
@@ -336,6 +339,15 @@ async function searchTMDB() {
 
   if (hasUploadedMatch) container.appendChild(uploadedSection);
   if (tmdbResults.length > 0) container.appendChild(tmdbSection);
+  if (!hasUploadedMatch && tmdbResults.length === 0) {
+  const noResult = document.createElement('p');
+  noResult.textContent = 'No matching movie found.';
+  noResult.style.textAlign = 'center';
+  noResult.style.color = '#ccc';
+  noResult.style.marginTop = '20px';
+  container.appendChild(noResult);
+}
+
 }
 
 function showUploadModal(videoId) {

@@ -1,3 +1,4 @@
+<!-- ADSTER SOCIAL BAR REMOVED VERSION -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,24 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Movies-J Official Site</title>
 
-  <!-- Preload (order matters: preload first, then stylesheet) -->
   <link rel="preload" href="css/home.css" as="style">
   <link rel="stylesheet" href="css/home.css">
 
-  <!-- Scripts preload (non-blocking hint) -->
   <link rel="preload" href="js/home.js" as="script">
   <link rel="preload" href="js/uploads.js" as="script">
 
-  <!-- Web Manifest and Favicon -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="images/logo.png" type="image/png">
   <meta name="theme-color" content="#000000">
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-  <!-- Navigation Bar -->
+  <!-- Navbar -->
   <div class="navbar">
     <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect glow-gradient" />
     <div class="nav-links">
@@ -64,9 +61,9 @@
           <div id="tv-controls" style="margin-top: 10px;">
             <div class="season-episode-selectors" style="display: none;">
               <label for="season-selector">Season:</label>
-              <select id="season-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
+              <select id="season-selector"></select>
               <label for="episode-selector">Episode:</label>
-              <select id="episode-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
+              <select id="episode-selector"></select>
             </div>
           </div>
         </div>
@@ -89,8 +86,8 @@
           <option value="dopebox.to">DopeBox.to</option>
           <option value="sflix.to">SFlix.to</option>
         </select>
-        <p id="active-server-label" style="text-align: center; color: #00f; font-size: 13px; margin-top: 5px;"></p>
-        <p style="font-size: 13px; color: #ff5e00; text-align: center; margin: 10px 0;">
+        <p id="active-server-label" style="text-align:center; color:#00f; font-size:13px; margin-top:5px;"></p>
+        <p style="font-size:13px; color:#ff5e00; text-align:center; margin:10px 0;">
           ⚠ Ads shown in free movie servers are not controlled by this site.
         </p>
       </div>
@@ -105,7 +102,7 @@
       <div class="modal-body" style="text-align: center;">
         <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
       </div>
-      <div class="modal-text" style="text-align: center;">
+      <div class="modal-text" style="text-align:center;">
         <h2 id="upload-title"></h2>
         <div class="stars" id="upload-rating"></div>
         <p id="upload-description"></p>
@@ -116,7 +113,7 @@
             <button>⬇ Download</button>
           </a>
         </div>
-        <p style="font-size: 13px; color: #4CAF50; margin-top: 10px;">
+        <p style="font-size:13px; color:#4CAF50; margin-top:10px;">
           ✅ Uploaded via Google Drive. No external ads included.
         </p>
       </div>
@@ -130,15 +127,15 @@
     <div class="results" id="search-results"></div>
   </div>
 
-  <!-- Banner Ad 468x60 -->
+  <!-- Banner Ad -->
   <div style="text-align:center; margin: 20px 0;">
     <script type="text/javascript">
       atOptions = {
-        'key' : '0e7b0cdaab5dd80e165c43b2a094fb08',
-        'format' : 'iframe',
-        'height' : 60,
-        'width' : 468,
-        'params' : {}
+        'key': '0e7b0cdaab5dd80e165c43b2a094fb08',
+        'format': 'iframe',
+        'height': 60,
+        'width': 468,
+        'params': {}
       };
     </script>
     <script type="text/javascript" src="//www.highperformanceformat.com/0e7b0cdaab5dd80e165c43b2a094fb08/invoke.js"></script>
@@ -160,13 +157,10 @@
   <script src="js/uploads.js"></script>
   <script src="js/home.js"></script>
 
-  <!-- Adsterra Popunder Ad -->
+  <!-- ✅ Only Popunder Ad active -->
   <script type="text/javascript" src="//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js"></script>
 
-  <!-- Adsterra Social Bar Ad -->
-  <script type="text/javascript" src="//pl27069522.profitableratecpm.com/08/df/be/08dfbe14cbded4e6e66835c4b6d1f26a.js"></script>
-
-  <!-- Trigger Popunder again when 'Watch Full Movie' is clicked -->
+  <!-- Trigger Popunder again on click -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const watchBtn = document.getElementById("upload-watch-btn");

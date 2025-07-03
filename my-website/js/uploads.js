@@ -1,5 +1,7 @@
 // uploads.js
 const uploads = [
+  { title: "Exterritorial", id: "10NEhLMhb0mACWJXVtQ-Inalpf0gNc2Ju" },
+  { title: "Control Freak", id: "1mdd1G8RswZW3G_6gMT39O2h88HhXCrdn" },
   { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },
   { title: "The Hunger Games", id: "1Agy9Z6IlEPwVqUK2VSDpBvpUFklBDOvp" },
   { title: "The Hunger Games: The Ballad of Songbirds and Snakes", id: "1XVaQPU0WOJiLWG23whj9jHMsCCCWpw4S" },

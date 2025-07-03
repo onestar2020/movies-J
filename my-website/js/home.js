@@ -448,47 +448,47 @@ function renderUploadPagination() {
   paginationContainer.innerHTML = '';
   const totalPages = Math.ceil(uploads.length / uploadsPerPage);
 
-  // ⏪ First Page
-  const firstBtn = document.createElement('button');
-  firstBtn.textContent = '⏪ First Page';
-  firstBtn.disabled = currentUploadPage === 1;
-  firstBtn.onclick = () => {
-    currentUploadPage = 1;
-    loadUploadedMovies(currentUploadPage);
-  };
-  paginationContainer.appendChild(firstBtn);
+  // ⏪ First Page (SHOW ONLY IF NOT ON PAGE 1)
+  if (currentUploadPage > 1) {
+    const firstBtn = document.createElement('button');
+    firstBtn.textContent = '⏪ First Page';
+    firstBtn.onclick = () => {
+      currentUploadPage = 1;
+      loadUploadedMovies(currentUploadPage);
+    };
+    paginationContainer.appendChild(firstBtn);
+  }
 
-  // ⬅️ Prev Page
-  const prevBtn = document.createElement('button');
-  prevBtn.textContent = '⬅️ Previous Page';
-  prevBtn.disabled = currentUploadPage === 1;
-  prevBtn.onclick = () => {
-    if (currentUploadPage > 1) {
+  // ⬅️ Previous Page (SHOW ONLY IF NOT ON PAGE 1)
+  if (currentUploadPage > 1) {
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = '⬅️ Previous Page';
+    prevBtn.onclick = () => {
       currentUploadPage--;
       loadUploadedMovies(currentUploadPage);
-    }
-  };
-  paginationContainer.appendChild(prevBtn);
+    };
+    paginationContainer.appendChild(prevBtn);
+  }
 
-  // Page Info
+  // 📄 Page Indicator
   const info = document.createElement('span');
   info.textContent = ` Page ${currentUploadPage} of ${totalPages} `;
   info.style.color = '#fff';
   info.style.margin = '0 10px';
   paginationContainer.appendChild(info);
 
-  // ➡️ Next Page
-  const nextBtn = document.createElement('button');
-  nextBtn.textContent = 'Next Page ➡️';
-  nextBtn.disabled = currentUploadPage === totalPages;
-  nextBtn.onclick = () => {
-    if (currentUploadPage < totalPages) {
+  // ➡️ Next Page (SHOW ONLY IF NOT ON LAST PAGE)
+  if (currentUploadPage < totalPages) {
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Next Page ➡️';
+    nextBtn.onclick = () => {
       currentUploadPage++;
       loadUploadedMovies(currentUploadPage);
-    }
-  };
-  paginationContainer.appendChild(nextBtn);
+    };
+    paginationContainer.appendChild(nextBtn);
+  }
 }
+
 
 
 

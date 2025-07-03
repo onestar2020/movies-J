@@ -371,6 +371,8 @@ function showUploadModal(videoId) {
       document.getElementById('upload-trailer-btn').onclick = () => watchUploadTrailer();
       document.getElementById('upload-watch-btn').onclick = () => playUploadedVideo();
       document.getElementById('upload-download-btn').href = `https://drive.google.com/u/0/uc?id=${upload.id}&export=download`;
+      document.getElementById('startDownloadBtn').setAttribute("data-download", `https://drive.google.com/u/0/uc?id=${upload.id}&export=download`);
+
 
       document.getElementById('upload-video').src = `https://drive.google.com/file/d/${upload.id}/preview`;
       document.getElementById('upload-modal').style.display = 'flex';
@@ -495,3 +497,43 @@ function renderUploadPagination() {
 
 
 init();
+
+document.addEventListener("DOMContentLoaded", () => {
+  const startBtn = document.getElementById("startDownloadBtn");
+  const countdownDiv = document.getElementById("countdown");
+  const timerSpan = document.getElementById("timer");
+
+  if (startBtn) {
+    startBtn.addEventListener("click", function () {
+      let countdown = 5;
+
+      // Show countdown
+      countdownDiv.style.display = "block";
+      timerSpan.textContent = countdown;
+      startBtn.disabled = true;
+
+      const interval = setInterval(() => {
+        countdown--;
+        timerSpan.textContent = countdown;
+
+        if (countdown <= 0) {
+          clearInterval(interval);
+          countdownDiv.textContent = "Starting download...";
+
+          // ✅ Trigger download (replace with actual dynamic link if needed)
+          const movieLink = startBtn.getAttribute("data-download");
+          if (movieLink) {
+            window.open(movieLink, "_blank");
+          }
+
+          // Reset UI
+          setTimeout(() => {
+            countdownDiv.style.display = "none";
+            startBtn.disabled = false;
+          }, 2000);
+        }
+      }, 1000);
+    });
+  }
+});
+

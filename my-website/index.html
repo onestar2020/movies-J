@@ -109,9 +109,12 @@
         <div>
           <button id="upload-trailer-btn">🎬 Watch Trailer</button>
           <button id="upload-watch-btn">▶ Watch Full Movie</button>
-          <a id="upload-download-btn" href="#" target="_blank" download>
-            <button>⬇ Download</button>
-          </a>
+          <div id="downloadSection">
+  <button id="startDownloadBtn">⬇ Download</button>
+  <div id="countdown" style="display: none; font-size: 14px; margin-top: 10px; color: #fff;">
+    Please wait... <span id="timer">5</span> seconds
+  </div>
+</div>
         </div>
         <p style="font-size:13px; color:#4CAF50; margin-top:10px;">
           ✅ Uploaded via Google Drive. No external ads included.
@@ -173,9 +176,14 @@
           adScript.src = "//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js";
           adScript.type = "text/javascript";
           document.body.appendChild(adScript);
+
+          
         });
       }
     });
   </script>
+  <!-- Profitablerate Download Ad -->
+<script type='text/javascript' src='//pl27069522.profitableratecpm.com/08/df/be/08dfbe14cbded4e6e66835c4b6d1f26a.js'></script>
+
 </body>
 </html>

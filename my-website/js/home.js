@@ -15,18 +15,24 @@ async function fetchTrending(type) {
   return data.results;
 }
 
-async function fetchTrendingAnime() {
-  let allResults = [];
-  for (let page = 1; page <= 3; page++) {
-    const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`);
-    const data = await res.json();
-    const filtered = data.results.filter(item =>
-      item.original_language === 'ja' && item.genre_ids.includes(16)
-    );
-    allResults = allResults.concat(filtered);
-  }
-  return allResults;
+async function init() {
+  const movies = await fetchTrending('movie');
+ await loadUploadedMovies(currentUploadPage);
+
+const uploadItems = uploads.map(u => ({
+  title: u.title,
+  id: u.id,
+  isUpload: true
+}));
+
+const bannerPool = [...movies, ...uploadItems];
+
+displayBanner(bannerPool);
+
+displayList(movies, 'movies-list');
+
 }
+
 
 async function fetchTrailer(id, mediaType) {
   const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
@@ -94,58 +100,53 @@ async function showDetails(item) {
   document.getElementById('modal-video').src = '';
   document.getElementById('modal').style.display = 'flex';
 
-  const isTV = item.media_type === "tv" || item.first_air_date;
-
-  const seasonWrapper = document.querySelector('.season-episode-selectors');
   const seasonSelect = document.getElementById('season-selector');
   const episodeSelect = document.getElementById('episode-selector');
+  const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
 
-  if (isTV) {
-    seasonWrapper.style.display = 'flex';
+  if (type !== 'tv') {
+    document.querySelector('.season-episode-selectors').style.display = 'none';
+    return;
+  }
 
-    const res = await fetch(`${BASE_URL}/tv/${item.id}?api_key=${API_KEY}`);
-    const data = await res.json();
+  // ✅ THIS WAS MISSING IN YOUR SECOND CODE
+  const res = await fetch(`${BASE_URL}/tv/${item.id}?api_key=${API_KEY}`);
+  const data = await res.json();
 
-    seasonSelect.innerHTML = '';
-    data.seasons.forEach(season => {
-      const option = document.createElement('option');
-      option.value = season.season_number;
-      option.textContent = season.name;
-      seasonSelect.appendChild(option);
-    });
-
-    seasonSelect.onchange = async () => {
-  const selectedSeason = seasonSelect.value;
-  const epRes = await fetch(`${BASE_URL}/tv/${item.id}/season/${selectedSeason}?api_key=${API_KEY}`);
-  const epData = await epRes.json();
-
-  episodeSelect.innerHTML = '';
-  epData.episodes.forEach(ep => {
-    const epOption = document.createElement('option');
-    epOption.value = ep.episode_number;
-    epOption.textContent = `Episode ${ep.episode_number}: ${ep.name}`;
-    episodeSelect.appendChild(epOption);
+  seasonSelect.innerHTML = '';
+  data.seasons.forEach(season => {
+    const option = document.createElement('option');
+    option.value = season.season_number;
+    option.textContent = season.name;
+    seasonSelect.appendChild(option);
   });
 
-  // Auto-select episode 1
-  episodeSelect.selectedIndex = 0;
+  seasonSelect.onchange = async () => {
+    const selectedSeason = seasonSelect.value;
+    const epRes = await fetch(`${BASE_URL}/tv/${item.id}/season/${selectedSeason}?api_key=${API_KEY}`);
+    const epData = await epRes.json();
 
-  // ⏯ Update video after season loads
-  changeServer(true, 0);
+    episodeSelect.innerHTML = '';
+    epData.episodes.forEach(ep => {
+      const epOption = document.createElement('option');
+      epOption.value = ep.episode_number;
+      epOption.textContent = `Episode ${ep.episode_number}: ${ep.name}`;
+      episodeSelect.appendChild(epOption);
+    });
 
+    episodeSelect.selectedIndex = 0;
+    changeServer(true, 0);
+    episodeSelect.onchange = () => changeServer(true, 0);
+  };
 
-  // Re-assign onchange handler (needed every time season changes)
-  episodeSelect.onchange = () => changeServer(true, 0);
+  // Trigger the default season load
+  seasonSelect.selectedIndex = 0;
+  seasonSelect.dispatchEvent(new Event('change'));
 
-};
-
-
-    // Trigger default load for first season
-    seasonSelect.dispatchEvent(new Event('change'));
-  } else {
-    seasonWrapper.style.display = 'none';
-  }
+  document.querySelector('.season-episode-selectors').style.display = 'block';
 }
+
+
 
 function changeServer(auto = false, index = 0) {
   const servers = [
@@ -456,25 +457,6 @@ function renderUploadPagination() {
   }
 }
 
-async function init() {
-  const movies = await fetchTrending('movie');
-  const tvShows = await fetchTrending('tv');
-  const anime = await fetchTrendingAnime();
 
-  await loadUploadedMovies(currentUploadPage);
-
-  const uploadItems = uploads.map(u => ({
-    title: u.title,
-    id: u.id,
-    isUpload: true
-  }));
-
-  const bannerPool = [...movies, ...tvShows, ...uploadItems];
-  displayBanner(bannerPool);
-
-  displayList(movies, 'movies-list');
-  displayList(tvShows, 'tvshows-list');
-  displayList(anime, 'anime-list');
-}
 
 init();

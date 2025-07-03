@@ -401,8 +401,8 @@ async function watchUploadTrailer() {
     }
   }
 
-  const searchUrl = `https://www.youtube.com/results?search_query=${title}+official+trailer`;
-  window.open(searchUrl, '_blank');
+   alert("No official trailer found.");
+
 }
 
 function closeUploadModal() {

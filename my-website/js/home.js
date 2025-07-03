@@ -193,6 +193,20 @@ if (auto) serverSelect.value = servers[index];  // ← sync dropdown on auto
       url = isTV ? `https://dopebox.to/embedtv/${id}/${season}/${episode}` : `https://dopebox.to/embed/${id}`; break;
     case "sflix.to":
       url = isTV ? `https://sflix.to/embed/tv/${id}/${season}/${episode}` : `https://sflix.to/embed/movie/${id}`; break;
+    case "megacloud.tv":
+      url = isTV
+        ? `https://megacloud.tv/embed?t=tv&id=${id}&s=${season}&e=${episode}`
+        : `https://megacloud.tv/embed?t=movie&id=${id}`;
+      break;
+
+    case "fzmovies.xyz":
+      url = isTV
+        ? `https://fzmovies.xyz/tv/${id}/${season}/${episode}`
+        : `https://fzmovies.xyz/movie/${id}`;
+      break;
+
+
+
     default:
       url = "";
   }

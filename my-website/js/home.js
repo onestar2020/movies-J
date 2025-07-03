@@ -274,19 +274,26 @@ async function searchTMDB() {
   const tmdbResults = data.results.filter(item => item.poster_path);
 
   tmdbResults.forEach(item => {
-    const img = document.createElement('img');
-    img.src = `${IMG_URL}${item.poster_path}`;
-    img.alt = item.title || item.name;
-    img.style.width = '120px';
-    img.style.margin = '5px';
-    img.style.borderRadius = '5px';
-    img.style.cursor = 'pointer';
-    img.onclick = () => {
-      closeSearchModal();
-      showDetails(item);
-    };
-    tmdbSection.appendChild(img);
-  });
+  const img = document.createElement('img');
+  img.src = `${IMG_URL}${item.poster_path}`;
+  img.alt = item.title || item.name;
+  img.style.width = '120px';
+  img.style.margin = '5px';
+  img.style.borderRadius = '5px';
+  img.style.cursor = 'pointer';
+  img.onclick = () => {
+    closeSearchModal();
+
+    // Manually set media_type if missing
+    if (!item.media_type) {
+      item.media_type = item.first_air_date ? 'tv' : 'movie';
+    }
+
+    showDetails(item);
+  };
+  tmdbSection.appendChild(img);
+});
+
 
   const hasUploadedMatch = uploads.some(upload =>
     upload.title.toLowerCase().includes(query.toLowerCase())

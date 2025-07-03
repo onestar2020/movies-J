@@ -35,4 +35,7 @@ const uploads = [
   { title: "Sinners", id: "1kfegH8wXxO3MYbXu8ZBv_7dRFSc5Yvax" },
   { title: "Diablo", id: "1nwtSJKFK9a47g0CnCMIu8EMbSEXLhIrF" },
   { title: "Red Land", id: "1V9zBN6XruePOanqnpXLg8bUyH5Z8BjkE" },
+  { title: "From the World of John Wick: Ballerina", id: "1vzP_bGwBQxMiNwagdYBXlGQNScd-yYON" },
+  { title: "Ice Road: Vengeance", id: "1YnPIulaX95A8d9l7E9iFL_bQgxZwhQM9" },
+  { title: "Thunderbolts*", id: "1SJAlHbq2cWtBYMNKydSNsDBC4cto_jOM" },
 ];

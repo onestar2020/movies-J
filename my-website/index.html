@@ -61,41 +61,35 @@
           <h2 id="modal-title"></h2>
           <div class="stars" id="modal-rating"></div>
           <p id="modal-description"></p>
-
           <div id="tv-controls" style="margin-top: 10px;">
             <div class="season-episode-selectors" style="display: none;">
-  <label for="season-selector">Season:</label>
-  <select id="season-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
-
-  <label for="episode-selector">Episode:</label>
-  <select id="episode-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
-</div>
-
+              <label for="season-selector">Season:</label>
+              <select id="season-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
+              <label for="episode-selector">Episode:</label>
+              <select id="episode-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
+            </div>
           </div>
         </div>
       </div>
       <div class="server-selector">
         <label for="server">Change Server:</label>
-<select id="server" onchange="changeServer()">
-    <option value="megacloud.tv">MegaCloud.tv</option>
-  <option value="fzmovies.xyz">FzMovies.xyz</option>
-  <option value="vidsrc.cc">Vidsrc.cc</option>
-  <option value="vidsrc.me">Vidsrc.me</option>
-  <option value="player.videasy.net">Player.Videasy.net</option>
-  <option value="multiembed.mov">MultiEmbed.mov</option>
-  <option value="2embed.to">2Embed.to</option>
-  <option value="zembed.net">Zembed.net</option>
-  <option value="curtstream.com">CurtStream</option>
-  <option value="vidsrc.pro">VidSrc Pro</option>
-  <option value="autoembed.to">AutoEmbed.to</option>
-  <option value="2embed.cc">2Embed.cc</option>
-  <option value="dopebox.to">DopeBox.to</option>
-  <option value="sflix.to">SFlix.to</option>
-</select>
-
-<p id="active-server-label" style="text-align: center; color: #00f; font-size: 13px; margin-top: 5px;"></p>
-
-
+        <select id="server" onchange="changeServer()">
+          <option value="megacloud.tv">MegaCloud.tv</option>
+          <option value="fzmovies.xyz">FzMovies.xyz</option>
+          <option value="vidsrc.cc">Vidsrc.cc</option>
+          <option value="vidsrc.me">Vidsrc.me</option>
+          <option value="player.videasy.net">Player.Videasy.net</option>
+          <option value="multiembed.mov">MultiEmbed.mov</option>
+          <option value="2embed.to">2Embed.to</option>
+          <option value="zembed.net">Zembed.net</option>
+          <option value="curtstream.com">CurtStream</option>
+          <option value="vidsrc.pro">VidSrc Pro</option>
+          <option value="autoembed.to">AutoEmbed.to</option>
+          <option value="2embed.cc">2Embed.cc</option>
+          <option value="dopebox.to">DopeBox.to</option>
+          <option value="sflix.to">SFlix.to</option>
+        </select>
+        <p id="active-server-label" style="text-align: center; color: #00f; font-size: 13px; margin-top: 5px;"></p>
         <p style="font-size: 13px; color: #ff5e00; text-align: center; margin: 10px 0;">
           ⚠ Ads shown in free movie servers are not controlled by this site.
         </p>
@@ -118,7 +112,6 @@
         <div>
           <button id="upload-trailer-btn">🎬 Watch Trailer</button>
           <button id="upload-watch-btn">▶ Watch Full Movie</button>
-          
           <a id="upload-download-btn" href="#" target="_blank" download>
             <button>⬇ Download</button>
           </a>
@@ -137,28 +130,43 @@
     <div class="results" id="search-results"></div>
   </div>
 
+  <!-- Banner Ad 468x60 -->
+  <div style="text-align:center; margin: 20px 0;">
+    <script type="text/javascript">
+      atOptions = {
+        'key' : '0e7b0cdaab5dd80e165c43b2a094fb08',
+        'format' : 'iframe',
+        'height' : 60,
+        'width' : 468,
+        'params' : {}
+      };
+    </script>
+    <script type="text/javascript" src="//www.highperformanceformat.com/0e7b0cdaab5dd80e165c43b2a094fb08/invoke.js"></script>
+  </div>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="footer-content">
       <p>&copy; 2025 My Website. All rights reserved.</p>
-     <div class="footer-links">
-  <a href="disclaimer.html">Disclaimer</a>
-<a href="about.html">About Us</a>
-<a href="contact.html">Contact Us</a>
-
-</div>
-
+      <div class="footer-links">
+        <a href="disclaimer.html">Disclaimer</a>
+        <a href="about.html">About Us</a>
+        <a href="contact.html">Contact Us</a>
+      </div>
     </div>
   </footer>
 
-    <!-- Scripts -->
+  <!-- Core Scripts -->
   <script src="js/uploads.js"></script>
   <script src="js/home.js"></script>
 
-  <!-- ProfitablerateCPM Ads (autoload on page load) -->
+  <!-- Adsterra Popunder Ad -->
   <script type="text/javascript" src="//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js"></script>
 
-  <!-- Trigger ad when 'Watch Full Movie' is clicked -->
+  <!-- Adsterra Social Bar Ad -->
+  <script type="text/javascript" src="//pl27069522.profitableratecpm.com/08/df/be/08dfbe14cbded4e6e66835c4b6d1f26a.js"></script>
+
+  <!-- Trigger Popunder again when 'Watch Full Movie' is clicked -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const watchBtn = document.getElementById("upload-watch-btn");

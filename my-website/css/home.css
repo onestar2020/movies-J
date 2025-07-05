@@ -550,3 +550,18 @@ input:focus-visible {
     padding-bottom: 60px; /* Prevent content from being hidden behind the ad */
   }
 }
+/* Hide PC ad sa simula */
+#desktop-banner-ad {
+  display: none;
+}
+
+/* Ipakita lang ang PC ad kapag desktop (lapad ay 769px pataas) */
+@media (min-width: 769px) {
+  #desktop-banner-ad {
+    display: block;
+    margin: 20px auto;
+    width: 468px;
+    height: 60px;
+    text-align: center;
+  }
+}

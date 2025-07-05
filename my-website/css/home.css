@@ -1,32 +1,441 @@
-#upload-pagination {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
+/* ===== GLOBAL RESET & BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Poppins', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  background: #111;
+  color: #fff;
 }
 
-#upload-pagination button {
+/* ===== STATIC PAGES (About, Contact, Disclaimer) ===== */
+.page-container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 30px;
+  background: #1f1f1f;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(229, 9, 20, 0.2);
+}
+
+.page-container h1 {
+  font-size: 2em;
+  margin-bottom: 20px;
+  color: #ff5e00;
+  border-left: 5px solid #e50914;
+  padding-left: 15px;
+}
+
+.page-container p {
+  line-height: 1.8;
+  font-size: 1em;
+  color: #ddd;
+  margin-bottom: 15px;
+}
+
+.page-container a {
+  color: #4CAF50;
+  transition: color 0.3s;
+}
+.page-container a:hover {
+  color: #fff;
+}
+
+/* ===== NAVIGATION BAR ===== */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: #1f1f1f;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.navbar img {
+  height: 40px;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  margin: 0 5px;
+  font-weight: 500;
+}
+.search-bar {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: none;
+}
+
+/* ===== BANNER ===== */
+.banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #000;
+  text-align: center;
+}
+.banner-video {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+}
+.banner-video iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.banner h1 {
+  font-size: 2em;
+  margin: 15px 0;
+}
+.banner-buttons button {
+  padding: 10px 20px;
+  margin: 5px;
+  border: none;
+  border-radius: 30px;
+  background-color: #e50914;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+.banner-buttons button:hover {
+  background-color: #b00610;
+}
+
+/* ===== MOVIE SECTIONS ===== */
+.row {
+  margin: 30px 20px;
+}
+.row h2 {
+  margin-bottom: 15px;
+  font-size: 1.5em;
+  border-left: 5px solid #e50914;
+  padding-left: 10px;
+}
+.list {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+.list img {
+  width: 150px;
+  border-radius: 10px;
+  transition: transform 0.3s, filter 0.3s;
+  cursor: pointer;
+}
+.list img:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+/* ===== MODAL ===== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: #222;
+  color: white;
+  border-radius: 10px;
+  max-width: 700px;
+  width: 100%;
+  margin: auto;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  padding: 20px;
+  overflow-y: auto;
+  max-height: 90vh;
+  position: relative;
+}
+.modal-body {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.modal-body img {
+  width: 200px;
+  border-radius: 10px;
+}
+.modal-text {
+  flex: 1;
+}
+.modal-text h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+.modal-text p {
+  line-height: 1.6;
+}
+.modal-text button {
+  background: #1f1f1f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin: 5px;
   padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 0.9em;
+}
+.modal-text button:hover {
+  background: #e50914;
+}
+.stars {
+  color: gold;
+  margin-bottom: 10px;
+}
+.close {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  cursor: pointer;
+  font-size: 28px;
+  padding: 5px 10px;
+}
+.server-selector {
+  margin: 15px 0;
+}
+.server-selector select {
+  padding: 5px;
+  border-radius: 5px;
+}
+
+/* ===== UPLOAD MODAL ===== */
+#upload-modal iframe {
+  width: 100%;
+  height: 400px;
+  border-radius: 10px;
+  background-color: #000;
+}
+
+/* ===== SEARCH MODAL ===== */
+.search-modal {
+  position: fixed;
+  z-index: 999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.95);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+}
+#search-input {
+  width: 100%;
+  max-width: 600px;
+  padding: 10px;
+  font-size: 1em;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 5px;
+}
+.results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.results img {
+  width: 120px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.results img:hover {
+  transform: scale(1.1);
+}
+.search-modal .close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 30px;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  background-color: #1f1f1f;
+  padding: 20px;
+  text-align: center;
+  color: white;
+  margin-top: 40px;
+}
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.footer-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.footer-links a {
+  color: red;
+  text-decoration: none;
+}
+.footer-links a:hover {
+  color: white;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nav-links {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .banner-video {
+    height: 220px;
+  }
+  .modal-body {
+    flex-direction: column;
+    align-items: center;
+  }
+  .modal-body img {
+    width: 60%;
+  }
+  .list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .list img {
+    width: 120px;
+  }
+  #search-input {
+    width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner h1 {
+    font-size: 20px;
+  }
+  .row h2 {
+    font-size: 18px;
+  }
+  .modal-content {
+    width: 95%;
+    padding: 15px;
+  }
+  .modal-body img {
+    width: 80%;
+  }
+  .search-modal .close {
+    font-size: 24px;
+  }
+  .footer-content {
+    font-size: 14px;
+  }
+}
+
+/* ===== SCROLLBAR ===== */
+.list::-webkit-scrollbar {
+  height: 6px;
+}
+.list::-webkit-scrollbar-thumb {
+  background: #e50914;
+  border-radius: 10px;
+}
+.uploaded-highlight {
+  background: #1a1a1a;
+  padding: 10px;
+  border: 1px solid #4CAF50;
+  border-radius: 8px;
+}
+
+/* ===== MODERN BUTTON STYLING ===== */
+.modern-button {
+  padding: 8px 16px;
+  margin: 5px;
+  border: none;
+  border-radius: 8px;
   background: linear-gradient(90deg, #e50914, #b81d24);
   color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.modern-button:hover {
+  background: linear-gradient(90deg, #f40612, #b81d24);
+}
+
+/* ===== MODERN PAGINATION BUTTONS ===== */
+#upload-pagination button {
+  background: linear-gradient(90deg, #e50914, #b81d24);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 20px;
+  margin: 6px;
   border: none;
   border-radius: 30px;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(229, 9, 20, 0.3);
-  position: relative;
-  overflow: hidden;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(229, 9, 20, 0.3);
 }
-
 #upload-pagination button:hover {
   background: linear-gradient(90deg, #f40612, #a41a22);
   transform: scale(1.05);
 }
 
-/* Ripple Effect */
+/* ===== LOGO HOVER EFFECT ===== */
+.logo-effect {
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+.logo-effect:hover {
+  transform: scale(1.08) rotate(1deg);
+  filter: drop-shadow(0 0 8px #e50914) drop-shadow(0 0 15px #e50914);
+  animation: logo-flicker 1s ease-in-out infinite alternate;
+}
+@keyframes logo-flicker {
+  0% {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px #e50914) drop-shadow(0 0 10px #e50914);
+  }
+  100% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 10px #e50914) drop-shadow(0 0 20px #e50914);
+  }
+}
+
+/* ===== RIPPLE EFFECT FOR BUTTONS ===== */
+.modern-button,
+#upload-pagination button {
+  position: relative;
+  overflow: hidden;
+}
+.modern-button::after,
 #upload-pagination button::after {
   content: "";
   position: absolute;
@@ -36,6 +445,13 @@
   animation: ripple 0.6s linear;
   pointer-events: none;
 }
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+.modern-button:active::after,
 #upload-pagination button:active::after {
   top: 50%;
   left: 50%;
@@ -44,14 +460,95 @@
   margin-top: -50px;
   margin-left: -50px;
 }
-@keyframes ripple {
-  to {
-    transform: scale(4);
-    opacity: 0;
-  }
+
+/* ===== MODERN SEASON & EPISODE SELECTORS ===== */
+.season-episode-selectors {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #141414;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255, 94, 0, 0.1);
+  margin-top: 20px;
 }
 
-/* Responsive for Mobile */
+.season-episode-selectors label {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #ff5e00;
+  letter-spacing: 0.5px;
+}
+
+.season-episode-selectors select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #333;
+  font-size: 15px;
+  font-family: 'Poppins', sans-serif;
+  transition: border 0.3s, box-shadow 0.3s;
+  box-shadow: inset 0 0 6px rgba(255, 94, 0, 0.2);
+}
+.season-episode-selectors select:focus {
+  border-color: #ff5e00;
+  box-shadow: 0 0 8px rgba(255, 94, 0, 0.4);
+  outline: none;
+}
+
+/* ===== ACCESSIBILITY: FOCUS STYLES ===== */
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid #ff5e00;
+  box-shadow: 0 0 6px #ff5e00;
+}
+
+#upload-pagination button {
+  margin: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  background-color: #333;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#upload-pagination button:hover {
+  background-color: #555;
+}
+
+#upload-pagination span {
+  font-size: 14px;
+  margin: 0 10px;
+}
+#upload-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+#upload-pagination button {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #222;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#upload-pagination button:hover {
+  background-color: #444;
+}
+
 @media (max-width: 600px) {
   #upload-pagination button {
     flex: 1 1 auto;

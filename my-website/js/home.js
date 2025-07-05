@@ -274,8 +274,35 @@ async function loadUploadedMovies() {
 }
 
 
+ {
+  const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
+  const data = await res.json();
+  return data.results;
+}
 
 
+ {
+  const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
+  const data = await res.json();
+  const trailer = data.results.find(video => video.type === "Trailer" && video.site === "YouTube");
+  return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
+}
+
+ {
+  const bannerTitle = document.getElementById('banner-title');
+  const trailerIframe = document.getElementById('trailer');
+  const item = bannerItems[bannerIndex];
+
+  bannerTitle.textContent = item.title || item.name;
+
+  if (item.isUpload) {
+    trailerIframe.src = `https://drive.google.com/file/d/${item.id}/preview`;
+  } else {
+    const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+    const url = await fetchTrailer(item.id, mediaType);
+    trailerIframe.src = url ? `${url}?autoplay=1&mute=1&controls=0&loop=1&playlist=${url.split('/').pop()}` : '';
+  }
+}
 
 function nextBannerTrailer() {
   bannerIndex = (bannerIndex + 1) % bannerItems.length;

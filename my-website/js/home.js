@@ -17,22 +17,26 @@ async function fetchTrending(type) {
 }
 
 async function init() {
-  const movies = await fetchTrending('movie');
- await loadUploadedMovies(currentUploadPage);
+  try {
+    const movies = await fetchTrending('movie');
+    await loadUploadedMovies(currentUploadPage);
 
-const uploadItems = uploads.map(u => ({
-  title: u.title,
-  id: u.id,
-  isUpload: true
-}));
+    const uploadItems = uploads.map(u => ({
+      title: u.title,
+      id: u.id,
+      isUpload: true
+    }));
 
-const bannerPool = [...movies, ...uploadItems];
+    const bannerPool = [...movies, ...uploadItems];
 
-displayBanner(bannerPool);
-
-displayList(movies, 'movies-list');
-
+    displayBanner(bannerPool);
+    displayList(movies, 'movies-list');
+  } catch (e) {
+    console.error("❌ Failed in init():", e);
+    alert("Something went wrong while loading movies. Please try again later.");
+  }
 }
+
 
 
 async function fetchTrailer(id, mediaType) {
@@ -524,11 +528,9 @@ function renderUploadPagination() {
   }
 }
 
+init().catch(err => {
+  console.error("❌ Error during initialization:", err);
+});
 
-
-
-
-
-init();
 
 

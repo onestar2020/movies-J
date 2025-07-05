@@ -1,3 +1,7 @@
+console.log("✅ home.js loaded");
+console.log("📁 uploads = ", typeof uploads);
+
+
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 

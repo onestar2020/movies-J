@@ -50,14 +50,13 @@ async function loadMovie() {
 
 loadMovie();
 
-// ➕ Add server selector and watch button
+// ➕ Add server selector that auto-loads movie
 document.addEventListener("DOMContentLoaded", () => {
   const main = document.querySelector("main");
 
   const container = document.createElement("div");
   container.style = "margin-top:20px; text-align:center;";
 
-  // 🔽 Server selector
   const serverSelect = document.createElement("select");
   serverSelect.id = "server-select";
   serverSelect.style = "padding: 8px; border-radius: 5px; margin-bottom: 10px;";
@@ -72,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { name: "Sflix.to", url: "sflix.to" }
   ];
 
+  // Add server options
   servers.forEach(server => {
     const option = document.createElement("option");
     option.value = server.url;
@@ -79,17 +79,18 @@ document.addEventListener("DOMContentLoaded", () => {
     serverSelect.appendChild(option);
   });
 
-  // ▶ Watch Button
-  const watchBtn = document.createElement("button");
-  watchBtn.textContent = "▶ Watch Full Movie";
-  watchBtn.style = "padding:10px 20px; background:#00bcd4; color:#fff; border:none; border-radius:5px; cursor:pointer; display:block; margin:10px auto 0 auto;";
-  watchBtn.onclick = () => {
-    const selectedServer = serverSelect.value;
-    const link = `https://${selectedServer}/embed/${type}/${id}`;
-    window.open(link, "_blank");
-  };
+  // Pag-select, palitan ang iframe source
+  serverSelect.addEventListener("change", () => {
+    const selected = serverSelect.value;
+    const movieFrame = document.getElementById("movie-player");
+    movieFrame.src = `https://${selected}/embed/${type}/${id}`;
+  });
+
+  // Default load (una sa listahan)
+  serverSelect.selectedIndex = 0;
+  const defaultServer = serverSelect.value;
+  document.getElementById("movie-player").src = `https://${defaultServer}/embed/${type}/${id}`;
 
   container.appendChild(serverSelect);
-  container.appendChild(watchBtn);
   main.insertBefore(container, document.getElementById("movie-overview"));
 });

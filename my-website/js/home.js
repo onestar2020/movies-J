@@ -8,6 +8,18 @@ let bannerItems = [];
 let bannerIndex = 0;
 let currentUploadPage = 1;
 const uploadsPerPage = 12;
+let currentMoviePage = 1;
+let currentTVPage = 1;
+let currentAnimePage = 1;
+
+const moviesPerPage = 15;
+const tvsPerPage = 15;
+const animesPerPage = 15;
+
+let movieItems = [];
+let tvItems = [];
+let animeItems = [];
+
 
 async function fetchTrending(type) {
   const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
@@ -430,6 +442,64 @@ async function loadUploadedMovies(page = 1) {
   renderUploadPagination();
 }
 
+function displayMoviesPage(page = 1) {
+  currentMoviePage = page;
+  const startIndex = (page - 1) * moviesPerPage;
+  const endIndex = startIndex + moviesPerPage;
+  const itemsToDisplay = movieItems.slice(startIndex, endIndex);
+
+  displayList(itemsToDisplay, 'movies-list');
+  renderPagination('movies-list', currentMoviePage, movieItems.length, moviesPerPage, displayMoviesPage);
+}
+
+function displayTVPage(page = 1) {
+  currentTVPage = page;
+  const startIndex = (page - 1) * tvsPerPage;
+  const endIndex = startIndex + tvsPerPage;
+  const itemsToDisplay = tvItems.slice(startIndex, endIndex);
+
+  displayList(itemsToDisplay, 'tvshows-list');
+  renderPagination('tvshows-list', currentTVPage, tvItems.length, tvsPerPage, displayTVPage);
+}
+
+function displayAnimePage(page = 1) {
+  currentAnimePage = page;
+  const startIndex = (page - 1) * animesPerPage;
+  const endIndex = startIndex + animesPerPage;
+  const itemsToDisplay = animeItems.slice(startIndex, endIndex);
+
+  displayList(itemsToDisplay, 'anime-list');
+  renderPagination('anime-list', currentAnimePage, animeItems.length, animesPerPage, displayAnimePage);
+}
+
+
+function renderPagination(containerId, currentPage, totalItems, itemsPerPage, onPageChange) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  const createBtn = (label, page, disabled = false) => {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.disabled = disabled;
+    btn.onclick = () => onPageChange(page);
+    return btn;
+  };
+
+  container.appendChild(createBtn('⏮ First', 1, currentPage === 1));
+  container.appendChild(createBtn('◀ Prev', currentPage - 1, currentPage === 1));
+
+  const span = document.createElement('span');
+  span.textContent = `Page ${currentPage} of ${totalPages}`;
+  span.style.margin = '0 15px';
+  span.style.fontWeight = 'bold';
+  container.appendChild(span);
+
+  container.appendChild(createBtn('Next ▶', currentPage + 1, currentPage === totalPages));
+  container.appendChild(createBtn('Last ⏭', totalPages, currentPage === totalPages));
+}
+
+
 function renderUploadPagination() {
   const paginationContainer = document.getElementById('upload-pagination');
   paginationContainer.innerHTML = '';
@@ -472,9 +542,14 @@ async function init() {
   const bannerPool = [...movies, ...tvShows, ...uploadItems];
   displayBanner(bannerPool);
 
-  displayList(movies, 'movies-list');
-  displayList(tvShows, 'tvshows-list');
-  displayList(anime, 'anime-list');
+ movieItems = movies;
+tvItems = tvShows;
+animeItems = anime;
+
+displayMoviesPage(currentMoviePage);
+displayTVPage(currentTVPage);
+displayAnimePage(currentAnimePage);
+
 }
 
 init();

@@ -443,15 +443,18 @@ async function loadUploadedMovies(page = 1) {
     div.style.marginBottom = '20px';
 
     // 👉 Create image
-    const img = document.createElement('img');
-    img.src = movie?.poster_path ? IMG_URL + movie.poster_path : '';
-    img.alt = upload.title;
-    img.style.width = '120px';
-    img.style.borderRadius = '5px';
-    img.style.cursor = 'pointer';
+   div.innerHTML = `
+  <div style="text-align:center">
+    <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : ''}"
+         alt="${upload.title}"
+         style="width:120px;border-radius:5px;cursor:pointer"
+         onclick="showUploadModal('${upload.id}')">
+    <p><strong>${upload.title}</strong></p>
+    ${movie?.overview ? `<p style="font-size:12px;">${movie.overview.slice(0, 100)}...</p>` : ''}
+    ${movie?.vote_average ? `<p style="color:gold;">${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
+  </div>
+`;
 
-    // ✅ Add click event to image
-    img.addEventListener('click', () => showUploadModal(upload.id));
 
     // 👉 Title
     const titleElem = document.createElement('p');

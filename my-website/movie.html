@@ -17,7 +17,7 @@
 
     <!-- Server Info & Selector -->
     <p style="color: #ccc; margin-top: 10px; text-align: center; font-size: 15px;">
-      🎬 Select a <strong>server</strong> below to watch the full movie.
+      🎮 Select a <strong>server</strong> below to watch the full movie.
     </p>
 
     <div style="text-align: center; margin-top: 10px;">
@@ -60,7 +60,15 @@
       serverSelect.addEventListener('change', () => {
         const server = serverSelect.value;
         if (server && id) {
-          player.src = `https://${server}/embed/${type}?id=${id}`;
+          let embedUrl = '';
+          if (server.includes('fzmovies')) {
+            embedUrl = `https://${server}/movie?id=${id}`;
+          } else if (server.includes('megacloud')) {
+            embedUrl = `https://${server}/embed-1/${id}`;
+          } else {
+            embedUrl = `https://${server}/embed/${type}?id=${id}`;
+          }
+          player.src = embedUrl;
         }
       });
     });

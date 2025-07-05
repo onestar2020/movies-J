@@ -12,18 +12,6 @@ async function fetchTrending(type) {
   return data.results;
 }
 
-async function fetchTrendingAnime() {
-  let allResults = [];
-  for (let page = 1; page <= 3; page++) {
-    const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`);
-    const data = await res.json();
-    const filtered = data.results.filter(item =>
-      item.original_language === 'ja' && item.genre_ids.includes(16)
-    );
-    allResults = allResults.concat(filtered);
-  }
-  return allResults;
-}
 
 async function fetchTrailer(id, mediaType) {
   const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
@@ -274,9 +262,6 @@ async function loadUploadedMovies() {
 
 async function init() {
   const movies = await fetchTrending('movie');
-  const tvShows = await fetchTrending('tv');
-  const anime = await fetchTrendingAnime();
-
   await loadUploadedMovies();
 
   const uploadItems = uploads.map(u => ({
@@ -285,12 +270,9 @@ async function init() {
     isUpload: true
   }));
 
-  const bannerPool = [...movies, ...tvShows, ...uploadItems];
+  const bannerPool = [...movies, ...uploadItems];
   displayBanner(bannerPool);
 
   displayList(movies, 'movies-list');
-  displayList(tvShows, 'tvshows-list');
-  displayList(anime, 'anime-list');
 }
 
-init();

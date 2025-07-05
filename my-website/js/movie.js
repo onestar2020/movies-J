@@ -24,35 +24,51 @@ async function loadMovie() {
     document.getElementById('movie-player').src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1`;
   }
 
-  // Fetch cast
+  // Cast section (modern)
   const castRes = await fetch(`${BASE_URL}/${type}/${id}/credits?api_key=${API_KEY}`);
   const castData = await castRes.json();
   const castList = document.getElementById('cast-list');
+  castList.innerHTML = "<h2 style='margin-bottom:10px;'>Cast</h2>";
+  castList.style = "display: flex; gap: 20px; flex-wrap: wrap;";
+
   castData.cast?.slice(0, 6).forEach(c => {
-    const span = document.createElement('span');
-    span.innerHTML = `<img src="${c.profile_path ? IMG_URL + c.profile_path : 'https://via.placeholder.com/60x90'}" style="width:60px; border-radius:8px; margin-right:10px;" title="${c.name}">`;
-    castList.appendChild(span);
+    const div = document.createElement('div');
+    div.style = "text-align:center; width: 80px;";
+    div.innerHTML = `
+      <img src="${c.profile_path ? IMG_URL + c.profile_path : 'https://via.placeholder.com/60x90'}"
+        style="width: 80px; height: 100px; object-fit: cover; border-radius:10px;">
+      <p style="font-size:12px; color:#ccc; margin-top:5px;">${c.name}</p>
+    `;
+    castList.appendChild(div);
   });
 
-  // Fetch similar movies
+  // Similar Movies (modern grid)
   const similarRes = await fetch(`${BASE_URL}/${type}/${id}/similar?api_key=${API_KEY}`);
   const similarData = await similarRes.json();
   const similarContainer = document.getElementById('similar-movies');
+  similarContainer.innerHTML = "<h2 style='margin-top:30px; margin-bottom:10px;'>You May Also Like</h2>";
+  similarContainer.style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;";
+
   similarData.results?.slice(0, 6).forEach(sim => {
-    const img = document.createElement('img');
-    img.src = IMG_URL + sim.poster_path;
-    img.alt = sim.title || sim.name;
-    img.style = 'width:100px; margin-right:10px; cursor:pointer; border-radius:8px;';
-    img.onclick = () => {
+    const card = document.createElement('div');
+    card.style = "cursor:pointer; transition:transform 0.3s; text-align:center;";
+    card.onmouseover = () => (card.style.transform = "scale(1.05)");
+    card.onmouseout = () => (card.style.transform = "scale(1)");
+    card.innerHTML = `
+      <img src="${IMG_URL + sim.poster_path}" alt="${sim.title || sim.name}"
+        style="width:100%; border-radius:10px; object-fit:cover;">
+      <p style="font-size:13px; color:#ccc; margin-top:5px;">${sim.title || sim.name}</p>
+    `;
+    card.onclick = () => {
       window.location.href = `movie.html?id=${sim.id}&type=${type}`;
     };
-    similarContainer.appendChild(img);
+    similarContainer.appendChild(card);
   });
 }
 
 loadMovie();
 
-// Inject server selector below message
+// Server selector below 🎬 label
 document.addEventListener("DOMContentLoaded", () => {
   const label = document.getElementById("server-label");
 
@@ -77,7 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
     { name: "SFlix.to", url: "sflix.to" }
   ];
 
-  // Add options
   servers.forEach(server => {
     const option = document.createElement("option");
     option.value = server.url;
@@ -85,18 +100,14 @@ document.addEventListener("DOMContentLoaded", () => {
     serverSelect.appendChild(option);
   });
 
-  // On change, update iframe
   serverSelect.addEventListener("change", () => {
     const selected = serverSelect.value;
-    const movieFrame = document.getElementById("movie-player");
-    movieFrame.src = `https://${selected}/embed/${type}/${id}`;
+    document.getElementById("movie-player").src = `https://${selected}/embed/${type}/${id}`;
   });
 
-  // Load default server on page load
   serverSelect.selectedIndex = 0;
   const defaultServer = serverSelect.value;
   document.getElementById("movie-player").src = `https://${defaultServer}/embed/${type}/${id}`;
 
-  // Insert below label
   label.insertAdjacentElement("afterend", serverSelect);
 });

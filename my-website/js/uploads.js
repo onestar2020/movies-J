@@ -1,3 +1,4 @@
+console.log("✅ uploads.js loaded");
 const uploads = [
   { title: "Exterritorial", id: "10NEhLMhb0mACWJXVtQ-Inalpf0gNc2Ju" },
   { title: "Control Freak", id: "1mdd1G8RswZW3G_6gMT39O2h88HhXCrdn" },

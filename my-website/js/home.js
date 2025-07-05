@@ -8,17 +8,7 @@ let bannerItems = [];
 let bannerIndex = 0;
 let currentUploadPage = 1;
 const uploadsPerPage = 12;
-let currentMoviePage = 1;
-let currentTVPage = 1;
-let currentAnimePage = 1;
 
-const moviesPerPage = 15;
-const tvsPerPage = 15;
-const animesPerPage = 15;
-
-let movieItems = [];
-let tvItems = [];
-let animeItems = [];
 
 
 async function fetchTrending(type) {

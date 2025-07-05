@@ -1,6 +1,13 @@
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
+let currentMoviePage = 1;
+let currentUploadPage = 1;
+const moviesPerPage = 15;
+const uploadsPerPage = 15;
+let movieItems = [];
+let uploadItems = [];
+
 let currentItem;
 let currentUpload = null;
 let bannerItems = [];
@@ -58,17 +65,23 @@ function displayBanner(items) {
   playBannerTrailer();
 }
 
-function displayList(items, containerId) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  items.forEach(item => {
-    const img = document.createElement('img');
-    img.src = `${IMG_URL}${item.poster_path}`;
-    img.alt = item.title || item.name;
-    img.onclick = () => showDetails(item);
-    container.appendChild(img);
-  });
+function displayMoviesPage(page) {
+  currentMoviePage = page;
+  const start = (page - 1) * moviesPerPage;
+  const paginated = movieItems.slice(start, start + moviesPerPage);
+  displayList(paginated, 'movies-list');
+  renderPagination('movies-pagination', currentMoviePage, Math.ceil(movieItems.length / moviesPerPage), displayMoviesPage);
 }
+
+
+function displayUploadsPage(page) {
+  currentUploadPage = page;
+  const start = (page - 1) * uploadsPerPage;
+  const paginated = uploadItems.slice(start, start + uploadsPerPage);
+  displayList(paginated, 'uploaded-movies-list', true);
+  renderPagination('uploads-pagination', currentUploadPage, Math.ceil(uploadItems.length / uploadsPerPage), displayUploadsPage);
+}
+
 
 async function showDetails(item) {
   currentItem = item;
@@ -262,17 +275,20 @@ async function loadUploadedMovies() {
 
 async function init() {
   const movies = await fetchTrending('movie');
-  await loadUploadedMovies();
+  movieItems = movies;
 
-  const uploadItems = uploads.map(u => ({
+  await loadUploadedMovies();
+  displayUploadsPage(1);
+
+  uploadItems = uploads.map(u => ({
     title: u.title,
     id: u.id,
     isUpload: true
   }));
 
-  const bannerPool = [...movies, ...uploadItems]; // ✅ FIXED: removed tvShows
+  const bannerPool = [...movies, ...uploadItems];
   displayBanner(bannerPool);
-  displayList(movies, 'movies-list');
+  displayMoviesPage(1);
 }
 
 

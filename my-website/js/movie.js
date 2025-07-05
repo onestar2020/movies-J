@@ -74,6 +74,9 @@ async function loadSeasons() {
   const selectorBox = document.getElementById("season-episode-selectors");
   selectorBox.style.display = 'block';
 
+  seasonSelect.innerHTML = '';
+  episodeSelect.innerHTML = '';
+
   for (let i = 1; i <= totalSeasons; i++) {
     const option = document.createElement("option");
     option.value = i;

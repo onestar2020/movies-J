@@ -1,4 +1,4 @@
-console.log("✅ uploads.js loaded");
+// uploads.js
 const uploads = [
   { title: "Exterritorial", id: "10NEhLMhb0mACWJXVtQ-Inalpf0gNc2Ju" },
   { title: "Control Freak", id: "1mdd1G8RswZW3G_6gMT39O2h88HhXCrdn" },
@@ -39,5 +39,5 @@ const uploads = [
   { title: "Red Land", id: "1V9zBN6XruePOanqnpXLg8bUyH5Z8BjkE" },
   { title: "From the World of John Wick: Ballerina", id: "1vzP_bGwBQxMiNwagdYBXlGQNScd-yYON" },
   { title: "Ice Road: Vengeance", id: "1YnPIulaX95A8d9l7E9iFL_bQgxZwhQM9" },
-  { title: "Thunderbolts*", id: "1SJAlHbq2cWtBYMNKydSNsDBC4cto_jOM" }
+  { title: "Thunderbolts*", id: "1SJAlHbq2cWtBYMNKydSNsDBC4cto_jOM" },
 ];

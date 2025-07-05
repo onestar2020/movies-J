@@ -276,6 +276,7 @@ async function loadUploadedMovies() {
 
 
 
+
 function nextBannerTrailer() {
   bannerIndex = (bannerIndex + 1) % bannerItems.length;
   playBannerTrailer();

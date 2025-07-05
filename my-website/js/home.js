@@ -1,7 +1,6 @@
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 
-
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
 let currentItem;
 let currentUpload = null;
@@ -16,24 +15,18 @@ async function fetchTrending(type) {
   return data.results;
 }
 
-async function init() {
-  const movies = await fetchTrending('movie');
- await loadUploadedMovies(currentUploadPage);
-
-const uploadItems = uploads.map(u => ({
-  title: u.title,
-  id: u.id,
-  isUpload: true
-}));
-
-const bannerPool = [...movies, ...uploadItems];
-
-displayBanner(bannerPool);
-
-displayList(movies, 'movies-list');
-
+async function fetchTrendingAnime() {
+  let allResults = [];
+  for (let page = 1; page <= 3; page++) {
+    const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`);
+    const data = await res.json();
+    const filtered = data.results.filter(item =>
+      item.original_language === 'ja' && item.genre_ids.includes(16)
+    );
+    allResults = allResults.concat(filtered);
+  }
+  return allResults;
 }
-
 
 async function fetchTrailer(id, mediaType) {
   const res = await fetch(`${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`);
@@ -101,53 +94,58 @@ async function showDetails(item) {
   document.getElementById('modal-video').src = '';
   document.getElementById('modal').style.display = 'flex';
 
+  const isTV = item.media_type === "tv" || item.first_air_date;
+
+  const seasonWrapper = document.querySelector('.season-episode-selectors');
   const seasonSelect = document.getElementById('season-selector');
   const episodeSelect = document.getElementById('episode-selector');
-  const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
 
-  if (type !== 'tv') {
-    document.querySelector('.season-episode-selectors').style.display = 'none';
-    return;
-  }
+  if (isTV) {
+    seasonWrapper.style.display = 'flex';
 
-  // ✅ THIS WAS MISSING IN YOUR SECOND CODE
-  const res = await fetch(`${BASE_URL}/tv/${item.id}?api_key=${API_KEY}`);
-  const data = await res.json();
+    const res = await fetch(`${BASE_URL}/tv/${item.id}?api_key=${API_KEY}`);
+    const data = await res.json();
 
-  seasonSelect.innerHTML = '';
-  data.seasons.forEach(season => {
-    const option = document.createElement('option');
-    option.value = season.season_number;
-    option.textContent = season.name;
-    seasonSelect.appendChild(option);
-  });
-
-  seasonSelect.onchange = async () => {
-    const selectedSeason = seasonSelect.value;
-    const epRes = await fetch(`${BASE_URL}/tv/${item.id}/season/${selectedSeason}?api_key=${API_KEY}`);
-    const epData = await epRes.json();
-
-    episodeSelect.innerHTML = '';
-    epData.episodes.forEach(ep => {
-      const epOption = document.createElement('option');
-      epOption.value = ep.episode_number;
-      epOption.textContent = `Episode ${ep.episode_number}: ${ep.name}`;
-      episodeSelect.appendChild(epOption);
+    seasonSelect.innerHTML = '';
+    data.seasons.forEach(season => {
+      const option = document.createElement('option');
+      option.value = season.season_number;
+      option.textContent = season.name;
+      seasonSelect.appendChild(option);
     });
 
-    episodeSelect.selectedIndex = 0;
-    changeServer(true, 0);
-    episodeSelect.onchange = () => changeServer(true, 0);
-  };
+    seasonSelect.onchange = async () => {
+  const selectedSeason = seasonSelect.value;
+  const epRes = await fetch(`${BASE_URL}/tv/${item.id}/season/${selectedSeason}?api_key=${API_KEY}`);
+  const epData = await epRes.json();
 
-  // Trigger the default season load
-  seasonSelect.selectedIndex = 0;
-  seasonSelect.dispatchEvent(new Event('change'));
+  episodeSelect.innerHTML = '';
+  epData.episodes.forEach(ep => {
+    const epOption = document.createElement('option');
+    epOption.value = ep.episode_number;
+    epOption.textContent = `Episode ${ep.episode_number}: ${ep.name}`;
+    episodeSelect.appendChild(epOption);
+  });
 
-  document.querySelector('.season-episode-selectors').style.display = 'block';
+  // Auto-select episode 1
+  episodeSelect.selectedIndex = 0;
+
+  // ⏯ Update video after season loads
+  changeServer(true, 0);
+
+
+  // Re-assign onchange handler (needed every time season changes)
+  episodeSelect.onchange = () => changeServer(true, 0);
+
+};
+
+
+    // Trigger default load for first season
+    seasonSelect.dispatchEvent(new Event('change'));
+  } else {
+    seasonWrapper.style.display = 'none';
+  }
 }
-
-
 
 function changeServer(auto = false, index = 0) {
   const servers = [
@@ -287,10 +285,7 @@ async function searchTMDB() {
 
   const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
   const data = await res.json();
-  const tmdbResults = data.results.filter(item =>
-  item.poster_path && (item.media_type === 'movie' || (!item.media_type && !item.first_air_date))
-);
-
+  const tmdbResults = data.results.filter(item => item.poster_path);
 
   tmdbResults.forEach(item => {
   const img = document.createElement('img');
@@ -340,15 +335,6 @@ async function searchTMDB() {
 
   if (hasUploadedMatch) container.appendChild(uploadedSection);
   if (tmdbResults.length > 0) container.appendChild(tmdbSection);
-  if (!hasUploadedMatch && tmdbResults.length === 0) {
-  const noResult = document.createElement('p');
-  noResult.textContent = 'No matching movie found.';
-  noResult.style.textAlign = 'center';
-  noResult.style.color = '#ccc';
-  noResult.style.marginTop = '20px';
-  container.appendChild(noResult);
-}
-
 }
 
 function showUploadModal(videoId) {
@@ -372,8 +358,6 @@ function showUploadModal(videoId) {
       document.getElementById('upload-trailer-btn').onclick = () => watchUploadTrailer();
       document.getElementById('upload-watch-btn').onclick = () => playUploadedVideo();
       document.getElementById('upload-download-btn').href = `https://drive.google.com/u/0/uc?id=${upload.id}&export=download`;
-      document.getElementById('startDownloadBtn').setAttribute("data-download", `https://drive.google.com/u/0/uc?id=${upload.id}&export=download`);
-
 
       document.getElementById('upload-video').src = `https://drive.google.com/file/d/${upload.id}/preview`;
       document.getElementById('upload-modal').style.display = 'flex';
@@ -404,8 +388,8 @@ async function watchUploadTrailer() {
     }
   }
 
-   alert("No official trailer found.");
-
+  const searchUrl = `https://www.youtube.com/results?search_query=${title}+official+trailer`;
+  window.open(searchUrl, '_blank');
 }
 
 function closeUploadModal() {
@@ -451,7 +435,6 @@ function renderUploadPagination() {
   paginationContainer.innerHTML = '';
   const totalPages = Math.ceil(uploads.length / uploadsPerPage);
 
-  // ⏪ First Page (SHOW ONLY IF NOT ON PAGE 1)
   if (currentUploadPage > 1) {
     const firstBtn = document.createElement('button');
     firstBtn.textContent = '⏪ First Page';
@@ -462,28 +445,9 @@ function renderUploadPagination() {
     paginationContainer.appendChild(firstBtn);
   }
 
-  // ⬅️ Previous Page (SHOW ONLY IF NOT ON PAGE 1)
-  if (currentUploadPage > 1) {
-    const prevBtn = document.createElement('button');
-    prevBtn.textContent = '⬅️ Previous Page';
-    prevBtn.onclick = () => {
-      currentUploadPage--;
-      loadUploadedMovies(currentUploadPage);
-    };
-    paginationContainer.appendChild(prevBtn);
-  }
-
-  // 📄 Page Indicator
-  const info = document.createElement('span');
-  info.textContent = ` Page ${currentUploadPage} of ${totalPages} `;
-  info.style.color = '#fff';
-  info.style.margin = '0 10px';
-  paginationContainer.appendChild(info);
-
-  // ➡️ Next Page (SHOW ONLY IF NOT ON LAST PAGE)
   if (currentUploadPage < totalPages) {
     const nextBtn = document.createElement('button');
-    nextBtn.textContent = 'Next Page ➡️';
+    nextBtn.textContent = 'Next Page ⏩';
     nextBtn.onclick = () => {
       currentUploadPage++;
       loadUploadedMovies(currentUploadPage);
@@ -492,49 +456,25 @@ function renderUploadPagination() {
   }
 }
 
+async function init() {
+  const movies = await fetchTrending('movie');
+  const tvShows = await fetchTrending('tv');
+  const anime = await fetchTrendingAnime();
 
+  await loadUploadedMovies(currentUploadPage);
 
+  const uploadItems = uploads.map(u => ({
+    title: u.title,
+    id: u.id,
+    isUpload: true
+  }));
 
+  const bannerPool = [...movies, ...tvShows, ...uploadItems];
+  displayBanner(bannerPool);
 
+  displayList(movies, 'movies-list');
+  displayList(tvShows, 'tvshows-list');
+  displayList(anime, 'anime-list');
+}
 
 init();
-
-document.addEventListener("DOMContentLoaded", () => {
-  const startBtn = document.getElementById("startDownloadBtn");
-  const countdownDiv = document.getElementById("countdown");
-  const timerSpan = document.getElementById("timer");
-
-  if (startBtn) {
-    startBtn.addEventListener("click", function () {
-      let countdown = 5;
-
-      // Show countdown
-      countdownDiv.style.display = "block";
-      timerSpan.textContent = countdown;
-      startBtn.disabled = true;
-
-      const interval = setInterval(() => {
-        countdown--;
-        timerSpan.textContent = countdown;
-
-        if (countdown <= 0) {
-          clearInterval(interval);
-          countdownDiv.textContent = "Starting download...";
-
-          // ✅ Trigger download (replace with actual dynamic link if needed)
-          const movieLink = startBtn.getAttribute("data-download");
-          if (movieLink) {
-            window.open(movieLink, "_blank");
-          }
-
-          // Reset UI
-          setTimeout(() => {
-            countdownDiv.style.display = "none";
-            startBtn.disabled = false;
-          }, 2000);
-        }
-      }, 1000);
-    });
-  }
-});
-

@@ -77,10 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
   serverSelect.style = "padding: 8px; border-radius: 5px; margin-bottom: 20px; width: 100%; background: #222; color: #fff; border: 1px solid #555;";
 
   const servers = [
+    { name: "Vidsrc.me", url: "vidsrc.me" },
     { name: "MegaCloud.tv", url: "megacloud.tv" },
     { name: "FzMovies.xyz", url: "fzmovies.xyz" },
     { name: "Vidsrc.cc", url: "vidsrc.cc" },
-    { name: "Vidsrc.me", url: "vidsrc.me" },
     { name: "Player.Videasy.net", url: "player.videasy.net" },
     { name: "MultiEmbed.mov", url: "multiembed.mov" },
     { name: "2Embed.to", url: "2embed.to" },

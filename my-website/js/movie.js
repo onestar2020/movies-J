@@ -7,7 +7,6 @@ const id = urlParams.get('id');
 const type = urlParams.get('type') || 'movie';
 
 async function loadMovie() {
-  // Fetch movie/TV show details
   const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
   const data = await res.json();
 
@@ -16,7 +15,6 @@ async function loadMovie() {
   document.getElementById('movie-overview').textContent = data.overview;
   document.getElementById('movie-rating').textContent = '★'.repeat(Math.round(data.vote_average / 2));
 
-  // Fetch trailer
   const trailerRes = await fetch(`${BASE_URL}/${type}/${id}/videos?api_key=${API_KEY}`);
   const trailerData = await trailerRes.json();
   const trailer = trailerData.results.find(v => v.type === "Trailer" && v.site === "YouTube");
@@ -24,13 +22,11 @@ async function loadMovie() {
     document.getElementById('movie-player').src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1`;
   }
 
-  // Cast section (modern)
   const castRes = await fetch(`${BASE_URL}/${type}/${id}/credits?api_key=${API_KEY}`);
   const castData = await castRes.json();
   const castList = document.getElementById('cast-list');
   castList.innerHTML = "<h2 style='margin-bottom:10px;'>Cast</h2>";
   castList.style = "display: flex; gap: 20px; flex-wrap: wrap;";
-
   castData.cast?.slice(0, 6).forEach(c => {
     const div = document.createElement('div');
     div.style = "text-align:center; width: 80px;";
@@ -42,13 +38,11 @@ async function loadMovie() {
     castList.appendChild(div);
   });
 
-  // Similar Movies (modern grid)
   const similarRes = await fetch(`${BASE_URL}/${type}/${id}/similar?api_key=${API_KEY}`);
   const similarData = await similarRes.json();
   const similarContainer = document.getElementById('similar-movies');
   similarContainer.innerHTML = "<h2 style='margin-top:30px; margin-bottom:10px;'>You May Also Like</h2>";
   similarContainer.style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;";
-
   similarData.results?.slice(0, 6).forEach(sim => {
     const card = document.createElement('div');
     card.style = "cursor:pointer; transition:transform 0.3s; text-align:center;";
@@ -64,11 +58,61 @@ async function loadMovie() {
     };
     similarContainer.appendChild(card);
   });
+
+  if (type === 'tv') {
+    loadSeasons();
+  }
 }
 
-loadMovie();
+async function loadSeasons() {
+  const res = await fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}`);
+  const data = await res.json();
+  const totalSeasons = data.number_of_seasons;
 
-// Server selector below 🎬 label
+  const seasonSelect = document.getElementById("season-select");
+  const episodeSelect = document.getElementById("episode-select");
+  const selectorBox = document.getElementById("season-episode-selectors");
+  selectorBox.style.display = 'block';
+
+  for (let i = 1; i <= totalSeasons; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = `Season ${i}`;
+    seasonSelect.appendChild(option);
+  }
+
+  seasonSelect.addEventListener("change", () => {
+    const selectedSeason = seasonSelect.value;
+    loadEpisodes(selectedSeason);
+  });
+
+  episodeSelect.addEventListener("change", () => {
+    const server = document.getElementById("server-select").value;
+    const season = seasonSelect.value;
+    const episode = episodeSelect.value;
+    const player = document.getElementById("movie-player");
+    player.src = `https://${server}/embed/tv?id=${id}&s=${season}&e=${episode}`;
+  });
+
+  loadEpisodes(1);
+}
+
+async function loadEpisodes(seasonNumber) {
+  const episodeSelect = document.getElementById("episode-select");
+  episodeSelect.innerHTML = "";
+  const res = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNumber}?api_key=${API_KEY}`);
+  const data = await res.json();
+  data.episodes.forEach(ep => {
+    const option = document.createElement("option");
+    option.value = ep.episode_number;
+    option.textContent = `Episode ${ep.episode_number}: ${ep.name}`;
+    episodeSelect.appendChild(option);
+  });
+
+  const server = document.getElementById("server-select").value;
+  document.getElementById("movie-player").src = `https://${server}/embed/tv?id=${id}&s=${seasonNumber}&e=1`;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const label = document.getElementById("server-label");
 
@@ -101,13 +145,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   serverSelect.addEventListener("change", () => {
-    const selected = serverSelect.value;
-    document.getElementById("movie-player").src = `https://${selected}/embed/${type}/${id}`;
+    if (type === 'tv') {
+      const season = document.getElementById("season-select").value;
+      const episode = document.getElementById("episode-select").value;
+      document.getElementById("movie-player").src = `https://${serverSelect.value}/embed/tv?id=${id}&s=${season}&e=${episode}`;
+    } else {
+      document.getElementById("movie-player").src = `https://${serverSelect.value}/embed/movie/${id}`;
+    }
   });
-
-  serverSelect.selectedIndex = 0;
-  const defaultServer = serverSelect.value;
-  document.getElementById("movie-player").src = `https://${defaultServer}/embed/${type}/${id}`;
 
   label.insertAdjacentElement("afterend", serverSelect);
 });
+
+loadMovie();

@@ -432,37 +432,6 @@ async function loadUploadedMovies(page = 1) {
   renderUploadPagination();
 }
 
-function displayMoviesPage(page = 1) {
-  currentMoviePage = page;
-  const startIndex = (page - 1) * moviesPerPage;
-  const endIndex = startIndex + moviesPerPage;
-  const itemsToDisplay = movieItems.slice(startIndex, endIndex);
-
-  displayList(itemsToDisplay, 'movies-list');
-  renderPagination('movies-list', currentMoviePage, movieItems.length, moviesPerPage, displayMoviesPage);
-}
-
-function displayTVPage(page = 1) {
-  currentTVPage = page;
-  const startIndex = (page - 1) * tvsPerPage;
-  const endIndex = startIndex + tvsPerPage;
-  const itemsToDisplay = tvItems.slice(startIndex, endIndex);
-
-  displayList(itemsToDisplay, 'tvshows-list');
-  renderPagination('tvshows-list', currentTVPage, tvItems.length, tvsPerPage, displayTVPage);
-}
-
-function displayAnimePage(page = 1) {
-  currentAnimePage = page;
-  const startIndex = (page - 1) * animesPerPage;
-  const endIndex = startIndex + animesPerPage;
-  const itemsToDisplay = animeItems.slice(startIndex, endIndex);
-
-  displayList(itemsToDisplay, 'anime-list');
-  renderPagination('anime-list', currentAnimePage, animeItems.length, animesPerPage, displayAnimePage);
-}
-
-
 function renderPagination(containerId, currentPage, totalItems, itemsPerPage, onPageChange) {
   const paginationContainer = document.getElementById(containerId.replace('-list', '-pagination'));
   paginationContainer.innerHTML = '';
@@ -518,29 +487,21 @@ function renderUploadPagination() {
 }
 
 async function init() {
-  const movies = await fetchTrending('movie');
-  const tvShows = await fetchTrending('tv');
-  const anime = await fetchTrendingAnime();
-
   await loadUploadedMovies(currentUploadPage);
 
+  const movies = await fetchTrending('movie');
+  const tvShows = await fetchTrending('tv');
   const uploadItems = uploads.map(u => ({
     title: u.title,
     id: u.id,
     isUpload: true
   }));
 
-  const bannerPool = [...movies, ...tvShows, ...uploadItems];
+  const bannerPool = [...movies.slice(0, 5), ...tvShows.slice(0, 5), ...uploadItems.slice(0, 5)];
   displayBanner(bannerPool);
-
-  movieItems = movies;
-  tvItems = tvShows;
-  animeItems = anime;
-
-  displayMoviesPage(currentMoviePage);
-  displayTVPage(currentTVPage);
-  displayAnimePage(currentAnimePage);
 }
+
+
 
 
 init();

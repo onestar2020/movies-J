@@ -61,15 +61,23 @@ document.addEventListener("DOMContentLoaded", () => {
   serverSelect.id = "server-select";
   serverSelect.style = "padding: 8px; border-radius: 5px; margin-bottom: 10px;";
 
-  const servers = [
-    { name: "Vidsrc.to", url: "vidsrc.to" },
-    { name: "2Embed.cc", url: "2embed.cc" },
-    { name: "MultiEmbed.to", url: "multiembed.to" },
-    { name: "Vidsrc.me", url: "vidsrc.me" },
-    { name: "2Embed.to", url: "2embed.to" },
-    { name: "Dopebox.to", url: "dopebox.to" },
-    { name: "Sflix.to", url: "sflix.to" }
-  ];
+ const servers = [
+  { name: "MegaCloud.tv", url: "megacloud.tv" },
+  { name: "FzMovies.xyz", url: "fzmovies.xyz" },
+  { name: "Vidsrc.cc", url: "vidsrc.cc" },
+  { name: "Vidsrc.me", url: "vidsrc.me" },
+  { name: "Player.Videasy.net", url: "player.videasy.net" },
+  { name: "MultiEmbed.mov", url: "multiembed.mov" },
+  { name: "2Embed.to", url: "2embed.to" },
+  { name: "Zembed.net", url: "zembed.net" },
+  { name: "CurtStream", url: "curtstream.com" },
+  { name: "VidSrc Pro", url: "vidsrc.pro" },
+  { name: "AutoEmbed.to", url: "autoembed.to" },
+  { name: "2Embed.cc", url: "2embed.cc" },
+  { name: "DopeBox.to", url: "dopebox.to" },
+  { name: "SFlix.to", url: "sflix.to" }
+];
+
 
   // Add server options
   servers.forEach(server => {

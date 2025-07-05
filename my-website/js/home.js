@@ -92,6 +92,52 @@ async function showDetails(item) {
   document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
   document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
   document.getElementById('modal-video').src = '';
+  // CLEAR PREVIOUS DATA
+document.getElementById('cast-list').innerHTML = '';
+document.getElementById('similar-movies').innerHTML = '';
+
+// DETERMINE TYPE
+const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+
+// FETCH CAST
+fetch(`${BASE_URL}/${type}/${item.id}/credits?api_key=${API_KEY}`)
+  .then(res => res.json())
+  .then(data => {
+    const castList = document.getElementById('cast-list');
+    data.cast?.slice(0, 12).forEach(cast => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <img src="${cast.profile_path ? IMG_URL + cast.profile_path : 'https://via.placeholder.com/80x120?text=No+Image'}" alt="${cast.name}" style="width:60px; border-radius:6px; margin-right:10px; vertical-align:middle;">
+        <span style="color:#ccc;">${cast.name}</span>
+      `;
+      castList.appendChild(li);
+    });
+  });
+
+// FETCH SIMILAR MOVIES
+fetch(`${BASE_URL}/${type}/${item.id}/similar?api_key=${API_KEY}`)
+  .then(res => res.json())
+  .then(data => {
+    const similarContainer = document.getElementById('similar-movies');
+    data.results?.slice(0, 10).forEach(similar => {
+      const card = document.createElement('div');
+      card.className = 'similar-card';
+      card.style = `
+        display:inline-block; 
+        width:100px; 
+        margin:5px; 
+        cursor:pointer; 
+        text-align:center;
+      `;
+      card.innerHTML = `
+        <img src="${similar.poster_path ? IMG_URL + similar.poster_path : 'https://via.placeholder.com/100x150?text=No+Image'}" alt="${similar.title || similar.name}" style="width:100px; border-radius:8px;">
+        <div style="font-size:12px; color:#fff; margin-top:4px;">${similar.title || similar.name}</div>
+      `;
+      card.onclick = () => showDetails(similar);
+      similarContainer.appendChild(card);
+    });
+  });
+
   document.getElementById('modal').style.display = 'flex';
 
   const isTV = item.media_type === "tv" || item.first_air_date;

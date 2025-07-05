@@ -89,7 +89,11 @@ function displayList(items, containerId) {
     const img = document.createElement('img');
     img.src = `${IMG_URL}${item.poster_path}`;
     img.alt = item.title || item.name;
-    img.onclick = () => showDetails(item);
+    img.onclick = () => {
+  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+  window.location.href = `movie.html?id=${item.id}&type=${mediaType}`;
+};
+
     container.appendChild(img);
   });
 }

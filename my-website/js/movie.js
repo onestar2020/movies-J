@@ -50,17 +50,46 @@ async function loadMovie() {
 
 loadMovie();
 
-// ➕ Add "Watch Full Movie" Button sa ilalim ng trailer
+// ➕ Add server selector and watch button
 document.addEventListener("DOMContentLoaded", () => {
+  const main = document.querySelector("main");
+
+  const container = document.createElement("div");
+  container.style = "margin-top:20px; text-align:center;";
+
+  // 🔽 Server selector
+  const serverSelect = document.createElement("select");
+  serverSelect.id = "server-select";
+  serverSelect.style = "padding: 8px; border-radius: 5px; margin-bottom: 10px;";
+
+  const servers = [
+    { name: "Vidsrc.to", url: "vidsrc.to" },
+    { name: "2Embed.cc", url: "2embed.cc" },
+    { name: "MultiEmbed.to", url: "multiembed.to" },
+    { name: "Vidsrc.me", url: "vidsrc.me" },
+    { name: "2Embed.to", url: "2embed.to" },
+    { name: "Dopebox.to", url: "dopebox.to" },
+    { name: "Sflix.to", url: "sflix.to" }
+  ];
+
+  servers.forEach(server => {
+    const option = document.createElement("option");
+    option.value = server.url;
+    option.textContent = server.name;
+    serverSelect.appendChild(option);
+  });
+
+  // ▶ Watch Button
   const watchBtn = document.createElement("button");
-  watchBtn.textContent = "▶ Panuorin ang Buong Pelikula";
-  watchBtn.style = "padding:10px 20px; margin-top:15px; background:#00bcd4; color:#fff; border:none; border-radius:5px; cursor:pointer; display:block; margin-left:auto; margin-right:auto;";
-  
+  watchBtn.textContent = "▶ Watch Full Movie";
+  watchBtn.style = "padding:10px 20px; background:#00bcd4; color:#fff; border:none; border-radius:5px; cursor:pointer; display:block; margin:10px auto 0 auto;";
   watchBtn.onclick = () => {
-    const server = `https://vidsrc.to/embed/${type}/${id}`;
-    window.open(server, "_blank");
+    const selectedServer = serverSelect.value;
+    const link = `https://${selectedServer}/embed/${type}/${id}`;
+    window.open(link, "_blank");
   };
 
-  const main = document.querySelector("main");
-  main.insertBefore(watchBtn, document.getElementById("movie-overview"));
+  container.appendChild(serverSelect);
+  container.appendChild(watchBtn);
+  main.insertBefore(container, document.getElementById("movie-overview"));
 });

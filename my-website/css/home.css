@@ -505,3 +505,24 @@ input:focus-visible {
   outline: 2px solid #ff5e00;
   box-shadow: 0 0 6px #ff5e00;
 }
+
+#upload-pagination button {
+  margin: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  background-color: #333;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#upload-pagination button:hover {
+  background-color: #555;
+}
+
+#upload-pagination span {
+  font-size: 14px;
+  margin: 0 10px;
+}

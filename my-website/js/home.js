@@ -506,17 +506,58 @@ async function loadUploadedMovies() {
   }
 }
 
-
- 
-
-
-
-
-
-
 async function init() {
+  function displayList(items, containerId, isUpload = false) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = isUpload ? 'upload-item' : 'movie-item';
+
+    const imgSrc = isUpload
+      ? `https://drive.google.com/thumbnail?id=${item.id}&sz=w200`
+      : `${IMG_URL}${item.poster_path}`;
+
+    const title = item.title || item.name;
+
+    div.innerHTML = `
+      <div style="text-align:center">
+        <img src="${imgSrc}" alt="${title}" 
+             style="width:120px; border-radius:5px; cursor:pointer" 
+             onclick="${isUpload ? `showUploadModal('${item.id}')` : `showDetails(${JSON.stringify(item).replace(/"/g, '&quot;')})`}">
+        <p style="margin:5px 0; font-size:14px"><strong>${title}</strong></p>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+function renderPagination(containerId, currentPage, totalPages, callback) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+
+  const createButton = (text, page, disabled = false) => {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.disabled = disabled;
+    btn.onclick = () => callback(page);
+    return btn;
+  };
+
+  container.appendChild(createButton('⏮ First', 1, currentPage === 1));
+  container.appendChild(createButton('◀ Prev', currentPage - 1, currentPage === 1));
+  container.appendChild(createButton(`Page ${currentPage} of ${totalPages}`, currentPage, true));
+  container.appendChild(createButton('Next ▶', currentPage + 1, currentPage === totalPages));
+  container.appendChild(createButton('Last ⏭', totalPages, currentPage === totalPages));
+}
+
   const movies = await fetchTrending('movie');
   movieItems = movies;
+
+  await loadUploadedMovies();
+  displayUploadsPage(1);
 
   uploadItems = uploads.map(u => ({
     title: u.title,
@@ -524,11 +565,30 @@ async function init() {
     isUpload: true
   }));
 
-  await loadUploadedMovies();
-  displayUploadsPage(1);
-  displayBanner([...movies, ...uploadItems]);
+  const bannerPool = [...movies, ...uploadItems];
+  displayBanner(bannerPool);
   displayMoviesPage(1);
 }
 
-document.addEventListener('DOMContentLoaded', init);
+
+
+async function init() {
+  
+  const movies = await fetchTrending('movie');
+  movieItems = movies;
+
+  await loadUploadedMovies();
+  displayUploadsPage(1);
+
+  uploadItems = uploads.map(u => ({
+    title: u.title,
+    id: u.id,
+    isUpload: true
+  }));
+
+  const bannerPool = [...movies, ...uploadItems];
+  displayBanner(bannerPool);
+  displayMoviesPage(1);
+}
+
 

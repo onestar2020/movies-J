@@ -7,6 +7,7 @@ const id = urlParams.get('id');
 const type = urlParams.get('type') || 'movie';
 
 async function loadMovie() {
+  // Fetch movie/TV show details
   const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
   const data = await res.json();
 
@@ -15,6 +16,7 @@ async function loadMovie() {
   document.getElementById('movie-overview').textContent = data.overview;
   document.getElementById('movie-rating').textContent = '★'.repeat(Math.round(data.vote_average / 2));
 
+  // Fetch trailer
   const trailerRes = await fetch(`${BASE_URL}/${type}/${id}/videos?api_key=${API_KEY}`);
   const trailerData = await trailerRes.json();
   const trailer = trailerData.results.find(v => v.type === "Trailer" && v.site === "YouTube");
@@ -22,7 +24,7 @@ async function loadMovie() {
     document.getElementById('movie-player').src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1`;
   }
 
-  // Cast
+  // Fetch cast
   const castRes = await fetch(`${BASE_URL}/${type}/${id}/credits?api_key=${API_KEY}`);
   const castData = await castRes.json();
   const castList = document.getElementById('cast-list');
@@ -32,7 +34,7 @@ async function loadMovie() {
     castList.appendChild(span);
   });
 
-  // Similar
+  // Fetch similar movies
   const similarRes = await fetch(`${BASE_URL}/${type}/${id}/similar?api_key=${API_KEY}`);
   const similarData = await similarRes.json();
   const similarContainer = document.getElementById('similar-movies');
@@ -50,36 +52,32 @@ async function loadMovie() {
 
 loadMovie();
 
-// ➕ Add server selector that auto-loads movie
+// Inject server selector below message
 document.addEventListener("DOMContentLoaded", () => {
-  const main = document.querySelector("main");
-
-  const container = document.createElement("div");
-  container.style = "margin-top:20px; text-align:center;";
+  const label = document.getElementById("server-label");
 
   const serverSelect = document.createElement("select");
   serverSelect.id = "server-select";
-  serverSelect.style = "padding: 8px; border-radius: 5px; margin-bottom: 10px;";
+  serverSelect.style = "padding: 8px; border-radius: 5px; margin-bottom: 20px; width: 100%; background: #222; color: #fff; border: 1px solid #555;";
 
- const servers = [
-  { name: "MegaCloud.tv", url: "megacloud.tv" },
-  { name: "FzMovies.xyz", url: "fzmovies.xyz" },
-  { name: "Vidsrc.cc", url: "vidsrc.cc" },
-  { name: "Vidsrc.me", url: "vidsrc.me" },
-  { name: "Player.Videasy.net", url: "player.videasy.net" },
-  { name: "MultiEmbed.mov", url: "multiembed.mov" },
-  { name: "2Embed.to", url: "2embed.to" },
-  { name: "Zembed.net", url: "zembed.net" },
-  { name: "CurtStream", url: "curtstream.com" },
-  { name: "VidSrc Pro", url: "vidsrc.pro" },
-  { name: "AutoEmbed.to", url: "autoembed.to" },
-  { name: "2Embed.cc", url: "2embed.cc" },
-  { name: "DopeBox.to", url: "dopebox.to" },
-  { name: "SFlix.to", url: "sflix.to" }
-];
+  const servers = [
+    { name: "MegaCloud.tv", url: "megacloud.tv" },
+    { name: "FzMovies.xyz", url: "fzmovies.xyz" },
+    { name: "Vidsrc.cc", url: "vidsrc.cc" },
+    { name: "Vidsrc.me", url: "vidsrc.me" },
+    { name: "Player.Videasy.net", url: "player.videasy.net" },
+    { name: "MultiEmbed.mov", url: "multiembed.mov" },
+    { name: "2Embed.to", url: "2embed.to" },
+    { name: "Zembed.net", url: "zembed.net" },
+    { name: "CurtStream", url: "curtstream.com" },
+    { name: "VidSrc Pro", url: "vidsrc.pro" },
+    { name: "AutoEmbed.to", url: "autoembed.to" },
+    { name: "2Embed.cc", url: "2embed.cc" },
+    { name: "DopeBox.to", url: "dopebox.to" },
+    { name: "SFlix.to", url: "sflix.to" }
+  ];
 
-
-  // Add server options
+  // Add options
   servers.forEach(server => {
     const option = document.createElement("option");
     option.value = server.url;
@@ -87,18 +85,18 @@ document.addEventListener("DOMContentLoaded", () => {
     serverSelect.appendChild(option);
   });
 
-  // Pag-select, palitan ang iframe source
+  // On change, update iframe
   serverSelect.addEventListener("change", () => {
     const selected = serverSelect.value;
     const movieFrame = document.getElementById("movie-player");
     movieFrame.src = `https://${selected}/embed/${type}/${id}`;
   });
 
-  // Default load (una sa listahan)
+  // Load default server on page load
   serverSelect.selectedIndex = 0;
   const defaultServer = serverSelect.value;
   document.getElementById("movie-player").src = `https://${defaultServer}/embed/${type}/${id}`;
 
-  container.appendChild(serverSelect);
-  main.insertBefore(container, document.getElementById("movie-overview"));
+  // Insert below label
+  label.insertAdjacentElement("afterend", serverSelect);
 });

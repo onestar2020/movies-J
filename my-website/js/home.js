@@ -9,8 +9,6 @@ let bannerIndex = 0;
 let currentUploadPage = 1;
 const uploadsPerPage = 12;
 
-
-
 async function fetchTrending(type) {
   const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
   const data = await res.json();
@@ -432,34 +430,6 @@ async function loadUploadedMovies(page = 1) {
   renderUploadPagination();
 }
 
-function renderPagination(containerId, currentPage, totalItems, itemsPerPage, onPageChange) {
-  const paginationContainer = document.getElementById(containerId.replace('-list', '-pagination'));
-  paginationContainer.innerHTML = '';
-
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  if (totalPages <= 1) return;
-
-  const createBtn = (label, page, disabled = false) => {
-    const btn = document.createElement('button');
-    btn.textContent = label;
-    btn.disabled = disabled;
-    btn.onclick = () => onPageChange(page);
-    return btn;
-  };
-
-  paginationContainer.appendChild(createBtn('⏮ First', 1, currentPage === 1));
-  paginationContainer.appendChild(createBtn('◀ Prev', currentPage - 1, currentPage === 1));
-
-  const span = document.createElement('span');
-  span.textContent = `Page ${currentPage} of ${totalPages}`;
-  span.style.margin = '0 10px';
-  paginationContainer.appendChild(span);
-
-  paginationContainer.appendChild(createBtn('Next ▶', currentPage + 1, currentPage === totalPages));
-  paginationContainer.appendChild(createBtn('Last ⏭', totalPages, currentPage === totalPages));
-}
-
-
 function renderUploadPagination() {
   const paginationContainer = document.getElementById('upload-pagination');
   paginationContainer.innerHTML = '';
@@ -487,21 +457,24 @@ function renderUploadPagination() {
 }
 
 async function init() {
-  await loadUploadedMovies(currentUploadPage);
-
   const movies = await fetchTrending('movie');
   const tvShows = await fetchTrending('tv');
+  const anime = await fetchTrendingAnime();
+
+  await loadUploadedMovies(currentUploadPage);
+
   const uploadItems = uploads.map(u => ({
     title: u.title,
     id: u.id,
     isUpload: true
   }));
 
-  const bannerPool = [...movies.slice(0, 5), ...tvShows.slice(0, 5), ...uploadItems.slice(0, 5)];
+  const bannerPool = [...movies, ...tvShows, ...uploadItems];
   displayBanner(bannerPool);
+
+  displayList(movies, 'movies-list');
+  displayList(tvShows, 'tvshows-list');
+  displayList(anime, 'anime-list');
 }
-
-
-
 
 init();

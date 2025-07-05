@@ -427,24 +427,55 @@ async function loadUploadedMovies(page = 1) {
     const data = await res.json();
     const movie = data.results[0];
 
+    // 👉 Create main container
     const div = document.createElement('div');
     div.classList.add('upload-item');
-    div.innerHTML = `
-      <div style="text-align:center">
-        <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : ''}" 
-             alt="${upload.title}" 
-             style="width:120px;border-radius:5px;cursor:pointer" 
-             onclick="showUploadModal('${upload.id}')">
-        <p style="margin: 5px 0"><strong>${upload.title}</strong></p>
-        ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
-        ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
-      </div>
-    `;
+    div.style.textAlign = 'center';
+    div.style.marginBottom = '20px';
+
+    // 👉 Create image
+    const img = document.createElement('img');
+    img.src = movie?.poster_path ? IMG_URL + movie.poster_path : '';
+    img.alt = upload.title;
+    img.style.width = '120px';
+    img.style.borderRadius = '5px';
+    img.style.cursor = 'pointer';
+
+    // ✅ Add click event to image
+    img.addEventListener('click', () => showUploadModal(upload.id));
+
+    // 👉 Title
+    const titleElem = document.createElement('p');
+    titleElem.innerHTML = `<strong>${upload.title}</strong>`;
+
+    // 👉 Add to div
+    div.appendChild(img);
+    div.appendChild(titleElem);
+
+    // 👉 Description (optional)
+    if (movie?.overview) {
+      const desc = document.createElement('p');
+      desc.style.fontSize = '12px';
+      desc.textContent = movie.overview.slice(0, 100) + '...';
+      div.appendChild(desc);
+    }
+
+    // 👉 Rating (optional)
+    if (movie?.vote_average) {
+      const rating = document.createElement('p');
+      rating.style.color = 'gold';
+      rating.textContent = '★'.repeat(Math.round(movie.vote_average / 2));
+      div.appendChild(rating);
+    }
+
+    // 👉 Add to container
     container.appendChild(div);
   }
 
+  // 👉 Render pagination as usual
   renderUploadPagination();
 }
+
 
 function renderUploadPagination() {
   const paginationContainer = document.getElementById('upload-pagination');

@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Loading Movie...</title>
-  <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/home.css" />
 </head>
 <body style="background:#111; color:#fff;">
-  <header style="padding:10px; border-bottom:1px solid #444;">
-    <h1 id="movie-title">Loading...</h1>
+  <!-- Header with Title and Home Button -->
+  <header style="padding:10px; border-bottom:1px solid #444; display:flex; justify-content:space-between; align-items:center;">
+    <h1 id="movie-title" style="margin:0;">Loading...</h1>
+    <a href="index.html" style="text-decoration:none;">
+      <button style="padding:8px 14px; background:#00bcd4; color:white; border:none; border-radius:5px; cursor:pointer;">
+        ⬅ Home
+      </button>
+    </a>
   </header>
 
+  <!-- Main Content -->
   <main style="padding:20px;">
     <!-- Video Player -->
     <iframe id="movie-player" width="100%" height="450" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>
-
-    <!-- Server Info & Selector -->
-    <p style="color: #ccc; margin-top: 10px; text-align: center; font-size: 15px;">
-      🎮 Select a <strong>server</strong> below to watch the full movie.
-    </p>
-
-    
 
     <!-- Movie Details -->
     <p id="movie-overview" style="margin-top:20px;"></p>
@@ -29,31 +29,7 @@
     <div id="similar-movies" style="margin-top:20px;"></div>
   </main>
 
-  <!-- Scripts -->
+  <!-- JavaScript -->
   <script src="js/movie.js" defer></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const serverSelect = document.getElementById('server-select');
-      const player = document.getElementById('movie-player');
-      const urlParams = new URLSearchParams(window.location.search);
-      const id = urlParams.get('id');
-      const type = urlParams.get('type') || 'movie';
-
-      serverSelect.addEventListener('change', () => {
-        const server = serverSelect.value;
-        if (server && id) {
-          let embedUrl = '';
-          if (server.includes('fzmovies')) {
-            embedUrl = `https://${server}/movie?id=${id}`;
-          } else if (server.includes('megacloud')) {
-            embedUrl = `https://${server}/embed-1/${id}`;
-          } else {
-            embedUrl = `https://${server}/embed/${type}?id=${id}`;
-          }
-          player.src = embedUrl;
-        }
-      });
-    });
-  </script>
 </body>
 </html>

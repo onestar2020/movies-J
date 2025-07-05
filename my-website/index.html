@@ -1,78 +1,76 @@
-<!-- ADSTER SOCIAL BAR REMOVED VERSION -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Movies-J Official Site</title>
-
-  <link rel="preload" href="css/home.css" as="style">
+  <title>My Website</title>
   <link rel="stylesheet" href="css/home.css">
-
+  <link rel="preload" href="css/home.css" as="style">
   <link rel="preload" href="js/home.js" as="script">
- 
-
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="images/logo.png" type="image/png">
   <meta name="theme-color" content="#000000">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script defer src="js/uploads.js"></script>
+  <script defer src="js/home.js"></script>
 </head>
+
 <body>
-  <!-- Navbar -->
   <div class="navbar">
-    <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect glow-gradient" />
+    <img src="images/logo.png" alt="Movies-J Logo" />
     <div class="nav-links">
       <a href="index.html">Home</a>
       <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
     </div>
   </div>
 
-  <!-- Banner -->
   <div class="banner" id="banner">
     <div class="banner-video">
-      <iframe id="trailer" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <iframe id="trailer" width="100%" height="400" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
     <h1 id="banner-title">Now Playing</h1>
-    <div class="banner-buttons">
+    <div class="banner-buttons" style="text-align:center; margin-top: 10px;">
       <button onclick="nextBannerTrailer()">⏭ Next Trailer</button>
       <button onclick="watchCurrentBanner()">▶ Watch Full</button>
     </div>
   </div>
 
-  <!-- Sections -->
-  <div class="row"><h2>Trending Movies</h2><div class="list" id="movies-list"></div></div>
+  <div class="row">
+    <h2>Trending Movies</h2>
+    <div class="list" id="movies-list"></div>
+  </div>
+
+  <div class="row">
+    <h2>Trending TV Shows</h2>
+    <div class="list" id="tvshows-list"></div>
+  </div>
+
+  <div class="row">
+    <h2>Trending Anime</h2>
+    <div class="list" id="anime-list"></div>
+  </div>
+
   <div class="row">
     <h2>My Uploaded Movies</h2>
     <div class="list" id="uploaded-movies-list"></div>
-    <div id="upload-pagination" style="text-align:center; margin-top:10px;"></div>
   </div>
 
-  <!-- TMDB Modal -->
+  <!-- Modal for TMDB Movies -->
   <div class="modal" id="modal">
     <div class="modal-content">
-      <button class="close" onclick="closeModal()">&times;</button>
+      <button class="close" onclick="closeModal()" style="color: red; font-size: 20px;">&times;</button>
       <div class="modal-body">
         <img id="modal-image" src="" alt="" />
         <div class="modal-text">
           <h2 id="modal-title"></h2>
           <div class="stars" id="modal-rating"></div>
           <p id="modal-description"></p>
-          <div id="tv-controls" style="margin-top: 10px;">
-            <div class="season-episode-selectors" style="display: none;">
-              <label for="season-selector">Season:</label>
-              <select id="season-selector"></select>
-              <label for="episode-selector">Episode:</label>
-              <select id="episode-selector"></select>
-            </div>
-          </div>
         </div>
       </div>
       <div class="server-selector">
         <label for="server">Change Server:</label>
         <select id="server" onchange="changeServer()">
-          <option value="megacloud.tv">MegaCloud.tv</option>
-          <option value="fzmovies.xyz">FzMovies.xyz</option>
           <option value="vidsrc.cc">Vidsrc.cc</option>
           <option value="vidsrc.me">Vidsrc.me</option>
           <option value="player.videasy.net">Player.Videasy.net</option>
@@ -80,113 +78,60 @@
           <option value="2embed.to">2Embed.to</option>
           <option value="zembed.net">Zembed.net</option>
           <option value="curtstream.com">CurtStream</option>
-          <option value="vidsrc.pro">VidSrc Pro</option>
-          <option value="autoembed.to">AutoEmbed.to</option>
-          <option value="2embed.cc">2Embed.cc</option>
-          <option value="dopebox.to">DopeBox.to</option>
-          <option value="sflix.to">SFlix.to</option>
         </select>
-        <p id="active-server-label" style="text-align:center; color:#00f; font-size:13px; margin-top:5px;"></p>
-        <p style="font-size:13px; color:#ff5e00; text-align:center; margin:10px 0;">
+        <p style="font-size: 13px; color: #ff5e00; text-align: center; margin: 10px 0;">
           ⚠ Ads shown in free movie servers are not controlled by this site.
         </p>
       </div>
-      <iframe id="modal-video" width="100%" height="400" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <iframe id="modal-video" width="100%" height="400" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
     </div>
   </div>
 
-  <!-- Uploaded Modal -->
+  <!-- Modern Modal for My Uploaded Movies -->
   <div class="modal" id="upload-modal">
     <div class="modal-content">
-      <button class="close" onclick="closeUploadModal()">&times;</button>
+      <button class="close" onclick="closeUploadModal()" style="color: red; font-size: 20px;">&times;</button>
       <div class="modal-body" style="text-align: center;">
-        <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
+        <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen style="border-radius: 10px; box-shadow: 0 0 8px rgba(0,0,0,0.3);"></iframe>
       </div>
-      <div class="modal-text" style="text-align:center;">
-        <h2 id="upload-title"></h2>
-        <div class="stars" id="upload-rating"></div>
-        <p id="upload-description"></p>
-        <div>
-          <button id="upload-trailer-btn">🎬 Watch Trailer</button>
-          <button id="upload-watch-btn">▶ Watch Full Movie</button>
-         <div style="margin-top: 10px;">
-  <a id="upload-download-btn" class="download-btn" href="#" target="_blank" style="display:inline-block; padding:8px 14px; background:#4CAF50; color:#fff; border:none; border-radius:6px; text-decoration:none;">
-    ⬇ Direct Download (No Ads)
-  </a>
-</div>
-
+      <div class="modal-text" style="padding: 15px; text-align: center;">
+        <h2 id="upload-title" style="margin: 10px 0; font-size: 1.5em;"></h2>
+        <div class="stars" id="upload-rating" style="color: gold; font-size: 1.2em;"></div>
+        <p id="upload-description" style="margin: 10px 0; font-size: 0.95em; color: #555;"></p>
+        <div style="margin-top: 15px;">
+          <button id="upload-trailer-btn" style="margin: 5px; padding: 10px 16px; font-size: 0.9em;">🎬 Watch Trailer</button>
+          <button id="upload-watch-btn" style="margin: 5px; padding: 10px 16px; font-size: 0.9em;">▶ Watch Full Movie</button>
+          <a id="upload-download-btn" href="#" target="_blank" download style="text-decoration: none;">
+            <button style="margin: 5px; padding: 10px 16px; font-size: 0.9em;">⬇ Download</button>
+          </a>
         </div>
-        <p style="font-size:13px; color:#4CAF50; margin-top:10px;">
-          ✅ Uploaded via Google Drive. No external ads included.
-        </p>
+        <div style="margin-top: 12px;">
+          <p style="font-size: 13px; color: #4CAF50;">
+            ✅ Uploaded via Google Drive. No external ads included.
+          </p>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Search Modal -->
   <div class="search-modal" id="search-modal">
-    <button class="close" onclick="closeSearchModal()">&times;</button>
+    <button class="close" onclick="closeSearchModal()" style="color: red; font-size: 20px;">&times;</button>
     <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
     <div class="results" id="search-results"></div>
   </div>
 
-  <!-- Banner Ad (responsive wrapper) -->
-<div style="text-align:center; width:100%; overflow-x:auto;">
-  <div style="display:inline-block; width:100%; max-width:468px;">
-    <script type="text/javascript">
-      atOptions = {
-        'key': '0e7b0cdaab5dd80e165c43b2a094fb08',
-        'format': 'iframe',
-        'height': 60,
-        'width': 468,
-        'params': {}
-      };
-    </script>
-    <script type="text/javascript" src="//www.highperformanceformat.com/0e7b0cdaab5dd80e165c43b2a094fb08/invoke.js"></script>
-  </div>
-</div>
-
-
-  <!-- Footer -->
   <footer class="footer">
     <div class="footer-content">
       <p>&copy; 2025 My Website. All rights reserved.</p>
       <div class="footer-links">
-        <a href="disclaimer.html">Disclaimer</a>
-        <a href="about.html">About Us</a>
-        <a href="contact.html">Contact Us</a>
+        <a href="#">Disclaimer</a>
+        <a href="#">About Us</a>
+        <a href="#">Contact Us</a>
       </div>
     </div>
   </footer>
-
- 
-  <!-- Core Scripts -->
-<script defer src="js/uploads.js"></script>
-<script defer src="js/home.js"></script>
-
-
-
-  <!-- ✅ Only Popunder Ad active -->
-  <script type="text/javascript" src="//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js"></script>
-
-  <!-- Trigger Popunder again on click -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const watchBtn = document.getElementById("upload-watch-btn");
-      if (watchBtn) {
-        watchBtn.addEventListener("click", function () {
-          const adScript = document.createElement('script');
-          adScript.src = "//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js";
-          adScript.type = "text/javascript";
-          document.body.appendChild(adScript);
-
-          
-        });
-      }
-    });
-  </script>
-  <!-- Profitablerate Download Ad -->
-<script type='text/javascript' src='//pl27069522.profitableratecpm.com/08/df/be/08dfbe14cbded4e6e66835c4b6d1f26a.js'></script>
-
 </body>
 </html>

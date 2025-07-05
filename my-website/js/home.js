@@ -435,26 +435,51 @@ function renderUploadPagination() {
   paginationContainer.innerHTML = '';
   const totalPages = Math.ceil(uploads.length / uploadsPerPage);
 
+  const pageInfo = document.createElement('span');
+  pageInfo.textContent = `Page ${currentUploadPage} of ${totalPages}`;
+  pageInfo.style.margin = '0 10px';
+  pageInfo.style.fontWeight = 'bold';
+  pageInfo.style.color = '#00BCD4';
+
   if (currentUploadPage > 1) {
     const firstBtn = document.createElement('button');
-    firstBtn.textContent = '⏪ First Page';
+    firstBtn.textContent = '⏪ First';
     firstBtn.onclick = () => {
       currentUploadPage = 1;
       loadUploadedMovies(currentUploadPage);
     };
     paginationContainer.appendChild(firstBtn);
+
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = '⬅️ Previous';
+    prevBtn.onclick = () => {
+      currentUploadPage--;
+      loadUploadedMovies(currentUploadPage);
+    };
+    paginationContainer.appendChild(prevBtn);
   }
+
+  paginationContainer.appendChild(pageInfo);
 
   if (currentUploadPage < totalPages) {
     const nextBtn = document.createElement('button');
-    nextBtn.textContent = 'Next Page ⏩';
+    nextBtn.textContent = 'Next ⏩';
     nextBtn.onclick = () => {
       currentUploadPage++;
       loadUploadedMovies(currentUploadPage);
     };
     paginationContainer.appendChild(nextBtn);
+
+    const lastBtn = document.createElement('button');
+    lastBtn.textContent = 'Last ⏩';
+    lastBtn.onclick = () => {
+      currentUploadPage = totalPages;
+      loadUploadedMovies(currentUploadPage);
+    };
+    paginationContainer.appendChild(lastBtn);
   }
 }
+
 
 async function init() {
   const movies = await fetchTrending('movie');

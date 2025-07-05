@@ -1,5 +1,6 @@
 // uploads.js
 const uploads = [
+  { title: "Jurassic World Rebirth", id: "1w4fxKbTgAraQGLxSE762fhrkR-qt01nM" },
   { title: "Exterritorial", id: "10NEhLMhb0mACWJXVtQ-Inalpf0gNc2Ju" },
   { title: "Control Freak", id: "1mdd1G8RswZW3G_6gMT39O2h88HhXCrdn" },
   { title: "ARQ", id: "1KJ_R_RGVGwgpypYNEf-_2gJ6mDfCvLYH" },

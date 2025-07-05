@@ -15,14 +15,14 @@
     <!-- Video Player -->
     <iframe id="movie-player" width="100%" height="450" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>
 
-    <!-- Info Text and Server Selector -->
+    <!-- Server Info & Selector -->
     <p style="color: #ccc; margin-top: 10px; text-align: center; font-size: 15px;">
-      🎬 Piliin ang <strong>server</strong> sa ibaba upang panoorin ang buong pelikula.
+      🎬 Select a <strong>server</strong> below to watch the full movie.
     </p>
 
     <div style="text-align: center; margin-top: 10px;">
       <select id="server-select" style="padding: 8px; border-radius: 5px; width: 90%; max-width: 400px;">
-        <option value="">-- Piliin ang Server --</option>
+        <option value="">-- Select Server --</option>
         <option value="megacloud.tv">MegaCloud.tv</option>
         <option value="fzmovies.xyz">FzMovies.xyz</option>
         <option value="vidsrc.cc">Vidsrc.cc</option>
@@ -50,7 +50,6 @@
   <!-- Scripts -->
   <script src="js/movie.js" defer></script>
   <script>
-    // Change server auto-load
     document.addEventListener('DOMContentLoaded', () => {
       const serverSelect = document.getElementById('server-select');
       const player = document.getElementById('movie-player');

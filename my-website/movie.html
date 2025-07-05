@@ -12,13 +12,36 @@
   </header>
 
   <main style="padding:20px;">
+    <!-- Video Player -->
     <iframe id="movie-player" width="100%" height="450" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>
+
+    <!-- Watch Full Movie Button -->
+    <div style="text-align: center; margin-top: 15px;">
+      <button id="watch-full-btn" style="padding: 10px 20px; background: #00bcd4; color: white; border: none; border-radius: 5px; cursor: pointer;">
+        ▶ Panoorin ang Buong Pelikula
+      </button>
+    </div>
+
+    <!-- Movie Details -->
     <p id="movie-overview" style="margin-top:20px;"></p>
     <p id="movie-rating" style="color:gold; margin-top:10px;"></p>
     <div id="cast-list" style="margin-top:20px;"></div>
     <div id="similar-movies" style="margin-top:20px;"></div>
   </main>
 
+  <!-- Scripts -->
   <script src="js/movie.js" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const button = document.getElementById("watch-full-btn");
+      const player = document.getElementById("movie-player");
+
+      if (button && player) {
+        button.addEventListener("click", () => {
+          player.scrollIntoView({ behavior: "smooth" });
+        });
+      }
+    });
+  </script>
 </body>
 </html>

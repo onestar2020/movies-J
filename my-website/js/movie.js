@@ -22,7 +22,7 @@ async function loadMovie() {
     document.getElementById('movie-player').src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1`;
   }
 
-  // Optional: Fetch cast
+  // Cast
   const castRes = await fetch(`${BASE_URL}/${type}/${id}/credits?api_key=${API_KEY}`);
   const castData = await castRes.json();
   const castList = document.getElementById('cast-list');
@@ -32,7 +32,7 @@ async function loadMovie() {
     castList.appendChild(span);
   });
 
-  // Optional: Fetch similar
+  // Similar
   const similarRes = await fetch(`${BASE_URL}/${type}/${id}/similar?api_key=${API_KEY}`);
   const similarData = await similarRes.json();
   const similarContainer = document.getElementById('similar-movies');
@@ -49,3 +49,18 @@ async function loadMovie() {
 }
 
 loadMovie();
+
+// ➕ Add "Watch Full Movie" Button sa ilalim ng trailer
+document.addEventListener("DOMContentLoaded", () => {
+  const watchBtn = document.createElement("button");
+  watchBtn.textContent = "▶ Panuorin ang Buong Pelikula";
+  watchBtn.style = "padding:10px 20px; margin-top:15px; background:#00bcd4; color:#fff; border:none; border-radius:5px; cursor:pointer; display:block; margin-left:auto; margin-right:auto;";
+  
+  watchBtn.onclick = () => {
+    const server = `https://vidsrc.to/embed/${type}/${id}`;
+    window.open(server, "_blank");
+  };
+
+  const main = document.querySelector("main");
+  main.insertBefore(watchBtn, document.getElementById("movie-overview"));
+});

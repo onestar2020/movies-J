@@ -270,9 +270,9 @@ async function init() {
     isUpload: true
   }));
 
-  const bannerPool = [...movies, ...uploadItems];
+  const bannerPool = [...movies, ...uploadItems]; // ✅ FIXED: removed tvShows
   displayBanner(bannerPool);
-
   displayList(movies, 'movies-list');
 }
+
 

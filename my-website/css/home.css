@@ -332,3 +332,76 @@ body {
   background: #e50914;
   border-radius: 10px;
 }
+/* ===== PAGINATION STYLING ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.pagination button {
+  background-color: #222;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+.pagination button:hover {
+  background-color: #e50914;
+}
+.pagination button.active {
+  background-color: #e50914;
+  color: #fff;
+}
+
+/* ===== DOWNLOAD BUTTON STYLE ===== */
+.download-btn {
+  background-color: #e50914;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.download-btn:hover {
+  background-color: #b00610;
+}
+
+/* ===== UPLOAD ITEMS GRID ===== */
+.upload-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+}
+.upload-item {
+  background: #1b1b1b;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px;
+  width: 140px;
+  text-align: center;
+  transition: transform 0.3s;
+}
+.upload-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(229, 9, 20, 0.4);
+}
+
+/* ===== RESPONSIVE UPLOAD ===== */
+@media (max-width: 768px) {
+  .upload-item {
+    width: 44%;
+  }
+}
+@media (max-width: 480px) {
+  .upload-item {
+    width: 90%;
+  }
+}

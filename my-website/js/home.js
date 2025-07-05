@@ -474,9 +474,11 @@ function displayAnimePage(page = 1) {
 
 
 function renderPagination(containerId, currentPage, totalItems, itemsPerPage, onPageChange) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
+  const paginationContainer = document.getElementById(containerId.replace('-list', '-pagination'));
+  paginationContainer.innerHTML = '';
+
   const totalPages = Math.ceil(totalItems / itemsPerPage);
+  if (totalPages <= 1) return;
 
   const createBtn = (label, page, disabled = false) => {
     const btn = document.createElement('button');
@@ -486,17 +488,16 @@ function renderPagination(containerId, currentPage, totalItems, itemsPerPage, on
     return btn;
   };
 
-  container.appendChild(createBtn('⏮ First', 1, currentPage === 1));
-  container.appendChild(createBtn('◀ Prev', currentPage - 1, currentPage === 1));
+  paginationContainer.appendChild(createBtn('⏮ First', 1, currentPage === 1));
+  paginationContainer.appendChild(createBtn('◀ Prev', currentPage - 1, currentPage === 1));
 
   const span = document.createElement('span');
   span.textContent = `Page ${currentPage} of ${totalPages}`;
-  span.style.margin = '0 15px';
-  span.style.fontWeight = 'bold';
-  container.appendChild(span);
+  span.style.margin = '0 10px';
+  paginationContainer.appendChild(span);
 
-  container.appendChild(createBtn('Next ▶', currentPage + 1, currentPage === totalPages));
-  container.appendChild(createBtn('Last ⏭', totalPages, currentPage === totalPages));
+  paginationContainer.appendChild(createBtn('Next ▶', currentPage + 1, currentPage === totalPages));
+  paginationContainer.appendChild(createBtn('Last ⏭', totalPages, currentPage === totalPages));
 }
 
 
@@ -542,14 +543,14 @@ async function init() {
   const bannerPool = [...movies, ...tvShows, ...uploadItems];
   displayBanner(bannerPool);
 
- movieItems = movies;
-tvItems = tvShows;
-animeItems = anime;
+  movieItems = movies;
+  tvItems = tvShows;
+  animeItems = anime;
 
-displayMoviesPage(currentMoviePage);
-displayTVPage(currentTVPage);
-displayAnimePage(currentAnimePage);
-
+  displayMoviesPage(currentMoviePage);
+  displayTVPage(currentTVPage);
+  displayAnimePage(currentAnimePage);
 }
+
 
 init();

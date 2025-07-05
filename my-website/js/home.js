@@ -274,6 +274,18 @@ async function loadUploadedMovies() {
 }
 
 
+
+let currentUploadPage = 1;
+const moviesPerPage = 15;
+const uploadsPerPage = 15;
+let movieItems = [];
+let uploadItems = [];
+
+let currentItem;
+let currentUpload = null;
+let bannerItems = [];
+let bannerIndex = 0;
+
  {
   const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
   const data = await res.json();

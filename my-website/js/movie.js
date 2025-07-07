@@ -84,18 +84,48 @@ if (type === 'tv') {
   const castRes = await fetch(`${BASE_URL}/${type}/${id}/credits?api_key=${API_KEY}`);
   const castData = await castRes.json();
   const castList = document.getElementById('cast-list');
-  castList.innerHTML = "<h2 style='margin-bottom:10px;'>Cast</h2>";
-  castList.style = "display: flex; gap: 20px; flex-wrap: wrap;";
-  castData.cast?.slice(0, 6).forEach(c => {
-    const div = document.createElement('div');
-    div.style = "text-align:center; width: 80px;";
-    div.innerHTML = `
-      <img src="${c.profile_path ? IMG_URL + c.profile_path : 'https://via.placeholder.com/60x90'}"
-        style="width: 80px; height: 100px; object-fit: cover; border-radius:10px;">
-      <p style="font-size:12px; color:#ccc; margin-top:5px;">${c.name}</p>
-    `;
-    castList.appendChild(div);
-  });
+  
+  
+ castList.innerHTML = `
+  <h2 style="margin-bottom:10px;">Cast</h2>
+  <div style="position: relative;">
+    <button id="cast-left" style="position: absolute; left: 0; top: 30%; z-index: 2; background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 20px; cursor: pointer; padding: 5px 10px; display:none;">❮</button>
+    <button id="cast-right" style="position: absolute; right: 0; top: 30%; z-index: 2; background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 20px; cursor: pointer; padding: 5px 10px; display:none;">❯</button>
+    <div id="cast-scroll" style="display: flex; overflow-x: auto; gap: 10px; padding: 10px 30px; scroll-behavior: smooth;"></div>
+  </div>
+`;
+
+const scrollBox = document.getElementById("cast-scroll");
+const leftBtn = document.getElementById("cast-left");
+const rightBtn = document.getElementById("cast-right");
+
+// Auto-hide/show buttons on scroll
+scrollBox.addEventListener("scroll", () => {
+  leftBtn.style.display = scrollBox.scrollLeft > 0 ? "block" : "none";
+  rightBtn.style.display = (scrollBox.scrollLeft + scrollBox.clientWidth) < scrollBox.scrollWidth ? "block" : "none";
+});
+
+// Initial show on load (if overflowed)
+setTimeout(() => {
+  rightBtn.style.display = scrollBox.scrollWidth > scrollBox.clientWidth ? "block" : "none";
+}, 300);
+
+// Scroll actions
+leftBtn.onclick = () => scrollBox.scrollBy({ left: -200, behavior: 'smooth' });
+rightBtn.onclick = () => scrollBox.scrollBy({ left: 200, behavior: 'smooth' });
+
+// Cast loop
+castData.cast?.forEach(c => {
+  const div = document.createElement('div');
+  div.style = "text-align:center; min-width: 80px; flex: 0 0 auto;";
+  div.innerHTML = `
+    <img src="${c.profile_path ? IMG_URL + c.profile_path : 'https://via.placeholder.com/60x90'}"
+      style="width: 80px; height: 100px; object-fit: cover; border-radius:10px;">
+    <p style="font-size:12px; color:#ccc; margin-top:5px;">${c.name}</p>
+  `;
+  scrollBox.appendChild(div); // ✅ TAMA
+});
+
 
   const similarRes = await fetch(`${BASE_URL}/${type}/${id}/similar?api_key=${API_KEY}`);
   const similarData = await similarRes.json();

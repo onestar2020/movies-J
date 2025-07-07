@@ -74,18 +74,23 @@
 <div class="page-container" style="padding: 20px; max-width: 1000px; margin: auto;">
 
   <!-- Server Box -->
-  <div style="margin-bottom: 20px; background:#1c1c1c; padding: 15px; border-radius: 8px; text-align: center;">
-    <p style="margin-bottom: 10px; font-weight: bold; font-size: 16px;">
-      🎬 Find server to play the full movie?
-    </p>
-    <select id="server" onchange="changeServer(false)" style="padding: 6px 10px; border-radius: 5px;">
-      <!-- filled dynamically -->
-    </select>
-    <button onclick="changeServer(true, 0)" style="margin-left: 10px; padding: 6px 12px; border-radius: 5px; background-color:#00BCD4; color:#000; font-weight:bold;">
-      🔁 Auto Test Servers
-    </button>
-    <p id="active-server-label" style="margin-top:10px; font-size: 13px; color: #ccc;"></p>
-  </div>
+<div id="fallback-box" style="margin-bottom: 20px; background:#1c1c1c; padding: 15px; border-radius: 8px; text-align: center;">
+  <p style="margin-bottom: 10px; font-weight: bold; font-size: 16px;">
+    🎬 Find server to play the full movie?
+  </p>
+
+  <select id="server" style="padding: 6px 10px; border-radius: 5px;">
+    <!-- filled dynamically -->
+  </select>
+
+  <button id="retry-server-btn" style="margin-left: 10px; padding: 6px 12px; border-radius: 5px; background-color:#00BCD4; color:#000; font-weight:bold;">
+    🔁 Find Working Server
+  </button>
+
+  <p id="active-server-label" style="margin-top:10px; font-size: 13px; color: #ccc;"></p>
+  <p id="fallback-status" style="margin-top: 5px; font-size: 13px; color: #999; display: none;">🔍 Searching for best server...</p>
+</div>
+
 
   <!-- Season & Episode Selector -->
   <div class="season-episode-selectors" style="display: none;"></div>

@@ -6,59 +6,57 @@ const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id');
 const type = urlParams.get('type') || 'movie';
 
-if (type === 'tv') {
-  document.querySelector('.season-episode-selectors').style.display = 'flex';
-  const seasonSelect = document.getElementById('season-select');
-  const episodeSelect = document.getElementById('episode-select');
 
-  fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}&language=en-US`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.seasons && data.seasons.length > 0) {
-        seasonSelect.innerHTML = '';
-        data.seasons.forEach(season => {
-          if (season.season_number !== 0) {
-            const option = document.createElement('option');
-            option.value = season.season_number;
-            option.textContent = `Season ${season.season_number}`;
-            seasonSelect.appendChild(option);
-          }
-        });
-
-        seasonSelect.addEventListener('change', () => {
-          const selectedSeason = seasonSelect.value;
-          fetch(`${BASE_URL}/${type}/${id}/season/${selectedSeason}?api_key=${API_KEY}&language=en-US`)
-            .then(res => res.json())
-            .then(seasonData => {
-              episodeSelect.innerHTML = '';
-              seasonData.episodes.forEach(episode => {
-                const option = document.createElement('option');
-                option.value = episode.episode_number;
-                option.textContent = `Episode ${episode.episode_number}: ${episode.name}`;
-                episodeSelect.appendChild(option);
-              });
-
-              episodeSelect.selectedIndex = 0;
-              const server = document.getElementById("server-select").value;
-              document.getElementById("movie-player").src =
-                `https://${server}/embed/tv?id=${id}&s=${selectedSeason}&e=1`;
-            });
-        });
-
-        seasonSelect.dispatchEvent(new Event('change'));
-      }
-    });
-}
 
 async function loadMovie() {
   const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
   const data = await res.json();
 
   document.title = data.title || data.name;
-  const serverLabel = document.getElementById('server-label');
-  serverLabel.textContent = type === 'tv'
-    ? '📺 Select a season and episode, then choose a server to start watching:'
-    : '🎬 Select a server below to watch the full movie:';
+  document.getElementById("active-server-label").textContent = "🔎 Naghahanap ng gumaganang server...";
+initPlayerWithFallback(); // automatic na magpapatakbo sa best server
+function testEmbed(iframe) {
+  return new Promise(resolve => {
+    const timeout = setTimeout(() => resolve(false), 4000);
+
+    const check = () => {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        if (doc && doc.body && doc.body.innerHTML.length > 100) {
+          clearTimeout(timeout);
+          resolve(true);
+        }
+      } catch (e) {}
+    };
+
+    iframe.onload = check;
+    iframe.onerror = () => resolve(false);
+  });
+}
+
+async function initPlayerWithFallback() {
+  const player = document.getElementById("movie-player");
+  const label = document.getElementById("active-server-label");
+  const season = document.getElementById("season-select")?.value || 1;
+  const episode = document.getElementById("episode-select")?.value || 1;
+
+  for (const server of SERVER_LIST) {
+    const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
+    label.textContent = `🔁 Sinusubukan: ${server}`;
+    player.src = url;
+
+    const success = await testEmbed(player);
+    if (success) {
+      label.textContent = `✅ Gumagana: ${server}`;
+      document.getElementById("server-select").value = server;
+      return;
+    } else {
+      label.textContent = `❌ Failed: ${server}, susubok ng iba...`;
+    }
+  }
+
+  label.textContent = `⚠️ Walang gumaganang server.`;
+}
 
   document.getElementById('movie-title').textContent = data.title || data.name;
   document.getElementById('movie-overview').textContent = data.overview;
@@ -212,8 +210,11 @@ async function loadEpisodes(seasonNumber) {
     episodeSelect.appendChild(option);
   });
 
-  const server = document.getElementById("server-select").value;
-  document.getElementById("movie-player").src = `https://${server}/embed/tv?id=${id}&s=${seasonNumber}&e=1`;
+  const player = document.getElementById("movie-player");
+const server = document.getElementById("server-select").value;
+const url = generateEmbedURL(server, { id, media_type: type }, seasonNumber, 1);
+player.src = url;
+
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -247,7 +248,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  label.insertAdjacentElement("afterend", serverSelect);
+ const serverBox = document.getElementById("server");
+if (serverBox) serverBox.replaceWith(serverSelect);
+
 });
 
 loadMovie();

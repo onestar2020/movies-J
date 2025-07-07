@@ -100,14 +100,12 @@ if (type === 'tv') {
   const similarRes = await fetch(`${BASE_URL}/${type}/${id}/similar?api_key=${API_KEY}`);
   const similarData = await similarRes.json();
   const similarContainer = document.getElementById('similar-movies');
-  similarContainer.innerHTML = `
+
+ similarContainer.innerHTML = `
   <h3 style="margin-top: 30px;">You May Also Like</h3>
-  <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-    <button class="modern-button" onclick="scrollSimilar('left')">⬅️ Previous</button>
-    <button class="modern-button" onclick="scrollSimilar('right')">Next ➡️</button>
-  </div>
-  <div id="similar-scroll" style="display: flex; overflow-x: auto; gap: 10px; padding: 10px 0;"></div>
+  <div id="similar-scroll" style="display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 0;"></div>
 `;
+
 
  const scrollBox = document.getElementById("similar-scroll");
 similarData.results?.forEach(sim => {
@@ -222,16 +220,4 @@ document.addEventListener("DOMContentLoaded", () => {
   label.insertAdjacentElement("afterend", serverSelect);
 });
 
-
- 
-
- 
 loadMovie();
-function scrollSimilar(direction) {
-  const container = document.getElementById('similar-scroll');
-  const scrollAmount = 300;
-  container.scrollBy({
-    left: direction === 'left' ? -scrollAmount : scrollAmount,
-    behavior: 'smooth'
-  });
-}

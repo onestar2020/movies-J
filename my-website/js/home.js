@@ -514,3 +514,12 @@ async function init() {
 
 window.addEventListener('DOMContentLoaded', init); // ✅ KEEP THIS
 
+window.showUploadModal = showUploadModal;
+window.closeModal = closeModal;
+window.closeUploadModal = closeUploadModal;
+window.nextBannerTrailer = nextBannerTrailer;
+window.watchCurrentBanner = watchCurrentBanner;
+window.changeServer = changeServer;
+window.openSearchModal = openSearchModal;
+window.closeSearchModal = closeSearchModal;
+window.searchTMDB = searchTMDB;

@@ -1,3 +1,6 @@
+import { generateEmbedURL } from './embed.js';
+import { SERVER_LIST } from './servers.js';
+
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 
@@ -207,68 +210,15 @@ fetch(`${BASE_URL}/${type}/${item.id}/similar?api_key=${API_KEY}`)
 }
 
 function changeServer(auto = false, index = 0) {
-  const servers = [
-    "vidsrc.cc", "vidsrc.me", "player.videasy.net", "multiembed.mov",
-    "2embed.to", "zembed.net", "curtstream.com", "vidsrc.pro",
-    "autoembed.to", "2embed.cc", "dopebox.to", "sflix.to"
-  ];
-
+  const servers = SERVER_LIST.map(s => s.url);
   const serverSelect = document.getElementById("server");
-const server = auto ? servers[index] : serverSelect.value;
-if (auto) serverSelect.value = servers[index];  // ← sync dropdown on auto
+  const server = auto ? servers[index] : serverSelect.value;
+  if (auto) serverSelect.value = servers[index]; // ← sync dropdown on auto
 
-  const type = currentItem.media_type === "movie" ? "movie" : "tv";
-  const isTV = type === "tv";
-  const seasonSelect = document.getElementById('season-selector');
-  const episodeSelect = document.getElementById('episode-selector');
-  const season = seasonSelect?.value;
-  const episode = episodeSelect?.value;
-  const id = currentItem.id;
+  const season = document.getElementById('season-selector')?.value || 1;
+  const episode = document.getElementById('episode-selector')?.value || 1;
 
-  let url = "";
-
-  switch (server) {
-    case "vidsrc.cc":
-      url = isTV ? `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}` : `https://vidsrc.cc/v2/embed/${type}/${id}`; break;
-    case "vidsrc.me":
-      url = isTV ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${season}&episode=${episode}` : `https://vidsrc.net/embed/${type}/?tmdb=${id}`; break;
-    case "player.videasy.net":
-      url = isTV ? `https://player.videasy.net/tv/${id}/${season}/${episode}` : `https://player.videasy.net/${type}/${id}`; break;
-    case "multiembed.mov":
-      url = isTV ? `https://multiembed.mov/tv/${id}/${season}/${episode}` : `https://multiembed.mov/${type}/${id}`; break;
-    case "2embed.to":
-      url = isTV ? `https://www.2embed.to/embed/tmdb/tv?id=${id}&s=${season}&e=${episode}` : `https://www.2embed.to/embed/tmdb/${type}?id=${id}`; break;
-    case "zembed.net":
-      url = `https://zembed.net/v/${id}`; break;
-    case "curtstream.com":
-      url = isTV ? `https://www.curtstream.com/embed/tv/${id}/${season}/${episode}` : `https://www.curtstream.com/embed/${type}/${id}`; break;
-    case "vidsrc.pro":
-      url = isTV ? `https://vidsrc.pro/embed/tv/${id}/${season}/${episode}` : `https://vidsrc.pro/embed/${type}/${id}`; break;
-    case "autoembed.to":
-      url = isTV ? `https://autoembed.to/tv/tmdb/${id}/${season}-${episode}` : `https://autoembed.to/movie/tmdb/${id}`; break;
-    case "2embed.cc":
-      url = isTV ? `https://2embed.cc/embedtv/${id}/${season}-${episode}` : `https://2embed.cc/embed/${id}`; break;
-    case "dopebox.to":
-      url = isTV ? `https://dopebox.to/embedtv/${id}/${season}/${episode}` : `https://dopebox.to/embed/${id}`; break;
-    case "sflix.to":
-      url = isTV ? `https://sflix.to/embed/tv/${id}/${season}/${episode}` : `https://sflix.to/embed/movie/${id}`; break;
-    case "megacloud.tv":
-      url = isTV
-        ? `https://megacloud.tv/embed?t=tv&id=${id}&s=${season}&e=${episode}`
-        : `https://megacloud.tv/embed?t=movie&id=${id}`;
-      break;
-
-    case "fzmovies.xyz":
-      url = isTV
-        ? `https://fzmovies.xyz/tv/${id}/${season}/${episode}`
-        : `https://fzmovies.xyz/movie/${id}`;
-      break;
-
-
-
-    default:
-      url = "";
-  }
+  const url = generateEmbedURL(server, currentItem, season, episode); // ✅ THIS LINE IS CORRECT
 
   const iframe = document.getElementById("modal-video");
   iframe.src = "";
@@ -284,7 +234,7 @@ if (auto) serverSelect.value = servers[index];  // ← sync dropdown on auto
     if (auto && index + 1 < servers.length) {
       changeServer(true, index + 1);
     }
-  }, 5000); // 5 seconds timeout fallback
+  }, 5000);
 
   iframe.onload = () => {
     clearTimeout(fallbackTimer);
@@ -300,6 +250,7 @@ if (auto) serverSelect.value = servers[index];  // ← sync dropdown on auto
     }
   };
 }
+
 
 
 

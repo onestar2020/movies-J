@@ -1,4 +1,4 @@
-export const SERVER_LIST = [
+const SERVER_LIST = [
   "megacloud.tv",
   "fzmovies.xyz",
   "vidsrc.cc",

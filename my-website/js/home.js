@@ -66,15 +66,21 @@ function nextBannerTrailer() {
 }
 
 function watchCurrentBanner() {
-  const item = bannerItems[bannerIndex];
-  if (!item) return;
+  if (!bannerItems.length) return;
 
-  if (item.isUpload) {
-    showUploadModal(item.id);
-  } else {
-    showDetails(item);
-  }
+  const currentItem = bannerItems[bannerIndex];
+  const type = currentItem.media_type === "tv" ? "tv" : "movie";
+  const id = currentItem.id;
+
+  // Redirect to movie.html page with id and type
+  window.location.href = `movie.html?id=${id}&type=${type}`;
+  if (!bannerItems || !bannerItems.length) {
+  console.warn("No banner items available.");
+  return;
 }
+
+}
+
 
 function displayBanner(items) {
   bannerItems = items;

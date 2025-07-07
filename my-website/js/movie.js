@@ -1,3 +1,12 @@
+function generateEmbedURL(server, meta, season = 1, episode = 1) {
+  const { id, media_type } = meta;
+  if (media_type === "tv") {
+    return `https://${server}/embed/tv?id=${id}&s=${season}&e=${episode}`;
+  } else {
+    return `https://${server}/embed/movie/${id}`;
+  }
+}
+
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
@@ -9,6 +18,7 @@ const type = urlParams.get('type') || 'movie';
 
 
 async function loadMovie() {
+ 
   const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
   const data = await res.json();
 
@@ -218,6 +228,9 @@ player.src = url;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+
+
+
   const label = document.getElementById("server-label");
 
   const serverSelect = document.createElement("select");
@@ -254,3 +267,53 @@ if (serverBox) serverBox.replaceWith(serverSelect);
 });
 
 loadMovie();
+let autoTesting = false; // global flag para sa ON/OFF ng auto-test
+
+function testEmbed(iframe) {
+  return new Promise(resolve => {
+    const timeout = setTimeout(() => resolve(false), 4000); // 4 seconds timeout
+
+    const check = () => {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        if (doc && doc.body && doc.body.innerHTML.length > 100) {
+          clearTimeout(timeout);
+          resolve(true);
+        }
+      } catch (e) {}
+    };
+
+    iframe.onload = check;
+    iframe.onerror = () => resolve(false);
+  });
+}
+
+async function initPlayerWithFallback(startIndex = 0) {
+  if (autoTesting) return; // kung nagra-run na, huwag ulitin
+  autoTesting = true;
+
+  const label = document.getElementById("active-server-label");
+  const player = document.getElementById("movie-player");
+  const season = document.getElementById("season-select")?.value || 1;
+  const episode = document.getElementById("episode-select")?.value || 1;
+
+  for (let i = startIndex; i < SERVER_LIST.length; i++) {
+    const server = SERVER_LIST[i];
+    const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
+    label.textContent = `🔁 Sinusubukan: ${server}`;
+    player.src = url;
+
+    const success = await testEmbed(player);
+    if (success) {
+      label.textContent = `✅ Gumagana: ${server}`;
+      document.getElementById("server-select").value = server;
+      autoTesting = false;
+      return;
+    } else {
+      label.textContent = `❌ Failed: ${server}, susubok ng iba...`;
+    }
+  }
+
+  label.textContent = `⚠️ Walang gumaganang server.`;
+  autoTesting = false;
+}

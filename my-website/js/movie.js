@@ -184,12 +184,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ Gamitin ang SERVER_LIST mula sa servers.js
   if (Array.isArray(SERVER_LIST)) {
-    SERVER_LIST.forEach(server => {
-      const option = document.createElement("option");
-      option.value = server.url;
-      option.textContent = server.name;
-      serverSelect.appendChild(option);
-    });
+   SERVER_LIST.forEach(server => {
+  const option = document.createElement("option");
+  option.value = server;       // direktang string ng server domain
+  option.textContent = server; // ipapakita rin ang domain bilang pangalan
+  serverSelect.appendChild(option);
+});
+
   } else {
     console.error("SERVER_LIST is not defined or not an array.");
   }

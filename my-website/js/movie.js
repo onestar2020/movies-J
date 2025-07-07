@@ -20,20 +20,31 @@ let autoTesting = false; // global flag para sa auto-find
 // ✅ TEST FUNCTION
 function testEmbed(iframe) {
   return new Promise(resolve => {
-    const timeout = setTimeout(() => resolve(false), 4000);
-    const check = () => {
-      try {
-        const doc = iframe.contentDocument || iframe.contentWindow.document;
-        if (doc && doc.body && doc.body.innerHTML.length > 100) {
-          clearTimeout(timeout);
-          resolve(true);
-        }
-      } catch (e) {}
+    let responded = false;
+
+    iframe.onload = () => {
+      if (!responded) {
+        responded = true;
+        resolve(true); // assume loaded
+      }
     };
-    iframe.onload = check;
-    iframe.onerror = () => resolve(false);
+
+    iframe.onerror = () => {
+      if (!responded) {
+        responded = true;
+        resolve(false);
+      }
+    };
+
+    setTimeout(() => {
+      if (!responded) {
+        responded = true;
+        resolve(false); // timeout fallback
+      }
+    }, 6000); // wait max 6 seconds
   });
 }
+
 
 // ✅ AUTO-FIND FUNCTION
 async function initPlayerWithFallback(startIndex = 0) {

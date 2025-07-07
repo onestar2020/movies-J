@@ -10,36 +10,45 @@
 
   <!-- Header -->
   <header style="padding:10px; border-bottom:1px solid #444; text-align:center;">
-  <a href="index.html" style="position:absolute; left:10px; top:10px; text-decoration:none;">
-    <button style="padding:8px 14px; background:none; color:white; font-weight:bold; border:none; cursor:pointer;">
-      ⬅ Home
-    </button>
-  </a>
-  <h1 id="movie-title" style="margin:0; font-size:1.8rem;">Loading...</h1>
-</header>
-
+    <a href="index.html" style="position:absolute; left:10px; top:10px; text-decoration:none;">
+      <button style="padding:8px 14px; background:none; color:white; font-weight:bold; border:none; cursor:pointer;">
+        ⬅ Home
+      </button>
+    </a>
+    <h1 id="movie-title" style="margin:0; font-size:1.8rem;">Loading...</h1>
+  </header>
 
   <!-- Main Content -->
-  <main style="padding:20px;">
-    
+  <div class="page-container" style="margin-top: 20px;">
     <!-- Server Message -->
     <p id="server-label" style="font-size:16px; color:#ccc; margin-bottom:10px;">
       🎬 Select a server below to watch the full movie:
     </p>
 
-    <!-- Season & Episode Selector (for TV/Anime) -->
-    <div id="season-episode-selectors" style="display:none; margin-bottom:20px;">
-      <label for="season-select" style="color:#ccc; font-size:14px;">Season:</label>
-      <select id="season-select" style="margin: 0 10px 10px 10px; padding: 6px; border-radius: 5px; background:#222; color:white; border:1px solid #555;"></select>
-      
-      <label for="episode-select" style="color:#ccc; font-size:14px;">Episode:</label>
-      <select id="episode-select" style="margin-left:10px; padding: 6px; border-radius: 5px; background:#222; color:white; border:1px solid #555;"></select>
+    <!-- Season & Episode Selector (Modern Style) -->
+    <div class="season-episode-selectors" style="display: none;">
+      <label for="season-select">Season</label>
+      <select id="season-select"></select>
+
+      <label for="episode-select">Episode</label>
+      <select id="episode-select"></select>
+    </div>
+
+    <!-- Server Selector -->
+    <div class="server-selector" style="margin-top: 20px;">
+      <label for="server">Select Server</label>
+      <select id="server">
+        <option value="vidsrc">VidSrc</option>
+        <option value="vizcloud">VizCloud</option>
+        <option value="megacloud">MegaCloud</option>
+        <option value="fzmovies">FzMovies</option>
+      </select>
     </div>
 
     <!-- Video Player -->
-   <div class="video-container">
-  <iframe id="movie-player" frameborder="0" allowfullscreen></iframe>
-</div>
+    <div class="video-container" style="margin-top: 20px;">
+      <iframe id="movie-player" frameborder="0" allowfullscreen></iframe>
+    </div>
 
     <!-- Movie Overview -->
     <p id="movie-overview" style="margin-top:20px;"></p>
@@ -50,8 +59,7 @@
 
     <!-- Suggested Movies -->
     <div id="similar-movies" style="margin-top:30px;"></div>
-
-  </main>
+  </div>
 
   <!-- Script -->
   <script src="js/movie.js" defer></script>

@@ -9,9 +9,7 @@
   <link rel="preload" href="css/home.css" as="style">
   <link rel="stylesheet" href="css/home.css">
 
-  <!-- Scripts preload (non-blocking hint) -->
-  <link rel="preload" href="js/home.js" as="script">
-  <link rel="preload" href="js/uploads.js" as="script">
+
 
   <!-- Web Manifest and Favicon -->
  
@@ -196,10 +194,11 @@
     });
   </script>
 <!-- Script Loading Order -->
-<script src="js/embed.js"></script>
-<script src="js/servers.js"></script>
-<script src="js/uploads.js"></script>
-<script src="js/home.js"></script>
+<script src="js/embed.js" defer></script>
+<script src="js/servers.js" defer></script>
+<script src="js/uploads.js" defer></script>
+<script src="js/home.js" defer></script>
+
 
 </body>
 </html>

@@ -11,6 +11,13 @@ async function loadMovie() {
   const data = await res.json();
 
   document.title = data.title || data.name;
+  const serverLabel = document.getElementById('server-label');
+if (type === 'tv') {
+  serverLabel.textContent = '📺 Select a season and episode, then choose a server to start watching:';
+} else {
+  serverLabel.textContent = '🎬 Select a server below to watch the full movie:';
+}
+
   document.getElementById('movie-title').textContent = data.title || data.name;
   document.getElementById('movie-overview').textContent = data.overview;
   document.getElementById('movie-rating').textContent = '★'.repeat(Math.round(data.vote_average / 2));

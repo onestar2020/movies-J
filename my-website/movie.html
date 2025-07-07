@@ -5,11 +5,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Loading Movie...</title>
   <link rel="stylesheet" href="css/home.css" />
+
+  <style>
+    iframe#movie-player {
+      width: 100%;
+      max-width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 10px;
+    }
+
+    .season-episode-selectors {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .season-episode-selectors label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .season-episode-selectors select {
+      padding: 6px 10px;
+      background: #222;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 5px;
+      min-width: 100px;
+    }
+
+    .video-container {
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    @media screen and (max-width: 600px) {
+      h1#movie-title {
+        font-size: 1.4rem;
+      }
+
+      .season-episode-selectors {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .season-episode-selectors label {
+        margin-top: 10px;
+      }
+    }
+  </style>
 </head>
+
 <body style="background:#111; color:#fff;">
 
   <!-- Header -->
-  <header style="padding:10px; border-bottom:1px solid #444; text-align:center;">
+  <header style="padding:10px; border-bottom:1px solid #444; text-align:center; position:relative;">
     <a href="index.html" style="position:absolute; left:10px; top:10px; text-decoration:none;">
       <button style="padding:8px 14px; background:none; color:white; font-weight:bold; border:none; cursor:pointer;">
         ⬅ Home
@@ -19,41 +71,34 @@
   </header>
 
   <!-- Main Content -->
-  <div class="page-container" style="margin-top: 20px;">
+  <div class="page-container" style="padding: 20px; max-width: 1000px; margin: auto;">
+
     <!-- Server Message -->
     <p id="server-label" style="font-size:16px; color:#ccc; margin-bottom:10px;">
       🎬 Select a server below to watch the full movie:
     </p>
 
-    <!-- Season & Episode Selector (Modern Style) -->
-    <div class="season-episode-selectors" style="display: none;">
-      <label for="season-select">Season</label>
-      <select id="season-select"></select>
-
-      <label for="episode-select">Episode</label>
-      <select id="episode-select"></select>
-    </div>
+    <!-- Season & Episode Selector -->
+    <div class="season-episode-selectors" style="display: none;"></div>
 
     <!-- Video Player -->
-    <div class="video-container" style="margin-top: 20px;">
+    <div class="video-container">
       <iframe id="movie-player" frameborder="0" allowfullscreen></iframe>
     </div>
 
-    <!-- Movie Overview -->
-    <p id="movie-overview" style="margin-top:20px;"></p>
-    <p id="movie-rating" style="color:gold; margin-top:10px;"></p>
+    <!-- Overview -->
+    <p id="movie-overview" style="margin-top:20px; line-height: 1.6;"></p>
+    <p id="movie-rating" style="color:gold; margin-top:10px; font-size: 18px;"></p>
 
-    <!-- Cast Section -->
+    <!-- Cast -->
     <div id="cast-list" style="margin-top:30px;"></div>
 
-    <!-- Suggested Movies -->
-    <div id="similar-movies" style="margin-top: 30px;">
-  <!-- Populated by JS -->
-</div>
+    <!-- You May Also Like -->
+    <div id="similar-movies" style="margin-top: 30px;"></div>
 
   </div>
 
-  <!-- Script -->
+  <!-- Scripts -->
   <script src="js/embed.js"></script>
   <script src="js/servers.js"></script>
   <script src="js/movie.js"></script>

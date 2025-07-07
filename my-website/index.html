@@ -99,32 +99,19 @@
           </div>
         </div>
       </div>
-      <div class="server-selector">
-        <label for="server">Change Server:</label>
-<select id="server" onchange="changeServer()">
-    <option value="megacloud.tv">MegaCloud.tv</option>
-  <option value="fzmovies.xyz">FzMovies.xyz</option>
-  <option value="vidsrc.cc">Vidsrc.cc</option>
-  <option value="vidsrc.me">Vidsrc.me</option>
-  <option value="player.videasy.net">Player.Videasy.net</option>
-  <option value="multiembed.mov">MultiEmbed.mov</option>
-  <option value="2embed.to">2Embed.to</option>
-  <option value="zembed.net">Zembed.net</option>
-  <option value="curtstream.com">CurtStream</option>
-  <option value="vidsrc.pro">VidSrc Pro</option>
-  <option value="autoembed.to">AutoEmbed.to</option>
-  <option value="2embed.cc">2Embed.cc</option>
-  <option value="dopebox.to">DopeBox.to</option>
-  <option value="sflix.to">SFlix.to</option>
-</select>
+  <div class="server-selector">
+  <label for="server">Change Server:</label>
+  <select id="server" onchange="changeServer()">
+    <option value="">Loading servers...</option>
+  </select>
 
-<p id="active-server-label" style="text-align: center; color: #00f; font-size: 13px; margin-top: 5px;"></p>
+  <p id="active-server-label" style="text-align: center; color: #00f; font-size: 13px; margin-top: 5px;"></p>
 
+  <p style="font-size: 13px; color: #ff5e00; text-align: center; margin: 10px 0;">
+    ⚠ Ads shown in free movie servers are not controlled by this site.
+  </p>
+</div>
 
-        <p style="font-size: 13px; color: #ff5e00; text-align: center; margin: 10px 0;">
-          ⚠ Ads shown in free movie servers are not controlled by this site.
-        </p>
-      </div>
       <iframe id="modal-video" width="100%" height="400" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
   </div>

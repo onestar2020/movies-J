@@ -77,8 +77,14 @@ label.textContent = `🔁 Sinusubukan: ${server}`;
 player.src = ''; // clear old source
 await new Promise(r => setTimeout(r, 100)); // short delay para ma-reset ang iframe
 
-player.src = url; // set new source
+player.src = ''; // Reset iframe
+await new Promise(resolve => setTimeout(resolve, 300)); // Wait for unload
+
+player.src = url; // Load new URL
+await new Promise(resolve => setTimeout(resolve, 100)); // Wait again
+
 const success = await testEmbed(player);
+
 
     if (success) {
       label.textContent = `✅ Gumagana: ${server}`;

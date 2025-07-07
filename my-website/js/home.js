@@ -1,6 +1,3 @@
-import { generateEmbedURL } from './embed.js';
-import { SERVER_LIST } from './servers.js';
-
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 

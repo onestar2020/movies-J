@@ -595,3 +595,15 @@ input:focus-visible {
   border-radius: 10px;
 }
 
+#similar-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+#similar-scroll::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 5px;
+}
+
+#similar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}

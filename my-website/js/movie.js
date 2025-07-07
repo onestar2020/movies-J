@@ -101,39 +101,56 @@ if (type === 'tv') {
   const similarData = await similarRes.json();
   const similarContainer = document.getElementById('similar-movies');
 
- similarContainer.innerHTML = `
+similarContainer.innerHTML = `
   <h3 style="margin-top: 30px;">You May Also Like</h3>
-  <div id="similar-scroll" style="display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 0;"></div>
+  <div id="similar-scroll" style="display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 10px; padding: 10px 0;"></div>
 `;
+
 
 
  const scrollBox = document.getElementById("similar-scroll");
-similarData.results?.forEach(sim => {
+// Tanggalin ang duplicate movie by ID
+const uniqueSimilars = [];
+const seenIds = new Set();
+
+similarData.results.forEach(sim => {
+  if (!seenIds.has(sim.id)) {
+    seenIds.add(sim.id);
+    uniqueSimilars.push(sim);
+  }
+});
+
+uniqueSimilars.slice(0, 10).forEach(sim => {
+
   const card = document.createElement('div');
   card.style = `
-  cursor: pointer;
-  transition: transform 0.3s;
-  text-align: center;
-  min-width: 120px;
-  flex: 0 0 auto;
-`;
+    cursor: pointer;
+    transition: transform 0.3s;
+    text-align: center;
+    min-width: 120px;
+    flex: 0 0 auto;
+  `;
 
   card.onmouseover = () => (card.style.transform = "scale(1.05)");
   card.onmouseout = () => (card.style.transform = "scale(1)");
-card.innerHTML = `
-  <img src="${IMG_URL + sim.poster_path}" alt="${sim.title || sim.name}"
-    style="width: 120px; height: 180px; object-fit: cover; border-radius: 10px;">
-  <p style="font-size:13px; color:#ccc; margin-top:5px; max-width: 120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-    ${sim.title || sim.name}
-  </p>
-`;
 
+  card.innerHTML = `
+    <img src="${IMG_URL + sim.poster_path}" alt="${sim.title || sim.name}"
+      style="width: 120px; height: 180px; object-fit: cover; border-radius: 10px;">
+    <p style="font-size:13px; color:#ccc; margin-top:5px; max-width: 120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+      ${sim.title || sim.name}
+    </p>
+  `;
 
   card.onclick = () => {
-    window.location.href = `movie.html?id=${sim.id}&type=${type}`;
+window.location.href = `movie.html?id=${sim.id}&type=${type}`;
+
   };
+
   scrollBox.appendChild(card);
 });
+
+ 
 
 
   if (type === 'tv') {

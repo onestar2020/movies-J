@@ -1,16 +1,21 @@
 const SERVER_LIST = [
-  "megacloud.tv",
-  "fzmovies.xyz",
+  // ✅ Confirmed working
   "vidsrc.cc",
-  "vidsrc.me",
-  "player.videasy.net",
+
+  // 🟡 Partially working or under observation
   "multiembed.mov",
   "2embed.to",
+  "autoembed.to",
+  "megacloud.tv",
+  "dopebox.to",
+  "sflix.to",
+
+  // ⚠️ Unverified or unstable
+  "fzmovies.xyz",
+  "vidsrc.me",
+  "player.videasy.net",
   "zembed.net",
   "curtstream.com",
   "vidsrc.pro",
-  "autoembed.to",
-  "2embed.cc",
-  "dopebox.to",
-  "sflix.to"
+  "2embed.cc"
 ];

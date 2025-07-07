@@ -182,41 +182,38 @@ document.addEventListener("DOMContentLoaded", () => {
   serverSelect.id = "server-select";
   serverSelect.style = "padding: 8px; border-radius: 5px; margin-bottom: 20px; width: 100%; background: #222; color: #fff; border: 1px solid #555;";
 
-  const servers = [
-    { name: "Vidsrc.me", url: "vidsrc.me" },
-    { name: "MegaCloud.tv", url: "megacloud.tv" },
-    { name: "FzMovies.xyz", url: "fzmovies.xyz" },
-    { name: "Vidsrc.cc", url: "vidsrc.cc" },
-    { name: "Player.Videasy.net", url: "player.videasy.net" },
-    { name: "MultiEmbed.mov", url: "multiembed.mov" },
-    { name: "2Embed.to", url: "2embed.to" },
-    { name: "Zembed.net", url: "zembed.net" },
-    { name: "CurtStream", url: "curtstream.com" },
-    { name: "VidSrc Pro", url: "vidsrc.pro" },
-    { name: "AutoEmbed.to", url: "autoembed.to" },
-    { name: "2Embed.cc", url: "2embed.cc" },
-    { name: "DopeBox.to", url: "dopebox.to" },
-    { name: "SFlix.to", url: "sflix.to" }
-  ];
+  // ✅ Gamitin ang SERVER_LIST mula sa servers.js
+  if (Array.isArray(SERVER_LIST)) {
+    SERVER_LIST.forEach(server => {
+      const option = document.createElement("option");
+      option.value = server.url;
+      option.textContent = server.name;
+      serverSelect.appendChild(option);
+    });
+  } else {
+    console.error("SERVER_LIST is not defined or not an array.");
+  }
 
-  servers.forEach(server => {
-    const option = document.createElement("option");
-    option.value = server.url;
-    option.textContent = server.name;
-    serverSelect.appendChild(option);
-  });
-
+  // 🔁 Event kapag may nag-select ng bagong server
   serverSelect.addEventListener("change", () => {
+    const player = document.getElementById("movie-player");
+    const serverURL = serverSelect.value;
+
     if (type === 'tv') {
       const season = document.getElementById("season-select").value;
       const episode = document.getElementById("episode-select").value;
-      document.getElementById("movie-player").src = `https://${serverSelect.value}/embed/tv?id=${id}&s=${season}&e=${episode}`;
+      player.src = `https://${serverURL}/embed/tv?id=${id}&s=${season}&e=${episode}`;
     } else {
-      document.getElementById("movie-player").src = `https://${serverSelect.value}/embed/movie/${id}`;
+      player.src = `https://${serverURL}/embed/movie/${id}`;
     }
   });
 
+  // ⬇️ I-insert sa ilalim ng server-label
   label.insertAdjacentElement("afterend", serverSelect);
 });
 
+
+ 
+
+ 
 loadMovie();

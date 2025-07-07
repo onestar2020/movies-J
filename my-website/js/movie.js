@@ -15,20 +15,12 @@ const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id');
 const type = urlParams.get('type') || 'movie';
 
+let autoTesting = false; // global flag para sa auto-find
 
-
-async function loadMovie() {
- 
-  const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
-  const data = await res.json();
-
-  document.title = data.title || data.name;
-  document.getElementById("active-server-label").textContent = "🔎 Naghahanap ng gumaganang server...";
-initPlayerWithFallback(); // automatic na magpapatakbo sa best server
+// ✅ TEST FUNCTION
 function testEmbed(iframe) {
   return new Promise(resolve => {
     const timeout = setTimeout(() => resolve(false), 4000);
-
     const check = () => {
       try {
         const doc = iframe.contentDocument || iframe.contentWindow.document;
@@ -38,19 +30,28 @@ function testEmbed(iframe) {
         }
       } catch (e) {}
     };
-
     iframe.onload = check;
     iframe.onerror = () => resolve(false);
   });
 }
 
-async function initPlayerWithFallback() {
-  const player = document.getElementById("movie-player");
+// ✅ AUTO-FIND FUNCTION
+async function initPlayerWithFallback(startIndex = 0) {
+  if (autoTesting) return;
+  autoTesting = true;
+
   const label = document.getElementById("active-server-label");
+  const player = document.getElementById("movie-player");
   const season = document.getElementById("season-select")?.value || 1;
   const episode = document.getElementById("episode-select")?.value || 1;
 
-  for (const server of SERVER_LIST) {
+  for (let i = startIndex; i < SERVER_LIST.length; i++) {
+    if (!autoTesting) {
+      label.textContent = "⛔ Auto Find Cancelled.";
+      break;
+    }
+
+    const server = SERVER_LIST[i];
     const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
     label.textContent = `🔁 Sinusubukan: ${server}`;
     player.src = url;
@@ -59,6 +60,7 @@ async function initPlayerWithFallback() {
     if (success) {
       label.textContent = `✅ Gumagana: ${server}`;
       document.getElementById("server-select").value = server;
+      autoTesting = false;
       return;
     } else {
       label.textContent = `❌ Failed: ${server}, susubok ng iba...`;
@@ -66,11 +68,25 @@ async function initPlayerWithFallback() {
   }
 
   label.textContent = `⚠️ Walang gumaganang server.`;
+  autoTesting = false;
 }
 
+// ✅ STOP FUNCTION
+window.initPlayerWithFallback = initPlayerWithFallback;
+window.stopAutoTesting = () => {
+  autoTesting = false;
+};
+
+async function loadMovie() {
+  const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
+  const data = await res.json();
+
+  document.title = data.title || data.name;
   document.getElementById('movie-title').textContent = data.title || data.name;
   document.getElementById('movie-overview').textContent = data.overview;
   document.getElementById('movie-rating').textContent = '★'.repeat(Math.round(data.vote_average / 2));
+
+  initPlayerWithFallback();
 
   const trailerRes = await fetch(`${BASE_URL}/${type}/${id}/videos?api_key=${API_KEY}`);
   const trailerData = await trailerRes.json();
@@ -82,7 +98,6 @@ async function initPlayerWithFallback() {
   const castRes = await fetch(`${BASE_URL}/${type}/${id}/credits?api_key=${API_KEY}`);
   const castData = await castRes.json();
   const castList = document.getElementById('cast-list');
-
   castList.innerHTML = `
     <h2 style="margin-bottom:10px;">Cast</h2>
     <div style="position: relative;">
@@ -122,24 +137,18 @@ async function initPlayerWithFallback() {
   const similarRes = await fetch(`${BASE_URL}/${type}/${id}/similar?api_key=${API_KEY}`);
   const similarData = await similarRes.json();
   const similarContainer = document.getElementById('similar-movies');
-
   similarContainer.innerHTML = `
     <h3 style="margin-top: 30px;">You May Also Like</h3>
     <div id="similar-scroll" style="display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 10px; padding: 10px 0;"></div>
   `;
 
   const similarScrollBox = document.getElementById("similar-scroll");
-  const uniqueSimilars = [];
   const seenIds = new Set();
 
   similarData.results.forEach(sim => {
-    if (!seenIds.has(sim.id)) {
-      seenIds.add(sim.id);
-      uniqueSimilars.push(sim);
-    }
-  });
+    if (seenIds.has(sim.id)) return;
+    seenIds.add(sim.id);
 
-  uniqueSimilars.slice(0, 10).forEach(sim => {
     const card = document.createElement('div');
     card.style = `
       cursor: pointer;
@@ -179,8 +188,8 @@ async function loadSeasons() {
 
   const seasonSelect = document.getElementById("season-select");
   const episodeSelect = document.getElementById("episode-select");
-  const selectorBox = document.getElementById("season-episode-selectors");
-  selectorBox.style.display = 'block';
+  const selectorBox = document.querySelector(".season-episode-selectors");
+  selectorBox.style.display = 'flex';
 
   seasonSelect.innerHTML = '';
   episodeSelect.innerHTML = '';
@@ -213,6 +222,7 @@ async function loadEpisodes(seasonNumber) {
   episodeSelect.innerHTML = "";
   const res = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNumber}?api_key=${API_KEY}`);
   const data = await res.json();
+
   data.episodes.forEach(ep => {
     const option = document.createElement("option");
     option.value = ep.episode_number;
@@ -221,32 +231,23 @@ async function loadEpisodes(seasonNumber) {
   });
 
   const player = document.getElementById("movie-player");
-const server = document.getElementById("server-select").value;
-const url = generateEmbedURL(server, { id, media_type: type }, seasonNumber, 1);
-player.src = url;
-
+  const server = document.getElementById("server-select").value;
+  player.src = generateEmbedURL(server, { id, media_type: type }, seasonNumber, 1);
 }
 
+// ✅ INIT SERVER LIST
 document.addEventListener("DOMContentLoaded", () => {
-
-
-
-  const label = document.getElementById("server-label");
-
+  const serverBox = document.getElementById("server");
   const serverSelect = document.createElement("select");
   serverSelect.id = "server-select";
   serverSelect.style = "padding: 8px; border-radius: 5px; margin-bottom: 20px; width: 100%; background: #222; color: #fff; border: 1px solid #555;";
 
-  if (Array.isArray(SERVER_LIST)) {
-    SERVER_LIST.forEach(server => {
-      const option = document.createElement("option");
-      option.value = server;
-      option.textContent = server;
-      serverSelect.appendChild(option);
-    });
-  } else {
-    console.error("SERVER_LIST is not defined or not an array.");
-  }
+  SERVER_LIST.forEach(server => {
+    const option = document.createElement("option");
+    option.value = server;
+    option.textContent = server;
+    serverSelect.appendChild(option);
+  });
 
   serverSelect.addEventListener("change", () => {
     const player = document.getElementById("movie-player");
@@ -261,59 +262,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
- const serverBox = document.getElementById("server");
-if (serverBox) serverBox.replaceWith(serverSelect);
-
+  if (serverBox) serverBox.replaceWith(serverSelect);
 });
 
 loadMovie();
-let autoTesting = false; // global flag para sa ON/OFF ng auto-test
 
-function testEmbed(iframe) {
-  return new Promise(resolve => {
-    const timeout = setTimeout(() => resolve(false), 4000); // 4 seconds timeout
-
-    const check = () => {
-      try {
-        const doc = iframe.contentDocument || iframe.contentWindow.document;
-        if (doc && doc.body && doc.body.innerHTML.length > 100) {
-          clearTimeout(timeout);
-          resolve(true);
-        }
-      } catch (e) {}
-    };
-
-    iframe.onload = check;
-    iframe.onerror = () => resolve(false);
-  });
-}
-
-async function initPlayerWithFallback(startIndex = 0) {
-  if (autoTesting) return; // kung nagra-run na, huwag ulitin
-  autoTesting = true;
-
-  const label = document.getElementById("active-server-label");
-  const player = document.getElementById("movie-player");
-  const season = document.getElementById("season-select")?.value || 1;
-  const episode = document.getElementById("episode-select")?.value || 1;
-
-  for (let i = startIndex; i < SERVER_LIST.length; i++) {
-    const server = SERVER_LIST[i];
-    const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
-    label.textContent = `🔁 Sinusubukan: ${server}`;
-    player.src = url;
-
-    const success = await testEmbed(player);
-    if (success) {
-      label.textContent = `✅ Gumagana: ${server}`;
-      document.getElementById("server-select").value = server;
-      autoTesting = false;
-      return;
-    } else {
-      label.textContent = `❌ Failed: ${server}, susubok ng iba...`;
-    }
-  }
-
-  label.textContent = `⚠️ Walang gumaganang server.`;
-  autoTesting = false;
-}

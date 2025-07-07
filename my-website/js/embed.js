@@ -1,4 +1,5 @@
-export function generateEmbedURL(server, item, season = 1, episode = 1) {
+function generateEmbedURL(server, item, season = 1, episode = 1) {
+
   const id = item.id;
   const type = item.media_type === "movie" ? "movie" : "tv";
   const isTV = type === "tv";

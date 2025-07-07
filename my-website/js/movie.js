@@ -100,23 +100,32 @@ if (type === 'tv') {
   const similarRes = await fetch(`${BASE_URL}/${type}/${id}/similar?api_key=${API_KEY}`);
   const similarData = await similarRes.json();
   const similarContainer = document.getElementById('similar-movies');
-  similarContainer.innerHTML = "<h2 style='margin-top:30px; margin-bottom:10px;'>You May Also Like</h2>";
-  similarContainer.style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;";
-  similarData.results?.slice(0, 6).forEach(sim => {
-    const card = document.createElement('div');
-    card.style = "cursor:pointer; transition:transform 0.3s; text-align:center;";
-    card.onmouseover = () => (card.style.transform = "scale(1.05)");
-    card.onmouseout = () => (card.style.transform = "scale(1)");
-    card.innerHTML = `
-      <img src="${IMG_URL + sim.poster_path}" alt="${sim.title || sim.name}"
-        style="width:100%; border-radius:10px; object-fit:cover;">
-      <p style="font-size:13px; color:#ccc; margin-top:5px;">${sim.title || sim.name}</p>
-    `;
-    card.onclick = () => {
-      window.location.href = `movie.html?id=${sim.id}&type=${type}`;
-    };
-    similarContainer.appendChild(card);
-  });
+  similarContainer.innerHTML = `
+  <h3 style="margin-top: 30px;">You May Also Like</h3>
+  <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+    <button class="modern-button" onclick="scrollSimilar('left')">⬅️ Previous</button>
+    <button class="modern-button" onclick="scrollSimilar('right')">Next ➡️</button>
+  </div>
+  <div id="similar-scroll" style="display: flex; overflow-x: auto; gap: 10px; padding: 10px 0;"></div>
+`;
+
+ const scrollBox = document.getElementById("similar-scroll");
+similarData.results?.forEach(sim => {
+  const card = document.createElement('div');
+  card.style = "cursor:pointer; transition:transform 0.3s; text-align:center; min-width:120px;";
+  card.onmouseover = () => (card.style.transform = "scale(1.05)");
+  card.onmouseout = () => (card.style.transform = "scale(1)");
+  card.innerHTML = `
+    <img src="${IMG_URL + sim.poster_path}" alt="${sim.title || sim.name}"
+      style="width:100%; border-radius:10px; object-fit:cover;">
+    <p style="font-size:13px; color:#ccc; margin-top:5px;">${sim.title || sim.name}</p>
+  `;
+  card.onclick = () => {
+    window.location.href = `movie.html?id=${sim.id}&type=${type}`;
+  };
+  scrollBox.appendChild(card);
+});
+
 
   if (type === 'tv') {
     loadSeasons();
@@ -218,3 +227,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
  
 loadMovie();
+function scrollSimilar(direction) {
+  const container = document.getElementById('similar-scroll');
+  const scrollAmount = 300;
+  container.scrollBy({
+    left: direction === 'left' ? -scrollAmount : scrollAmount,
+    behavior: 'smooth'
+  });
+}

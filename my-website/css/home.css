@@ -581,36 +581,9 @@ input:focus-visible {
 /* ===== SIMILAR MOVIES (YOU MAY ALSO LIKE) ===== */
 #similar-movies {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  overflow-x: auto;
+  scroll-behavior: smooth;
   gap: 10px;
-  margin-top: 15px;
-  padding: 10px;
-}
-
-.similar-card {
-  width: 100px;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.similar-card img {
-  width: 100px;
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
-}
-
-.similar-card:hover {
-  transform: scale(1.05);
-}
-
-.similar-card div {
-  font-size: 12px;
-  color: #fff;
-  margin-top: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding: 10px 0;
+  
 }

@@ -110,16 +110,24 @@ if (type === 'tv') {
  const scrollBox = document.getElementById("similar-scroll");
 similarData.results?.forEach(sim => {
   const card = document.createElement('div');
-  card.style = "cursor:pointer; transition:transform 0.3s; text-align:center; min-width:120px;";
+  card.style = `
+  cursor: pointer;
+  transition: transform 0.3s;
+  text-align: center;
+  min-width: 120px;
+  flex: 0 0 auto;
+`;
+
   card.onmouseover = () => (card.style.transform = "scale(1.05)");
   card.onmouseout = () => (card.style.transform = "scale(1)");
- card.innerHTML = `
+card.innerHTML = `
   <img src="${IMG_URL + sim.poster_path}" alt="${sim.title || sim.name}"
-    style="width:120px; height:180px; object-fit:cover; border-radius:10px;">
-  <p style="font-size:13px; color:#ccc; margin-top:5px; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+    style="width: 120px; height: 180px; object-fit: cover; border-radius: 10px;">
+  <p style="font-size:13px; color:#ccc; margin-top:5px; max-width: 120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
     ${sim.title || sim.name}
   </p>
 `;
+
 
   card.onclick = () => {
     window.location.href = `movie.html?id=${sim.id}&type=${type}`;

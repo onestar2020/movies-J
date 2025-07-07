@@ -70,53 +70,82 @@
     <h1 id="movie-title" style="margin:0; font-size:1.8rem;">Loading...</h1>
   </header>
 
-<!-- Main Content -->
-<div class="page-container" style="padding: 20px; max-width: 1000px; margin: auto;">
+  <!-- Main Content -->
+  <div class="page-container" style="padding: 20px; max-width: 1000px; margin: auto;">
 
-  <!-- Server Box -->
-<div id="fallback-box" style="margin-bottom: 20px; background:#1c1c1c; padding: 15px; border-radius: 8px; text-align: center;">
-  <p style="margin-bottom: 10px; font-weight: bold; font-size: 16px;">
-    🎬 Find server to play the full movie?
-  </p>
+    <!-- Server Box -->
+    <div id="fallback-box" style="margin-bottom: 20px; background:#1c1c1c; padding: 15px; border-radius: 8px; text-align: center;">
+      <p style="margin-bottom: 10px; font-weight: bold; font-size: 16px;">
+        🎬 Find server to play the full movie?
+      </p>
 
-  <select id="server-select"
- style="padding: 6px 10px; border-radius: 5px;">
-    <!-- filled dynamically -->
-  </select>
+      <select id="server-select" style="padding: 6px 10px; border-radius: 5px;">
+        <!-- filled dynamically -->
+      </select>
 
-  <button id="retry-server-btn" style="margin-left: 10px; padding: 6px 12px; border-radius: 5px; background-color:#00BCD4; color:#000; font-weight:bold;">
-    🔁 Find Working Server
-  </button>
+      <button id="start-test-btn" style="margin-left: 10px; padding: 6px 12px; border-radius: 5px; background-color:#4CAF50; color:#fff; font-weight:bold;">
+        🔍 Start Find Server
+      </button>
 
-  <p id="active-server-label" style="margin-top:10px; font-size: 13px; color: #ccc;"></p>
-  <p id="fallback-status" style="margin-top: 5px; font-size: 13px; color: #999; display: none;">🔍 Searching for best server...</p>
-</div>
+      <button id="stop-test-btn" style="margin-left: 10px; padding: 6px 12px; border-radius: 5px; background-color:#f44336; color:#fff; font-weight:bold; display: none;">
+        ⛔ Stop
+      </button>
 
+      <p id="active-server-label" style="margin-top:10px; font-size: 13px; color: #ccc;"></p>
+    </div>
 
-  <!-- Season & Episode Selector -->
-  <div class="season-episode-selectors" style="display: none;"></div>
+    <!-- Season & Episode Selector -->
+    <div class="season-episode-selectors" style="display: none;"></div>
 
-  <!-- Video Player -->
-  <div class="video-container">
-    <iframe id="movie-player" frameborder="0" allowfullscreen></iframe>
+    <!-- Video Player -->
+    <div class="video-container">
+      <iframe id="movie-player" frameborder="0" allowfullscreen></iframe>
+    </div>
+
+    <!-- Overview -->
+    <p id="movie-overview" style="margin-top:20px; line-height: 1.6;"></p>
+    <p id="movie-rating" style="color:gold; margin-top:10px; font-size: 18px;"></p>
+
+    <!-- Cast -->
+    <div id="cast-list" style="margin-top:30px;"></div>
+
+    <!-- You May Also Like -->
+    <div id="similar-movies" style="margin-top: 30px;"></div>
+
   </div>
-
-  <!-- Overview -->
-  <p id="movie-overview" style="margin-top:20px; line-height: 1.6;"></p>
-  <p id="movie-rating" style="color:gold; margin-top:10px; font-size: 18px;"></p>
-
-  <!-- Cast -->
-  <div id="cast-list" style="margin-top:30px;"></div>
-
-  <!-- You May Also Like -->
-  <div id="similar-movies" style="margin-top: 30px;"></div>
-
-</div>
 
   <!-- Scripts -->
   <script src="js/embed.js"></script>
   <script src="js/servers.js"></script>
   <script src="js/movie.js"></script>
+
+  <script>
+    // Start/Stop Auto-Find Button Logic
+    document.addEventListener("DOMContentLoaded", () => {
+      const startBtn = document.getElementById("start-test-btn");
+      const stopBtn = document.getElementById("stop-test-btn");
+      const serverLabel = document.getElementById("active-server-label");
+
+      startBtn.onclick = () => {
+        if (typeof initPlayerWithFallback === 'function') {
+          autoTesting = true;
+          startBtn.disabled = true;
+          stopBtn.style.display = "inline-block";
+          serverLabel.textContent = "🔍 Searching for best server...";
+          initPlayerWithFallback();
+        } else {
+          serverLabel.textContent = "⚠️ initPlayerWithFallback() is not loaded.";
+        }
+      };
+
+      stopBtn.onclick = () => {
+        autoTesting = false;
+        document.getElementById("active-server-label").textContent = "⛔ Auto Find Cancelled.";
+        startBtn.disabled = false;
+        stopBtn.style.display = "none";
+      };
+    });
+  </script>
 
 </body>
 </html>

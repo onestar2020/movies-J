@@ -23,13 +23,15 @@ function testEmbed(iframe) {
     let responded = false;
 
     iframe.onload = () => {
+      console.log("✅ iframe loaded successfully");
       if (!responded) {
         responded = true;
-        resolve(true); // assume loaded
+        resolve(true);
       }
     };
 
     iframe.onerror = () => {
+      console.log("❌ iframe failed to load");
       if (!responded) {
         responded = true;
         resolve(false);
@@ -38,16 +40,20 @@ function testEmbed(iframe) {
 
     setTimeout(() => {
       if (!responded) {
+        console.log("⌛ iframe timeout");
         responded = true;
-        resolve(false); // timeout fallback
+        resolve(false);
       }
-    }, 6000); // wait max 6 seconds
+    }, 6000);
   });
 }
 
 
+
 // ✅ AUTO-FIND FUNCTION
 async function initPlayerWithFallback(startIndex = 0) {
+  console.log("✅ SERVER_LIST check:", Array.isArray(SERVER_LIST), SERVER_LIST);
+
   if (autoTesting) return;
   autoTesting = true;
 
@@ -63,9 +69,11 @@ async function initPlayerWithFallback(startIndex = 0) {
     }
 
     const server = SERVER_LIST[i];
-    const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
-    label.textContent = `🔁 Sinusubukan: ${server}`;
-    player.src = url;
+   const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
+console.log(`🔁 Testing server: ${server} | URL: ${url}`);
+label.textContent = `🔁 Sinusubukan: ${server}`;
+player.src = url;
+
 
     const success = await testEmbed(player);
     if (success) {

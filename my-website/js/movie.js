@@ -5,6 +5,51 @@ const IMG_URL = 'https://image.tmdb.org/t/p/original';
 const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id');
 const type = urlParams.get('type') || 'movie';
+if (type === 'tv') {
+  document.querySelector('.season-episode-selectors').style.display = 'flex';
+
+  // Fetch seasons and populate
+  const seasonSelect = document.getElementById('season-select');
+  const episodeSelect = document.getElementById('episode-select');
+
+  fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}&language=en-US`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.seasons && data.seasons.length > 0) {
+        // Populate seasons
+        seasonSelect.innerHTML = '';
+        data.seasons.forEach(season => {
+          if (season.season_number !== 0) {
+            const option = document.createElement('option');
+            option.value = season.season_number;
+            option.textContent = `Season ${season.season_number}`;
+            seasonSelect.appendChild(option);
+          }
+        });
+
+        // Auto-trigger first season load
+        seasonSelect.addEventListener('change', () => {
+          const selectedSeason = seasonSelect.value;
+          fetch(`${BASE_URL}/${type}/${id}/season/${selectedSeason}?api_key=${API_KEY}&language=en-US`)
+            .then(res => res.json())
+            .then(seasonData => {
+              episodeSelect.innerHTML = '';
+              seasonData.episodes.forEach(episode => {
+                const option = document.createElement('option');
+                option.value = episode.episode_number;
+                option.textContent = `Episode ${episode.episode_number}: ${episode.name}`;
+                episodeSelect.appendChild(option);
+              });
+            });
+        });
+
+        // Trigger change to load first season's episodes
+        seasonSelect.dispatchEvent(new Event('change'));
+      }
+    });
+}
+
+
 
 async function loadMovie() {
   const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);

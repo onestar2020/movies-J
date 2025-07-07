@@ -300,7 +300,7 @@ async function searchTMDB() {
   const data = await res.json();
   const tmdbResults = data.results.filter(item => item.poster_path);
 
-  tmdbResults.forEach(item => {
+tmdbResults.forEach(item => {
   const img = document.createElement('img');
   img.src = `${IMG_URL}${item.poster_path}`;
   img.alt = item.title || item.name;
@@ -308,17 +308,23 @@ async function searchTMDB() {
   img.style.margin = '5px';
   img.style.borderRadius = '5px';
   img.style.cursor = 'pointer';
+
   img.onclick = () => {
     closeSearchModal();
 
-    // Manually set media_type if missing
-    if (!item.media_type) {
-      item.media_type = item.first_air_date ? 'tv' : 'movie';
-    }
+    const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+    const id = item.id;
 
-    showDetails(item);
+    // Optional tracking pixel
+    const track = new Image();
+    track.src = 'https://unseenreport.com/pxf.gif?uuid=your-uuid-here';
+
+    setTimeout(() => {
+      window.location.href = `movie.html?id=${id}&type=${type}`;
+    }, 100);
   };
-  tmdbSection.appendChild(img);
+
+  tmdbSection.appendChild(img); // ✅ dapat nasa loob ng forEach
 });
 
 

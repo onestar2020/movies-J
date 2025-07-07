@@ -512,5 +512,5 @@ async function init() {
   displayList(anime, 'anime-list');
 }
 
-init();
+window.addEventListener('DOMContentLoaded', init); // ✅ KEEP THIS
 

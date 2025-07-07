@@ -81,12 +81,16 @@ async function loadMovie() {
   const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
   const data = await res.json();
 
+
   document.title = data.title || data.name;
   document.getElementById('movie-title').textContent = data.title || data.name;
   document.getElementById('movie-overview').textContent = data.overview;
   document.getElementById('movie-rating').textContent = '★'.repeat(Math.round(data.vote_average / 2));
 
-  initPlayerWithFallback();
+  // ✅ REMOVE or COMMENT THIS OUT:
+  // initPlayerWithFallback(); ← wag muna siya auto-call
+
+
 
   const trailerRes = await fetch(`${BASE_URL}/${type}/${id}/videos?api_key=${API_KEY}`);
   const trailerData = await trailerRes.json();
@@ -94,6 +98,12 @@ async function loadMovie() {
   if (trailer) {
     document.getElementById('movie-player').src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1`;
   }
+
+// ✅ FIXED LINE: define label before using
+const label = document.getElementById("active-server-label");
+label.textContent = "⏳ Waiting for server selection...";
+
+
 
   const castRes = await fetch(`${BASE_URL}/${type}/${id}/credits?api_key=${API_KEY}`);
   const castData = await castRes.json();

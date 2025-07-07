@@ -72,10 +72,14 @@ async function initPlayerWithFallback(startIndex = 0) {
    const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
 console.log(`🔁 Testing server: ${server} | URL: ${url}`);
 label.textContent = `🔁 Sinusubukan: ${server}`;
-player.src = url;
 
 
-    const success = await testEmbed(player);
+player.src = ''; // clear old source
+await new Promise(r => setTimeout(r, 100)); // short delay para ma-reset ang iframe
+
+player.src = url; // set new source
+const success = await testEmbed(player);
+
     if (success) {
       label.textContent = `✅ Gumagana: ${server}`;
       document.getElementById("server-select").value = server;

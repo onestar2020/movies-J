@@ -113,11 +113,14 @@ similarData.results?.forEach(sim => {
   card.style = "cursor:pointer; transition:transform 0.3s; text-align:center; min-width:120px;";
   card.onmouseover = () => (card.style.transform = "scale(1.05)");
   card.onmouseout = () => (card.style.transform = "scale(1)");
-  card.innerHTML = `
-    <img src="${IMG_URL + sim.poster_path}" alt="${sim.title || sim.name}"
-      style="width:100%; border-radius:10px; object-fit:cover;">
-    <p style="font-size:13px; color:#ccc; margin-top:5px;">${sim.title || sim.name}</p>
-  `;
+ card.innerHTML = `
+  <img src="${IMG_URL + sim.poster_path}" alt="${sim.title || sim.name}"
+    style="width:120px; height:180px; object-fit:cover; border-radius:10px;">
+  <p style="font-size:13px; color:#ccc; margin-top:5px; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+    ${sim.title || sim.name}
+  </p>
+`;
+
   card.onclick = () => {
     window.location.href = `movie.html?id=${sim.id}&type=${type}`;
   };

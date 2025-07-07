@@ -19,3 +19,4 @@ const SERVER_LIST = [
   "vidsrc.pro",
   "2embed.cc"
 ];
+window.SERVER_LIST = SERVER_LIST;

@@ -70,33 +70,42 @@
     <h1 id="movie-title" style="margin:0; font-size:1.8rem;">Loading...</h1>
   </header>
 
-  <!-- Main Content -->
-  <div class="page-container" style="padding: 20px; max-width: 1000px; margin: auto;">
+<!-- Main Content -->
+<div class="page-container" style="padding: 20px; max-width: 1000px; margin: auto;">
 
-    <!-- Server Message -->
-    <p id="server-label" style="font-size:16px; color:#ccc; margin-bottom:10px;">
-      🎬 Select a server below to watch the full movie:
+  <!-- Server Box -->
+  <div style="margin-bottom: 20px; background:#1c1c1c; padding: 15px; border-radius: 8px; text-align: center;">
+    <p style="margin-bottom: 10px; font-weight: bold; font-size: 16px;">
+      🎬 Find server to play the full movie?
     </p>
-
-    <!-- Season & Episode Selector -->
-    <div class="season-episode-selectors" style="display: none;"></div>
-
-    <!-- Video Player -->
-    <div class="video-container">
-      <iframe id="movie-player" frameborder="0" allowfullscreen></iframe>
-    </div>
-
-    <!-- Overview -->
-    <p id="movie-overview" style="margin-top:20px; line-height: 1.6;"></p>
-    <p id="movie-rating" style="color:gold; margin-top:10px; font-size: 18px;"></p>
-
-    <!-- Cast -->
-    <div id="cast-list" style="margin-top:30px;"></div>
-
-    <!-- You May Also Like -->
-    <div id="similar-movies" style="margin-top: 30px;"></div>
-
+    <select id="server" onchange="changeServer(false)" style="padding: 6px 10px; border-radius: 5px;">
+      <!-- filled dynamically -->
+    </select>
+    <button onclick="changeServer(true, 0)" style="margin-left: 10px; padding: 6px 12px; border-radius: 5px; background-color:#00BCD4; color:#000; font-weight:bold;">
+      🔁 Auto Test Servers
+    </button>
+    <p id="active-server-label" style="margin-top:10px; font-size: 13px; color: #ccc;"></p>
   </div>
+
+  <!-- Season & Episode Selector -->
+  <div class="season-episode-selectors" style="display: none;"></div>
+
+  <!-- Video Player -->
+  <div class="video-container">
+    <iframe id="movie-player" frameborder="0" allowfullscreen></iframe>
+  </div>
+
+  <!-- Overview -->
+  <p id="movie-overview" style="margin-top:20px; line-height: 1.6;"></p>
+  <p id="movie-rating" style="color:gold; margin-top:10px; font-size: 18px;"></p>
+
+  <!-- Cast -->
+  <div id="cast-list" style="margin-top:30px;"></div>
+
+  <!-- You May Also Like -->
+  <div id="similar-movies" style="margin-top: 30px;"></div>
+
+</div>
 
   <!-- Scripts -->
   <script src="js/embed.js"></script>

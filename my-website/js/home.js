@@ -590,9 +590,41 @@ window.searchTMDB = searchTMDB;
 
 
 
+function loadWatchHistory() {
+  const history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
+  const container = document.getElementById("watch-history-list");
+  container.innerHTML = '';
+
+  // ✅ SORT BY LATEST VIEWED
+  const sorted = history.sort((a, b) => b.timestamp - a.timestamp);
+
+  sorted.forEach(item => {
+    const div = document.createElement("div");
+    div.classList.add("upload-item");
+    div.innerHTML = `
+      <div style="text-align:center">
+        <img src="${item.poster_path ? IMG_URL + item.poster_path : 'https://via.placeholder.com/120x180?text=No+Image'}" 
+             alt="${item.title}" 
+             style="width:120px;border-radius:5px;cursor:pointer" 
+             onclick="${item.type === 'upload'
+               ? `showUploadModal('${item.id}')`
+               : `window.location.href='movie.html?id=${item.id}&type=${item.type || 'movie'}'`}">
+        <p><strong>${item.title}</strong></p>
+        <button onclick="${
+          item.type === 'upload'
+            ? `showUploadModal('${item.id}')`
+            : `window.location.href='movie.html?id=${item.id}&type=${item.type || 'movie'}'`
+        }">▶ Resume</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
 
 
 document.addEventListener('DOMContentLoaded', async () => {
   await init();
+    loadWatchHistory(); // ✅ Load sorted Watch History
+
 });
 

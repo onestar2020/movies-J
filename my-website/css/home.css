@@ -607,3 +607,13 @@ input:focus-visible {
 #similar-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+.watch-history-section {
+  padding: 1rem;
+  background-color: #111;
+}
+
+.watch-history-section h2 {
+  font-size: 1.4rem;
+  padding-left: 10px;
+  margin-bottom: 10px;
+}

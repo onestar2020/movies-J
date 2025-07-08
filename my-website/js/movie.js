@@ -68,7 +68,7 @@ for (const server of SERVER_LIST) {
 
   const success = await testEmbed(player);
   if (success) {
-    label.textContent = `✅ Working server: ${server}`;
+   label.textContent = `🟡 Server loaded: ${server} (please confirm if video plays)`;
     foundWorking = true;
     break;
   } else {

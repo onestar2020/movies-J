@@ -7,16 +7,16 @@
 
     const clearBtn = document.createElement('button');
     clearBtn.textContent = '🗑️ Clear History';
-    clearBtn.style.cssText = `
-      margin: 10px auto;
-      display: block;
-      background-color: #e53935;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-    `;
+    clearBtn.style.cssText =
+      "margin: 10px auto;" +
+      "display: block;" +
+      "background-color: #e53935;" +
+      "color: white;" +
+      "border: none;" +
+      "padding: 8px 16px;" +
+      "border-radius: 6px;" +
+      "cursor: pointer;";
+
     clearBtn.addEventListener('click', () => {
       if (confirm("Are you sure you want to clear your watch history?")) {
         localStorage.removeItem("watchHistory");
@@ -93,19 +93,12 @@
     });
   });
 
-  // ✅ Reusable global function (Free Movies / TV / Anime / Upload support)
+  // ✅ Global function (used by uploaded videos too)
   function saveToWatchHistory({ title, id, type = 'movie', poster_path = '' }) {
     let history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
-
-    // Remove duplicate
     history = history.filter(item => !(item.id === id && item.type === type));
-
-    // Add latest
     history.unshift({ title, id, type, poster_path, timestamp: Date.now() });
-
-    // Limit entries
     if (history.length > 20) history = history.slice(0, 20);
-
     localStorage.setItem("watchHistory", JSON.stringify(history));
   }
 </script>

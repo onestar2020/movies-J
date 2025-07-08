@@ -581,67 +581,8 @@ window.searchTMDB = searchTMDB;
 
 
 
-function saveToWatchHistory(item) {
-  let history = JSON.parse(localStorage.getItem('watchHistory')) || [];
 
-  // Remove duplicates (based on id + type)
-  history = history.filter(entry => !(entry.id === item.id && entry.type === item.type));
-
-  // Push new item to top
-  history.unshift({
-    id: item.id,
-    title: item.title || item.name,
-    poster_path: item.poster_path || '',
-    type: item.type || item.media_type || 'movie'
-  });
-
-  // Limit to 25 items
-  if (history.length > 25) history = history.slice(0, 25);
-
-  localStorage.setItem('watchHistory', JSON.stringify(history));
-}
-
-function renderWatchHistory() {
-  const container = document.getElementById('watch-history-list');
-  const section = document.getElementById('watch-history-section');
-  const history = JSON.parse(localStorage.getItem('watchHistory')) || [];
-
-  if (!container || history.length === 0) {
-    section.style.display = 'none';
-    return;
-  }
-
-  container.innerHTML = '';
-  section.style.display = 'block';
-
-  history.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'watch-history-item';
-    div.style.width = '130px';
-
-    div.innerHTML = `
-      <img src="${item.poster_path ? 'https://image.tmdb.org/t/p/w300' + item.poster_path : 'images/logo.png'}" 
-           alt="${item.title}" 
-           style="width: 100%; border-radius: 8px;">
-      <p style="font-size: 13px; text-align: center; margin-top: 5px;">${item.title}</p>
-    `;
-
-    div.onclick = () => {
-      if (item.type === 'upload') {
-        const upload = uploads.find(u => u.id === item.id);
-        if (upload) showUploadModal(upload);
-      } else {
-        fetch(`${BASE_URL}/${item.type}/${item.id}?api_key=${API_KEY}`)
-          .then(res => res.json())
-          .then(data => showDetails(data));
-      }
-    };
-
-    container.appendChild(div);
-  });
-}
 document.addEventListener('DOMContentLoaded', async () => {
   await init();
-  renderWatchHistory();
 });
 

@@ -17,12 +17,12 @@
       border-radius: 6px;
       cursor: pointer;
     `;
-    clearBtn.onclick = () => {
+    clearBtn.addEventListener('click', () => {
       if (confirm("Are you sure you want to clear your watch history?")) {
         localStorage.removeItem("watchHistory");
         loadWatchHistory();
       }
-    };
+    });
 
     function loadWatchHistory() {
       const history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
@@ -33,10 +33,7 @@
         return;
       }
 
-      // Sort by latest viewed
       const sorted = history.sort((a, b) => b.timestamp - a.timestamp);
-
-      // Append clear button on top
       historyList.appendChild(clearBtn);
 
       sorted.forEach(item => {
@@ -44,23 +41,42 @@
         div.className = "history-item";
         div.style = "margin: 10px 0; display: flex; gap: 10px; align-items: center;";
 
-        const isUpload = item.type === 'upload';
         const imageSrc = item.poster_path
           ? 'https://image.tmdb.org/t/p/w200' + item.poster_path
           : 'https://via.placeholder.com/120x180?text=No+Image';
 
-        const onclick = isUpload
-          ? `showUploadModal('${item.id}')`
-          : `window.location.href='movie.html?id=${item.id}&type=${item.type || 'movie'}'`;
+        const img = document.createElement('img');
+        img.src = imageSrc;
+        img.alt = item.title;
+        img.style = "width: 80px; border-radius: 6px; cursor: pointer;";
 
-        div.innerHTML = `
-          <img src="${imageSrc}" alt="${item.title}" style="width: 80px; border-radius: 6px;" />
-          <div style="flex: 1;">
-            <h4 style="margin: 0;">${item.title}</h4>
-            <button onclick="${onclick}">▶ Resume</button>
-          </div>
-        `;
+        const detailsDiv = document.createElement('div');
+        detailsDiv.style.flex = '1';
 
+        const title = document.createElement('h4');
+        title.textContent = item.title;
+        title.style.margin = '0';
+
+        const resumeBtn = document.createElement('button');
+        resumeBtn.textContent = '▶ Resume';
+        resumeBtn.style.cursor = 'pointer';
+
+        if (item.type === 'upload') {
+          img.addEventListener('click', () => showUploadModal(item.id));
+          resumeBtn.addEventListener('click', () => showUploadModal(item.id));
+        } else {
+          img.addEventListener('click', () => {
+            window.location.href = `movie.html?id=${item.id}&type=${item.type || 'movie'}`;
+          });
+          resumeBtn.addEventListener('click', () => {
+            window.location.href = `movie.html?id=${item.id}&type=${item.type || 'movie'}`;
+          });
+        }
+
+        detailsDiv.appendChild(title);
+        detailsDiv.appendChild(resumeBtn);
+        div.appendChild(img);
+        div.appendChild(detailsDiv);
         historyList.appendChild(div);
       });
     }
@@ -81,13 +97,13 @@
   function saveToWatchHistory({ title, id, type = 'movie', poster_path = '' }) {
     let history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
 
-    // Remove duplicate (same id + type)
+    // Remove duplicate
     history = history.filter(item => !(item.id === id && item.type === type));
 
     // Add latest
     history.unshift({ title, id, type, poster_path, timestamp: Date.now() });
 
-    // Limit to 20 entries
+    // Limit entries
     if (history.length > 20) history = history.slice(0, 20);
 
     localStorage.setItem("watchHistory", JSON.stringify(history));

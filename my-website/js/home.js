@@ -419,6 +419,16 @@ saveToWatchHistory({
       document.getElementById('upload-modal').style.display = 'flex';
     });
 }
+function saveToWatchHistory({ title, id, type = 'upload', poster_path = '' }) {
+  let history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
+
+  const exists = history.find(item => item.id === id && item.type === type);
+  if (!exists) {
+    history.unshift({ title, id, type, poster_path, timestamp: Date.now() });
+    if (history.length > 20) history = history.slice(0, 20);
+    localStorage.setItem("watchHistory", JSON.stringify(history));
+  }
+}
 
 function playUploadedVideo() {
   if (!currentUpload) return;

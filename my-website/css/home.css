@@ -43,15 +43,15 @@ body {
   color: #fff;
 }
 
-/* ===== NAVIGATION BAR ===== */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
+  padding: 10px 0; /* ← ito ang in-edit */
   background: #1f1f1f;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
+
 .navbar img {
   height: 40px;
 }

@@ -602,6 +602,16 @@ input:focus-visible {
   margin-bottom: 10px;
 }
 
+.banner {
+  padding: 20px;
+  text-align: center;
+}
+/* === BANNER TRAILER FIX (YouTube iframe) === */
+.banner {
+  padding: 20px 0;
+  background-color: #000;
+  text-align: center;
+}
 
 
 

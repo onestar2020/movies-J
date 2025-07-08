@@ -115,8 +115,12 @@ body {
 
 /* ===== MOVIE SECTIONS ===== */
 .row {
-  margin: 30px 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 0 20px;
 }
+
 .row h2 {
   margin-bottom: 15px;
   font-size: 1.5em;

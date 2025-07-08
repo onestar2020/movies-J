@@ -12,10 +12,24 @@ let autoTesting = false; // global flag para sa auto-find
 function testEmbed(iframe) {
   return new Promise(resolve => {
     let responded = false;
+    const timeout = setTimeout(() => {
+      if (!responded) {
+        console.log("⌛ iframe timeout");
+        responded = true;
+        resolve(false);
+      }
+    }, 6000);
 
     iframe.onload = () => {
-      console.log("✅ iframe loaded successfully");
-      if (!responded) {
+      const url = iframe.src;
+      if (!url || url.includes("about:blank") || url.includes("404") || url === window.location.href) {
+        console.log("❌ iframe loaded but invalid:", url);
+        clearTimeout(timeout);
+        responded = true;
+        resolve(false);
+      } else {
+        console.log("✅ iframe loaded:", url);
+        clearTimeout(timeout);
         responded = true;
         resolve(true);
       }
@@ -23,21 +37,13 @@ function testEmbed(iframe) {
 
     iframe.onerror = () => {
       console.log("❌ iframe failed to load");
-      if (!responded) {
-        responded = true;
-        resolve(false);
-      }
+      clearTimeout(timeout);
+      responded = true;
+      resolve(false);
     };
-
-    setTimeout(() => {
-      if (!responded) {
-        console.log("⌛ iframe timeout");
-        responded = true;
-        resolve(false);
-      }
-    }, 6000);
   });
 }
+
 
 function shuffleArray(array) {
   const copy = [...array];
@@ -55,6 +61,8 @@ async function initPlayerWithFallback() {
   const player = document.getElementById("movie-player");
   const season = document.getElementById("season-select")?.value || 1;
   const episode = document.getElementById("episode-select")?.value || 1;
+ 
+
 
   if (!Array.isArray(SERVER_LIST)) {
     label.textContent = "❌ SERVER_LIST is missing.";
@@ -236,12 +244,22 @@ async function loadSeasons() {
     loadEpisodes(selectedSeason);
   });
 
-  episodeSelect.addEventListener("change", () => {
-    const season = seasonSelect.value;
-    const episode = episodeSelect.value;
-    const player = document.getElementById("movie-player");
-    player.src = `https://${server}/embed/tv?id=${id}&s=${season}&e=${episode}`;
-  });
+ episodeSelect.addEventListener("change", () => {
+  const season = seasonSelect.value;
+  const episode = episodeSelect.value;
+  const player = document.getElementById("movie-player");
+
+  // Get the last used server from label
+  const label = document.getElementById("active-server-label").textContent;
+  const match = label.match(/(?:Server loaded: |Working server: )([a-zA-Z0-9.-]+)/);
+  const lastServer = match?.[1];
+
+  if (lastServer) {
+    const url = generateEmbedURL(lastServer, { id, media_type: type }, season, episode);
+    player.src = url;
+  }
+});
+
 
   loadEpisodes(1);
 }

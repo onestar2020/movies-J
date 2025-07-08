@@ -607,3 +607,48 @@ input:focus-visible {
 #similar-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+/* === Watch History Section === */
+#watch-history-section {
+  padding: 20px;
+  background-color: #121212;
+  border-top: 2px solid #00bcd4;
+  display: none; /* will show if there is data */
+}
+
+#watch-history-section h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #00BCD4;
+}
+
+#watch-history-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.watch-history-item {
+  flex: 0 0 auto;
+  width: 130px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.watch-history-item:hover {
+  transform: scale(1.05);
+}
+
+.watch-history-item img {
+  width: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.watch-history-item p {
+  font-size: 13px;
+  text-align: center;
+  margin-top: 5px;
+  color: #eee;
+}

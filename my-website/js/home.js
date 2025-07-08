@@ -105,6 +105,33 @@ function displayList(items, containerId) {
 }
 
 async function showDetails(item) {
+
+
+  function addToWatchHistory(item) {
+  let history = JSON.parse(localStorage.getItem('watchHistory')) || [];
+
+  // Prevent duplicates
+  if (!history.some(m => m.id === item.id)) {
+    history.unshift({
+      id: item.id,
+      title: item.title || item.name,
+      poster: item.poster_path
+    });
+
+    // Limit to latest 20
+    if (history.length > 20) history = history.slice(0, 20);
+    localStorage.setItem('watchHistory', JSON.stringify(history));
+  }
+}
+addToWatchHistory(item);
+
+  saveToWatchHistory({
+  id: item.id,
+  title: item.title || item.name,
+  poster_path: item.poster_path,
+  type: item.media_type || item.type || 'movie'
+});
+
   currentItem = item;
   document.getElementById('modal-title').textContent = item.title || item.name;
   document.getElementById('modal-description').textContent = item.overview;
@@ -357,10 +384,20 @@ tmdbResults.forEach(item => {
 }
 
 function showUploadModal(videoId) {
+  
   const upload = uploads.find(u => u.id === videoId);
   if (!upload) return;
 
   currentUpload = upload;
+
+saveToWatchHistory({
+  id: upload.id,
+  title: upload.title,
+  poster_path: '', // Google Drive thumbnails not used here
+  type: 'upload'
+});
+
+
   const title = encodeURIComponent(upload.title);
 
   fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`)
@@ -521,7 +558,13 @@ async function init() {
   displayList(anime, 'anime-list');
 }
 
-window.addEventListener('DOMContentLoaded', init); // ✅ KEEP THIS
+
+
+
+
+
+
+
 
 window.showUploadModal = showUploadModal;
 window.closeModal = closeModal;
@@ -534,35 +577,71 @@ window.closeSearchModal = closeSearchModal;
 window.searchTMDB = searchTMDB;
 
 
-function displayWatchHistory() {
-  const history = JSON.parse(localStorage.getItem("watchHistory")) || [];
-  const container = document.getElementById("watch-history-list");
+
+
+
+
+function saveToWatchHistory(item) {
+  let history = JSON.parse(localStorage.getItem('watchHistory')) || [];
+
+  // Remove duplicates (based on id + type)
+  history = history.filter(entry => !(entry.id === item.id && entry.type === item.type));
+
+  // Push new item to top
+  history.unshift({
+    id: item.id,
+    title: item.title || item.name,
+    poster_path: item.poster_path || '',
+    type: item.type || item.media_type || 'movie'
+  });
+
+  // Limit to 25 items
+  if (history.length > 25) history = history.slice(0, 25);
+
+  localStorage.setItem('watchHistory', JSON.stringify(history));
+}
+
+function renderWatchHistory() {
+  const container = document.getElementById('watch-history-list');
+  const section = document.getElementById('watch-history-section');
+  const history = JSON.parse(localStorage.getItem('watchHistory')) || [];
 
   if (!container || history.length === 0) {
-    document.getElementById("watch-history-section").style.display = "none";
+    section.style.display = 'none';
     return;
   }
 
-  container.innerHTML = "";
+  container.innerHTML = '';
+  section.style.display = 'block';
 
   history.forEach(item => {
-    const card = document.createElement("div");
-    card.style = "width: 120px; text-align: center;";
+    const div = document.createElement('div');
+    div.className = 'watch-history-item';
+    div.style.width = '130px';
 
-    card.innerHTML = `
-      <img src="${item.poster}" style="width:100%; border-radius:8px;">
-      <p style="font-size:13px; margin-top:5px; color:#ccc;">${item.title}</p>
+    div.innerHTML = `
+      <img src="${item.poster_path ? 'https://image.tmdb.org/t/p/w300' + item.poster_path : 'images/logo.png'}" 
+           alt="${item.title}" 
+           style="width: 100%; border-radius: 8px;">
+      <p style="font-size: 13px; text-align: center; margin-top: 5px;">${item.title}</p>
     `;
 
-    card.onclick = () => {
-      window.location.href = `movie.html?id=${item.id}&type=${item.type}`;
+    div.onclick = () => {
+      if (item.type === 'upload') {
+        const upload = uploads.find(u => u.id === item.id);
+        if (upload) showUploadModal(upload);
+      } else {
+        fetch(`${BASE_URL}/${item.type}/${item.id}?api_key=${API_KEY}`)
+          .then(res => res.json())
+          .then(data => showDetails(data));
+      }
     };
 
-    container.appendChild(card);
+    container.appendChild(div);
   });
 }
-
-// Run on homepage load
-document.addEventListener("DOMContentLoaded", () => {
-  displayWatchHistory();
+document.addEventListener('DOMContentLoaded', async () => {
+  await init();
+  renderWatchHistory();
 });
+

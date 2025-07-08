@@ -53,40 +53,38 @@ async function initPlayerWithFallback() {
     return;
   }
 
-  for (const server of SERVER_LIST) {
-    if (!autoTesting) break;
+ let foundWorking = false;
 
-    const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
-    label.textContent = `🔁 Testing server: ${server}`;
-    console.log("Testing:", url);
+for (const server of SERVER_LIST) {
+  if (!autoTesting) break;
 
-    player.src = ""; // clear iframe first
-    await new Promise(r => setTimeout(r, 300)); // delay before setting new URL
+  const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
+  label.textContent = `🔁 Testing server: ${server}`;
+  console.log("Testing:", url);
 
-    player.src = url;
+  player.src = "";
+  await new Promise(r => setTimeout(r, 300));
+  player.src = url;
 
-    const success = await testEmbed(player);
-    if (success) {
-      label.textContent = `✅ Working server: ${server}`;
-      break;
-    } else {
-      label.textContent = `❌ ${server} failed, trying next...`;
-    }
-
-    await new Promise(r => setTimeout(r, 1000)); // delay before next test
+  const success = await testEmbed(player);
+  if (success) {
+    label.textContent = `✅ Working server: ${server}`;
+    foundWorking = true;
+    break;
+  } else {
+    label.textContent = `❌ ${server} failed, trying next...`;
   }
 
-  if (!autoTesting) {
-    label.textContent = "⛔ Auto Find Cancelled.";
-  }
+  await new Promise(r => setTimeout(r, 1000));
 }
 
+if (!autoTesting) {
+  label.textContent = "⛔ Auto Find Cancelled.";
+} else if (!foundWorking) {
+  label.textContent = "❌ No working server found. Try again later.";
+}
+}
 
-// ✅ STOP FUNCTION
-window.initPlayerWithFallback = initPlayerWithFallback;
-window.stopAutoTesting = () => {
-  autoTesting = false;
-};
 
 async function loadMovie() {
   const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
@@ -228,7 +226,6 @@ async function loadSeasons() {
   });
 
   episodeSelect.addEventListener("change", () => {
-    const server = document.getElementById("server-select").value;
     const season = seasonSelect.value;
     const episode = episodeSelect.value;
     const player = document.getElementById("movie-player");
@@ -252,8 +249,8 @@ async function loadEpisodes(seasonNumber) {
   });
 
   const player = document.getElementById("movie-player");
-  const server = document.getElementById("server-select").value;
-  player.src = generateEmbedURL(server, { id, media_type: type }, seasonNumber, 1);
+
+
 }
 
 document.addEventListener("DOMContentLoaded", () => {

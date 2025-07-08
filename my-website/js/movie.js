@@ -39,6 +39,14 @@ function testEmbed(iframe) {
   });
 }
 
+function shuffleArray(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 
 // ✅ AUTO-FIND FUNCTION
@@ -53,37 +61,40 @@ async function initPlayerWithFallback() {
     return;
   }
 
- let foundWorking = false;
+  autoTesting = true;
+  const shuffledServers = shuffleArray(SERVER_LIST);
+  let found = false;
 
-for (const server of SERVER_LIST) {
-  if (!autoTesting) break;
+  for (const server of shuffledServers) {
+    if (!autoTesting) break;
 
-  const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
-  label.textContent = `🔁 Testing server: ${server}`;
-  console.log("Testing:", url);
+    const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
+    label.textContent = `🔁 Testing server: ${server}`;
+    console.log("Testing:", url);
 
-  player.src = "";
-  await new Promise(r => setTimeout(r, 300));
-  player.src = url;
+    player.src = ""; // Clear first
+    await new Promise(r => setTimeout(r, 300)); // Delay for clearing
+    player.src = url;
 
-  const success = await testEmbed(player);
-  if (success) {
-   label.textContent = `🟡 Server loaded: ${server} (please confirm if video plays)`;
-    foundWorking = true;
-    break;
-  } else {
-    label.textContent = `❌ ${server} failed, trying next...`;
+    const success = await testEmbed(player);
+    if (success) {
+      label.textContent = `🟡 Server loaded: ${server} (please confirm if video plays)`;
+      found = true;
+      break;
+    } else {
+      label.textContent = `❌ ${server} failed, trying next...`;
+    }
+
+    await new Promise(r => setTimeout(r, 800)); // Delay before next try
   }
 
-  await new Promise(r => setTimeout(r, 1000));
+  if (!autoTesting) {
+    label.textContent = "⛔ Auto Find Cancelled.";
+  } else if (!found) {
+    label.textContent = "❌ No working server found.";
+  }
 }
 
-if (!autoTesting) {
-  label.textContent = "⛔ Auto Find Cancelled.";
-} else if (!foundWorking) {
-  label.textContent = "❌ No working server found. Try again later.";
-}
-}
 
 
 async function loadMovie() {

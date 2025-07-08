@@ -79,3 +79,4 @@ function generateEmbedURL(server, item, season = 1, episode = 1) {
       return "";
   }
 }
+window.generateEmbedURL = generateEmbedURL;

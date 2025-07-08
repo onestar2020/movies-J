@@ -532,3 +532,37 @@ window.changeServer = changeServer;
 window.openSearchModal = openSearchModal;
 window.closeSearchModal = closeSearchModal;
 window.searchTMDB = searchTMDB;
+
+
+function displayWatchHistory() {
+  const history = JSON.parse(localStorage.getItem("watchHistory")) || [];
+  const container = document.getElementById("watch-history-list");
+
+  if (!container || history.length === 0) {
+    document.getElementById("watch-history-section").style.display = "none";
+    return;
+  }
+
+  container.innerHTML = "";
+
+  history.forEach(item => {
+    const card = document.createElement("div");
+    card.style = "width: 120px; text-align: center;";
+
+    card.innerHTML = `
+      <img src="${item.poster}" style="width:100%; border-radius:8px;">
+      <p style="font-size:13px; margin-top:5px; color:#ccc;">${item.title}</p>
+    `;
+
+    card.onclick = () => {
+      window.location.href = `movie.html?id=${item.id}&type=${item.type}`;
+    };
+
+    container.appendChild(card);
+  });
+}
+
+// Run on homepage load
+document.addEventListener("DOMContentLoaded", () => {
+  displayWatchHistory();
+});

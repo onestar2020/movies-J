@@ -343,8 +343,8 @@ tmdbResults.forEach(item => {
     const id = item.id;
 
     // Optional tracking pixel
-    const track = new Image();
-    track.src = 'https://unseenreport.com/pxf.gif?uuid=your-uuid-here';
+   // const track = new Image();
+    //track.src = 'https://unseenreport.com/pxf.gif?uuid=your-uuid-here';
 
     setTimeout(() => {
       window.location.href = `movie.html?id=${id}&type=${type}`;

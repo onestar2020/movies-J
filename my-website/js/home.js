@@ -105,84 +105,64 @@ function displayList(items, containerId) {
 }
 
 async function showDetails(item) {
-
-
-  function addToWatchHistory(item) {
-  let history = JSON.parse(localStorage.getItem('watchHistory')) || [];
-
-  // Prevent duplicates
-  if (!history.some(m => m.id === item.id)) {
-    history.unshift({
-      id: item.id,
-      title: item.title || item.name,
-      poster: item.poster_path
-    });
-
-    // Limit to latest 20
-    if (history.length > 20) history = history.slice(0, 20);
-    localStorage.setItem('watchHistory', JSON.stringify(history));
-  }
-}
-addToWatchHistory(item);
-
-  saveToWatchHistory({
-  id: item.id,
-  title: item.title || item.name,
-  poster_path: item.poster_path,
-  type: item.media_type || item.type || 'movie'
-});
-
   currentItem = item;
+
+  // ✅ Save to Watch History (TMDB items only)
+  saveToWatchHistory({
+    id: item.id,
+    title: item.title || item.name,
+    poster_path: item.poster_path,
+    type: item.media_type || (item.first_air_date ? 'tv' : 'movie')
+  });
+
   document.getElementById('modal-title').textContent = item.title || item.name;
   document.getElementById('modal-description').textContent = item.overview;
   document.getElementById('modal-image').src = `${IMG_URL}${item.poster_path}`;
   document.getElementById('modal-rating').innerHTML = '★'.repeat(Math.round(item.vote_average / 2));
   document.getElementById('modal-video').src = '';
-  // CLEAR PREVIOUS DATA
-document.getElementById('cast-list').innerHTML = '';
-document.getElementById('similar-movies').innerHTML = '';
+  document.getElementById('cast-list').innerHTML = '';
+  document.getElementById('similar-movies').innerHTML = '';
 
-// DETERMINE TYPE
-const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+  const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
 
-// FETCH CAST
-fetch(`${BASE_URL}/${type}/${item.id}/credits?api_key=${API_KEY}`)
-  .then(res => res.json())
-  .then(data => {
-    const castList = document.getElementById('cast-list');
-    data.cast?.slice(0, 12).forEach(cast => {
-      const li = document.createElement('li');
-      li.innerHTML = `
-        <img src="${cast.profile_path ? IMG_URL + cast.profile_path : 'https://via.placeholder.com/80x120?text=No+Image'}" alt="${cast.name}" style="width:60px; border-radius:6px; margin-right:10px; vertical-align:middle;">
-        <span style="color:#ccc;">${cast.name}</span>
-      `;
-      castList.appendChild(li);
+  // ✅ Fetch Cast
+  fetch(`${BASE_URL}/${type}/${item.id}/credits?api_key=${API_KEY}`)
+    .then(res => res.json())
+    .then(data => {
+      const castList = document.getElementById('cast-list');
+      data.cast?.slice(0, 12).forEach(cast => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <img src="${cast.profile_path ? IMG_URL + cast.profile_path : 'https://via.placeholder.com/80x120?text=No+Image'}" alt="${cast.name}" style="width:60px; border-radius:6px; margin-right:10px; vertical-align:middle;">
+          <span style="color:#ccc;">${cast.name}</span>
+        `;
+        castList.appendChild(li);
+      });
     });
-  });
 
-// FETCH SIMILAR MOVIES
-fetch(`${BASE_URL}/${type}/${item.id}/similar?api_key=${API_KEY}`)
-  .then(res => res.json())
-  .then(data => {
-    const similarContainer = document.getElementById('similar-movies');
-    data.results?.slice(0, 10).forEach(similar => {
-      const card = document.createElement('div');
-      card.className = 'similar-card';
-      card.style = `
-        display:inline-block; 
-        width:100px; 
-        margin:5px; 
-        cursor:pointer; 
-        text-align:center;
-      `;
-      card.innerHTML = `
-        <img src="${similar.poster_path ? IMG_URL + similar.poster_path : 'https://via.placeholder.com/100x150?text=No+Image'}" alt="${similar.title || similar.name}" style="width:100px; border-radius:8px;">
-        <div style="font-size:12px; color:#fff; margin-top:4px;">${similar.title || similar.name}</div>
-      `;
-      card.onclick = () => showDetails(similar);
-      similarContainer.appendChild(card);
+  // ✅ Fetch Similar
+  fetch(`${BASE_URL}/${type}/${item.id}/similar?api_key=${API_KEY}`)
+    .then(res => res.json())
+    .then(data => {
+      const similarContainer = document.getElementById('similar-movies');
+      data.results?.slice(0, 10).forEach(similar => {
+        const card = document.createElement('div');
+        card.className = 'similar-card';
+        card.style = `
+          display:inline-block; 
+          width:100px; 
+          margin:5px; 
+          cursor:pointer; 
+          text-align:center;
+        `;
+        card.innerHTML = `
+          <img src="${similar.poster_path ? IMG_URL + similar.poster_path : 'https://via.placeholder.com/100x150?text=No+Image'}" alt="${similar.title || similar.name}" style="width:100px; border-radius:8px;">
+          <div style="font-size:12px; color:#fff; margin-top:4px;">${similar.title || similar.name}</div>
+        `;
+        card.onclick = () => showDetails(similar);
+        similarContainer.appendChild(card);
+      });
     });
-  });
 
   document.getElementById('modal').style.display = 'flex';
 
@@ -194,7 +174,6 @@ fetch(`${BASE_URL}/${type}/${item.id}/similar?api_key=${API_KEY}`)
 
   if (isTV) {
     seasonWrapper.style.display = 'flex';
-
     const res = await fetch(`${BASE_URL}/tv/${item.id}?api_key=${API_KEY}`);
     const data = await res.json();
 
@@ -207,32 +186,24 @@ fetch(`${BASE_URL}/${type}/${item.id}/similar?api_key=${API_KEY}`)
     });
 
     seasonSelect.onchange = async () => {
-  const selectedSeason = seasonSelect.value;
-  const epRes = await fetch(`${BASE_URL}/tv/${item.id}/season/${selectedSeason}?api_key=${API_KEY}`);
-  const epData = await epRes.json();
+      const selectedSeason = seasonSelect.value;
+      const epRes = await fetch(`${BASE_URL}/tv/${item.id}/season/${selectedSeason}?api_key=${API_KEY}`);
+      const epData = await epRes.json();
 
-  episodeSelect.innerHTML = '';
-  epData.episodes.forEach(ep => {
-    const epOption = document.createElement('option');
-    epOption.value = ep.episode_number;
-    epOption.textContent = `Episode ${ep.episode_number}: ${ep.name}`;
-    episodeSelect.appendChild(epOption);
-  });
+      episodeSelect.innerHTML = '';
+      epData.episodes.forEach(ep => {
+        const epOption = document.createElement('option');
+        epOption.value = ep.episode_number;
+        epOption.textContent = `Episode ${ep.episode_number}: ${ep.name}`;
+        episodeSelect.appendChild(epOption);
+      });
 
-  // Auto-select episode 1
-  episodeSelect.selectedIndex = 0;
+      episodeSelect.selectedIndex = 0;
+      changeServer(true, 0);
 
-  // ⏯ Update video after season loads
-  changeServer(true, 0);
+      episodeSelect.onchange = () => changeServer(true, 0);
+    };
 
-
-  // Re-assign onchange handler (needed every time season changes)
-  episodeSelect.onchange = () => changeServer(true, 0);
-
-};
-
-
-    // Trigger default load for first season
     seasonSelect.dispatchEvent(new Event('change'));
   } else {
     seasonWrapper.style.display = 'none';

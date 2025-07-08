@@ -602,10 +602,7 @@ input:focus-visible {
   margin-bottom: 10px;
 }
 
-.banner {
-  padding: 20px;
-  text-align: center;
-}
+
 /* === BANNER TRAILER FIX (YouTube iframe) === */
 .banner {
   padding: 20px 0;
@@ -661,4 +658,14 @@ input:focus-visible {
   height: 100%;
   border: none;
   border-radius: 10px;
+}
+/* ===== Prevent Trailer Oversize ===== */
+#trailer {
+  width: 100% !important;
+  max-width: 800px !important;
+  aspect-ratio: 16 / 9;
+  height: auto !important;
+  display: block;
+  margin: 0 auto;
+  border: none;
 }

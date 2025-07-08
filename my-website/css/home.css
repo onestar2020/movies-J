@@ -96,10 +96,10 @@ body {
 /* ===== MOVIE SECTIONS ===== */
 .row {
   width: 100%;
-  max-width: 1200px;
   margin: 30px auto;
   padding: 0 20px;
 }
+
 
 .row h2 {
   margin-bottom: 15px;
@@ -746,4 +746,9 @@ input:focus-visible {
   .search-bar {
     padding: 8px 12px;
   }
+}
+.container {
+  padding-left: 20px;
+  padding-right: 20px;
+  max-width: 100%;
 }

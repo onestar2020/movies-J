@@ -42,54 +42,45 @@ function testEmbed(iframe) {
 
 
 // ✅ AUTO-FIND FUNCTION
-async function initPlayerWithFallback(startIndex = 0) {
-  console.log("✅ SERVER_LIST check:", Array.isArray(SERVER_LIST), SERVER_LIST);
-
-  if (autoTesting) return;
-  autoTesting = true;
-
+async function initPlayerWithFallback() {
   const label = document.getElementById("active-server-label");
   const player = document.getElementById("movie-player");
   const season = document.getElementById("season-select")?.value || 1;
   const episode = document.getElementById("episode-select")?.value || 1;
 
-  for (let i = startIndex; i < SERVER_LIST.length; i++) {
-    if (!autoTesting) {
-      label.textContent = "⛔ Auto Find Cancelled.";
-      break;
-    }
-
-    const server = SERVER_LIST[i];
-   const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
-console.log(`🔁 Testing server: ${server} | URL: ${url}`);
-label.textContent = `🔁 Sinusubukan: ${server}`;
-
-
-player.src = ''; // clear old source
-await new Promise(r => setTimeout(r, 100)); // short delay para ma-reset ang iframe
-
-player.src = ''; // Reset iframe
-await new Promise(resolve => setTimeout(resolve, 300)); // Wait for unload
-
-player.src = url; // Load new URL
-await new Promise(resolve => setTimeout(resolve, 100)); // Wait again
-
-const success = await testEmbed(player);
-
-
-    if (success) {
-      label.textContent = `✅ Gumagana: ${server}`;
-      document.getElementById("server-select").value = server;
-      autoTesting = false;
-      return;
-    } else {
-      label.textContent = `❌ Failed: ${server}, susubok ng iba...`;
-    }
+  if (!Array.isArray(SERVER_LIST)) {
+    label.textContent = "❌ SERVER_LIST is missing.";
+    return;
   }
 
-  label.textContent = `⚠️ Walang gumaganang server.`;
-  autoTesting = false;
+  for (const server of SERVER_LIST) {
+    if (!autoTesting) break;
+
+    const url = generateEmbedURL(server, { id, media_type: type }, season, episode);
+    label.textContent = `🔁 Testing server: ${server}`;
+    console.log("Testing:", url);
+
+    player.src = ""; // clear iframe first
+    await new Promise(r => setTimeout(r, 300)); // delay before setting new URL
+
+    player.src = url;
+
+    const success = await testEmbed(player);
+    if (success) {
+      label.textContent = `✅ Working server: ${server}`;
+      break;
+    } else {
+      label.textContent = `❌ ${server} failed, trying next...`;
+    }
+
+    await new Promise(r => setTimeout(r, 1000)); // delay before next test
+  }
+
+  if (!autoTesting) {
+    label.textContent = "⛔ Auto Find Cancelled.";
+  }
 }
+
 
 // ✅ STOP FUNCTION
 window.initPlayerWithFallback = initPlayerWithFallback;

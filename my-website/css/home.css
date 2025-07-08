@@ -681,3 +681,8 @@ input:focus-visible {
 .banner-buttons button:hover {
   background-color: #008ba3;
 }
+.main-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

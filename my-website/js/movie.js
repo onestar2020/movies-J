@@ -5,6 +5,12 @@ const IMG_URL = 'https://image.tmdb.org/t/p/original';
 const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id');
 const type = urlParams.get('type') || 'movie';
+document.addEventListener("DOMContentLoaded", () => {
+  const labelText = type === 'tv' ? '📺 Find server to play the full episode?' : '🎬 Find server to play the full movie?';
+  const fallbackBox = document.querySelector("#fallback-box p");
+  if (fallbackBox) fallbackBox.textContent = labelText;
+});
+
 
 let autoTesting = false; // global flag para sa auto-find
 

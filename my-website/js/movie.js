@@ -256,32 +256,10 @@ async function loadEpisodes(seasonNumber) {
   player.src = generateEmbedURL(server, { id, media_type: type }, seasonNumber, 1);
 }
 
-// ✅ INIT SERVER LIST
 document.addEventListener("DOMContentLoaded", () => {
-  const serverBox = document.getElementById("server");
-  const serverSelect = document.createElement("select");
-  serverSelect.id = "server-select";
-  serverSelect.style = "padding: 8px; border-radius: 5px; margin-bottom: 20px; width: 100%; background: #222; color: #fff; border: 1px solid #555;";
-
-  SERVER_LIST.forEach(server => {
-    const option = document.createElement("option");
-    option.value = server;
-    option.textContent = server;
-    serverSelect.appendChild(option);
-  });
-
-  serverSelect.addEventListener("change", () => {
-    const player = document.getElementById("movie-player");
-    const serverURL = serverSelect.value;
-
-  const season = document.getElementById("season-select")?.value || 1;
-const episode = document.getElementById("episode-select")?.value || 1;
-player.src = generateEmbedURL(serverURL, { id, media_type: type }, season, episode);
-
-  });
-
-  if (serverBox) serverBox.replaceWith(serverSelect);
+  // remove server <select> creation since we're using auto-detect only
 });
+
 
 loadMovie();
 

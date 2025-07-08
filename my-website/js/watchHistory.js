@@ -33,32 +33,34 @@
         return;
       }
 
-      // Append clear button
-      historyList.appendChild(clearBtn);
-
       // Sort by latest viewed
       const sorted = history.sort((a, b) => b.timestamp - a.timestamp);
+
+      // Append clear button on top
+      historyList.appendChild(clearBtn);
 
       sorted.forEach(item => {
         const div = document.createElement("div");
         div.className = "history-item";
         div.style = "margin: 10px 0; display: flex; gap: 10px; align-items: center;";
 
+        const isUpload = item.type === 'upload';
+        const imageSrc = item.poster_path
+          ? 'https://image.tmdb.org/t/p/w200' + item.poster_path
+          : 'https://via.placeholder.com/120x180?text=No+Image';
+
+        const onclick = isUpload
+          ? `showUploadModal('${item.id}')`
+          : `window.location.href='movie.html?id=${item.id}&type=${item.type || 'movie'}'`;
+
         div.innerHTML = `
-          <img src="${item.poster_path 
-                      ? 'https://image.tmdb.org/t/p/w200' + item.poster_path 
-                      : 'https://via.placeholder.com/120x180?text=No+Image'}" 
-               alt="${item.title}" 
-               style="width: 80px; border-radius: 6px;" />
+          <img src="${imageSrc}" alt="${item.title}" style="width: 80px; border-radius: 6px;" />
           <div style="flex: 1;">
             <h4 style="margin: 0;">${item.title}</h4>
-            <button onclick="${
-              item.type === 'upload'
-                ? `showUploadModal('${item.id}')`
-                : `window.location.href='movie.html?id=${item.id}&type=${item.type || 'movie'}'`
-            }">▶ Resume</button>
+            <button onclick="${onclick}">▶ Resume</button>
           </div>
         `;
+
         historyList.appendChild(div);
       });
     }
@@ -75,17 +77,17 @@
     });
   });
 
-  // ✅ Global reusable save function
+  // ✅ Reusable global function (Free Movies / TV / Anime / Upload support)
   function saveToWatchHistory({ title, id, type = 'movie', poster_path = '' }) {
     let history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
 
-    // Remove existing duplicate
+    // Remove duplicate (same id + type)
     history = history.filter(item => !(item.id === id && item.type === type));
 
-    // Add new on top with timestamp
+    // Add latest
     history.unshift({ title, id, type, poster_path, timestamp: Date.now() });
 
-    // Limit to 20 items
+    // Limit to 20 entries
     if (history.length > 20) history = history.slice(0, 20);
 
     localStorage.setItem("watchHistory", JSON.stringify(history));

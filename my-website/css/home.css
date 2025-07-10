@@ -875,7 +875,7 @@ input:focus-visible {
 .banner-video {
   position: relative;
   width: 100%;
-  padding-top: 40%; /* height relative to width, mas maliit para hindi masyadong mataas */
+  padding-top: 100%; /* height relative to width, mas maliit para hindi masyadong mataas */
   overflow: hidden;
   border-radius: 10px;
   margin: 0 auto 15px auto;
@@ -885,8 +885,8 @@ input:focus-visible {
   position: absolute;
   top: 0;
   left: 0;
-  width: 50%;
-  height: 50%;
+  width: 100%;
+  height: 100%;
   border: none;
   border-radius: 10px;
 }

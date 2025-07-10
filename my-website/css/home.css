@@ -858,41 +858,7 @@ input:focus-visible {
 }
 /* === BANNER TRAILER FIX (YouTube iframe) === */
 /* Container para sa banner para ma-limit ang width at ma-center */
-#banner {
-  max-width: 600px;      /* limit width to 600px */
-  margin: 20px auto;     /* center horizontally with vertical spacing */
-  padding: 10px 0;
-  background-color: #000; 
-  border-radius: 10px;
-  text-align: center;
-}
 
-/* Aspect ratio at positioning ng video */
-.banner-video {
-  position: relative;
-  width: 100%;
-  padding-top: 56.25%; /* 16:9 aspect ratio (9 / 16 = 0.5625 = 56.25%) */
-  overflow: hidden;
-  border-radius: 10px;
-}
-
-
-.banner-video iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-  border-radius: 10px;
-}
-
-/* Title style */
-#banner-title {
-  font-size: 1.5rem;
-  color: #fff;
-  margin-bottom: 10px;
-}
 
 /* Buttons */
 .banner-buttons button {

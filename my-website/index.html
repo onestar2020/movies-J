@@ -240,7 +240,8 @@
 <script src="js/watchHistory.js" defer></script>
 
 
- </div> <!-- end container -->
+</div> <!-- end container -->
+
 <!-- Watch History Modal -->
 <div class="modal" id="watch-history-modal">
   <div class="modal-content" style="max-width: 600px; padding: 20px;">
@@ -250,15 +251,15 @@
   </div>
 </div>
 
-
+<!-- ✅ PLACE THIS LAST -->
 <script>
+  // Load banner.html dynamically
   fetch('components/banner.html')
     .then(response => response.text())
     .then(data => {
       document.getElementById('banner-container').innerHTML = data;
     });
 </script>
-
 
 </body>
 </html>

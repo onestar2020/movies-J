@@ -863,10 +863,10 @@ input:focus-visible {
 /* === BANNER TRAILER FIX (YouTube iframe) === */
 /* Container para sa banner para ma-limit ang width at ma-center */
 #banner {
-  max-width: 600px;      /* limit width to 600px */
+  max-width: 100px;      /* limit width to 600px */
   margin: 20px auto;     /* center horizontally with vertical spacing */
   padding: 10px 0;
-  background-color: #000;
+  background-color: #000; 
   border-radius: 10px;
   text-align: center;
 }

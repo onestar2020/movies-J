@@ -73,31 +73,7 @@ body {
   color: white;
 }
 
-/* ===== BANNER ===== */
-.banner {
-  padding: 20px 0;
-  background-color: #000;
-  text-align: center;
-}
-.banner h1 {
-  font-size: 2em;
-  margin: 15px 0;
-  color: #fff;
-}
-.banner-buttons button {
-  margin: 5px;
-  padding: 10px 20px;
-  background-color: #e50914;
-  color: white;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s;
-}
-.banner-buttons button:hover {
-  background-color: #b00610;
-}
+
 
 /* ===== MOVIE SECTIONS ===== */
 .row {

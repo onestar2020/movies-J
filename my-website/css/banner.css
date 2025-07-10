@@ -1,51 +1,51 @@
-body {
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
-  background-color: #111;
-  color: white;
-  padding: 20px;
-}
-
+/* Banner Container */
 #banner-container {
-  max-width: 900px;
-  margin: 0 auto;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #111;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+  color: white;
 }
 
-/* 16:9 Responsive Video */
+/* Video Styling */
 .banner-video {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  background-color: black;
-  border-radius: 12px;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+  margin-bottom: 20px;
 }
 
 .banner-video iframe {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   border: none;
+  border-radius: 10px;
 }
 
-/* Title + Buttons Section */
-.banner-info {
+/* Text + Buttons */
+.banner-details {
   text-align: center;
-  margin-top: 16px;
 }
 
-.banner-title {
-  font-size: 1.6rem;
+.banner-details h1 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
   color: #ff5e00;
-  margin-bottom: 10px;
 }
 
+/* Buttons */
 .banner-buttons {
   display: flex;
   justify-content: center;
+  gap: 15px;
   flex-wrap: wrap;
-  gap: 10px;
 }
 
 .banner-buttons button {
@@ -53,30 +53,43 @@ body {
   font-size: 14px;
   font-weight: bold;
   border: none;
-  border-radius: 25px;
-  background: linear-gradient(to right, #e50914, #b81d24);
-  color: white;
+  border-radius: 30px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.3s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
-.banner-buttons button:hover {
-  transform: scale(1.05);
-  background: linear-gradient(to right, #f40612, #a41a22);
+.watch-btn {
+  background-color: #e50914;
+  color: white;
 }
 
-/* Responsive for Mobile */
+.watch-btn:hover {
+  background-color: #b00610;
+}
+
+.info-btn {
+  background-color: #00bcd4;
+  color: black;
+}
+
+.info-btn:hover {
+  background-color: #008ba3;
+}
+
+/* Responsive Design */
 @media (max-width: 600px) {
-  .banner-title {
-    font-size: 1.3rem;
+  .banner-details h1 {
+    font-size: 1.4rem;
   }
 
   .banner-buttons {
     flex-direction: column;
+    gap: 10px;
   }
 
   .banner-buttons button {
     width: 100%;
-    font-size: 13px;
+    font-size: 15px;
   }
 }

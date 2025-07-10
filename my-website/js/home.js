@@ -342,54 +342,43 @@ img.onclick = () => {
 }
 
 function showUploadModal(videoId) {
-  
   const upload = uploads.find(u => u.id === videoId);
   if (!upload) return;
 
   currentUpload = upload;
 
-saveToWatchHistory({
-  id: upload.id,
-  title: upload.title,
-  poster_path: poster,
-  type: 'upload'
-});
-
-
-
   const title = encodeURIComponent(upload.title);
 
   fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`)
     .then(res => res.json())
+    .then(data => {
+      const movie = data.results[0] || {};
+      const poster = movie.poster_path || '';
 
+      // ✅ Now we use poster correctly here
+      saveToWatchHistory({
+        id: upload.id,
+        title: upload.title,
+        poster_path: poster,
+        type: 'upload'
+      });
 
-   .then(data => {
-  const movie = data.results[0] || {};
-  const poster = movie.poster_path || ''; // ✅ Define this FIRST
+      document.getElementById('upload-title').textContent = movie.title || upload.title;
+      document.getElementById('upload-description').textContent = movie.overview || "No description available.";
+      document.getElementById('upload-rating').innerHTML = movie.vote_average
+        ? '★'.repeat(Math.round(movie.vote_average / 2))
+        : 'Not rated';
 
-  // ✅ Then use it
-  saveToWatchHistory({
-    id: upload.id,
-    title: upload.title,
-    poster_path: poster,
-    type: 'upload'
-  });
+      document.getElementById('upload-trailer-btn').onclick = () => watchUploadTrailer();
+      document.getElementById('upload-watch-btn').onclick = () => playUploadedVideo();
+      document.getElementById('upload-download-btn').href = `https://drive.google.com/u/0/uc?id=${upload.id}&export=download`;
 
-  document.getElementById('upload-title').textContent = movie.title || upload.title;
-  document.getElementById('upload-description').textContent = movie.overview || "No description available.";
-  document.getElementById('upload-rating').innerHTML = movie.vote_average
-    ? '★'.repeat(Math.round(movie.vote_average / 2))
-    : 'Not rated';
-
-  document.getElementById('upload-trailer-btn').onclick = () => watchUploadTrailer();
-  document.getElementById('upload-watch-btn').onclick = () => playUploadedVideo();
-  document.getElementById('upload-download-btn').href = `https://drive.google.com/u/0/uc?id=${upload.id}&export=download`;
-
-  document.getElementById('upload-video').src = `https://drive.google.com/file/d/${upload.id}/preview`;
-  document.getElementById('upload-modal').style.display = 'flex';
-});
-
+      document.getElementById('upload-video').src = `https://drive.google.com/file/d/${upload.id}/preview`;
+      document.getElementById('upload-modal').style.display = 'flex';
+    });
 }
+
+
 function saveToWatchHistory({ title, id, type = 'upload', poster_path = '' }) {
   let history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
 

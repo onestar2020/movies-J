@@ -355,13 +355,6 @@ function showUploadModal(videoId) {
       const movie = data.results[0] || {};
       const poster = movie.poster_path || '';
 
-      // ✅ Now we use poster correctly here
-      saveToWatchHistory({
-        id: upload.id,
-        title: upload.title,
-        poster_path: poster,
-        type: 'upload'
-      });
 
       document.getElementById('upload-title').textContent = movie.title || upload.title;
       document.getElementById('upload-description').textContent = movie.overview || "No description available.";

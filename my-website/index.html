@@ -130,6 +130,33 @@
   <!-- Uploaded Modal -->
 
   </div>
+  <!-- Uploaded Movies Modal -->
+<div class="modal" id="upload-modal">
+  <div class="modal-content">
+    <button class="close" onclick="closeUploadModal()">&times;</button>
+    <h2 id="upload-title"></h2>
+    <p id="upload-description"></p>
+    
+    <div class="server-selector">
+      <label for="upload-server">Change Server:</label>
+      <select id="upload-server" onchange="changeUploadServer()">
+        <option value="">Loading servers...</option>
+      </select>
+      <p id="upload-active-server-label" style="text-align:center; color:#00f; font-size:13px; margin-top:5px;"></p>
+    </div>
+
+    <iframe id="upload-player" width="100%" height="400" allowfullscreen frameborder="0"></iframe>
+
+    <div style="text-align: center; margin-top: 15px;">
+      <button id="upload-watch-btn" class="watch-button">Watch Full Movie</button>
+    </div>
+
+    <p style="font-size: 13px; color: #ff5e00; text-align: center; margin-top: 10px;">
+      ⚠ Ads shown in third-party servers are not controlled by this site.
+    </p>
+  </div>
+</div>
+
 
   <!-- Search Modal -->
   <div class="search-modal" id="search-modal">

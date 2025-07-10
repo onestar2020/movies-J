@@ -368,6 +368,14 @@ function showUploadModal(videoId) {
 
       document.getElementById('upload-video').src = `https://drive.google.com/file/d/${upload.id}/preview`;
       document.getElementById('upload-modal').style.display = 'flex';
+      // ✅ FIX: Add to Watch History (with optional fallback poster)
+saveToWatchHistory({
+  id: upload.id,
+  title: movie.title || upload.title,
+  poster_path: poster || 'https://via.placeholder.com/120x180?text=No+Image',
+  type: 'upload'
+});
+
     });
 }
 

@@ -864,7 +864,7 @@ input:focus-visible {
 /* Container para sa banner para ma-limit ang width at ma-center */
 #banner {
   max-width: 900px;      /* limit width to 600px */
-  margin: 900px auto;     /* center horizontally with vertical spacing */
+  margin: 100px auto;     /* center horizontally with vertical spacing */
   padding: 10px 0;
   background-color: #000; 
   border-radius: 10px;

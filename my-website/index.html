@@ -127,16 +127,14 @@
     </div>
   </div>
 
-  <!-- Uploaded Modal -->
 
-  </div>
-  <!-- Uploaded Movies Modal -->
+<!-- ✅ Uploaded Movies Modal (CORRECTLY PLACED INSIDE the SAME .main-wrapper) -->
 <div class="modal" id="upload-modal">
   <div class="modal-content">
     <button class="close" onclick="closeUploadModal()">&times;</button>
     <h2 id="upload-title"></h2>
     <p id="upload-description"></p>
-    
+
     <div class="server-selector">
       <label for="upload-server">Change Server:</label>
       <select id="upload-server" onchange="changeUploadServer()">
@@ -156,6 +154,12 @@
     </p>
   </div>
 </div>
+
+
+</div> <!-- ✅ CLOSE main-wrapper here -->
+
+  </div>
+
 
 
   <!-- Search Modal -->

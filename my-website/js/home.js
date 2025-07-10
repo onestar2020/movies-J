@@ -535,8 +535,6 @@ async function init() {
 
 
 
-
-
 window.showUploadModal = showUploadModal;
 window.closeModal = closeModal;
 window.closeUploadModal = closeUploadModal;
@@ -546,8 +544,14 @@ window.changeServer = changeServer;
 window.openSearchModal = openSearchModal;
 window.closeSearchModal = closeSearchModal;
 window.searchTMDB = searchTMDB;
+window.openWatchHistoryModal = openWatchHistoryModal; // ← Add this line
 
-
+function openWatchHistoryModal() {
+  const modal = document.getElementById("watch-history-modal");
+  if (modal) {
+    modal.style.display = "flex";
+  }
+}
 
 
 

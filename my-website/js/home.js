@@ -351,9 +351,10 @@ function showUploadModal(videoId) {
 saveToWatchHistory({
   id: upload.id,
   title: upload.title,
-  poster_path: '', // Google Drive thumbnails not used here
+  poster_path: poster,
   type: 'upload'
 });
+
 
 
   const title = encodeURIComponent(upload.title);
@@ -361,6 +362,7 @@ saveToWatchHistory({
   fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`)
     .then(res => res.json())
     .then(data => {
+      const poster = movie.poster_path || '';
       const movie = data.results[0] || {};
 
       document.getElementById('upload-title').textContent = movie.title || upload.title;

@@ -130,35 +130,36 @@
 
 <!-- ✅ Uploaded Movies Modal (CORRECTLY PLACED INSIDE the SAME .main-wrapper) -->
 <div class="modal" id="upload-modal">
-  <div class="modal-content">
-    <button class="close" onclick="closeUploadModal()">&times;</button>
+<div class="modal-content">
+  <button class="close" onclick="closeUploadModal()">&times;</button>
+
+  <div class="modal-body" style="text-align: center;">
+    <!-- ✅ Google Drive Video -->
+    <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
+  </div>
+
+  <div class="modal-text" style="text-align: center;">
+    <!-- ✅ Title, Rating, Description -->
     <h2 id="upload-title"></h2>
+    <div class="stars" id="upload-rating" style="margin-bottom: 10px;"></div>
     <p id="upload-description"></p>
 
-    <div class="server-selector">
-      <label for="upload-server">Change Server:</label>
-      <select id="upload-server" onchange="changeUploadServer()">
-        <option value="">Loading servers...</option>
-      </select>
-      <p id="upload-active-server-label" style="text-align:center; color:#00f; font-size:13px; margin-top:5px;"></p>
+    <!-- ✅ Button Group -->
+    <div style="margin-top: 15px;">
+      <button id="upload-trailer-btn">🎬 Watch Trailer</button>
+      <button id="upload-watch-btn">▶ Watch Full Movie</button>
+      <a id="upload-download-btn" href="#" target="_blank" download>
+        <button>⬇ Download</button>
+      </a>
     </div>
 
-    <div id="upload-rating" style="text-align:center; margin: 10px 0;"></div>
-
-<iframe id="upload-video" width="100%" height="400" allowfullscreen frameborder="0"></iframe>
-
-<div style="text-align: center; margin-top: 15px;">
-  <button id="upload-trailer-btn">🎞 Watch Trailer</button>
-  <button id="upload-watch-btn" class="watch-button">▶ Watch Full Movie</button>
-  <a id="upload-download-btn" target="_blank" style="margin-left:10px;">⬇ Download</a>
-</div>
-
-
-    <p style="font-size: 13px; color: #ff5e00; text-align: center; margin-top: 10px;">
-      ⚠ Ads shown in third-party servers are not controlled by this site.
+    <!-- ✅ Note -->
+    <p style="font-size: 13px; color: #4CAF50; margin-top: 10px;">
+      ✅ Uploaded via Google Drive. No external ads included.
     </p>
   </div>
 </div>
+
 
 
 </div> <!-- ✅ CLOSE main-wrapper here -->

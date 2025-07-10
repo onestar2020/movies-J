@@ -861,48 +861,24 @@ input:focus-visible {
   margin-bottom: 10px;
 }
 /* === BANNER TRAILER FIX (YouTube iframe) === */
-.banner {
-  padding: 20px 0;
+/* Container para sa banner para ma-limit ang width at ma-center */
+#banner {
+  max-width: 600px;      /* limit width to 600px */
+  margin: 20px auto;     /* center horizontally with vertical spacing */
+  padding: 10px 0;
   background-color: #000;
+  border-radius: 10px;
   text-align: center;
 }
 
-/* Title styling */
-#banner-title {
-  font-size: 22px;
-  margin: 15px 0;
-  color: #fff;
-}
-
-/* Button styling */
-.banner-buttons button {
-  margin: 5px;
-  padding: 8px 14px;
-  font-size: 14px;
-  background-color: #00bcd4;
-  color: #000;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.banner-buttons button:hover {
-  background-color: #008ba3;
-}
-
-.main-wrapper {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
+/* Aspect ratio at positioning ng video */
 .banner-video {
   position: relative;
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding-top: 56.25%;
+  padding-top: 40%; /* height relative to width, mas maliit para hindi masyadong mataas */
+  overflow: hidden;
+  border-radius: 10px;
+  margin: 0 auto 15px auto;
 }
 
 .banner-video iframe {
@@ -914,6 +890,31 @@ input:focus-visible {
   border: none;
   border-radius: 10px;
 }
+
+/* Title style */
+#banner-title {
+  font-size: 1.5rem;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+.banner-buttons button {
+  padding: 6px 14px;
+  font-size: 13px;
+  margin: 5px;
+  border-radius: 20px;
+  background-color: #00bcd4;
+  color: #000;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.banner-buttons button:hover {
+  background-color: #008ba3;
+}
+
 /* ===== Prevent Trailer Oversize ===== */
 #trailer {
   width: 100% !important;

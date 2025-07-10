@@ -73,7 +73,7 @@ function watchCurrentBanner() {
   const id = currentItem.id;
 
   // Redirect to movie.html page with id and type
-  window.location.href = `movie.html?id=${id}&type=${type}`;
+ showDetails(currentItem);
   if (!bannerItems || !bannerItems.length) {
   console.warn("No banner items available.");
   return;
@@ -95,10 +95,7 @@ function displayList(items, containerId) {
     const img = document.createElement('img');
     img.src = `${IMG_URL}${item.poster_path}`;
     img.alt = item.title || item.name;
-    img.onclick = () => {
-  const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-  window.location.href = `movie.html?id=${item.id}&type=${mediaType}`;
-};
+   img.onclick = () => showDetails(item);
 
     container.appendChild(img);
   });
@@ -307,20 +304,10 @@ tmdbResults.forEach(item => {
   img.style.borderRadius = '5px';
   img.style.cursor = 'pointer';
 
-  img.onclick = () => {
-    closeSearchModal();
-
-    const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-    const id = item.id;
-
-    // Optional tracking pixel
-   // const track = new Image();
-    //track.src = 'https://unseenreport.com/pxf.gif?uuid=your-uuid-here';
-
-    setTimeout(() => {
-      window.location.href = `movie.html?id=${id}&type=${type}`;
-    }, 100);
-  };
+ img.onclick = () => {
+  closeSearchModal();
+  showDetails(item);
+};
 
   tmdbSection.appendChild(img); // ✅ dapat nasa loob ng forEach
 });

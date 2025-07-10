@@ -13,8 +13,7 @@ let animeItems = [];
 
 let currentItem;
 let currentUpload = null;
-let bannerItems = [];
-let bannerIndex = 0;
+
 let currentUploadPage = 1;
 const uploadsPerPage = 12;
 

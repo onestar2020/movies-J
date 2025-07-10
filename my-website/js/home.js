@@ -69,17 +69,15 @@ function watchCurrentBanner() {
   if (!bannerItems.length) return;
 
   const currentItem = bannerItems[bannerIndex];
-  const type = currentItem.media_type === "tv" ? "tv" : "movie";
-  const id = currentItem.id;
-
-  // Redirect to movie.html page with id and type
- showDetails(currentItem);
-  if (!bannerItems || !bannerItems.length) {
-  console.warn("No banner items available.");
-  return;
+  if (currentItem.isUpload) {
+    showUploadModal(currentItem.id);
+  } else {
+    goToMovie(currentItem);
+  }
 }
 
-}
+
+
 
 
 function displayBanner(items) {
@@ -95,7 +93,8 @@ function displayList(items, containerId) {
     const img = document.createElement('img');
     img.src = `${IMG_URL}${item.poster_path}`;
     img.alt = item.title || item.name;
-   img.onclick = () => showDetails(item);
+   img.onclick = () => goToMovie(item);
+
 
     container.appendChild(img);
   });
@@ -304,10 +303,11 @@ tmdbResults.forEach(item => {
   img.style.borderRadius = '5px';
   img.style.cursor = 'pointer';
 
- img.onclick = () => {
+img.onclick = () => {
   closeSearchModal();
-  showDetails(item);
+  goToMovie(item);
 };
+
 
   tmdbSection.appendChild(img); // ✅ dapat nasa loob ng forEach
 });
@@ -568,11 +568,15 @@ function loadWatchHistory() {
                ? `showUploadModal('${item.id}')`
                : `window.location.href='movie.html?id=${item.id}&type=${item.type || 'movie'}'`}">
         <p><strong>${item.title}</strong></p>
-        <button onclick="${
-          item.type === 'upload'
-            ? `showUploadModal('${item.id}')`
-            : `window.location.href='movie.html?id=${item.id}&type=${item.type || 'movie'}'`
-        }">▶ Resume</button>
+
+
+      <button onclick="${
+  item.type === 'upload'
+    ? `showUploadModal('${item.id}')`
+    : `goToMovie(${JSON.stringify(item).replace(/"/g, '&quot;')})`
+}">▶ Resume</button>
+
+
       </div>
     `;
     container.appendChild(div);
@@ -586,3 +590,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 });
 
+function goToMovie(item) {
+  const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+
+  // Save to history
+  saveToWatchHistory({
+    id: item.id,
+    title: item.title || item.name,
+    poster_path: item.poster_path,
+    type: type
+  });
+
+  // Redirect
+  window.location.href = `movie.html?id=${item.id}&type=${type}`;
+}

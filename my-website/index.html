@@ -10,9 +10,11 @@
 <link rel="manifest" href="manifest.json">
 
   <!-- Preload (order matters: preload first, then stylesheet) -->
-  <link rel="preload" href="css/home.css" as="style">
-  <link rel="stylesheet" href="css/home.css">
-<!-- Trailer Modal CSS -->
+ <link rel="preload" href="css/home.css" as="style" onload="this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="css/home.css"></noscript>
+
+
+  <!-- Trailer Modal CSS -->
 <link rel="stylesheet" href="css/trailerModal.css">
 
 

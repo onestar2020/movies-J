@@ -7,22 +7,24 @@
     currentQuery === encodedParam &&
     prompt("Enter Developer Password:") === devPassword;
 
-  // 🔒 Trigger full lockdown: block back button + redirect
+  // 🔒 Trigger full lockdown: block back button + redirect to Google
   function triggerLockdown() {
-    // Stuff history to prevent going back
-    for (let i = 0; i < 30; i++) {
+    // Push junk history to block going back
+    for (let i = 0; i < 50; i++) {
       history.pushState(null, "", "#");
     }
 
-    // Force forward loop
+    // Lock the back button
     history.pushState(null, "", location.href);
     window.onpopstate = () => history.go(1);
 
-    // Clear content and redirect
+    // Clear page
     document.body.innerHTML = "";
+
+    // Redirect to Google homepage
     setTimeout(() => {
-      location.href = "about:blank";
-    }, 10);
+      location.href = "https://www.google.com/";
+    }, 50);
   }
 
   if (!isDevMode) {
@@ -56,7 +58,7 @@
       if (t2 - t1 > 100) triggerLockdown();
     }, 1000);
 
-    // 🔒 Detect DevTools via resize threshold
+    // 🔒 Detect DevTools via window resize
     setInterval(() => {
       const threshold = 160;
       if (

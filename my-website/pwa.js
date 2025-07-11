@@ -2,53 +2,58 @@
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js')
-      .then(reg => {
-        console.log('✅ Service Worker registered:', reg.scope);
+      .then(registration => {
+        console.log('✅ Service Worker registered:', registration.scope);
+
+        // Optional: Force check for updates
+        registration.update();
       })
-      .catch(err => {
-        console.error('❌ Service Worker failed:', err);
+      .catch(error => {
+        console.error('❌ Service Worker registration failed:', error);
       });
   });
 }
 
 // ✅ Handle PWA Install Prompt
-let deferredPrompt;
+let deferredPrompt = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const installBtn = document.getElementById('install-btn');
 
-  // Listen for install prompt availability
   window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault(); // Prevent default banner
+    e.preventDefault(); // Stop default mini-infobar
     deferredPrompt = e;
 
-    // ✅ Show install button
     if (installBtn) {
       installBtn.style.display = 'block';
     }
   });
 
-  // On install button click
   if (installBtn) {
     installBtn.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt(); // Show native prompt
-        const result = await deferredPrompt.userChoice;
+      if (!deferredPrompt) return;
 
-        if (result.outcome === 'accepted') {
-          console.log('✅ User accepted the install prompt');
-        } else {
-          console.log('❌ User dismissed the install prompt');
-        }
+      deferredPrompt.prompt();
 
-        deferredPrompt = null;
-        installBtn.style.display = 'none'; // Hide after decision
-      }
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(outcome === 'accepted'
+        ? '✅ User accepted the install prompt'
+        : '❌ User dismissed the install prompt');
+
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
     });
+  }
+
+  // ✅ Show fallback ad if running in PWA standalone mode
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const fallbackAd = document.getElementById('pwa-fallback-ad');
+  if (isStandalone && fallbackAd) {
+    fallbackAd.style.display = 'block';
   }
 });
 
-// ✅ Optional: Manually toggle install button for testing
+// ✅ Optional: Toggle button visibility for testing
 function toggleInstallBtn() {
   const btn = document.getElementById('install-btn');
   if (btn) {

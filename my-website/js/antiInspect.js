@@ -1,5 +1,5 @@
 (function () {
-  const encodedParam = atob("P2Rldj0x"); // => "?dev=1"
+  const encodedParam = atob("P2Rldj0x"); // "?dev=1"
   const currentQuery = window.location.search;
   const devPassword = "hontoot12292017";
 
@@ -7,29 +7,36 @@
     currentQuery === encodedParam &&
     prompt("Enter Developer Password:") === devPassword;
 
+  // 🔒 Trigger lockdown: redirect to about:blank and prevent going back
   function triggerLockdown() {
-    // Stuff history to block back navigation permanently
+    // Push dummy history to block going back
     for (let i = 0; i < 50; i++) {
       history.pushState(null, "", "#");
     }
 
-    // Force forward navigation only
-    history.pushState(null, "", location.href);
-    window.onpopstate = () => history.go(1);
+    // Prevent navigating back
+    window.onpopstate = () => {
+      history.go(1);
+      location.replace("about:blank");
+    };
 
-    // Erase content immediately
+    // Prevent refresh or leave
+    window.onbeforeunload = () => {
+      return null;
+    };
+
+    // Clear body and force replace
     document.body.innerHTML = "";
-
-    // After short delay, replace with about:blank
     setTimeout(() => {
-      // Write a dummy state to prevent return with back button
-      window.location.replace("about:blank");
+      location.replace("about:blank");
     }, 50);
   }
 
   if (!isDevMode) {
+    // Disable right-click
     document.addEventListener("contextmenu", (e) => e.preventDefault());
 
+    // Disable common shortcuts
     document.addEventListener("keydown", (e) => {
       const key = e.key.toUpperCase();
       const ctrl = e.ctrlKey;
@@ -48,6 +55,7 @@
       }
     });
 
+    // DevTools detection: debugger delay
     setInterval(() => {
       const t1 = performance.now();
       debugger;
@@ -55,6 +63,7 @@
       if (t2 - t1 > 100) triggerLockdown();
     }, 1000);
 
+    // DevTools detection: resize threshold
     setInterval(() => {
       const threshold = 160;
       if (
@@ -65,4 +74,7 @@
       }
     }, 1000);
   }
+
+  // 🧠 Global protection: block back even on normal load
+  window.onpopstate = () => history.go(1);
 })();

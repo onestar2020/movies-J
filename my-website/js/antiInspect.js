@@ -7,18 +7,29 @@
     currentQuery === encodedParam &&
     prompt("Enter Developer Password:") === devPassword;
 
+  // 🔒 Trigger full lockdown: block back button + redirect
   function triggerLockdown() {
+    // Stuff history to prevent going back
+    for (let i = 0; i < 30; i++) {
+      history.pushState(null, "", "#");
+    }
+
+    // Force forward loop
     history.pushState(null, "", location.href);
-    window.onpopstate = () => history.go(1); // Block back button
+    window.onpopstate = () => history.go(1);
+
+    // Clear content and redirect
     document.body.innerHTML = "";
-    location.replace("about:blank");
+    setTimeout(() => {
+      location.href = "about:blank";
+    }, 10);
   }
 
   if (!isDevMode) {
-    // Disable Right Click
+    // 🔒 Disable Right Click
     document.addEventListener("contextmenu", (e) => e.preventDefault());
 
-    // Block DevTools & View Source
+    // 🔒 Block DevTools & View Source shortcuts
     document.addEventListener("keydown", (e) => {
       const key = e.key.toUpperCase();
       const ctrl = e.ctrlKey;
@@ -37,7 +48,7 @@
       }
     });
 
-    // Detect via debugger time
+    // 🔒 Detect DevTools open via debugger delay
     setInterval(() => {
       const t1 = performance.now();
       debugger;
@@ -45,7 +56,7 @@
       if (t2 - t1 > 100) triggerLockdown();
     }, 1000);
 
-    // Detect via window resize (DevTools)
+    // 🔒 Detect DevTools via resize threshold
     setInterval(() => {
       const threshold = 160;
       if (

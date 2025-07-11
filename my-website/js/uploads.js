@@ -1,5 +1,9 @@
 // uploads.js
 const uploads = [
+  { title: "My Love Will Make You Disappear", id: "1txYtdZ86oCbQlpqSADCoI6jTvd2IcSBI" },
+  { title: "Un-Ex You", id: "1wfO1NFtFvi4oK5ol6mu2bYWpgiE0ymVa" },
+  { title: "Deadpool & Wolverine", id: "1P8zskuDI3_N0BmUK1uUzWHHasqpemc6f" },
+  { title: "Pangolin: Kulu's Journey", id: "1lWUwadluxJ2PGvaFUHgDfgkVzVACps-I" },
   { title: "Jurassic World Rebirth", id: "1w4fxKbTgAraQGLxSE762fhrkR-qt01nM" },
   { title: "Exterritorial", id: "10NEhLMhb0mACWJXVtQ-Inalpf0gNc2Ju" },
   { title: "Control Freak", id: "1mdd1G8RswZW3G_6gMT39O2h88HhXCrdn" },

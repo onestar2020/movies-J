@@ -145,36 +145,112 @@
 
 <!-- ✅ Uploaded Movies Modal (CORRECTLY PLACED INSIDE the SAME .main-wrapper) -->
 <div class="modal" id="upload-modal">
-  <div class="modal-content">
-    <button class="close" onclick="closeUploadModal()">&times;</button>
+<div class="modal-content">
+  <button class="close" onclick="closeUploadModal()">&times;</button>
 
-    <div class="modal-body" style="text-align: center;">
-      <!-- ✅ Google Drive Video -->
-      <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
+  <div class="modal-body" style="text-align: center;">
+    <!-- ✅ Google Drive Video -->
+    <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
+  </div>
+
+  <div class="modal-text" style="text-align: center;">
+    <!-- ✅ Title, Rating, Description -->
+    <h2 id="upload-title"></h2>
+    <div class="stars" id="upload-rating" style="margin-bottom: 10px;"></div>
+    <p id="upload-description"></p>
+
+    <!-- ✅ Button Group -->
+    <div style="margin-top: 15px;">
+      <button id="upload-trailer-btn">🎬 Watch Trailer</button>
+      <button id="upload-watch-btn">▶ Watch Full Movie</button>
+      <a id="upload-download-btn" href="#" target="_blank" download>
+        <button>⬇ Download</button>
+      </a>
     </div>
 
-    <div class="modal-text" style="text-align: center;">
-      <!-- ✅ Title, Rating, Description -->
-      <h2 id="upload-title"></h2>
-      <div class="stars" id="upload-rating" style="margin-bottom: 10px;"></div>
-      <p id="upload-description"></p>
-
-      <!-- ✅ Button Group -->
-      <div style="margin-top: 15px;">
-        <button id="upload-trailer-btn">🎬 Watch Trailer</button>
-        <button id="upload-watch-btn">▶ Watch Full Movie</button>
-        <a id="upload-download-btn" href="#" target="_blank" download>
-          <button>⬇ Download</button>
-        </a>
-      </div>
-
-      <!-- ✅ Note -->
-      <p style="font-size: 13px; color: #4CAF50; margin-top: 10px;">
-        ✅ Uploaded via Google Drive. No external ads included.
-      </p>
-    </div>
+    <!-- ✅ Note -->
+    <p style="font-size: 13px; color: #4CAF50; margin-top: 10px;">
+      ✅ Uploaded via Google Drive. No external ads included.
+    </p>
   </div>
 </div>
 
-</div> <!-- ✅ CLOSE main-wrapper -->
+
+
+</div> <!-- ✅ CLOSE main-wrapper here -->
+
+  </div>
+
+
+</div> <!-- ✅ CLOSE main-wrapper here -->
 </div> <!-- ✅ CLOSE container -->
+
+<!-- Search Modal -->
+<div class="search-modal" id="search-modal">
+  <button class="close" onclick="closeSearchModal()">&times;</button>
+  <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
+  <div class="results" id="search-results"></div>
+</div>
+
+<!-- Adsterra PC Banner 468x60 -->
+<div id="desktop-banner-ad">
+  <script type="text/javascript">
+    atOptions = {
+      'key': '0e7b0cdaab5dd80e165c43b2a094fb08',
+      'format': 'iframe',
+      'height': 60,
+      'width': 468,
+      'params': {}
+    };
+  </script>
+  <script type="text/javascript" src="//www.highperformanceformat.com/0e7b0cdaab5dd80e165c43b2a094fb08/invoke.js"></script>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-content">
+    <p>&copy; 2025 My Website. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="disclaimer.html">Disclaimer</a>
+      <a href="about.html">About Us</a>
+      <a href="contact.html">Contact Us</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ProfitablerateCPM Ads (autoload on page load) -->
+<script type="text/javascript" src="//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js"></script>
+
+<!-- Trigger ad when 'Watch Full Movie' is clicked -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const watchBtn = document.getElementById("upload-watch-btn");
+    if (watchBtn) {
+      watchBtn.addEventListener("click", function () {
+        const adScript = document.createElement('script');
+        adScript.src = "//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js";
+        adScript.type = "text/javascript";
+        document.body.appendChild(adScript);
+      });
+    }
+  });
+</script>
+
+<!-- Watch History Modal -->
+<div class="modal" id="watch-history-modal">
+  <div class="modal-content" style="max-width: 600px; padding: 20px;">
+    <span class="close" id="close-history-modal">&times;</span>
+    <h2>Watch History</h2>
+    <div id="watch-history-list" class="watch-history-list"></div>
+  </div>
+</div>
+
+<!-- Script Loading Order -->
+<script src="js/embed.js" defer></script>
+<script src="js/servers.js" defer></script>
+<script src="js/uploads.js" defer></script>
+<script src="js/home.js" defer></script>
+<script src="js/watchHistory.js" defer></script>
+
+</body>
+</html>

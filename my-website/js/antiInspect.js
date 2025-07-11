@@ -1,69 +1,65 @@
-// ⛔ Default: Protection is ON unless dev mode is activated
-let isDevMode = false;
+const allowedDevParam = atob("P2Rldj0x"); // "?dev=1"
+const currentQuery = window.location.search;
+const devPassword = "masterjay2025";
 
-// ⌨️ SECRET COMBO TO ACTIVATE DEV MODE: Shift + M + J
-let keySeq = [];
+// ✅ Allow developer mode ONLY with correct URL + password
+const isDevMode = currentQuery === allowedDevParam && prompt("Enter Developer Password:") === devPassword;
 
-document.addEventListener("keydown", (e) => {
-  const key = e.key.toUpperCase();
+// 🔐 Lockdown function: wipe site and redirect
+function triggerLockdown() {
+  document.body.innerHTML = "";
+  window.location.href = "about:blank";
+}
 
-  // Track only alphabet keys
-  if (/^[A-Z]$/.test(key)) {
-    keySeq.push(key);
-    if (keySeq.length > 2) keySeq.shift(); // Keep last 2 letters
-  }
-
-  // Detect: Shift + M + J sequence
-  if (e.shiftKey && keySeq.join('') === 'MJ') {
-    isDevMode = true;
-    alert("🛠️ Developer Mode Activated");
-  }
-});
-
-function enableProtection() {
-  // 🔒 Disable Right Click
+if (!isDevMode) {
+  // 🔒 Block right click
   document.addEventListener("contextmenu", e => e.preventDefault());
 
-  // 🔒 Disable Key Combos (F12, Ctrl+U, etc.)
+  // 🔒 Block ALL known DevTools key combos
   document.addEventListener("keydown", e => {
-    if (
-      e.key === "F12" ||
-      (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === "I") ||
-      (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === "J") ||
-      (e.ctrlKey && e.key.toUpperCase() === "U")
-    ) {
+    const key = e.key.toUpperCase();
+    const ctrl = e.ctrlKey;
+    const shift = e.shiftKey;
+    const meta = e.metaKey; // for MacOS Command key
+
+    const blocked =
+      key === "F12" ||
+      (ctrl && shift && key === "I") ||
+      (ctrl && shift && key === "J") ||
+      (ctrl && key === "U") ||
+      (ctrl && shift && key === "C") ||
+      (ctrl && key === "S") ||
+      (meta && key === "S") ||
+      (ctrl && key === "P") ||
+      (meta && key === "P") ||
+      (ctrl && shift && key === "K") ||
+      (ctrl && shift && key === "M") ||
+      (ctrl && shift && key === "E");
+
+    if (blocked) {
       e.preventDefault();
-      alert("Inspect Element is disabled.");
+      triggerLockdown();
     }
   });
 
-  // 🔒 Detect DevTools via debugger timing
+  // 🔒 Detect DevTools via debugger pause
   setInterval(() => {
     const t1 = performance.now();
     debugger;
     const t2 = performance.now();
     if (t2 - t1 > 100) {
-      document.body.innerHTML = '';
-      window.location.href = 'about:blank';
+      triggerLockdown();
     }
   }, 1000);
 
-  // 🔒 Detect DevTools by window resize difference
+  // 🔒 Detect window resize difference
   setInterval(() => {
     const threshold = 160;
     if (
       window.outerWidth - window.innerWidth > threshold ||
       window.outerHeight - window.innerHeight > threshold
     ) {
-      document.body.innerHTML = '';
-      window.location.href = 'about:blank';
+      triggerLockdown();
     }
   }, 1000);
 }
-
-// ✅ Run protection if not in dev mode
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
-    if (!isDevMode) enableProtection();
-  }, 300); // Slight delay to stabilize
-});

@@ -242,8 +242,11 @@
       || window.navigator.standalone === true;
 
     const fallbackAd = document.getElementById('pwa-fallback-ad');
-    if (isStandalone && fallbackAd) {
-      fallbackAd.style.display = 'block';
+    const mobileBanner = document.getElementById('mobile-banner-ad');
+
+    if (isStandalone) {
+      if (fallbackAd) fallbackAd.style.display = 'block';  // ✅ Show fallback ad
+      if (mobileBanner) mobileBanner.style.display = 'none';  // ❌ Hide normal web banner
     }
   });
 </script>

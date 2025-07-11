@@ -222,6 +222,31 @@
   </script>
   <script type="text/javascript" src="//www.highperformanceformat.com/0e7b0cdaab5dd80e165c43b2a094fb08/invoke.js"></script>
 </div>
+<!-- ✅ PWA Fallback Ad (320x50 for mobile app mode) -->
+<div id="pwa-fallback-ad" style="display: none; text-align: center; margin: 20px auto;">
+  <script type="text/javascript">
+    atOptions = {
+      'key': '3083f880e1af15df37f27c8f5913cb6c',
+      'format': 'iframe',
+      'height': 50,
+      'width': 320,
+      'params': {}
+    };
+  </script>
+  <script type="text/javascript" src="//www.highperformanceformat.com/3083f880e1af15df37f27c8f5913cb6c/invoke.js"></script>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+
+    const fallbackAd = document.getElementById('pwa-fallback-ad');
+    if (isStandalone && fallbackAd) {
+      fallbackAd.style.display = 'block';
+    }
+  });
+</script>
 
   <!-- Footer -->
   <footer class="footer">

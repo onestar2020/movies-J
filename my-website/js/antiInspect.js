@@ -8,10 +8,12 @@ const devPassword = "hontoot12292017";
 // ✅ Allow developer mode ONLY if URL is correct AND password is entered correctly
 const isDevMode = currentQuery === allowedDevParam && prompt("Enter Developer Password:") === devPassword;
 
-// 🔒 Lockdown function: Wipe and redirect to blank
+// 🔒 Lockdown function: Wipe and redirect to about:blank, disable back button
 function triggerLockdown() {
+  history.pushState(null, '', location.href);
+  window.onpopstate = () => history.go(1); // Disable browser back
   document.body.innerHTML = "";
-  window.location.href = "about:blank";
+  location.replace("about:blank");
 }
 
 if (!isDevMode) {
@@ -45,24 +47,30 @@ if (!isDevMode) {
     }
   });
 
-  // 🔒 Detect DevTools via debugger pause
+  // 🔒 Detect DevTools via debugger pause timing
   setInterval(() => {
     const t1 = performance.now();
     debugger;
     const t2 = performance.now();
-    if (t2 - t1 > 100) {
-      triggerLockdown();
-    }
+    if (t2 - t1 > 100) triggerLockdown();
   }, 1000);
 
-  // 🔒 Detect via suspicious window size
+  // 🔒 Detect via suspicious window size (DevTools resize)
   setInterval(() => {
     const threshold = 160;
     if (
       window.outerWidth - window.innerWidth > threshold ||
       window.outerHeight - window.innerHeight > threshold
-    ) {
+    ) triggerLockdown();
+  }, 1000);
+
+  // 🔒 Redetect on history back (from about:blank)
+  const devToolDetector = setInterval(() => {
+    const widthThreshold = window.outerWidth - window.innerWidth > 160;
+    const heightThreshold = window.outerHeight - window.innerHeight > 160;
+    if (widthThreshold || heightThreshold) {
+      clearInterval(devToolDetector);
       triggerLockdown();
     }
-  }, 1000);
+  }, 500);
 }

@@ -46,7 +46,12 @@ async function fetchTrailer(id, mediaType) {
 async function playBannerTrailer() {
   const bannerTitle = document.getElementById('banner-title');
   const trailerIframe = document.getElementById('trailer');
-  const item = bannerItems[bannerIndex];
+  const item = bannerItems?.[bannerIndex];
+
+  if (!bannerTitle || !trailerIframe || !item) {
+    console.warn("Banner elements not found or item is undefined.");
+    return;
+  }
 
   bannerTitle.textContent = item.title || item.name;
 
@@ -55,9 +60,12 @@ async function playBannerTrailer() {
   } else {
     const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
     const url = await fetchTrailer(item.id, mediaType);
-    trailerIframe.src = url ? `${url}?autoplay=1&mute=1&controls=0&loop=1&playlist=${url.split('/').pop()}` : '';
+    trailerIframe.src = url
+      ? `${url}?autoplay=1&mute=1&controls=0&loop=1&playlist=${url.split('/').pop()}`
+      : '';
   }
 }
+
 
 function nextBannerTrailer() {
   bannerIndex = (bannerIndex + 1) % bannerItems.length;
@@ -521,7 +529,10 @@ async function init() {
   }));
 
   const bannerPool = [...movies, ...tvShows, ...uploadItems];
+  if (document.getElementById('banner-title') && document.getElementById('trailer')) {
   displayBanner(bannerPool);
+}
+
 
   displayList(movies, 'movies-list');
   displayList(tvShows, 'tvshows-list');

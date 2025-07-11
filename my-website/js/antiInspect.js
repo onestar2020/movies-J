@@ -7,31 +7,29 @@
     currentQuery === encodedParam &&
     prompt("Enter Developer Password:") === devPassword;
 
-  // 🔒 Trigger lockdown: wipe content, disable back, redirect to blank
   function triggerLockdown() {
-    // Push dummy history to block browser back
+    // Stuff history to block back navigation permanently
     for (let i = 0; i < 50; i++) {
       history.pushState(null, "", "#");
     }
 
-    // Force forward only navigation
+    // Force forward navigation only
     history.pushState(null, "", location.href);
     window.onpopstate = () => history.go(1);
 
-    // Clear content
+    // Erase content immediately
     document.body.innerHTML = "";
 
-    // Force replace to about:blank
+    // After short delay, replace with about:blank
     setTimeout(() => {
-      location.replace("about:blank");
+      // Write a dummy state to prevent return with back button
+      window.location.replace("about:blank");
     }, 50);
   }
 
   if (!isDevMode) {
-    // 🔒 Disable Right Click
     document.addEventListener("contextmenu", (e) => e.preventDefault());
 
-    // 🔒 Block DevTools & View Source shortcuts
     document.addEventListener("keydown", (e) => {
       const key = e.key.toUpperCase();
       const ctrl = e.ctrlKey;
@@ -50,7 +48,6 @@
       }
     });
 
-    // 🔒 Detect DevTools open via debugger delay
     setInterval(() => {
       const t1 = performance.now();
       debugger;
@@ -58,7 +55,6 @@
       if (t2 - t1 > 100) triggerLockdown();
     }, 1000);
 
-    // 🔒 Detect DevTools via suspicious resize
     setInterval(() => {
       const threshold = 160;
       if (

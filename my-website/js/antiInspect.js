@@ -1,26 +1,29 @@
-const allowedDevParam = atob("P2Rldj0x"); // "?dev=1"
+// ✅ Encrypted Dev Mode Param (?dev=1)
+const allowedDevParam = atob("P2Rldj0x"); // => "?dev=1"
 const currentQuery = window.location.search;
-const devPassword = "masterjay2025";
 
-// ✅ Allow developer mode ONLY with correct URL + password
+// ✅ Updated Developer Password
+const devPassword = "hontoot12292017";
+
+// ✅ Allow developer mode ONLY if URL is correct AND password is entered correctly
 const isDevMode = currentQuery === allowedDevParam && prompt("Enter Developer Password:") === devPassword;
 
-// 🔐 Lockdown function: wipe site and redirect
+// 🔒 Lockdown function: Wipe and redirect to blank
 function triggerLockdown() {
   document.body.innerHTML = "";
   window.location.href = "about:blank";
 }
 
 if (!isDevMode) {
-  // 🔒 Block right click
+  // 🔒 Disable right-click
   document.addEventListener("contextmenu", e => e.preventDefault());
 
-  // 🔒 Block ALL known DevTools key combos
+  // 🔒 Block DevTools & View Source key combos
   document.addEventListener("keydown", e => {
     const key = e.key.toUpperCase();
     const ctrl = e.ctrlKey;
     const shift = e.shiftKey;
-    const meta = e.metaKey; // for MacOS Command key
+    const meta = e.metaKey;
 
     const blocked =
       key === "F12" ||
@@ -52,7 +55,7 @@ if (!isDevMode) {
     }
   }, 1000);
 
-  // 🔒 Detect window resize difference
+  // 🔒 Detect via suspicious window size
   setInterval(() => {
     const threshold = 160;
     if (

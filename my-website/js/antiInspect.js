@@ -1,1 +1,59 @@
-(function(){const _0x1f99=,document.body[_0x1f99[7]]="",location[_0x1f99[8]](_0x1f99[9])}if(!isDevMode){document.addEventListener(_0x1f99[10],e=>e[_0x1f99[11]]());document.addEventListener(_0x1f99[12],e=>{const key=e[_0x1f99[13]][_0x1f99[14]](),ctrl=e[_0x1f99[15]],shift=e[_0x1f99[16]],meta=e[_0x1f99[17]];const blocked=key===_0x1f99[27]||(ctrl&&shift&&[_0x1f99[22],_0x1f99[23],_0x1f99[24],_0x1f99[25],_0x1f99[26],_0x1f99[21]][_0x1f99[18]](key))||(ctrl&&[_0x1f99[19],_0x1f99[20],_0x1f99[21]][_0x1f99[18]](key))||(meta&&[_0x1f99[20],_0x1f99[21]][_0x1f99[18]](key));if(blocked){e[_0x1f99[11]]();triggerLockdown()}});setInterval(()=>{const t1=performance[_0x1f99[28]]();debugger;const t2=performance[_0x1f99[28]]();if(t2-t1>100)triggerLockdown()},1e3);setInterval(()=>{const threshold=160;if(window[_0x1f99[29]]-window[_0x1f99[30]]>threshold||window[_0x1f99[31]]-window[_0x1f99[30]]>threshold)triggerLockdown()},1e3);const detector=setInterval(()=>{if(window[_0x1f99[29]]-window[_0x1f99[30]]>160||window[_0x1f99[31]]-window[_0x1f99[30]]>160){clearInterval(detector);triggerLockdown()}},500);}})();
+(function () {
+  const encodedParam = atob("P2Rldj0x"); // "?dev=1"
+  const currentQuery = window.location.search;
+  const devPassword = "hontoot12292017";
+
+  const isDevMode =
+    currentQuery === encodedParam &&
+    prompt("Enter Developer Password:") === devPassword;
+
+  function triggerLockdown() {
+    history.pushState(null, "", location.href);
+    window.onpopstate = () => history.go(1); // Block back button
+    document.body.innerHTML = "";
+    location.replace("about:blank");
+  }
+
+  if (!isDevMode) {
+    // Disable Right Click
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // Block DevTools & View Source
+    document.addEventListener("keydown", (e) => {
+      const key = e.key.toUpperCase();
+      const ctrl = e.ctrlKey;
+      const shift = e.shiftKey;
+      const meta = e.metaKey;
+
+      const blocked =
+        key === "F12" ||
+        (ctrl && shift && ["I", "J", "C", "K", "M", "E"].includes(key)) ||
+        (ctrl && ["U", "S", "P"].includes(key)) ||
+        (meta && ["S", "P"].includes(key));
+
+      if (blocked) {
+        e.preventDefault();
+        triggerLockdown();
+      }
+    });
+
+    // Detect via debugger time
+    setInterval(() => {
+      const t1 = performance.now();
+      debugger;
+      const t2 = performance.now();
+      if (t2 - t1 > 100) triggerLockdown();
+    }, 1000);
+
+    // Detect via window resize (DevTools)
+    setInterval(() => {
+      const threshold = 160;
+      if (
+        window.outerWidth - window.innerWidth > threshold ||
+        window.outerHeight - window.innerHeight > threshold
+      ) {
+        triggerLockdown();
+      }
+    }, 1000);
+  }
+})();

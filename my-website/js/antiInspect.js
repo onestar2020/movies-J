@@ -3,7 +3,6 @@
     const encodedParam = atob("P2Rldj0x"); // "?dev=1"
     const currentQuery = window.location.search;
     const devPassword = "hontoot12292017";
-
     let isDevMode = false;
 
     if (currentQuery === encodedParam) {
@@ -17,22 +16,20 @@
     }
 
     function triggerLockdown() {
-      // Clear all content immediately
       document.body.innerHTML = "";
       document.documentElement.innerHTML = "";
 
-      // Spam history stack to break back navigation
       for (let i = 0; i < 100; i++) {
         history.pushState(null, "", "#locked" + i);
       }
 
-      // Reinforce back-button lock
-      window.onpopstate = () => history.go(1);
+      window.onpopstate = () => {
+        history.go(1);
+      };
 
-      // Replace with about:blank
+      // ✅ Redirect to blank.html (not about:blank)
       setTimeout(() => {
-       location.replace("blank.html");
-
+        location.replace("blank.html");
       }, 100);
     }
 
@@ -59,7 +56,7 @@
         }
       });
 
-      // Detect pause from debugger
+      // Detect debugger pause
       setInterval(() => {
         const t1 = performance.now();
         debugger;
@@ -67,7 +64,7 @@
         if (t2 - t1 > 100) triggerLockdown();
       }, 1000);
 
-      // Detect DevTools resizing
+      // Detect DevTools window resize
       setInterval(() => {
         const threshold = 160;
         if (
@@ -79,7 +76,9 @@
       }, 1000);
     }
 
-    // Always reinforce back-button block
-    window.onpopstate = () => history.go(1);
+    // Always block back navigation
+    window.onpopstate = () => {
+      history.go(1);
+    };
   });
 })();

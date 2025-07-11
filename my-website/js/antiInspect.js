@@ -1,7 +1,24 @@
-// ✅ Developer mode switch
-const isDevMode = false; // ⬅️ Set to true kapag mag-e-edit ka
+// ⛔ Default: Protection is ON unless dev mode is activated
+let isDevMode = false;
 
-if (!isDevMode) {
+// ⌨️ SECRET COMBO TO ACTIVATE DEV MODE: Shift + M + J
+let keyBuffer = [];
+
+document.addEventListener("keydown", (e) => {
+  keyBuffer.push(e.key.toUpperCase());
+  if (keyBuffer.length > 3) keyBuffer.shift();
+
+  if (
+    keyBuffer.includes("SHIFT") &&
+    keyBuffer.includes("M") &&
+    keyBuffer.includes("J")
+  ) {
+    isDevMode = true;
+    alert("🛠️ Developer Mode Activated");
+  }
+});
+
+function enableProtection() {
   // 🔒 Disable Right Click
   document.addEventListener("contextmenu", e => e.preventDefault());
 
@@ -41,3 +58,10 @@ if (!isDevMode) {
     }
   }, 1000);
 }
+
+// ✅ Run only when DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    if (!isDevMode) enableProtection();
+  }, 300); // Slight delay to stabilize
+});

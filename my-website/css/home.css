@@ -849,6 +849,29 @@ input:focus-visible {
   margin-bottom: 10px;
 }
 /* === BANNER TRAILER FIX (YouTube iframe) === */
+
+
+
+.youtube-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  margin: 1rem auto;
+  max-width: 800px;
+}
+
+.youtube-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
 /* Container para sa banner para ma-limit ang width at ma-center */
 
 

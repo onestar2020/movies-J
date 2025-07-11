@@ -7,36 +7,32 @@
     currentQuery === encodedParam &&
     prompt("Enter Developer Password:") === devPassword;
 
-  // 🔒 Trigger lockdown: redirect to about:blank and prevent going back
   function triggerLockdown() {
-    // Push dummy history to block going back
-    for (let i = 0; i < 50; i++) {
-      history.pushState(null, "", "#");
+    // Clear content early
+    document.body.innerHTML = "";
+    document.documentElement.innerHTML = "";
+
+    // Spam history to disable back navigation
+    for (let i = 0; i < 100; i++) {
+      history.pushState(null, "", "#locked" + i);
     }
 
-    // Prevent navigating back
+    // Prevent user from using back button
     window.onpopstate = () => {
       history.go(1);
-      location.replace("about:blank");
     };
 
-    // Prevent refresh or leave
-    window.onbeforeunload = () => {
-      return null;
-    };
-
-    // Clear body and force replace
-    document.body.innerHTML = "";
+    // Replace to about:blank (no history added)
     setTimeout(() => {
       location.replace("about:blank");
-    }, 50);
+    }, 100);
   }
 
   if (!isDevMode) {
     // Disable right-click
     document.addEventListener("contextmenu", (e) => e.preventDefault());
 
-    // Disable common shortcuts
+    // Disable shortcuts
     document.addEventListener("keydown", (e) => {
       const key = e.key.toUpperCase();
       const ctrl = e.ctrlKey;
@@ -55,7 +51,7 @@
       }
     });
 
-    // DevTools detection: debugger delay
+    // Debugger detection
     setInterval(() => {
       const t1 = performance.now();
       debugger;
@@ -63,7 +59,7 @@
       if (t2 - t1 > 100) triggerLockdown();
     }, 1000);
 
-    // DevTools detection: resize threshold
+    // DevTools resize detection
     setInterval(() => {
       const threshold = 160;
       if (
@@ -75,6 +71,8 @@
     }, 1000);
   }
 
-  // 🧠 Global protection: block back even on normal load
-  window.onpopstate = () => history.go(1);
+  // Always block back button
+  window.onpopstate = () => {
+    history.go(1);
+  };
 })();

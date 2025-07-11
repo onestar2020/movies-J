@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trailer Preview</title>
+  <link rel="stylesheet" href="css/trailerModal.css">
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .skip-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 30px;
+      background: #f00;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="trailer-modal">
+  <div class="modal-content">
+    <div class="modal-body" style="text-align: center;">
+      <iframe
+        id="trailer-iframe"
+        width="100%"
+        height="400"
+        frameborder="0"
+        allow="autoplay; encrypted-media"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <div class="modal-text" style="text-align: center;">
+      <h2 id="trailer-title">Loading...</h2>
+      <button class="skip-btn" onclick="goToHome()">⏩ Skip to Main Site</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const trailerData = {
+    title: "🔥 Official Trailer: The Batman",
+    trailerId: "mqqft2x_Aa4", // Change to your YouTube trailer ID
+    movieUrl: "index.html"
+  };
+
+  function playTrailer() {
+    document.getElementById('trailer-title').innerText = trailerData.title;
+    document.getElementById('trailer-iframe').src = `https://www.youtube.com/embed/${trailerData.trailerId}?autoplay=1&rel=0`;
+  }
+
+  function goToHome() {
+    window.location.href = trailerData.movieUrl;
+  }
+
+  window.onload = () => {
+    playTrailer();
+    setTimeout(goToHome, 15000); // auto-redirect after 15 seconds
+  };
+</script>
+
+</body>
+</html>

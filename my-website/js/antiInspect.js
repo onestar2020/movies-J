@@ -31,7 +31,8 @@
 
       // Replace with about:blank
       setTimeout(() => {
-        location.replace("about:blank");
+       location.replace("blank.html");
+
       }, 100);
     }
 

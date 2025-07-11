@@ -1,5 +1,5 @@
 // ✅ Developer mode switch
-const isDevMode = true; // ⬅️ Set to true kapag mag-e-edit ka
+const isDevMode = false; // ⬅️ Set to true kapag mag-e-edit ka
 
 if (!isDevMode) {
   // 🔒 Disable Right Click

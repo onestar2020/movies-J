@@ -1,5 +1,5 @@
 (function () {
-  const encodedParam = atob("P2Rldj0x"); // "?dev=1"
+  const encodedParam = atob("P2Rldj0x"); // => "?dev=1"
   const currentQuery = window.location.search;
   const devPassword = "hontoot12292017";
 
@@ -7,23 +7,23 @@
     currentQuery === encodedParam &&
     prompt("Enter Developer Password:") === devPassword;
 
-  // 🔒 Trigger full lockdown: block back button + redirect to Google
+  // 🔒 Trigger lockdown: wipe content, disable back, redirect to blank
   function triggerLockdown() {
-    // Push junk history to block going back
+    // Push dummy history to block browser back
     for (let i = 0; i < 50; i++) {
       history.pushState(null, "", "#");
     }
 
-    // Lock the back button
+    // Force forward only navigation
     history.pushState(null, "", location.href);
     window.onpopstate = () => history.go(1);
 
-    // Clear page
+    // Clear content
     document.body.innerHTML = "";
 
-    // Redirect to Google homepage
+    // Force replace to about:blank
     setTimeout(() => {
-      location.href = "https://www.google.com/";
+      location.replace("about:blank");
     }, 50);
   }
 
@@ -58,7 +58,7 @@
       if (t2 - t1 > 100) triggerLockdown();
     }, 1000);
 
-    // 🔒 Detect DevTools via window resize
+    // 🔒 Detect DevTools via suspicious resize
     setInterval(() => {
       const threshold = 160;
       if (

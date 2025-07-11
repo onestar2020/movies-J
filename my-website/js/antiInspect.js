@@ -2,17 +2,19 @@
 let isDevMode = false;
 
 // ⌨️ SECRET COMBO TO ACTIVATE DEV MODE: Shift + M + J
-let keyBuffer = [];
+let keySeq = [];
 
 document.addEventListener("keydown", (e) => {
-  keyBuffer.push(e.key.toUpperCase());
-  if (keyBuffer.length > 3) keyBuffer.shift();
+  const key = e.key.toUpperCase();
 
-  if (
-    keyBuffer.includes("SHIFT") &&
-    keyBuffer.includes("M") &&
-    keyBuffer.includes("J")
-  ) {
+  // Track only alphabet keys
+  if (/^[A-Z]$/.test(key)) {
+    keySeq.push(key);
+    if (keySeq.length > 2) keySeq.shift(); // Keep last 2 letters
+  }
+
+  // Detect: Shift + M + J sequence
+  if (e.shiftKey && keySeq.join('') === 'MJ') {
     isDevMode = true;
     alert("🛠️ Developer Mode Activated");
   }
@@ -59,7 +61,7 @@ function enableProtection() {
   }, 1000);
 }
 
-// ✅ Run only when DOM is ready
+// ✅ Run protection if not in dev mode
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     if (!isDevMode) enableProtection();

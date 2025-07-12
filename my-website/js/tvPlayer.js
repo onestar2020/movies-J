@@ -1,21 +1,22 @@
 const channels = {
   "GMA 7": {
-    url: "https://gma-live.pilipinas-streaming.repl.co/gma7.php",
+    url: "https://gmanews-i.akamaihd.net/hls/live/2030464/gmanews/master.m3u8",  // ✅ DIRECT M3U8
     logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/GMA_Network_Logo.svg/1200px-GMA_Network_Logo.svg.png",
   },
   "TV5": {
-    url: "https://tv5-live.pilipinas-streaming.repl.co/tv5.php",
+    url: "https://tv5edge1-lh.akamaihd.net/i/tv5_1@183619/index_720_av-p.m3u8",  // ✅ DIRECT M3U8
     logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/TV5_%28Philippines%29_logo.svg/2048px-TV5_%28Philippines%29_logo.svg.png",
   },
   "PTV": {
-    url: "https://ptv-live.pilipinas-streaming.repl.co/ptv.php",
+    url: "https://stream.ptv.ph/live/ptv/playlist.m3u8",  // ✅ DIRECT M3U8
     logo: "https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/People%27s_Television_Network_%28PTV%29_Logo_2017.svg/1200px-People%27s_Television_Network_%28PTV%29_Logo_2017.svg.png",
   },
   "Anime Channel": {
-    url: "https://animechannel-live.pilipinas-streaming.repl.co/anime.php",
+    url: "https://animesample.live/stream/animechannel.m3u8", // 🔧 Sample lang ito – palitan kung wala kang legit stream
     logo: "https://cdn-icons-png.flaticon.com/512/4712/4712103.png",
   }
 };
+
 
 const player = jwplayer("player");
 player.setup({

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>📺 TV Player - Movies-J</title>
-  <link rel="icon" href="images/logo.png" type="image/png">
+  <link rel="icon" href="images/logo.png" type="image/png" />
 
   <!-- JWPlayer -->
   <script src="https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js"></script>
@@ -47,6 +47,48 @@
       overflow: hidden;
     }
 
+    #channelInfo {
+      margin: 20px 0 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    #search {
+      padding: 10px;
+      margin: 10px;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+    }
+
+    #channelList {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px 0 30px;
+    }
+
+    #channelList button {
+      background: #222;
+      color: white;
+      border: 1px solid #444;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #channelList button:hover {
+      background: #333;
+    }
+
     footer {
       margin-top: 30px;
       color: #888;
@@ -62,17 +104,69 @@
     <div></div>
   </div>
 
+  <input type="text" id="search" placeholder="Search TV channel..." />
+  <div id="channelList"></div>
+  <div id="channelInfo">Now Playing: </div>
+
   <div id="player"></div>
 
   <footer>© 2025 Movies-J | Powered by JWPlayer</footer>
 
   <script>
-    jwplayer("player").setup({
-      file: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8", // ✅ Sample HLS stream
+    const channels = {
+      "GMA 7": {
+        url: "https://gma-live.pilipinas-streaming.repl.co/gma7.php",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/GMA_Network_Logo.svg/1200px-GMA_Network_Logo.svg.png",
+      },
+      "TV5": {
+        url: "https://tv5-live.pilipinas-streaming.repl.co/tv5.php",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/TV5_%28Philippines%29_logo.svg/2048px-TV5_%28Philippines%29_logo.svg.png",
+      },
+      "PTV": {
+        url: "https://ptv-live.pilipinas-streaming.repl.co/ptv.php",
+        logo: "https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/People%27s_Television_Network_%28PTV%29_Logo_2017.svg/1200px-People%27s_Television_Network_%28PTV%29_Logo_2017.svg.png",
+      },
+      "Anime Channel": {
+        url: "https://animechannel-live.pilipinas-streaming.repl.co/anime.php",
+        logo: "https://cdn-icons-png.flaticon.com/512/4712/4712103.png",
+      }
+    };
+
+    const player = jwplayer("player");
+    player.setup({
+      file: "",
       width: "100%",
       aspectratio: "16:9",
-      autostart: true
+      autostart: false
     });
+
+    function loadChannel(channelName) {
+      const channel = channels[channelName];
+      if (channel) {
+        player.load([{ file: channel.url }]);
+        player.play();
+        document.getElementById("channelInfo").innerHTML =
+          `Now Playing: <img src="${channel.logo}" style="height: 20px; vertical-align: middle;"> ${channelName}`;
+      }
+    }
+
+    function renderChannelButtons() {
+      const container = document.getElementById("channelList");
+      container.innerHTML = "";
+      const searchInput = document.getElementById("search").value.toLowerCase();
+
+      for (const [name, info] of Object.entries(channels)) {
+        if (name.toLowerCase().includes(searchInput)) {
+          const btn = document.createElement("button");
+          btn.innerHTML = `<img src="${info.logo}" style="height: 30px; vertical-align: middle;"> ${name}`;
+          btn.onclick = () => loadChannel(name);
+          container.appendChild(btn);
+        }
+      }
+    }
+
+    document.getElementById("search").addEventListener("input", renderChannelButtons);
+    renderChannelButtons();
   </script>
 </body>
 </html>

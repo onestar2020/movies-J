@@ -12,29 +12,29 @@ const channels = {
     logo: "https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/People%27s_Television_Network_%28PTV%29_Logo_2017.svg/1200px-People%27s_Television_Network_%28PTV%29_Logo_2017.svg.png"
   },
   "Anime Channel": {
-    url: "https://animesample.live/stream/animechannel.m3u8",  // Replace if not working
+    url: "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/anime.m3u8",
     logo: "https://cdn-icons-png.flaticon.com/512/4712/4712103.png"
   }
 };
 
-const player = jwplayer("video");
-
+// Initialize JWPlayer
+const player = jwplayer("player");
 player.setup({
-  file: "", // default empty
+  file: "",
   width: "100%",
   aspectratio: "16:9",
   autostart: false,
   mute: false
 });
 
-// Load and play selected channel
+// Play selected channel
 function loadChannel(channelName) {
   const channel = channels[channelName];
   if (channel) {
     player.load([{ file: channel.url }]);
     player.play().catch(err => {
-      console.error(`Failed to play ${channelName}:`, err);
-      alert(`Error playing ${channelName}. Please try another channel.`);
+      console.error(`❌ Failed to play "${channelName}":`, err);
+      alert(`⚠ Cannot play "${channelName}". It may be offline or blocked.`);
     });
 
     document.getElementById("channelInfo").innerHTML =
@@ -42,23 +42,29 @@ function loadChannel(channelName) {
   }
 }
 
-// Create channel buttons based on search
+// Create buttons for each channel based on search
 function renderChannelButtons() {
   const container = document.getElementById("channelList");
   container.innerHTML = "";
-  const search = document.getElementById("search").value.toLowerCase();
+  const query = document.getElementById("search").value.toLowerCase();
 
-  for (const [name, info] of Object.entries(channels)) {
-    if (name.toLowerCase().includes(search)) {
+  for (const [name, data] of Object.entries(channels)) {
+    if (name.toLowerCase().includes(query)) {
       const btn = document.createElement("button");
-      btn.innerHTML = `<img src="${info.logo}" style="height: 30px; vertical-align: middle; margin-right: 10px;"> ${name}`;
       btn.className = "channel-button";
+      btn.innerHTML = `<img src="${data.logo}" style="height: 30px; vertical-align: middle; margin-right: 10px;"> ${name}`;
       btn.onclick = () => loadChannel(name);
       container.appendChild(btn);
     }
   }
 }
 
-// Initialize search and render
+// Setup search listener
 document.getElementById("search").addEventListener("input", renderChannelButtons);
-renderChannelButtons();
+
+// On page load
+window.addEventListener("DOMContentLoaded", () => {
+  renderChannelButtons();
+  const first = Object.keys(channels)[0];
+  if (first) loadChannel(first);
+});

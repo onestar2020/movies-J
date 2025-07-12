@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📺 TV Player - Movies-J</title>
+  <title>📺 Live TV - Movies-J</title>
   <link rel="icon" href="images/logo.png" type="image/png" />
 
   <!-- JWPlayer -->
@@ -118,13 +118,13 @@
 
   <div class="nav">
     <a href="index.html">⬅ Back to Home</a>
-    <h2>AZ TV Player</h2>
+    <h2>📺 Live TV - Movies-J</h2>
     <div></div>
   </div>
 
   <input type="text" id="search" placeholder="Search TV channel..." />
   <div id="channelList"></div>
-  <div id="channelInfo">Now Playing: </div>
+  <div id="channelInfo">Now Playing:</div>
   <div id="player"></div>
 
   <footer>© 2025 Movies-J | Powered by JWPlayer</footer>
@@ -144,7 +144,7 @@
         logo: "https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/People%27s_Television_Network_%28PTV%29_Logo_2017.svg/1200px-People%27s_Television_Network_%28PTV%29_Logo_2017.svg.png"
       },
       "Anime Channel": {
-        url: "https://animesample.live/stream/animechannel.m3u8",
+        url: "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/anime.m3u8",
         logo: "https://cdn-icons-png.flaticon.com/512/4712/4712103.png"
       }
     };
@@ -163,7 +163,7 @@
         player.load([{ file: channel.url }]);
         player.play().catch(err => {
           console.error(`Playback error on "${channelName}"`, err);
-          alert(`Could not play ${channelName}. Stream may be offline or blocked.`);
+          alert(`⚠ Could not play "${channelName}". Stream may be offline, blocked, or require VPN.`);
         });
 
         document.getElementById("channelInfo").innerHTML =
@@ -186,15 +186,11 @@
       }
     }
 
-    // Setup
     document.getElementById("search").addEventListener("input", renderChannelButtons);
     window.addEventListener("DOMContentLoaded", () => {
       renderChannelButtons();
-      document.getElementById("search").focus();
-
-      // Auto-play the first channel
-      const firstChannel = Object.keys(channels)[0];
-      if (firstChannel) loadChannel(firstChannel);
+      const first = Object.keys(channels)[0];
+      if (first) loadChannel(first);
     });
   </script>
 </body>

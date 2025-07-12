@@ -59,7 +59,7 @@
 
   <div class="nav-links">
 
-
+<a href="#" onclick="openTVPlayer()" style="text-decoration: none; font-weight: bold; color: white;">📺 TV</a>
 <div class="top-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
   <a href="index.html" style="text-decoration: none; font-weight: bold; color: white;">🏠 Home</a>
 
@@ -316,6 +316,11 @@
 <meta name="theme-color" content="#e50914">
 <script src="pwa.js"></script> <!-- ✅ CORRECT -->
 <script src="js/antiInspect.js"></script>
+<script>
+  function openTVPlayer() {
+    window.open('tv-player.html', '_blank');
+  }
+</script>
 
 
 

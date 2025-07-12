@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  const appVersion = '1.0.4'; // Palitan mo lang ito next time may update
+</script>
 
 
   <meta charset="UTF-8" />
@@ -9,15 +12,13 @@
 <!-- Web Manifest -->
 <link rel="manifest" href="manifest.json">
 
-  <!-- Preload (order matters: preload first, then stylesheet) -->
- <link rel="preload" href="css/home.css" as="style" onload="this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="css/home.css"></noscript>
-
-
-  <!-- Trailer Modal CSS -->
-<link rel="stylesheet" href="css/trailerModal.css">
-
-
+<script>
+  document.write(`
+    <link rel="preload" href="css/home.css?v=${appVersion}" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/home.css?v=${appVersion}"></noscript>
+    <link rel="stylesheet" href="css/trailerModal.css?v=${appVersion}">
+  `);
+</script>
 
 
 
@@ -304,11 +305,15 @@
   </script>
 
   <!-- Script Loading Order -->
-  <script src="js/embed.js" defer></script>
-  <script src="js/servers.js" defer></script>
-  <script src="js/uploads.js" defer></script>
-  <script src="js/home.js" defer></script>
-  <script src="js/watchHistory.js" defer></script>
+<script>
+  document.write(`
+    <script src="js/embed.js?v=${appVersion}" defer><\/script>
+    <script src="js/servers.js?v=${appVersion}" defer><\/script>
+    <script src="js/uploads.js?v=${appVersion}" defer><\/script>
+    <script src="js/home.js?v=${appVersion}" defer><\/script>
+    <script src="js/watchHistory.js?v=${appVersion}" defer><\/script>
+  `);
+</script>
 
 <!-- Watch History Modal -->
 <div class="modal" id="watch-history-modal">

@@ -214,7 +214,8 @@ async function showDetails(item) {
 }
 
 function changeServer(auto = false, index = 0) {
-  const servers = SERVER_LIST.map(s => s.url);
+ const servers = SERVER_LIST; // ✅ fixed: array of strings na ito
+
   const serverSelect = document.getElementById("server");
   const server = auto ? servers[index] : serverSelect.value;
   if (auto) serverSelect.value = servers[index]; // ← sync dropdown on auto

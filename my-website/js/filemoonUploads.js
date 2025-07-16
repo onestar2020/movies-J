@@ -1,4 +1,4 @@
-// filemoonuploads.js
+// ✅ js/filemoonuploads.js
 const filemoonUploads = [
   {
     title: "Zombies 4: Dawn of the Vampires",
@@ -6,7 +6,7 @@ const filemoonUploads = [
     type: "filemoon"
   },
   {
-    title: "Another FileMoon Upload",
+    title: "Another Sample FileMoon Movie",
     url: "https://filemoon.to/e/sample-id",
     type: "filemoon"
   }

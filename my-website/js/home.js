@@ -467,12 +467,11 @@ async function loadUploadedMovies(page = 1) {
 
 async function loadMoreUploadedMovies() {
   const container = document.getElementById('more-upload-list');
-  if (!container) return;
+  if (!container || typeof filemoonUploads === 'undefined') return;
 
-  const startIndex = uploadsPerPage;
-  const moreUploads = uploads.slice(startIndex);
+  container.innerHTML = '';
 
-  for (const upload of moreUploads) {
+  for (const upload of filemoonUploads) {
     const title = encodeURIComponent(upload.title);
     const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`);
     const data = await res.json();
@@ -482,19 +481,19 @@ async function loadMoreUploadedMovies() {
     div.classList.add('upload-item');
     div.innerHTML = `
       <div style="text-align:center">
-        <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : ''}" 
+        <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : 'https://via.placeholder.com/120x180?text=No+Image'}" 
              alt="${upload.title}" 
              style="width:120px;border-radius:5px;cursor:pointer" 
-             onclick="showUploadModal('${upload.id}')">
+             onclick="window.open('${upload.url}', '_blank')">
         <p style="margin: 5px 0"><strong>${upload.title}</strong></p>
         ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
         ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
+        <p style="font-size:12px; color:#4CAF50;">📁 FileMoon Upload</p>
       </div>
     `;
     container.appendChild(div);
   }
 }
-
 
 function renderUploadPagination() {
   const paginationContainer = document.getElementById('upload-pagination');
@@ -572,12 +571,6 @@ async function init() {
   displayList(tvShows, 'tvshows-list');
   displayList(anime, 'anime-list');
 }
-
-
-
-
-
-
 
 window.showUploadModal = showUploadModal;
 window.closeModal = closeModal;

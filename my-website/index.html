@@ -4,7 +4,7 @@
 
 <head>
 <script>
-  const appVersion = '1.0.7'; // Palitan mo lang ito next time may update
+  const appVersion = '1.0.8'; // Palitan mo lang ito next time may update
 </script>
 
 
@@ -319,13 +319,15 @@
   <!-- Script Loading Order -->
 <script>
   document.write(`
-    <script src="js/embed.js?v=${appVersion}" defer><\/script>
-    <script src="js/servers.js?v=${appVersion}" defer><\/script>
-    <script src="js/uploads.js?v=${appVersion}" defer><\/script>
-    <script src="js/home.js?v=${appVersion}" defer><\/script>
-    <script src="js/watchHistory.js?v=${appVersion}" defer><\/script>
+    <script src="js/embed.js?v=${appVersion}" defer><\\/script>
+    <script src="js/servers.js?v=${appVersion}" defer><\\/script>
+    <script src="js/uploads.js?v=${appVersion}" defer><\\/script>
+    <script src="js/filemoonuploads.js?v=${appVersion}" defer><\\/script>
+    <script src="js/home.js?v=${appVersion}" defer><\\/script>
+    <script src="js/watchHistory.js?v=${appVersion}" defer><\\/script>
   `);
 </script>
+
 
 <!-- Watch History Modal -->
 <div class="modal" id="watch-history-modal">

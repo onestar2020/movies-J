@@ -15,6 +15,7 @@
     }
 
     #iframe-container {
+      position: relative;
       width: 100%;
       height: 100%;
     }
@@ -25,11 +26,61 @@
       border: none;
       display: block;
     }
+
+    #overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.92);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #play-btn {
+      font-size: 22px;
+      background: #e50914;
+      color: #fff;
+      padding: 14px 28px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+      transition: background 0.3s ease;
+    }
+
+    #play-btn:hover {
+      background: #ff1e1e;
+    }
+
+    .notice {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #ccc;
+      text-align: center;
+      max-width: 80%;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Overlay Play Button -->
+  <div id="overlay">
+    <button id="play-btn">▶ Play Movie</button>
+    <div class="notice">This video will open without annoying pop-up ads. Just enjoy the content.</div>
+  </div>
+
+  <!-- Video Player -->
   <div id="iframe-container">
-    <iframe id="fmPlayer" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
+    <iframe
+      id="fmPlayer"
+      allowfullscreen
+      allow="autoplay; fullscreen"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
+    ></iframe>
   </div>
 
   <script>
@@ -37,11 +88,14 @@
     const src = params.get('src');
     const iframe = document.getElementById('fmPlayer');
 
-    if (src && src.startsWith("https://filemoon")) {
-      iframe.src = src;
-    } else {
+    if (!src || !src.startsWith("https://filemoon")) {
       document.body.innerHTML = "<h2 style='color:white;text-align:center;padding-top:50px;'>❌ Invalid or missing FileMoon video link.</h2>";
     }
+
+    document.getElementById('play-btn').addEventListener('click', () => {
+      document.getElementById('overlay').style.display = 'none';
+      iframe.src = src;
+    });
   </script>
 </body>
 </html>

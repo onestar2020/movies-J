@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Redirecting to FileMoon</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
+      padding: 2rem;
+      text-align: center;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #ff3c00;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ff5e2e;
+    }
+  </style>
+</head>
+<body>
+  <h2>You’re about to watch a video on FileMoon</h2>
+  <p>Please note: FileMoon may open 4–6 ad tabs. Close those tabs and return to the video tab.</p>
+  <button onclick="redirect()">Continue to Video</button>
+
+  <script>
+    function redirect() {
+      const url = new URLSearchParams(window.location.search).get("url");
+      if (url) window.open(url, "_blank");
+    }
+  </script>
+</body>
+</html>

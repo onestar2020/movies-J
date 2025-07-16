@@ -484,7 +484,9 @@ async function loadMoreUploadedMovies() {
         <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : 'https://via.placeholder.com/120x180?text=No+Image'}" 
              alt="${upload.title}" 
              style="width:120px;border-radius:5px;cursor:pointer" 
-             onclick="window.open('${upload.url}', '_blank')">
+            onclick="openFilemoonSafely('${upload.url}')"
+
+             >
         <p style="margin: 5px 0"><strong>${upload.title}</strong></p>
         ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
         ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
@@ -627,6 +629,10 @@ function loadWatchHistory() {
   });
 }
 
+function openFilemoonSafely(filemoonUrl) {
+  const safeRedirect = `filemoon-redirect.html?url=${encodeURIComponent(filemoonUrl)}`;
+  window.open(safeRedirect, "_blank");
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   await init();

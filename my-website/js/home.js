@@ -630,9 +630,24 @@ function loadWatchHistory() {
 }
 
 function openFilemoonSafely(filemoonUrl) {
-  const safeRedirect = `filemoon-wrapper.html?url=${encodeURIComponent(filemoonUrl)}`;
-  window.location.href = safeRedirect; // ✅ Redirect in same tab
+  const iframe = document.getElementById('filemoon-iframe');
+  const modal = document.getElementById('filemoon-modal');
+
+  if (!iframe || !modal) return;
+
+  iframe.src = filemoonUrl;
+  modal.style.display = 'flex';
 }
+function closeFilemoonModal() {
+  const modal = document.getElementById('filemoon-modal');
+  const iframe = document.getElementById('filemoon-iframe');
+
+  if (modal && iframe) {
+    iframe.src = '';
+    modal.style.display = 'none';
+  }
+}
+
 
 
 document.addEventListener('DOMContentLoaded', async () => {

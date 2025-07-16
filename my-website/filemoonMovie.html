@@ -3,55 +3,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FileMoon Movie Page</title>
+  <title>Redirecting to FileMoon</title>
   <link rel="stylesheet" href="css/home.css" />
 
   <style>
-    iframe#movie-player {
-      width: 100%;
-      max-width: 100%;
-      aspect-ratio: 16 / 9;
-      border-radius: 10px;
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
     }
 
-    .video-container {
-      margin-top: 20px;
-      width: 100%;
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
     }
 
-    @media screen and (max-width: 600px) {
-      h1#movie-title {
-        font-size: 1.4rem;
-      }
+    p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+      color: #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #e50914;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #ff3c00;
+    }
+
+    a#manual-link {
+      display: block;
+      margin-top: 15px;
+      color: #4CAF50;
+      text-decoration: underline;
+      font-size: 14px;
     }
   </style>
 </head>
 
-<body style="background:#111; color:#fff;">
-  <header style="padding:10px; border-bottom:1px solid #444; text-align:center; position:relative;">
-    <a href="index.html" style="position:absolute; left:10px; top:10px; text-decoration:none;">
-      <button style="padding:8px 14px; background:none; color:white; font-weight:bold; border:none; cursor:pointer;">
-        ⬅ Home
-      </button>
-    </a>
-    <h1 id="movie-title" style="margin:0; font-size:1.8rem;">Now Playing</h1>
-  </header>
+<body>
+  <h1>You're being redirected to FileMoon</h1>
+  <p>
+    ⚠️ FileMoon may open 4–6 ad tabs when playback starts.<br>
+    🔁 Ads may also reappear if you pause or resume the video.<br><br>
+    Please wait or click below if not redirected.
+  </p>
 
-  <div class="page-container" style="padding: 20px; max-width: 1000px; margin: auto;">
-    <div class="video-container">
-      <iframe id="movie-player" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
-    </div>
-  </div>
+  <button onclick="redirectToWrapper()">▶ Continue to Video</button>
+  <a id="manual-link" href="#" target="_blank">Click here to open manually</a>
 
   <script>
-    // Read ?url= parameter from query
-    const url = new URLSearchParams(window.location.search).get("url");
-    if (url) {
-      const finalUrl = `filemoon-wrapper.html?url=${encodeURIComponent(url)}`;
-      document.getElementById("movie-player").src = finalUrl;
-    } else {
-      document.getElementById("movie-title").textContent = "❌ Invalid or missing video URL.";
+    function redirectToWrapper() {
+      const url = new URLSearchParams(window.location.search).get("url");
+      if (url) {
+        const wrapperUrl = `filemoon-wrapper.html?url=${encodeURIComponent(url)}`;
+        document.getElementById("manual-link").href = wrapperUrl;
+        window.open(wrapperUrl, '_blank');
+      } else {
+        document.querySelector('h1').textContent = "❌ Invalid or missing video URL.";
+        document.querySelector('p').textContent = "";
+        document.querySelector('button').style.display = 'none';
+        document.getElementById("manual-link").style.display = 'none';
+      }
     }
+
+    // Auto-redirect after 3 seconds
+    setTimeout(redirectToWrapper, 3000);
   </script>
 
   <link rel="manifest" href="manifest.json" />

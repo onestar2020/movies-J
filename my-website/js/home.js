@@ -630,8 +630,8 @@ function loadWatchHistory() {
 }
 
 function openFilemoonSafely(filemoonUrl) {
-  const directPage = `filemoonMovie.html?url=${encodeURIComponent(filemoonUrl)}`;
-  window.open(directPage, "_blank");
+  const safeRedirect = `filemoon-wrapper.html?url=${encodeURIComponent(filemoonUrl)}`;
+  window.location.href = safeRedirect; // ✅ Redirect in same tab
 }
 
 

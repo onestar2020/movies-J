@@ -2,31 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Now Playing</title>
+  <title>Watch Movie</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      background-color: #000;
+      background: #000;
       height: 100%;
+      overflow: hidden;
     }
     iframe {
       width: 100%;
-      height: 100%;
+      height: 100vh;
       border: none;
     }
   </style>
 </head>
 <body>
-  <iframe id="player" allowfullscreen allow="autoplay; fullscreen"></iframe>
+  <iframe
+    id="fmPlayer"
+    allowfullscreen
+    sandbox="allow-scripts allow-same-origin allow-presentation"
+  ></iframe>
 
   <script>
-    const url = new URLSearchParams(location.search).get("url");
-    if (url) {
-      document.getElementById("player").src = url;
+    const params = new URLSearchParams(location.search);
+    const src = params.get('src');
+    if (src && src.startsWith("https://filemoon")) {
+      document.getElementById("fmPlayer").src = src;
     } else {
-      document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:20px;'>⚠️ Invalid or missing video URL.</h2>";
+      document.body.innerHTML = "<h2 style='color:white;text-align:center;padding-top:50px;'>Invalid or missing video source</h2>";
     }
   </script>
 </body>

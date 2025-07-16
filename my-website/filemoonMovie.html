@@ -14,11 +14,28 @@
       font-family: Arial, sans-serif;
     }
 
+    #iframe-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
     iframe {
       width: 100%;
       height: 100%;
       border: none;
-      pointer-events: none; /* initially disable to block ads */
+      display: block;
+    }
+
+    #click-blocker {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      z-index: 999;
+      cursor: default; /* Keeps it from switching to pointer */
     }
 
     #overlay {
@@ -31,7 +48,7 @@
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      z-index: 9999;
+      z-index: 1000;
     }
 
     #play-btn {
@@ -59,11 +76,39 @@
 </head>
 <body>
 
-  <!-- Overlay with play button -->
+  <!-- Custom Overlay -->
   <div id="overlay">
     <button id="play-btn">▶ Play Movie</button>
-    <div class="notice">Your movie will open without ads or redirects.</div>
+    <div class="notice">Your movie will play without pop-up ads.</div>
   </div>
 
-  <!-- FileMoon iframe -->
-  <iframe id
+  <!-- Iframe Player Container -->
+  <div id="iframe-container">
+    <iframe id="fmPlayer" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
+    <div id="click-blocker"></div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const src = params.get('src');
+    const iframe = document.getElementById('fmPlayer');
+
+    if (src && src.startsWith("https://filemoon")) {
+      iframe.src = src;
+    } else {
+      document.body.innerHTML = "<h2 style='color:white;text-align:center;padding-top:50px;'>❌ Invalid or missing FileMoon video link.</h2>";
+    }
+
+    function playVideo() {
+      // Hide overlay
+      document.getElementById('overlay').style.display = 'none';
+
+      // Remove ad trap overlay permanently
+      const blocker = document.getElementById('click-blocker');
+      if (blocker) blocker.remove();
+    }
+
+    document.getElementById('play-btn').addEventListener('click', playVideo);
+  </script>
+</body>
+</html>

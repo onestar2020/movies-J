@@ -33,11 +33,18 @@
 
   <script>
     const url = new URLSearchParams(window.location.search).get("url");
+    console.log("FileMoon URL param:", url); // ✅ DEBUG
+
     const iframe = document.getElementById("filemoon-player");
 
-    if (url?.startsWith("https://filemoon")) {
-      iframe.src = url;
-    } else {
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname.includes("filemoon")) {
+        iframe.src = url;
+      } else {
+        throw new Error();
+      }
+    } catch {
       document.body.innerHTML = "<div class='error'>❌ Invalid or missing FileMoon video URL.</div>";
     }
   </script>

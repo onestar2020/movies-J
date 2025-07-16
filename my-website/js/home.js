@@ -483,14 +483,12 @@ async function loadMoreUploadedMovies() {
       <div style="text-align:center">
         <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : 'https://via.placeholder.com/120x180?text=No+Image'}" 
              alt="${upload.title}" 
-             style="width:120px;border-radius:5px;cursor:pointer" 
-            onclick="openFilemoonSafely('${upload.url}')"
-
-             >
+             style="width:120px;border-radius:5px;cursor:pointer">
         <p style="margin: 5px 0"><strong>${upload.title}</strong></p>
         ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
         ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
         <p style="font-size:12px; color:#4CAF50;">📁 FileMoon Upload</p>
+        <button onclick="window.open('filemoonMovie.html?src=${encodeURIComponent(upload.url)}', '_blank')">▶ Watch Now</button>
       </div>
     `;
     container.appendChild(div);

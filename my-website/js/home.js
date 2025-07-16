@@ -465,6 +465,37 @@ async function loadUploadedMovies(page = 1) {
   renderUploadPagination();
 }
 
+async function loadMoreUploadedMovies() {
+  const container = document.getElementById('more-upload-list');
+  if (!container) return;
+
+  const startIndex = uploadsPerPage;
+  const moreUploads = uploads.slice(startIndex);
+
+  for (const upload of moreUploads) {
+    const title = encodeURIComponent(upload.title);
+    const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${title}`);
+    const data = await res.json();
+    const movie = data.results[0];
+
+    const div = document.createElement('div');
+    div.classList.add('upload-item');
+    div.innerHTML = `
+      <div style="text-align:center">
+        <img src="${movie?.poster_path ? IMG_URL + movie.poster_path : ''}" 
+             alt="${upload.title}" 
+             style="width:120px;border-radius:5px;cursor:pointer" 
+             onclick="showUploadModal('${upload.id}')">
+        <p style="margin: 5px 0"><strong>${upload.title}</strong></p>
+        ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
+        ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
+      </div>
+    `;
+    container.appendChild(div);
+  }
+}
+
+
 function renderUploadPagination() {
   const paginationContainer = document.getElementById('upload-pagination');
   paginationContainer.innerHTML = '';
@@ -522,6 +553,8 @@ async function init() {
   const anime = await fetchTrendingAnime();
 
   await loadUploadedMovies(currentUploadPage);
+  await loadMoreUploadedMovies();
+
 
   const uploadItems = uploads.map(u => ({
     title: u.title,

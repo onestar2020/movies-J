@@ -630,9 +630,10 @@ function loadWatchHistory() {
 }
 
 function openFilemoonSafely(filemoonUrl) {
-  const safeRedirect = `filemoon-redirect.html?url=${encodeURIComponent(filemoonUrl)}`;
-  window.open(safeRedirect, "_blank");
+  const directPage = `filemoonMovie.html?url=${encodeURIComponent(filemoonUrl)}`;
+  window.open(directPage, "_blank");
 }
+
 
 document.addEventListener('DOMContentLoaded', async () => {
   await init();

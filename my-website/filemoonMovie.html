@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FileMoon Movie Page</title>
+  <link rel="stylesheet" href="css/home.css" />
+
+  <style>
+    iframe#movie-player {
+      width: 100%;
+      max-width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 10px;
+    }
+
+    .video-container {
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    @media screen and (max-width: 600px) {
+      h1#movie-title {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+
+<body style="background:#111; color:#fff;">
+  <header style="padding:10px; border-bottom:1px solid #444; text-align:center; position:relative;">
+    <a href="index.html" style="position:absolute; left:10px; top:10px; text-decoration:none;">
+      <button style="padding:8px 14px; background:none; color:white; font-weight:bold; border:none; cursor:pointer;">
+        ⬅ Home
+      </button>
+    </a>
+    <h1 id="movie-title" style="margin:0; font-size:1.8rem;">Now Playing</h1>
+  </header>
+
+  <div class="page-container" style="padding: 20px; max-width: 1000px; margin: auto;">
+    <div class="video-container">
+      <iframe id="movie-player" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <script>
+    // Read ?url= parameter from query
+    const url = new URLSearchParams(window.location.search).get("url");
+    if (url) {
+      const finalUrl = `filemoon-wrapper.html?url=${encodeURIComponent(url)}`;
+      document.getElementById("movie-player").src = finalUrl;
+    } else {
+      document.getElementById("movie-title").textContent = "❌ Invalid or missing video URL.";
+    }
+  </script>
+
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#e50914">
+  <script src="js/antiInspect.js" defer></script>
+</body>
+</html>

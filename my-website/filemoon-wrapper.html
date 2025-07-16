@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FileMoon Video</title>
+  <style>
+    html, body {
+      margin: 0;
+      background-color: #000;
+      height: 100%;
+    }
+    iframe {
+      border: none;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <iframe id="filemoon-player" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
+
+  <script>
+    const url = new URLSearchParams(window.location.search).get("url");
+
+    if (url) {
+      // Clean unsafe characters and insert
+      document.getElementById("filemoon-player").src = url;
+    } else {
+      document.body.innerHTML = "<h2 style='color:white;text-align:center;padding-top:20px;'>❌ Invalid FileMoon link.</h2>";
+    }
+  </script>
+
+</body>
+</html>

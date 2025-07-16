@@ -2,7 +2,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     const encodedParam = atob("P2Rldj0x"); // "?dev=1"
     const currentQuery = window.location.search;
-    const devPassword = "hontoot12292017";
+    const devPassword = "hontoot";
     let isDevMode = false;
 
     if (currentQuery === encodedParam) {

@@ -488,7 +488,8 @@ async function loadMoreUploadedMovies() {
         ${movie?.overview ? `<p style='font-size:12px;'>${movie.overview.slice(0, 100)}...</p>` : ''}
         ${movie?.vote_average ? `<p style='color:gold;'>${'★'.repeat(Math.round(movie.vote_average / 2))}</p>` : ''}
         <p style="font-size:12px; color:#4CAF50;">📁 FileMoon Upload</p>
-        <button onclick="window.open('filemoonMovie.html?src=${encodeURIComponent(upload.url)}', '_blank')">▶ Watch Now</button>
+       <button onclick="window.location.href='filemoonMovie.html?src=${encodeURIComponent(upload.url)}'">▶ Watch Now</button>
+
       </div>
     `;
     container.appendChild(div);

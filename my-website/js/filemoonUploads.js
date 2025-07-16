@@ -28,7 +28,8 @@ window.addEventListener('DOMContentLoaded', () => {
     li.addEventListener('click', function () {
       const src = this.getAttribute('data-src');
       if (src) {
-        window.open(src, '_blank');
+       window.location.href = src;
+
       }
     });
   });

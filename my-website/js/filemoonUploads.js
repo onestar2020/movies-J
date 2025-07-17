@@ -14,24 +14,28 @@ window.addEventListener('DOMContentLoaded', () => {
   filemoonUploads.forEach(movie => {
     const card = document.createElement('div');
     card.classList.add('movie-card');
+
+    const encodedUrl = encodeURIComponent(movie.url);
+
     card.innerHTML = `
       <div class="movie-title">${movie.title}</div>
       <ul class="stream-list">
-        <li data-src="filemoonMovie.html?src=${encodeURIComponent(movie.url)}">▶ Watch Now</li>
+        <li class="filemoon-watch" data-src="${encodedUrl}">▶ Watch Now</li>
       </ul>
     `;
+
     container.appendChild(card);
-  });
 
-  // Attach click handlers
-  document.querySelectorAll('.stream-list li').forEach(li => {
-   li.addEventListener('click', function () {
-  const filemoonUrl = this.getAttribute('data-src')?.split('=')[1];
-  if (filemoonUrl) {
-    sessionStorage.setItem('filemoonLink', decodeURIComponent(filemoonUrl));
-    window.location.href = 'filemoonMovie.html';
-  }
-});
-
+    // Attach event directly to this card's <li>
+    const watchBtn = card.querySelector('.filemoon-watch');
+    watchBtn.addEventListener('click', function () {
+      const filemoonUrl = this.getAttribute('data-src');
+      if (filemoonUrl) {
+        sessionStorage.setItem('filemoonLink', decodeURIComponent(filemoonUrl));
+        window.location.href = 'filemoonMovie.html';
+      } else {
+        alert("Video link missing.");
+      }
+    });
   });
 });

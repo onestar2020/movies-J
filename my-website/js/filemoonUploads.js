@@ -25,12 +25,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Attach click handlers
   document.querySelectorAll('.stream-list li').forEach(li => {
-    li.addEventListener('click', function () {
-      const src = this.getAttribute('data-src');
-      if (src) {
-       window.location.href = src;
+   li.addEventListener('click', function () {
+  const filemoonUrl = this.getAttribute('data-src')?.split('=')[1];
+  if (filemoonUrl) {
+    sessionStorage.setItem('filemoonLink', decodeURIComponent(filemoonUrl));
+    window.location.href = 'filemoonMovie.html';
+  }
+});
 
-      }
-    });
   });
 });

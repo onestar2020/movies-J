@@ -17,6 +17,44 @@ let currentUpload = null;
 let currentUploadPage = 1;
 const uploadsPerPage = 12;
 
+
+async function loadWeeklyTrending() {
+  const container = document.getElementById('weekly-trending-container');
+  if (!container) return;
+
+  container.innerHTML = '<p style="color:white;">Loading weekly picks...</p>';
+
+  try {
+    const response = await fetch(`${BASE_URL}/trending/all/week?api_key=${API_KEY}&language=en-US`);
+    const data = await response.json();
+    container.innerHTML = '';
+
+    const trending = data.results.slice(0, 10); // Show top 10 only
+
+    trending.forEach(item => {
+      const title = item.title || item.name || 'Untitled';
+      const poster = item.poster_path 
+        ? `https://image.tmdb.org/t/p/w300${item.poster_path}`
+        : 'images/placeholder.png';
+
+      const card = document.createElement('div');
+      card.className = 'movie-card';
+      card.innerHTML = `
+        <img src="${poster}" alt="${title}" class="movie-poster">
+        <p class="movie-title">${title}</p>
+      `;
+
+      container.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error('Failed to load weekly trending:', error);
+    container.innerHTML = '<p style="color:red;">Failed to load weekly trending.</p>';
+  }
+}
+
+
+
 async function fetchTrending(type) {
   const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
   const data = await res.json();
@@ -669,3 +707,4 @@ function goToMovie(item) {
   // Redirect
   window.location.href = `movie.html?id=${item.id}&type=${type}`;
 }
+loadWeeklyTrending();

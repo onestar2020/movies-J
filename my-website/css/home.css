@@ -1183,3 +1183,32 @@ input:focus-visible {
     font-size: 14px;
   }
 }
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.movie-card {
+  background: #111;
+  border-radius: 8px;
+  overflow: hidden;
+  text-align: center;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.movie-card:hover {
+  transform: scale(1.05);
+}
+
+.movie-poster {
+  width: 100%;
+  height: auto;
+}
+
+.movie-title {
+  font-size: 14px;
+  padding: 6px;
+}

@@ -871,29 +871,44 @@ async function getTrendingTrailerAndPlay() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  getTrendingTrailerAndPlay(); // <-- assuming this triggers loadHomeContent()
-  
-  // Safe binding after DOM is loaded
+  getTrendingTrailerAndPlay(); // This will call loadHomeContent()
+
+  // Bind Prev/Next Trailer buttons
   const prevBtn = document.getElementById('prev-trailer');
   const nextBtn = document.getElementById('next-trailer');
+  const watchFullBtn = document.getElementById('watch-full');
 
-  if (prevBtn && nextBtn) {
+  if (prevBtn) {
     prevBtn.addEventListener('click', () => {
       displayBanner(currentBannerIndex - 1);
     });
+  }
 
+  if (nextBtn) {
     nextBtn.addEventListener('click', () => {
       displayBanner(currentBannerIndex + 1);
     });
   }
-});
 
-window.goToMovie = goToMovie;
-window.showUploadModal = showUploadModal;
-document.getElementById('watch-full').addEventListener('click', () => {
-  if (currentTrailer && currentTrailer.id) {
-    sessionStorage.setItem('movieId', currentTrailer.id);
-    sessionStorage.setItem('mediaType', currentTrailer.media_type || 'movie');
-    window.location.href = 'movie.html'; // ⬅ same tab lang
+  // Bind Watch Full button
+  if (watchFullBtn) {
+    watchFullBtn.addEventListener('click', () => {
+      const item = combinedItems[currentBannerIndex];
+      if (!item) return;
+
+      if (item.isUpload) {
+        // Uploaded movie: open modal
+        showUploadModal(item.id);
+      } else {
+        // TMDB movie or TV show: redirect to movie.html
+        const id = item.id;
+        const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+        window.location.href = `movie.html?id=${id}&type=${type}`;
+      }
+    });
   }
 });
+
+// Make sure these functions are accessible globally if needed
+window.goToMovie = goToMovie;
+window.showUploadModal = showUploadModal;

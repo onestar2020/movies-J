@@ -822,3 +822,50 @@ function displayBanner() {
 document.addEventListener("DOMContentLoaded", () => {
   displayBanner();
 });
+const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
+
+async function getTrendingTrailerAndPlay() {
+  try {
+    const trendingRes = await fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}`);
+    const trendingData = await trendingRes.json();
+
+    const filteredItems = trendingData.results.filter(item => item.id);
+    if (filteredItems.length === 0) return;
+
+    const randomItem = filteredItems[Math.floor(Math.random() * filteredItems.length)];
+    const mediaId = randomItem.id;
+    const title = randomItem.title;
+
+    const videoRes = await fetch(`https://api.themoviedb.org/3/movie/${mediaId}/videos?api_key=${API_KEY}`);
+    const videoData = await videoRes.json();
+
+    const trailer = videoData.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+    if (!trailer) return;
+
+    const videoId = trailer.key;
+
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}`;
+    iframe.allow = 'autoplay; encrypted-media';
+    iframe.allowFullscreen = true;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = '0';
+
+    const container = document.getElementById('banner-video-container');
+    if (container) {
+      container.innerHTML = '';
+      container.appendChild(iframe);
+    }
+
+    const titleElement = document.getElementById('banner-title');
+    if (titleElement) {
+      titleElement.textContent = title;
+    }
+
+  } catch (error) {
+    console.error('Banner trailer error:', error);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', getTrendingTrailerAndPlay);

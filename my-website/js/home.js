@@ -822,7 +822,10 @@ function displayBanner() {
 document.addEventListener("DOMContentLoaded", () => {
   displayBanner();
 });
-const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
+if (typeof API_KEY === 'undefined') {
+  var API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
+}
+
 
 async function getTrendingTrailerAndPlay() {
   try {

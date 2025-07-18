@@ -751,33 +751,27 @@ async function fetchTrailer(id, type) {
     return null;
   }
 }
-async function loadHomeContent() {
-  await getTrendingMovies();
-  await getTrendingTVShows();
-  await getTrendingAnime(); // make sure all items loaded
+let combinedItems = [];
+let currentBannerIndex = 0;
 
-  displayBanner(); // ← dito mo lang tatawagin para siguradong may laman ang movieItems/tvItems/animeItems
- let lastBannerIndex = -1;
+async function displayBanner(index = 0) {
+  if (combinedItems.length === 0) {
+    combinedItems = [...movieItems, ...tvItems, ...animeItems];
+    if (combinedItems.length === 0) return;
+  }
 
-async function displayBanner() {
-  const combinedItems = [...movieItems, ...tvItems, ...animeItems];
-  if (combinedItems.length === 0) return;
+  if (index < 0) index = combinedItems.length - 1;
+  if (index >= combinedItems.length) index = 0;
+  currentBannerIndex = index;
 
-  let randomIndex;
-  do {
-    randomIndex = Math.floor(Math.random() * combinedItems.length);
-  } while (randomIndex === lastBannerIndex && combinedItems.length > 1);
-  lastBannerIndex = randomIndex;
-
-  const randomItem = combinedItems[randomIndex];
-  const trailerKey = await fetchTrailer(randomItem);
+  const item = combinedItems[currentBannerIndex];
+  const trailerKey = await fetchTrailer(item);
 
   const banner = document.getElementById('banner-video-container');
   banner.innerHTML = '';
 
-  // Title display
   const titleElement = document.getElementById('banner-title');
-  titleElement.textContent = randomItem.title || randomItem.name || 'Untitled';
+  titleElement.textContent = item.title || item.name || 'Untitled';
 
   if (trailerKey) {
     const iframe = document.createElement('iframe');
@@ -788,14 +782,19 @@ async function displayBanner() {
     iframe.style.width = '100%';
     iframe.style.height = '100%';
     banner.appendChild(iframe);
+
+    // Set Watch Full button link
+    const watchFullBtn = document.getElementById('watch-full');
+    watchFullBtn.onclick = () => {
+      window.open(`https://www.youtube.com/watch?v=${trailerKey}`, '_blank');
+    };
   } else {
-    const fallbackImg = document.createElement('img');
-    fallbackImg.src = IMG_URL + randomItem.backdrop_path;
-    fallbackImg.alt = randomItem.title || randomItem.name;
-    fallbackImg.style.width = '100%';
-    fallbackImg.style.height = '100%';
-    fallbackImg.style.objectFit = 'cover';
-    banner.appendChild(fallbackImg);
+    const img = document.createElement('img');
+    img.src = IMG_URL + item.backdrop_path;
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    banner.appendChild(img);
   }
 }
 
@@ -816,7 +815,7 @@ function displayBanner() {
 
   setInterval(displayBanner, 30000); // every 30 seconds
 
-}
+
 
 // Trigger the banner trailer on homepage load
 document.addEventListener("DOMContentLoaded", () => {
@@ -871,4 +870,23 @@ async function getTrendingTrailerAndPlay() {
   }
 }
 
-window.addEventListener('DOMContentLoaded', getTrendingTrailerAndPlay);
+window.addEventListener('DOMContentLoaded', () => {
+  getTrendingTrailerAndPlay(); // <-- assuming this triggers loadHomeContent()
+  
+  // Safe binding after DOM is loaded
+  const prevBtn = document.getElementById('prev-trailer');
+  const nextBtn = document.getElementById('next-trailer');
+
+  if (prevBtn && nextBtn) {
+    prevBtn.addEventListener('click', () => {
+      displayBanner(currentBannerIndex - 1);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      displayBanner(currentBannerIndex + 1);
+    });
+  }
+});
+
+window.goToMovie = goToMovie;
+window.showUploadModal = showUploadModal;

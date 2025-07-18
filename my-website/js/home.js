@@ -820,3 +820,8 @@ function displayBanner() {
   setInterval(displayBanner, 30000); // every 30 seconds
 
 }
+
+// Trigger the banner trailer on homepage load
+document.addEventListener("DOMContentLoaded", () => {
+  displayBanner();
+});

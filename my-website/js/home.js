@@ -708,3 +708,115 @@ function goToMovie(item) {
   window.location.href = `movie.html?id=${item.id}&type=${type}`;
 }
 loadWeeklyTrending();
+
+
+async function displayBanner() {
+  const combinedItems = [...movieItems, ...tvItems, ...animeItems];
+
+  if (combinedItems.length === 0) return;
+
+  const randomItem = combinedItems[Math.floor(Math.random() * combinedItems.length)];
+  const type = randomItem.title ? 'movie' : 'tv';
+
+  const trailerKey = await fetchTrailer(randomItem.id, type);
+
+  const banner = document.getElementById('banner-video-container');
+banner.innerHTML = '';
+
+if (trailerKey) {
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&rel=0`;
+  iframe.allow = 'autoplay; encrypted-media';
+  iframe.allowFullscreen = true;
+  iframe.frameBorder = '0';
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
+  banner.appendChild(iframe);
+} else {
+  const fallbackImg = document.createElement('img');
+  fallbackImg.src = IMG_URL + randomItem.backdrop_path;
+  fallbackImg.alt = randomItem.title || randomItem.name;
+  fallbackImg.style.width = '100%';
+  fallbackImg.style.height = '100%';
+  fallbackImg.style.objectFit = 'cover';
+  banner.appendChild(fallbackImg);
+}
+
+}
+
+async function fetchTrailer(id, type) {
+  try {
+    const res = await fetch(`${BASE_URL}/${type}/${id}/videos?api_key=${API_KEY}`);
+    const data = await res.json();
+    const trailer = data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+    return trailer ? trailer.key : null;
+  } catch {
+    return null;
+  }
+}
+async function loadHomeContent() {
+  await getTrendingMovies();
+  await getTrendingTVShows();
+  await getTrendingAnime(); // make sure all items loaded
+
+  displayBanner(); // ← dito mo lang tatawagin para siguradong may laman ang movieItems/tvItems/animeItems
+ let lastBannerIndex = -1;
+
+async function displayBanner() {
+  const combinedItems = [...movieItems, ...tvItems, ...animeItems];
+  if (combinedItems.length === 0) return;
+
+  let randomIndex;
+  do {
+    randomIndex = Math.floor(Math.random() * combinedItems.length);
+  } while (randomIndex === lastBannerIndex && combinedItems.length > 1);
+  lastBannerIndex = randomIndex;
+
+  const randomItem = combinedItems[randomIndex];
+  const trailerKey = await fetchTrailer(randomItem);
+
+  const banner = document.getElementById('banner-video-container');
+  banner.innerHTML = '';
+
+  // Title display
+  const titleElement = document.getElementById('banner-title');
+  titleElement.textContent = randomItem.title || randomItem.name || 'Untitled';
+
+  if (trailerKey) {
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&rel=0`;
+    iframe.allow = 'autoplay; encrypted-media';
+    iframe.allowFullscreen = true;
+    iframe.frameBorder = '0';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    banner.appendChild(iframe);
+  } else {
+    const fallbackImg = document.createElement('img');
+    fallbackImg.src = IMG_URL + randomItem.backdrop_path;
+    fallbackImg.alt = randomItem.title || randomItem.name;
+    fallbackImg.style.width = '100%';
+    fallbackImg.style.height = '100%';
+    fallbackImg.style.objectFit = 'cover';
+    banner.appendChild(fallbackImg);
+  }
+}
+
+
+function displayBanner() {
+  const combinedItems = [...movieItems, ...tvItems, ...animeItems];
+  if (combinedItems.length === 0) return;
+
+  let randomIndex;
+  do {
+    randomIndex = Math.floor(Math.random() * combinedItems.length);
+  } while (randomIndex === lastBannerIndex && combinedItems.length > 1);
+
+  lastBannerIndex = randomIndex;
+  const randomItem = combinedItems[randomIndex];
+  // proceed as normal...
+}
+
+  setInterval(displayBanner, 30000); // every 30 seconds
+
+}

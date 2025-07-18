@@ -1,5 +1,5 @@
 // ✅ sw.js - Service Worker for Movies-J
-const CACHE_VERSION = 'v1.1.4'; // 🔁 Increment this to trigger updates
+const CACHE_VERSION = 'v1.1.6'; // 🔁 Increment this to trigger updates
 const CACHE_NAME = `movie-cache-${CACHE_VERSION}`;
 
 const urlsToCache = [

@@ -58,6 +58,16 @@
       }
     }
   </style>
+
+
+<script>
+  // Get id and type from URL query string
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get("id");
+  const type = urlParams.get("type") || 'movie'; // default to movie
+</script>
+
+
 </head>
 
 <body style="background:#111; color:#fff;">

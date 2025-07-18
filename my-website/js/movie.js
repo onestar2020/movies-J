@@ -122,12 +122,15 @@ async function loadMovie() {
   document.getElementById('movie-rating').textContent = '★'.repeat(Math.round(data.vote_average / 2));
 
   // ✅ REMOVE or COMMENT THIS OUT:
-  // initPlayerWithFallback(); ← wag muna siya auto-call
+  //initPlayerWithFallback();
+document.getElementById('movie-player').src = "";
+document.getElementById("active-server-label").textContent = "⏳ Click Start Find Server to watch the full movie.";
 
 
 
   const trailerRes = await fetch(`${BASE_URL}/${type}/${id}/videos?api_key=${API_KEY}`);
   const trailerData = await trailerRes.json();
+
   const trailer = trailerData.results.find(v => v.type === "Trailer" && v.site === "YouTube");
   if (trailer) {
     document.getElementById('movie-player').src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1`;

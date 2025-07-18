@@ -81,28 +81,22 @@ async function fetchTrailer(id, mediaType) {
   return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
 }
 
-async function playBannerTrailer() {
-  const bannerTitle = document.getElementById('banner-title');
-  const trailerIframe = document.getElementById('trailer');
-  const item = bannerItems?.[bannerIndex];
+async function playBannerTrailer(videoKey) {
+  const container = document.getElementById('banner-video-container');
+  container.innerHTML = '';
 
-  if (!bannerTitle || !trailerIframe || !item) {
-    console.warn("Banner elements not found or item is undefined.");
-    return;
-  }
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoKey}`;
+  iframe.width = '100%';
+  iframe.height = '100%';
+  iframe.style.border = '0';
+  iframe.allow = 'autoplay; encrypted-media';
+  iframe.allowFullscreen = true;
 
-  bannerTitle.textContent = item.title || item.name;
-
-  if (item.isUpload) {
-    trailerIframe.src = `https://drive.google.com/file/d/${item.id}/preview`;
-  } else {
-    const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-    const url = await fetchTrailer(item.id, mediaType);
-    trailerIframe.src = url
-      ? `${url}?autoplay=1&mute=1&controls=0&loop=1&playlist=${url.split('/').pop()}`
-      : '';
-  }
+  container.appendChild(iframe);
 }
+
+
 
 
 function nextBannerTrailer() {

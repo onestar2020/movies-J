@@ -890,3 +890,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
 window.goToMovie = goToMovie;
 window.showUploadModal = showUploadModal;
+document.getElementById('watch-full').addEventListener('click', () => {
+  if (currentTrailer && currentTrailer.id) {
+    sessionStorage.setItem('movieId', currentTrailer.id);
+    sessionStorage.setItem('mediaType', currentTrailer.media_type || 'movie');
+    window.location.href = 'movie.html'; // ⬅ same tab lang
+  }
+});

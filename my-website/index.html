@@ -319,35 +319,67 @@
 <script src="js/watchHistory.js?v=1.0.8" defer></script>
 <script src="js/home.js?v=1.1.6" defer></script>
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const trailerVideoId = "ScMzIvxBSi4"; // 🎥 Replace mo ito ng real trailer ID (from YouTube)
-    const movieTitle = "Big Buck Bunny (Demo Trailer)"; // 📝 Replace mo din ito kung gusto mo ng ibang title
-
+  document.addEventListener("DOMContentLoaded", async function () {
+    const API_KEY = "22d74813ded3fecbe3ef632b4814ae3a"; // Your TMDB API key
+    const BASE_URL = "https://api.themoviedb.org/3";
     const container = document.getElementById("banner-video-container");
     const titleEl = document.getElementById("banner-title");
 
-    // Set movie title text
-    titleEl.textContent = movieTitle;
+    async function fetchTrendingMovieWithTrailer() {
+      try {
+        const trendingRes = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
+        const trendingData = await trendingRes.json();
+        const movies = trendingData.results;
 
-    // Create YouTube iframe with autoplay settings
-    const iframe = document.createElement("iframe");
-    iframe.src = `https://www.youtube.com/embed/${trailerVideoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerVideoId}&modestbranding=1&rel=0&showinfo=0`;
-    iframe.allow = "autoplay; encrypted-media";
-    iframe.allowFullscreen = true;
-    iframe.frameBorder = "0";
+        for (const movie of movies) {
+          const movieId = movie.id;
+          const title = movie.title || movie.name;
 
-    // Style to fit the container
-    iframe.style.width = "100%";
-    iframe.style.height = "100%";
-    iframe.style.position = "absolute";
-    iframe.style.top = "0";
-    iframe.style.left = "0";
-    iframe.style.zIndex = "0";
+          const videoRes = await fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}`);
+          const videoData = await videoRes.json();
+          const trailer = videoData.results.find(v => v.type === "Trailer" && v.site === "YouTube");
 
-    container.innerHTML = "";
-    container.appendChild(iframe);
+          if (trailer) {
+            return {
+              title: title,
+              youtubeKey: trailer.key
+            };
+          }
+        }
+
+        return null;
+      } catch (error) {
+        console.error("Failed to fetch trailer:", error);
+        return null;
+      }
+    }
+
+    const trailerInfo = await fetchTrendingMovieWithTrailer();
+
+    if (trailerInfo) {
+      titleEl.textContent = trailerInfo.title;
+
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.youtube.com/embed/${trailerInfo.youtubeKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerInfo.youtubeKey}&modestbranding=1&rel=0&showinfo=0`;
+      iframe.allow = "autoplay; encrypted-media";
+      iframe.allowFullscreen = true;
+      iframe.frameBorder = "0";
+
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.position = "absolute";
+      iframe.style.top = "0";
+      iframe.style.left = "0";
+      iframe.style.zIndex = "0";
+
+      container.innerHTML = "";
+      container.appendChild(iframe);
+    } else {
+      titleEl.textContent = "No trailer found.";
+    }
   });
 </script>
+
 
 
 

@@ -1,5 +1,5 @@
 // ✅ sw.js - Service Worker for Movies-J
-const CACHE_VERSION = 'v1.1.7'; // 🔁 Increment this to trigger updates
+const CACHE_VERSION = 'v1.1.8'; // 🔁 Increment this to trigger updates
 const CACHE_NAME = `movie-cache-${CACHE_VERSION}`;
 
 const urlsToCache = [
@@ -45,20 +45,26 @@ self.addEventListener('activate', event => {
   self.clients.claim(); // Take control immediately
 });
 
-// ✅ Fetch: Cache-first strategy with network fallback
+// ✅ Fetch: Cache-first for same-origin, bypass external domains
 self.addEventListener('fetch', event => {
   const request = event.request;
+  const requestURL = new URL(request.url);
 
-  // For navigation requests (HTML pages), use fallback to index.html
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request).catch(() => caches.match('./index.html'))
-    );
+  // Only handle same-origin requests
+  if (requestURL.origin === location.origin) {
+    if (request.mode === 'navigate') {
+      event.respondWith(
+        fetch(request).catch(() => caches.match('./index.html'))
+      );
+    } else {
+      event.respondWith(
+        caches.match(request).then(cachedResponse => {
+          return cachedResponse || fetch(request);
+        })
+      );
+    }
   } else {
-    event.respondWith(
-      caches.match(request).then(cachedResponse => {
-        return cachedResponse || fetch(request);
-      })
-    );
+    // 🔕 Skip external requests (like Google ads/CSP)
+    return;
   }
 });

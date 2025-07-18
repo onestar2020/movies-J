@@ -317,6 +317,36 @@
 
 <script src="js/watchHistory.js?v=1.0.8" defer></script>
 <script src="js/home.js?v=1.1.6" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const trailerVideoId = "ScMzIvxBSi4"; // 🎥 Replace mo ito ng real trailer ID (from YouTube)
+    const movieTitle = "Big Buck Bunny (Demo Trailer)"; // 📝 Replace mo din ito kung gusto mo ng ibang title
+
+    const container = document.getElementById("banner-video-container");
+    const titleEl = document.getElementById("banner-title");
+
+    // Set movie title text
+    titleEl.textContent = movieTitle;
+
+    // Create YouTube iframe with autoplay settings
+    const iframe = document.createElement("iframe");
+    iframe.src = `https://www.youtube.com/embed/${trailerVideoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerVideoId}&modestbranding=1&rel=0&showinfo=0`;
+    iframe.allow = "autoplay; encrypted-media";
+    iframe.allowFullscreen = true;
+    iframe.frameBorder = "0";
+
+    // Style to fit the container
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.position = "absolute";
+    iframe.style.top = "0";
+    iframe.style.left = "0";
+    iframe.style.zIndex = "0";
+
+    container.innerHTML = "";
+    container.appendChild(iframe);
+  });
+</script>
 
 
 

@@ -143,6 +143,7 @@ document.getElementById("banner-video-container").dataset.trailerKey = trailerKe
     banner.appendChild(fallbackImg);
   }
 }
+
 function prevBannerTrailer() {
   if (!bannerItems.length) return;
   bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
@@ -155,6 +156,7 @@ function nextBannerTrailer() {
   updateBanner();
 }
 
+
 function updateBanner() {
   if (!bannerItems.length) return;
 
@@ -162,40 +164,31 @@ function updateBanner() {
   const trailerKey = item.trailer;
   const type = item.type || "movie";
 
-  // ✅ Update banner content (example logic — adjust to your layout)
-  const banner = document.getElementById("banner");
-  const title = item.title || item.name;
-  banner.innerHTML = `
-    <iframe width="100%" height="400" src="https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0" frameborder="0" allowfullscreen></iframe>
-    <h2 style="text-align: center; margin-top: 10px;">${title}</h2>
-  `;
+  // ... existing banner update logic
 
-  // ✅ Set correct ID & type for "Watch Full" button
+  // ✅ Set correct id/type for the "Watch Full" button
   const watchFullBtn = document.getElementById("watch-full");
   watchFullBtn.dataset.id = item.id;
   watchFullBtn.dataset.type = type;
 }
 
-// ✅ Function for Watch Full button
+
+const watchFullBtn = document.getElementById("watch-full");
+watchFullBtn.dataset.id = item.id;
+watchFullBtn.dataset.type = type;
+
 function watchCurrentBanner() {
   const watchBtn = document.getElementById("watch-full");
   const id = watchBtn.dataset.id;
   const type = watchBtn.dataset.type || "movie";
 
   if (id && type) {
+    // ✅ Open same logic as thumbnails
     window.location.href = `movie.html?id=${id}&type=${type}`;
   } else {
     alert("Missing movie info.");
   }
 }
-
-// ✅ Bind click event once DOM is ready
-document.addEventListener("DOMContentLoaded", () => {
-  const watchFullBtn = document.getElementById("watch-full");
-  if (watchFullBtn) {
-    watchFullBtn.addEventListener("click", watchCurrentBanner);
-  }
-});
 
 
 async function init() {

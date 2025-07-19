@@ -111,59 +111,50 @@ function displayBanner(items) {
   updateBanner();
 }
 
-async function updateBanner() {
+
+
+function updateBanner() {
   if (!bannerItems.length) return;
+
   const item = bannerItems[bannerIndex];
-  const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-  const trailerKey = await fetchTrailer(item.id, type);
+  const trailerKey = item.trailer;
+  const type = item.type || "movie";
 
-  const banner = document.getElementById('banner-video-container');
-  const titleEl = document.getElementById('banner-title');
-  banner.innerHTML = '';
-  titleEl.textContent = item.title || item.name || 'Untitled';
+  // ✅ Update banner content (example logic — adjust to your layout)
+  const banner = document.getElementById("banner");
+  const title = item.title || item.name;
+  banner.innerHTML = `
+    <iframe width="100%" height="400" src="https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0" frameborder="0" allowfullscreen></iframe>
+    <h2 style="text-align: center; margin-top: 10px;">${title}</h2>
+  `;
 
-  if (trailerKey) {
-    const iframe = document.createElement('iframe');
-    iframe.src = `https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKey}`;
-    iframe.allow = 'autoplay; encrypted-media';
-    iframe.allowFullscreen = true;
-    iframe.frameBorder = '0';
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    banner.appendChild(iframe);
+  // ✅ Set correct ID & type for "Watch Full" button
+  const watchFullBtn = document.getElementById("watch-full");
+  watchFullBtn.dataset.id = item.id;
+  watchFullBtn.dataset.type = type;
+}
+
+// ✅ Function for Watch Full button
+function watchCurrentBanner() {
+  const watchBtn = document.getElementById("watch-full");
+  const id = watchBtn.dataset.id;
+  const type = watchBtn.dataset.type || "movie";
+
+  if (id && type) {
+    window.location.href = `movie.html?id=${id}&type=${type}`;
   } else {
-    const fallbackImg = document.createElement('img');
-    fallbackImg.src = IMG_URL + item.backdrop_path;
-    fallbackImg.alt = item.title || item.name;
-    fallbackImg.style.width = '100%';
-    fallbackImg.style.height = '100%';
-    fallbackImg.style.objectFit = 'cover';
-    banner.appendChild(fallbackImg);
+    alert("Missing movie info.");
   }
 }
 
-function prevBannerTrailer() {
-  if (!bannerItems.length) return;
-  bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
-  updateBanner();
-}
+// ✅ Bind click event once DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+  const watchFullBtn = document.getElementById("watch-full");
+  if (watchFullBtn) {
+    watchFullBtn.addEventListener("click", watchCurrentBanner);
+  }
+});
 
-function nextBannerTrailer() {
-  if (!bannerItems.length) return;
-  bannerIndex = (bannerIndex + 1) % bannerItems.length;
-  updateBanner();
-}
-
-function watchCurrentBanner() {
-  if (!bannerItems.length) return;
-  const item = bannerItems[bannerIndex];
-  const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-  fetchTrailer(item.id, type).then(trailerKey => {
-    if (trailerKey) {
-      window.open(`https://www.youtube.com/watch?v=${trailerKey}`, '_blank');
-    }
-  });
-}
 
 async function init() {
   movieItems = await fetchTrending('movie');
@@ -180,8 +171,24 @@ async function init() {
       }))
     : [];
 
-  const bannerPool = [...movieItems, ...tvItems, ...uploadItems];
-  displayBanner(bannerPool);
+const bannerPool = [...movieItems, ...tvItems];
+
+// Fetch trailer keys for banner items
+const bannerPoolWithTrailers = [];
+for (const item of bannerPool) {
+  const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+  const trailerKey = await fetchTrailer(item.id, type);
+  if (trailerKey) {
+    bannerPoolWithTrailers.push({ ...item, trailer: trailerKey, type });
+  }
+}
+
+// Optionally: Add uploaded items that have trailers (if supported)
+const finalBannerItems = [...bannerPoolWithTrailers, ...uploadItems];
+
+// Show banner
+displayBanner(finalBannerItems);
+
 
   displayList(movieItems, 'movies-list');
   displayList(tvItems, 'tvshows-list');

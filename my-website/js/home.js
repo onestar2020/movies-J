@@ -171,24 +171,8 @@ async function init() {
       }))
     : [];
 
-const bannerPool = [...movieItems, ...tvItems];
-
-// Fetch trailer keys for banner items
-const bannerPoolWithTrailers = [];
-for (const item of bannerPool) {
-  const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-  const trailerKey = await fetchTrailer(item.id, type);
-  if (trailerKey) {
-    bannerPoolWithTrailers.push({ ...item, trailer: trailerKey, type });
-  }
-}
-
-// Optionally: Add uploaded items that have trailers (if supported)
-const finalBannerItems = [...bannerPoolWithTrailers, ...uploadItems];
-
-// Show banner
-displayBanner(finalBannerItems);
-
+  const bannerPool = [...movieItems, ...tvItems, ...uploadItems];
+  displayBanner(bannerPool);
 
   displayList(movieItems, 'movies-list');
   displayList(tvItems, 'tvshows-list');

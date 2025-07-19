@@ -111,7 +111,49 @@ function displayBanner(items) {
   updateBanner();
 }
 
+async function updateBanner() {
+  if (!bannerItems.length) return;
+  const item = bannerItems[bannerIndex];
+  const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+ const trailerKey = await fetchTrailer(item.id, type);
+document.getElementById("banner-video-container").dataset.trailerKey = trailerKey || "";
 
+
+  const banner = document.getElementById('banner-video-container');
+  const titleEl = document.getElementById('banner-title');
+  banner.innerHTML = '';
+  titleEl.textContent = item.title || item.name || 'Untitled';
+
+  if (trailerKey) {
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKey}`;
+    iframe.allow = 'autoplay; encrypted-media';
+    iframe.allowFullscreen = true;
+    iframe.frameBorder = '0';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    banner.appendChild(iframe);
+  } else {
+    const fallbackImg = document.createElement('img');
+    fallbackImg.src = IMG_URL + item.backdrop_path;
+    fallbackImg.alt = item.title || item.name;
+    fallbackImg.style.width = '100%';
+    fallbackImg.style.height = '100%';
+    fallbackImg.style.objectFit = 'cover';
+    banner.appendChild(fallbackImg);
+  }
+}
+function prevBannerTrailer() {
+  if (!bannerItems.length) return;
+  bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
+  updateBanner();
+}
+
+function nextBannerTrailer() {
+  if (!bannerItems.length) return;
+  bannerIndex = (bannerIndex + 1) % bannerItems.length;
+  updateBanner();
+}
 
 function updateBanner() {
   if (!bannerItems.length) return;

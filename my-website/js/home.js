@@ -168,27 +168,29 @@ function nextBannerTrailer() {
 
 
 function watchCurrentBanner(event) {
-  if (event) event.preventDefault();
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation(); // ✅ ADD THIS LINE
+  }
 
   const banner = document.getElementById("banner-video-container");
   const watchBtn = document.getElementById("watch-full");
   const id = watchBtn.dataset.id;
   const type = watchBtn.dataset.type || "movie";
 
-  // ⚠️ New: remove trailer iframe before redirect
   if (banner) {
-    banner.innerHTML = ''; // clear all children including iframe
+    banner.innerHTML = ''; // clear trailer
   }
 
   if (id && type) {
-    // ✅ Slight delay to allow DOM cleanup
     setTimeout(() => {
       window.location.href = `movie.html?id=${id}&type=${type}`;
-    }, 100); // Shorter is better for UX
+    }, 100);
   } else {
     alert("Missing movie info.");
   }
 }
+
 
 
 

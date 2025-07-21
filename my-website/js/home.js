@@ -165,34 +165,38 @@ function nextBannerTrailer() {
 }
 
 
-
-
 function watchCurrentBanner(event) {
   if (event) {
     event.preventDefault();
     event.stopPropagation(); // ✅ BLOCK bubbling
   }
 
-  // Disable all iframe pointer events IMMEDIATELY to stop rogue trigger
+  // Disable all pointer events temporarily to block rogue clicks
+  document.body.style.pointerEvents = 'none';
+  setTimeout(() => {
+    document.body.style.pointerEvents = '';
+  }, 500); // restore after half second
+
   const banner = document.getElementById("banner-video-container");
   if (banner) {
     const iframe = banner.querySelector("iframe");
     if (iframe) {
-      iframe.remove(); // 🔥 remove trailer iframe entirely
+      iframe.src = ""; // 🧹 wipe the iframe source
+      iframe.remove(); // ❌ remove from DOM
     }
-    banner.innerHTML = ''; // clear any remnants
+
+    banner.innerHTML = ''; // 🧹 clear all remaining content
   }
 
   const watchBtn = document.getElementById("watch-full");
-  const id = watchBtn.dataset.id;
-  const type = watchBtn.dataset.type || "movie";
+  const id = watchBtn?.dataset?.id;
+  const type = watchBtn?.dataset?.type || "movie";
 
   if (id && type) {
     setTimeout(() => {
-      // Optional: explicitly remove focus from any iframe
-      window.blur();
+      window.blur(); // ⛔ ensure iframe loses focus
       window.location.href = `movie.html?id=${id}&type=${type}`;
-    }, 100);
+    }, 100); // slight delay to finish cleanup
   } else {
     alert("Missing movie info.");
   }

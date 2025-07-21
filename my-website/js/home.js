@@ -145,12 +145,7 @@ banner.appendChild(iframe);
     banner.appendChild(fallbackImg);
   }
 
-  // ✅ Ito ang mahalaga para gumana ang "▶ Watch Full"
-  const watchFullBtn = document.getElementById("watch-full");
-  if (watchFullBtn) {
-    watchFullBtn.dataset.id = item.id;
-    watchFullBtn.dataset.type = type;
-  }
+  
 }
 
 
@@ -166,43 +161,6 @@ function nextBannerTrailer() {
   updateBanner();
 }
 
-
-function watchCurrentBanner(event) {
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation(); // ✅ BLOCK bubbling
-  }
-
-  // Disable all pointer events temporarily to block rogue clicks
-  document.body.style.pointerEvents = 'none';
-  setTimeout(() => {
-    document.body.style.pointerEvents = '';
-  }, 500); // restore after half second
-
-  const banner = document.getElementById("banner-video-container");
-  if (banner) {
-    const iframe = banner.querySelector("iframe");
-    if (iframe) {
-      iframe.src = ""; // 🧹 wipe the iframe source
-      iframe.remove(); // ❌ remove from DOM
-    }
-
-    banner.innerHTML = ''; // 🧹 clear all remaining content
-  }
-
-  const watchBtn = document.getElementById("watch-full");
-  const id = watchBtn?.dataset?.id;
-  const type = watchBtn?.dataset?.type || "movie";
-
-  if (id && type) {
-    setTimeout(() => {
-      window.blur(); // ⛔ ensure iframe loses focus
-      window.location.href = `movie.html?id=${id}&type=${type}`;
-    }, 100); // slight delay to finish cleanup
-  } else {
-    alert("Missing movie info.");
-  }
-}
 
 
 
@@ -363,11 +321,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Banner controls
   const prevBtn = document.getElementById('prev-trailer');
   const nextBtn = document.getElementById('next-trailer');
-  const watchFullBtn = document.getElementById('watch-full');
+
 
   if (prevBtn) prevBtn.addEventListener('click', prevBannerTrailer);
   if (nextBtn) nextBtn.addEventListener('click', nextBannerTrailer);
-  if (watchFullBtn) watchFullBtn.addEventListener('click', watchCurrentBanner);
+
 
   setInterval(updateBanner, 30000); // auto next every 30s
 });

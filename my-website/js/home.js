@@ -333,21 +333,16 @@ function loadUploadedMovies() {
   });
 }
 
-
 document.addEventListener('DOMContentLoaded', async () => {
   await init();
   loadWeeklyTrending();
   loadWatchHistory();
+  loadUploadedMovies(); // ✅ Correct JavaScript syntax
 
-  // Banner controls
   const prevBtn = document.getElementById('prev-trailer');
   const nextBtn = document.getElementById('next-trailer');
-
-
   if (prevBtn) prevBtn.addEventListener('click', prevBannerTrailer);
   if (nextBtn) nextBtn.addEventListener('click', nextBannerTrailer);
-
-
   setInterval(updateBanner, 30000); // auto next every 30s
 });
 

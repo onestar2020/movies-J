@@ -171,17 +171,29 @@ function nextBannerTrailer() {
 function watchCurrentBanner(event) {
   if (event) event.preventDefault(); // ⛔ Prevent default browser behavior
 
-  // ✅ Stop the iframe trailer to prevent autoplay while redirecting
   const banner = document.getElementById("banner-video-container");
-  if (banner) banner.innerHTML = "";
 
+  if (banner) {
+    // 🔴 Optional safety: stop any iframe from playing
+    const iframe = banner.querySelector("iframe");
+    if (iframe) {
+      iframe.src = "about:blank"; // Force unload iframe src
+    }
+
+    // ✅ Clear the banner
+    banner.innerHTML = "";
+  }
+
+  // 📦 Get the movie info from button's dataset
   const watchBtn = document.getElementById("watch-full");
   const id = watchBtn.dataset.id;
   const type = watchBtn.dataset.type || "movie";
 
   if (id && type) {
-    // ✅ Redirect cleanly
-    window.location.href = `movie.html?id=${id}&type=${type}`;
+    // ✅ Delay redirect to allow iframe to unload
+    setTimeout(() => {
+      window.location.href = `movie.html?id=${id}&type=${type}`;
+    }, 150); // Slight delay (100–200ms)
   } else {
     alert("Missing movie info.");
   }

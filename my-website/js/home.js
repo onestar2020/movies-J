@@ -173,9 +173,7 @@ function updateBanner() {
 }
 
 
-const watchFullBtn = document.getElementById("watch-full");
-watchFullBtn.dataset.id = item.id;
-watchFullBtn.dataset.type = type;
+
 
 function watchCurrentBanner() {
   const watchBtn = document.getElementById("watch-full");

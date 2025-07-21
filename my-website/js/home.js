@@ -125,14 +125,16 @@ async function updateBanner() {
   titleEl.textContent = item.title || item.name || 'Untitled';
 
   if (trailerKey) {
-    const iframe = document.createElement('iframe');
-    iframe.src = `https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKey}`;
-    iframe.allow = 'autoplay; encrypted-media';
-    iframe.allowFullscreen = true;
-    iframe.frameBorder = '0';
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    banner.appendChild(iframe);
+ const iframe = document.createElement('iframe');
+iframe.src = `https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKey}`;
+iframe.allow = 'autoplay; encrypted-media';
+iframe.allowFullscreen = true;
+iframe.frameBorder = '0';
+iframe.style.width = '100%';
+iframe.style.height = '100%';
+iframe.style.pointerEvents = 'none'; // ⛔ block rogue clicks
+banner.appendChild(iframe);
+
   } else {
     const fallbackImg = document.createElement('img');
     fallbackImg.src = IMG_URL + item.backdrop_path;

@@ -168,13 +168,19 @@ function nextBannerTrailer() {
 
 
 
-function watchCurrentBanner() {
+function watchCurrentBanner(event) {
+  if (event) event.preventDefault(); // ⛔ Prevent default browser behavior
+
+  // ✅ Stop the iframe trailer to prevent autoplay while redirecting
+  const banner = document.getElementById("banner-video-container");
+  if (banner) banner.innerHTML = "";
+
   const watchBtn = document.getElementById("watch-full");
   const id = watchBtn.dataset.id;
   const type = watchBtn.dataset.type || "movie";
 
   if (id && type) {
-    // ✅ Open same logic as thumbnails
+    // ✅ Redirect cleanly
     window.location.href = `movie.html?id=${id}&type=${type}`;
   } else {
     alert("Missing movie info.");

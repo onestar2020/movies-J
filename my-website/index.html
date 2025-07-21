@@ -1,132 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 
-
 <head>
-<script>
-  const appVersion = '1.2.6'; // Palitan mo lang ito next time may update
-</script>
-
+  <script>
+    const appVersion = '1.2.6';
+  </script>
 
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Movies-J Official Site</title>
-<!-- Web Manifest -->
-<link rel="manifest" href="manifest.json">
 
-<script>
-  document.write(`
-    <link rel="preload" href="css/home.css?v=${appVersion}" as="style" onload="this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="css/home.css?v=${appVersion}"></noscript>
-  `);
-</script>
+  <!-- Web Manifest -->
+  <link rel="manifest" href="manifest.json">
 
+  <!-- Dynamically Loaded CSS -->
+  <script>
+    document.write(`
+      <link rel="preload" href="css/home.css?v=${appVersion}" as="style" onload="this.rel='stylesheet'">
+      <noscript><link rel="stylesheet" href="css/home.css?v=${appVersion}"></noscript>
+    `);
+  </script>
 
-
-  <!-- Web Manifest and Favicon -->
- 
+  <!-- Favicon -->
   <link rel="icon" href="images/logo.png" type="image/png">
- 
 
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- ✅ MODERN BUTTON STYLE -->
+  <style>
+    .modern-button {
+      padding: 10px 24px;
+      margin: 0 12px;
+      background: #e50914;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .modern-button:hover {
+      background: #b20710;
+      transform: scale(1.05);
+    }
+
+    .modern-button:active {
+      transform: scale(0.97);
+    }
+  </style>
 </head>
+
 <body>
-  
-
-
-
   <div class="container">
     <div class="main-wrapper">
 
-  <!-- Adsterra 320x50 Mobile Banner -->
-<div id="mobile-banner-ad">
-  <script type="text/javascript">
-    atOptions = {
-      'key': '3083f880e1af15df37f27c8f5913cb6c',
-      'format': 'iframe',
-      'height': 50,
-      'width': 320,
-      'params': {}
-    };
-  </script>
-  <script type="text/javascript" src="//www.highperformanceformat.com/3083f880e1af15df37f27c8f5913cb6c/invoke.js"></script>
-</div>
+      <!-- Adsterra 320x50 Mobile Banner -->
+      <div id="mobile-banner-ad">
+        <script type="text/javascript">
+          atOptions = {
+            'key': '3083f880e1af15df37f27c8f5913cb6c',
+            'format': 'iframe',
+            'height': 50,
+            'width': 320,
+            'params': {}
+          };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/3083f880e1af15df37f27c8f5913cb6c/invoke.js"></script>
+      </div>
 
- <!-- Navigation Bar -->
-  <div class="navbar">
-    <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect glow-gradient" />
+      <!-- Navigation Bar -->
+      <div class="navbar">
+        <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect glow-gradient" />
+        <div class="nav-links">
+          <div class="top-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <a href="index.html" style="text-decoration: none; font-weight: bold; color: white;">🏠 Home</a>
 
+            <!-- 📲 Install App Button -->
+            <button id="install-btn" style="display: none; padding: 6px 12px; background: #e50914; color: #fff; font-weight: 600; font-size: 14px; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">
+              📲 Install App
+            </button>
+          </div>
 
+          <div class="bottom-row">
+            <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
+            <!-- Watch History Button -->
+            <button class="watch-history-btn" onclick="openWatchHistoryModal()">
+              <i class="fa-solid fa-clock icon-label" style="margin-right: 6px;"></i>
+              <span class="text-label">Watch History</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
-  <div class="nav-links">
+      <!-- 🔥 Weekly Trending Section with Modern Controls -->
+      <section id="weekly-trending-section" style="position: relative; height: 450px; overflow: hidden;">
+        <!-- 🔼 YouTube Trailer Container -->
+        <div id="banner-video-container" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 0;"></div>
 
+        <!-- 🔼 Trailer Title Overlay -->
+        <h2 id="banner-title" style="position: relative; z-index: 1; color: white; font-size: 2em; margin: 20px; text-shadow: 2px 2px 8px black;"></h2>
 
-<div class="top-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
-  <a href="index.html" style="text-decoration: none; font-weight: bold; color: white;">🏠 Home</a>
+        <!-- 🔽 Modern Controls at Bottom -->
+        <div id="banner-controls" style="position: relative; z-index: 2; text-align: center; margin-top: 380px;">
+          <button id="prev-trailer" class="modern-button">← Prev Trailer</button>
+          <button id="next-trailer" class="modern-button">Next Trailer →</button>
+        </div>
+      </section>
 
-  <!-- 📲 Install App Button -->
-  <button id="install-btn"
-    style="
-      display: none;
-      padding: 6px 12px;
-      background: #e50914;
-      color: #fff;
-      font-weight: 600;
-      font-size: 14px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      white-space: nowrap;
-    ">
-    📲 Install App
-  </button>
-</div>
-
-  <div class="bottom-row">
-    <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
- 
-  
-  <!-- New Watch History Button (responsive like MovieBox) -->
-  <!-- New Watch History Button (OBVIOUS BUTTON style) -->
-<button class="watch-history-btn" onclick="openWatchHistoryModal()">
-  <i class="fa-solid fa-clock icon-label" style="margin-right: 6px;"></i>
-  <span class="text-label">Watch History</span>
-</button>
-
-
-</div>
-
-  </div>
-</div>
-<section id="weekly-trending-section" style="position: relative; height: 450px; overflow: hidden;">
-  <!-- 🔼 YouTube Trailer Container -->
-  <div id="banner-video-container" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 0;"></div>
-  
-  <!-- 🔼 Trailer Title Overlay -->
-  <h2 id="banner-title" style="position: relative; z-index: 1; color: white; font-size: 2em; margin: 20px; text-shadow: 2px 2px 8px black;"></h2>
-</section>
-
-<!-- 🔽 Controls Moved BELOW the Trailer -->
-<div id="banner-controls" style="text-align: center; margin-top: 20px; z-index: 2;">
-  <button id="prev-trailer" style="margin: 0 10px; padding: 8px 16px; cursor: pointer;">&#8592; Prev Trailer</button>
-  <button id="next-trailer" style="margin: 0 10px; padding: 8px 16px; cursor: pointer;">Next Trailer &#8594;</button>
-</div>
-
-
-</section>
-
-
-
-  <div class="row"><h2>Trending Movies</h2><div class="list" id="movies-list"></div></div>
-  <div class="row"><h2>Trending TV Shows</h2><div class="list" id="tvshows-list"></div></div>
-  <div class="row"><h2>Trending Anime</h2><div class="list" id="anime-list"></div></div>
-  <div class="row">
-    <h2>My Uploaded Movies</h2>
-    <div class="list" id="uploaded-movies-list"></div>
-    <div id="upload-pagination" style="text-align:center; margin-top:10px;"></div>
-  </div>
-
+      <!-- Other Sections -->
+      <div class="row"><h2>Trending Movies</h2><div class="list" id="movies-list"></div></div>
+      <div class="row"><h2>Trending TV Shows</h2><div class="list" id="tvshows-list"></div></div>
+      <div class="row"><h2>Trending Anime</h2><div class="list" id="anime-list"></div></div>
+      <div class="row">
+        <h2>My Uploaded Movies</h2>
+        <div class="list" id="uploaded-movies-list"></div>
+        <div id="upload-pagination" style="text-align:center; margin-top:10px;"></div>
+      </div>
 
   <!-- TMDB Modal -->
   <div class="modal" id="modal">

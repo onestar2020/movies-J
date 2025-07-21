@@ -113,11 +113,11 @@ function displayBanner(items) {
 
 async function updateBanner() {
   if (!bannerItems.length) return;
+
   const item = bannerItems[bannerIndex];
   const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
- const trailerKey = await fetchTrailer(item.id, type);
-document.getElementById("banner-video-container").dataset.trailerKey = trailerKey || "";
-
+  const trailerKey = await fetchTrailer(item.id, type);
+  document.getElementById("banner-video-container").dataset.trailerKey = trailerKey || "";
 
   const banner = document.getElementById('banner-video-container');
   const titleEl = document.getElementById('banner-title');
@@ -142,7 +142,15 @@ document.getElementById("banner-video-container").dataset.trailerKey = trailerKe
     fallbackImg.style.objectFit = 'cover';
     banner.appendChild(fallbackImg);
   }
+
+  // ✅ Ito ang mahalaga para gumana ang "▶ Watch Full"
+  const watchFullBtn = document.getElementById("watch-full");
+  if (watchFullBtn) {
+    watchFullBtn.dataset.id = item.id;
+    watchFullBtn.dataset.type = type;
+  }
 }
+
 
 function prevBannerTrailer() {
   if (!bannerItems.length) return;
@@ -156,21 +164,6 @@ function nextBannerTrailer() {
   updateBanner();
 }
 
-
-function updateBanner() {
-  if (!bannerItems.length) return;
-
-  const item = bannerItems[bannerIndex];
-  const trailerKey = item.trailer;
-  const type = item.type || "movie";
-
-  // ... existing banner update logic
-
-  // ✅ Set correct id/type for the "Watch Full" button
-  const watchFullBtn = document.getElementById("watch-full");
-  watchFullBtn.dataset.id = item.id;
-  watchFullBtn.dataset.type = type;
-}
 
 
 

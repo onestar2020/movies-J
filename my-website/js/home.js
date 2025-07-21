@@ -170,20 +170,27 @@ function nextBannerTrailer() {
 function watchCurrentBanner(event) {
   if (event) {
     event.preventDefault();
-    event.stopPropagation(); // ✅ ADD THIS LINE
+    event.stopPropagation(); // ✅ BLOCK bubbling
   }
 
+  // Disable all iframe pointer events IMMEDIATELY to stop rogue trigger
   const banner = document.getElementById("banner-video-container");
+  if (banner) {
+    const iframe = banner.querySelector("iframe");
+    if (iframe) {
+      iframe.remove(); // 🔥 remove trailer iframe entirely
+    }
+    banner.innerHTML = ''; // clear any remnants
+  }
+
   const watchBtn = document.getElementById("watch-full");
   const id = watchBtn.dataset.id;
   const type = watchBtn.dataset.type || "movie";
 
-  if (banner) {
-    banner.innerHTML = ''; // clear trailer
-  }
-
   if (id && type) {
     setTimeout(() => {
+      // Optional: explicitly remove focus from any iframe
+      window.blur();
       window.location.href = `movie.html?id=${id}&type=${type}`;
     }, 100);
   } else {

@@ -266,14 +266,15 @@ async function searchTMDB() {
   if (tmdbResults.length > 0) container.appendChild(tmdbSection);
 
   // Uploaded movies section
-  if (typeof uploads !== 'undefined' && Array.isArray(uploads)) {
+    if (typeof uploads !== 'undefined' && Array.isArray(uploads)) {
     const uploadedSection = document.createElement('div');
     const uploadHeader = document.createElement('h3');
     uploadHeader.textContent = '📁 My Uploaded Movies';
     uploadHeader.style.margin = '20px 0';
     uploadedSection.appendChild(uploadHeader);
 
-    uploads.forEach(upload => {
+
+      uploads.forEach(upload => {
       if (upload.title.toLowerCase().includes(query.toLowerCase())) {
         const div = document.createElement('div');
         div.style.textAlign = 'center';

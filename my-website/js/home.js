@@ -349,21 +349,25 @@ window.searchTMDB = searchTMDB;
 window.goToMovie = goToMovie;
 window.openWatchHistoryModal = openWatchHistoryModal;
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await init();
-  loadWeeklyTrending();
-  loadWatchHistory();
-
-  // Banner controls
-  const prevBtn = document.getElementById('prev-trailer');
-  const nextBtn = document.getElementById('next-trailer');
-  const watchFullBtn = document.getElementById('watch-full');
-
-  if (prevBtn) prevBtn.addEventListener('click', prevBannerTrailer);
-  if (nextBtn) nextBtn.addEventListener('click', nextBannerTrailer);
-  if (watchFullBtn) watchFullBtn.addEventListener('click', watchCurrentBanner);
-
-  setInterval(updateBanner, 30000); // auto next every 30s
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("watch-full")?.addEventListener("click", watchCurrentBanner);
 });
+
+function watchCurrentBanner(event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  console.log("Watch Full Clicked");
+
+  // Remove trailer iframe
+  document.querySelector("#banner-video-container iframe")?.remove();
+
+  const btn = event.currentTarget;
+  const id = btn.dataset.id;
+  const type = btn.dataset.type || "movie";
+
+  if (!id) return alert("No ID");
+  window.location.href = `movie.html?id=${id}&type=${type}`;
+}
 
 

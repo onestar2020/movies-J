@@ -317,21 +317,23 @@ function loadUploadedMovies() {
   const uploadSection = document.getElementById('uploaded-movies');
   if (!uploadSection || typeof uploads === 'undefined' || !Array.isArray(uploads)) return;
 
+  uploadSection.className = 'movies-container'; // <== key fix for horizontal layout
   uploadSection.innerHTML = '';
 
   uploads.forEach(upload => {
     const div = document.createElement('div');
-    div.classList.add('upload-card');
+    div.classList.add('movie-card'); // same class used by trending movies
     div.innerHTML = `
       <img src="https://drive.google.com/thumbnail?id=${upload.id}&sz=w300"
            alt="${upload.title}"
-           style="width:160px;border-radius:8px;cursor:pointer;"
+           style="width:100%; border-radius:8px; cursor:pointer;"
            onclick="showUploadModal('${upload.id}')">
       <p style="color:white; font-weight:bold; margin-top:8px;">${upload.title}</p>
     `;
     uploadSection.appendChild(div);
   });
 }
+
 
 document.addEventListener('DOMContentLoaded', async () => {
   await init();

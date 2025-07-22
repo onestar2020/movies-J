@@ -1,71 +1,521 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+  <script>
+    const appVersion = '1.2.7';
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Movies-J Anime Edition</title>
+  <title>Movies-J Official Site</title>
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto:wght@300;500&display=swap" rel="stylesheet">
+  <!-- Web Manifest -->
+  <link rel="manifest" href="manifest.json">
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="css/home-anime.css">
+  <!-- Dynamically Loaded CSS -->
+  <script>
+    document.write(`
+      <link rel="preload" href="css/home.css?v=${appVersion}" as="style" onload="this.rel='stylesheet'">
+      <noscript><link rel="stylesheet" href="css/home.css?v=${appVersion}"></noscript>
+    `);
+  </script>
 
   <!-- Favicon -->
-  <link rel="icon" href="images/logo.png">
+  <link rel="icon" href="images/logo.png" type="image/png">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- ✅ MODERN BUTTON STYLE -->
+  <style>
+    .modern-button {
+      padding: 10px 24px;
+      margin: 0 12px;
+      background: #e50914;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .modern-button:hover {
+      background: #b20710;
+      transform: scale(1.05);
+    }
+
+    .modern-button:active {
+      transform: scale(0.97);
+    }
+  </style>
 </head>
+
 <body>
-  <!-- Header -->
-  <header class="site-header">
-    <div class="logo">MOVIES-J</div>
-    <nav class="main-nav">
-      <a href="#movies">Movies</a>
-      <a href="#tv">TV Shows</a>
-      <a href="#anime">Anime</a>
-      <a href="#uploads">My Uploads</a>
-    </nav>
-  </header>
+  <div class="container">
+    <div class="main-wrapper">
 
-  <!-- Hero Banner -->
-  <section id="hero-banner">
-    <div class="video-overlay"></div>
-    <iframe id="banner-trailer" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    <div class="banner-content">
-      <h1 id="banner-title">Now Streaming</h1>
-      <p id="banner-desc">Autoplaying trailer from trending content</p>
-      <div class="banner-buttons">
-        <button id="prev-trailer">← Prev</button>
-        <button id="next-trailer">Next →</button>
+      <!-- Adsterra 320x50 Mobile Banner -->
+      <div id="mobile-banner-ad">
+        <script type="text/javascript">
+          atOptions = {
+            'key': '3083f880e1af15df37f27c8f5913cb6c',
+            'format': 'iframe',
+            'height': 50,
+            'width': 320,
+            'params': {}
+          };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/3083f880e1af15df37f27c8f5913cb6c/invoke.js"></script>
       </div>
+
+      <!-- Navigation Bar -->
+      <div class="navbar">
+        <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect glow-gradient" />
+        <div class="nav-links">
+          <div class="top-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <a href="index.html" style="text-decoration: none; font-weight: bold; color: white;">🏠 Home</a>
+
+            <!-- 📲 Install App Button -->
+            <button id="install-btn" style="display: none; padding: 6px 12px; background: #e50914; color: #fff; font-weight: 600; font-size: 14px; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">
+              📲 Install App
+            </button>
+          </div>
+
+          <div class="bottom-row">
+            <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
+            <!-- Watch History Button -->
+            <button class="watch-history-btn" onclick="openWatchHistoryModal()">
+              <i class="fa-solid fa-clock icon-label" style="margin-right: 6px;"></i>
+              <span class="text-label">Watch History</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🔥 Weekly Trending Section with Modern Controls -->
+      <section id="weekly-trending-section" style="position: relative; height: 450px; overflow: hidden;">
+        <!-- 🔼 YouTube Trailer Container -->
+        <div id="banner-video-container" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 0;"></div>
+
+        <!-- 🔼 Trailer Title Overlay -->
+        <h2 id="banner-title" style="position: relative; z-index: 1; color: white; font-size: 2em; margin: 10px; text-shadow: 2px 2px 8px black;"></h2>
+
+        <!-- 🔽 Modern Controls at Bottom -->
+        <div id="banner-controls" style="position: relative; z-index: 2; text-align: center; margin-top: 350px;">
+          <button id="prev-trailer" class="modern-button">← Prev Trailer</button>
+          <button id="next-trailer" class="modern-button">Next Trailer →</button>
+        </div>
+      </section>
+
+      <!-- Other Sections -->
+      <div class="row"><h2>Trending Movies</h2><div class="list" id="movies-list"></div></div>
+      <div class="row"><h2>Trending TV Shows</h2><div class="list" id="tvshows-list"></div></div>
+      <div class="row"><h2>Trending Anime</h2><div class="list" id="anime-list"></div></div>
+    <div class="row">
+    <h2>My Uploaded Movies</h2>
+    <div class="list" id="uploaded-movies-list"></div>
+    <div id="upload-pagination" style="text-align:center; margin-top:10px;"></div>
+  </div>
+
+
+
+        <div id="upload-pagination" style="text-align:center; margin-top:10px;"></div>
+      </div>
+
+  <!-- TMDB Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <button class="close" onclick="closeModal()">&times;</button>
+      <div class="modal-body">
+        <img id="modal-image" src="" alt="" />
+        <div class="modal-text">
+          <!-- Cast and Similar Movies Section -->
+<div class="extra-section">
+  <h3 class="section-title">🎭 Cast</h3>
+  <ul id="cast-list"></ul>
+
+  <h3 class="section-title">🎬 Similar Movies</h3>
+  <div id="similar-movies"></div>
+</div>
+
+          <h2 id="modal-title"></h2>
+          <div class="stars" id="modal-rating"></div>
+          <p id="modal-description"></p>
+
+          <div id="tv-controls" style="margin-top: 10px;">
+            <div class="season-episode-selectors" style="display: none;">
+  <label for="season-selector">Season:</label>
+  <select id="season-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
+
+  <label for="episode-selector">Episode:</label>
+  <select id="episode-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
+</div>
+
+          </div>
+        </div>
+      </div>
+  <div class="server-selector">
+  <label for="server">Change Server:</label>
+  <select id="server" onchange="changeServer()">
+    <option value="">Loading servers...</option>
+  </select>
+
+  <p id="active-server-label" style="text-align: center; color: #00f; font-size: 13px; margin-top: 5px;"></p>
+
+  <p style="font-size: 13px; color: #ff5e00; text-align: center; margin: 10px 0;">
+    ⚠ Ads shown in free movie servers are not controlled by this site.
+  </p>
+</div>
+
+      <iframe id="modal-video"
+        width="100%"
+        height="400"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+        allowfullscreen></iframe>
+
+
     </div>
-  </section>
+  </div>
 
-  <!-- Section: Trending Movies -->
-  <section class="media-section" id="movies">
-    <h2><span>🔥</span> Trending Movies</h2>
-    <div class="media-grid" id="movies-list"></div>
-  </section>
 
-  <!-- Section: Trending TV Shows -->
-  <section class="media-section" id="tv">
-    <h2><span>📺</span> Trending TV Shows</h2>
-    <div class="media-grid" id="tv-list"></div>
-  </section>
+<!-- ✅ Uploaded Movies Modal (CORRECTLY PLACED INSIDE the SAME .main-wrapper) -->
+<div class="modal" id="upload-modal">
+<div class="modal-content">
+  <button class="close" onclick="closeUploadModal()">&times;</button>
 
-  <!-- Section: Trending Anime -->
-  <section class="media-section" id="anime">
-    <h2><span>🌀</span> Trending Anime</h2>
-    <div class="media-grid" id="anime-list"></div>
-  </section>
+  <div class="modal-body" style="text-align: center;">
+    <!-- ✅ Google Drive Video -->
+   <iframe
+  id="upload-video"
+  width="100%"
+  height="400"
+  frameborder="0"
+  allowfullscreen
+  allow="fullscreen; autoplay; encrypted-media; accelerometer; gyroscope; picture-in-picture">
+</iframe>
 
-  <!-- Section: Uploaded Movies -->
-  <section class="media-section" id="uploads">
-    <h2><span>📤</span> My Uploaded Movies</h2>
-    <div class="media-grid" id="uploads-list"></div>
-    <div id="upload-pagination"></div>
-  </section>
 
-  <!-- Scripts -->
-  <script src="js/home.js"></script>
+
+  </div>
+
+  <div class="modal-text" style="text-align: center;">
+    <!-- ✅ Title, Rating, Description -->
+    <h2 id="upload-title"></h2>
+    <div class="stars" id="upload-rating" style="margin-bottom: 10px;"></div>
+    <p id="upload-description"></p>
+
+    <!-- ✅ Button Group -->
+    <div style="margin-top: 15px;">
+      <button id="upload-trailer-btn">🎬 Watch Trailer</button>
+      <button id="upload-watch-btn">▶ Watch Full Movie</button>
+      <a id="upload-download-btn" href="#" target="_blank" download>
+        <button>⬇ Download</button>
+      </a>
+    </div>
+
+    <!-- ✅ Note -->
+    <p style="font-size: 13px; color: #4CAF50; margin-top: 10px;">
+      ✅ Uploaded via Google Drive. No external ads included.
+    </p>
+  </div>
+</div>
+
+
+
+</div> <!-- ✅ CLOSE main-wrapper here -->
+
+  </div>
+
+
+
+  <!-- Search Modal -->
+  <div class="search-modal" id="search-modal">
+    <button class="close" onclick="closeSearchModal()">&times;</button>
+    <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
+    <div class="results" id="search-results"></div>
+  </div>
+<!-- Adsterra PC Banner 468x60 -->
+<div id="desktop-banner-ad">
+  <script type="text/javascript">
+    atOptions = {
+      'key': '0e7b0cdaab5dd80e165c43b2a094fb08',
+      'format': 'iframe',
+      'height': 60,
+      'width': 468,
+      'params': {}
+    };
+  </script>
+  <script type="text/javascript" src="//www.highperformanceformat.com/0e7b0cdaab5dd80e165c43b2a094fb08/invoke.js"></script>
+</div>
+<!-- ✅ PWA Fallback Ad (320x50 for mobile app mode) -->
+<div id="pwa-fallback-ad" style="display: none; text-align: center; margin: 20px auto;">
+  <script type="text/javascript">
+    atOptions = {
+      'key': '3083f880e1af15df37f27c8f5913cb6c',
+      'format': 'iframe',
+      'height': 50,
+      'width': 320,
+      'params': {}
+    };
+  </script>
+  <script type="text/javascript" src="//www.highperformanceformat.com/3083f880e1af15df37f27c8f5913cb6c/invoke.js"></script>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+
+    const fallbackAd = document.getElementById('pwa-fallback-ad');
+    const mobileBanner = document.getElementById('mobile-banner-ad');
+
+    if (isStandalone) {
+      if (fallbackAd) fallbackAd.style.display = 'block';  // ✅ Show fallback ad
+      if (mobileBanner) mobileBanner.style.display = 'none';  // ❌ Hide normal web banner
+    }
+  });
+</script>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 My Website. All rights reserved.</p>
+     <div class="footer-links">
+  <a href="disclaimer.html">Disclaimer</a>
+<a href="about.html">About Us</a>
+<a href="contact.html">Contact Us</a>
+
+</div>
+
+    </div>
+  </footer>
+
+
+
+
+  <!-- ProfitablerateCPM Ads (autoload on page load) -->
+  <!-- <script type="text/javascript" src="//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js"></script> -->
+
+  <!-- Trigger ad when 'Watch Full Movie' is clicked -->
+
+  <!--  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const watchBtn = document.getElementById("upload-watch-btn");
+      if (watchBtn) {
+        watchBtn.addEventListener("click", function () {
+          const adScript = document.createElement('script');
+          adScript.src = "//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js";
+          adScript.type = "text/javascript";
+          document.body.appendChild(adScript);
+        });
+      }
+    });
+
+  </script>
+   -->
+
+  <!-- Script Loading Order -->
+<script src="js/embed.js?v=1.2.6" defer></script>
+<script src="js/servers.js?v=1.2.6" defer></script>
+<script src="js/uploads.js?v=1.2.6" defer></script>
+<script src="js/home.js" defer></script>
+
+
+
+<script src="js/watchHistory.js?v=1.0.8" defer></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async function () {
+    const API_KEY = "22d74813ded3fecbe3ef632b4814ae3a"; // Your TMDB API key
+    const BASE_URL = "https://api.themoviedb.org/3";
+    const container = document.getElementById("banner-video-container");
+    const titleEl = document.getElementById("banner-title");
+
+    async function fetchTrendingMovieWithTrailer() {
+      try {
+        const trendingRes = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
+        const trendingData = await trendingRes.json();
+        const movies = trendingData.results;
+
+        for (const movie of movies) {
+          const movieId = movie.id;
+          const title = movie.title || movie.name;
+
+          const videoRes = await fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}`);
+          const videoData = await videoRes.json();
+          const trailer = videoData.results.find(v => v.type === "Trailer" && v.site === "YouTube");
+
+          if (trailer) {
+            return {
+              title: title,
+              youtubeKey: trailer.key
+            };
+          }
+        }
+
+        return null;
+      } catch (error) {
+        console.error("Failed to fetch trailer:", error);
+        return null;
+      }
+    }
+
+    const trailerInfo = await fetchTrendingMovieWithTrailer();
+
+    if (trailerInfo) {
+      titleEl.textContent = trailerInfo.title;
+
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.youtube.com/embed/${trailerInfo.youtubeKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerInfo.youtubeKey}&modestbranding=1&rel=0&showinfo=0`;
+      iframe.allow = "autoplay; encrypted-media";
+      iframe.allowFullscreen = true;
+      iframe.frameBorder = "0";
+
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.position = "absolute";
+      iframe.style.top = "0";
+      iframe.style.left = "0";
+      iframe.style.zIndex = "0";
+
+      container.innerHTML = "";
+      container.appendChild(iframe);
+    } else {
+      titleEl.textContent = "No trailer found.";
+    }
+  });
+</script>
+
+
+
+
+<!-- Watch History Modal -->
+<div class="modal" id="watch-history-modal">
+  <div class="modal-content" style="max-width: 600px; padding: 20px;">
+    <span class="close" id="close-history-modal">&times;</span>
+    <h2>Watch History</h2>
+    <div id="watch-history-list" class="watch-history-list"></div>
+  </div>
+</div>
+
+
+
+<meta name="theme-color" content="#e50914">
+<script src="pwa.js"></script> <!-- ✅ CORRECT -->
+<!-- <script src="js/antiInspect.js"></script> -->
+<script>
+  function openTVPlayer() {
+    window.open('tv-player.html', '_blank');
+  }
+</script>
+
+<script src="https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js"></script>
+
+
+
+
+<div id="filemoon-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
+  <button onclick="closeFilemoonModal()" style="position:absolute; top:10px; right:20px; background:#f44336; color:#fff; border:none; padding:10px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">✖ Close</button>
+  <iframe id="filemoon-iframe" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="no-referrer" style="width:90%; height:90%; border:none;"></iframe>
+</div>
+
+
+
 </body>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const prevBtn = document.getElementById("prev-trailer");
+  const nextBtn = document.getElementById("next-trailer");
+  const watchFullBtn = document.getElementById("watch-full");
+
+  let currentIndex = 0;
+  let trailers = [];
+
+  async function fetchAllTrendingWithTrailers() {
+    const API_KEY = "22d74813ded3fecbe3ef632b4814ae3a";
+    const BASE_URL = "https://api.themoviedb.org/3";
+    try {
+      const trendingRes = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
+      const trendingData = await trendingRes.json();
+
+      for (const movie of trendingData.results) {
+        const movieId = movie.id;
+        const title = movie.title || movie.name;
+
+        const videoRes = await fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}`);
+        const videoData = await videoRes.json();
+        const trailer = videoData.results.find(v => v.type === "Trailer" && v.site === "YouTube");
+
+        if (trailer) {
+          trailers.push({ title, youtubeKey: trailer.key });
+        }
+      }
+
+      updateBanner(trailers[currentIndex]);
+    } catch (error) {
+      console.error("Error fetching trailers:", error);
+    }
+  }
+
+  function updateBanner(info) {
+    const titleEl = document.getElementById("banner-title");
+    const container = document.getElementById("banner-video-container");
+
+    if (!titleEl || !container) return;
+
+    titleEl.textContent = info.title;
+
+    const iframe = document.createElement("iframe");
+    iframe.src = `https://www.youtube.com/embed/${info.youtubeKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${info.youtubeKey}&modestbranding=1&rel=0`;
+    iframe.allow = "autoplay; encrypted-media";
+    iframe.allowFullscreen = true;
+    iframe.frameBorder = "0";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.position = "absolute";
+    iframe.style.top = "0";
+    iframe.style.left = "0";
+    iframe.style.zIndex = "0";
+
+    container.innerHTML = "";
+    container.appendChild(iframe);
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", function () {
+      if (trailers.length === 0) return;
+      currentIndex = (currentIndex - 1 + trailers.length) % trailers.length;
+      updateBanner(trailers[currentIndex]);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", function () {
+      if (trailers.length === 0) return;
+      currentIndex = (currentIndex + 1) % trailers.length;
+      updateBanner(trailers[currentIndex]);
+    });
+  }
+
+  if (watchFullBtn) {
+    watchFullBtn.addEventListener("click", function () {
+      if (trailers.length === 0) return;
+      const videoURL = `https://www.youtube.com/watch?v=${trailers[currentIndex].youtubeKey}`;
+      window.open(videoURL, "_blank");
+    });
+  }
+
+  fetchAllTrendingWithTrailers();
+});
+</script>
+
+
 </html>
+
+

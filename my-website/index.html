@@ -58,19 +58,7 @@
   <div class="container">
     <div class="main-wrapper">
 
-      <!-- Adsterra 320x50 Mobile Banner -->
-      <div id="mobile-banner-ad">
-        <script type="text/javascript">
-          atOptions = {
-            'key': '3083f880e1af15df37f27c8f5913cb6c',
-            'format': 'iframe',
-            'height': 50,
-            'width': 320,
-            'params': {}
-          };
-        </script>
-        <script type="text/javascript" src="//www.highperformanceformat.com/3083f880e1af15df37f27c8f5913cb6c/invoke.js"></script>
-      </div>
+     
 
       <!-- Navigation Bar -->
       <div class="navbar">
@@ -235,47 +223,10 @@
     <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
     <div class="results" id="search-results"></div>
   </div>
-<!-- Adsterra PC Banner 468x60 -->
-<div id="desktop-banner-ad">
-  <script type="text/javascript">
-    atOptions = {
-      'key': '0e7b0cdaab5dd80e165c43b2a094fb08',
-      'format': 'iframe',
-      'height': 60,
-      'width': 468,
-      'params': {}
-    };
-  </script>
-  <script type="text/javascript" src="//www.highperformanceformat.com/0e7b0cdaab5dd80e165c43b2a094fb08/invoke.js"></script>
-</div>
-<!-- ✅ PWA Fallback Ad (320x50 for mobile app mode) -->
-<div id="pwa-fallback-ad" style="display: none; text-align: center; margin: 20px auto;">
-  <script type="text/javascript">
-    atOptions = {
-      'key': '3083f880e1af15df37f27c8f5913cb6c',
-      'format': 'iframe',
-      'height': 50,
-      'width': 320,
-      'params': {}
-    };
-  </script>
-  <script type="text/javascript" src="//www.highperformanceformat.com/3083f880e1af15df37f27c8f5913cb6c/invoke.js"></script>
-</div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-      || window.navigator.standalone === true;
 
-    const fallbackAd = document.getElementById('pwa-fallback-ad');
-    const mobileBanner = document.getElementById('mobile-banner-ad');
 
-    if (isStandalone) {
-      if (fallbackAd) fallbackAd.style.display = 'block';  // ✅ Show fallback ad
-      if (mobileBanner) mobileBanner.style.display = 'none';  // ❌ Hide normal web banner
-    }
-  });
-</script>
+
 
   <!-- Footer -->
   <footer class="footer">
@@ -294,26 +245,7 @@
 
 
 
-  <!-- ProfitablerateCPM Ads (autoload on page load) -->
-  <!-- <script type="text/javascript" src="//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js"></script> -->
 
-  <!-- Trigger ad when 'Watch Full Movie' is clicked -->
-
-  <!--  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const watchBtn = document.getElementById("upload-watch-btn");
-      if (watchBtn) {
-        watchBtn.addEventListener("click", function () {
-          const adScript = document.createElement('script');
-          adScript.src = "//pl26963581.profitableratecpm.com/26/64/7c/26647c341d28af2d8f282b38a2fe6881.js";
-          adScript.type = "text/javascript";
-          document.body.appendChild(adScript);
-        });
-      }
-    });
-
-  </script>
-   -->
 
   <!-- Script Loading Order -->
 <script src="js/embed.js?v=1.2.6" defer></script>

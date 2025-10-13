@@ -72,7 +72,6 @@
             border: none;
             background-color: #000;
         }
-
         .season-episode-selectors {
             display: flex; gap: 10px; align-items: center;
             flex-wrap: wrap; margin-bottom: 20px;
@@ -83,7 +82,6 @@
             border: 1px solid #555; border-radius: 5px; min-width: 100px;
         }
         .video-container { margin-top: 20px; width: 100%; }
-
         @media screen and (max-width: 600px) {
             #movie-title { font-size: 1.4rem; }
             .season-episode-selectors { flex-direction: column; align-items: flex-start; }
@@ -91,7 +89,6 @@
         }
     </style>
 </head>
-
 <body>
 
     <header class="header">
@@ -118,9 +115,9 @@
 
         <div class="video-container">
             <iframe id="movie-player"
-                    allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+                    allow="fullscreen; autoplay; picture-in-picture; encrypted-media"
                     allowfullscreen
-                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms">
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-presentation">
             </iframe>
         </div>
 
@@ -132,7 +129,7 @@
                  data-ad-format="auto"
                  data-full-width-responsive="true"></ins>
             <script>
-                (adsbygoogle = window.adsbygoogle || []).push({});
+                 (adsbygoogle = window.adsbygoogle || []).push({});
             </script>
         </div>
 

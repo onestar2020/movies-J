@@ -1,4 +1,4 @@
-// ✅ FINAL MOVIE.JS WITH TRAILER FIRST LOGIC
+// ✅ js/movie.js (Updated to handle Display Names)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -8,22 +8,18 @@ const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id');
 const type = urlParams.get('type') || 'movie';
 
-// ✅ BAGONG DAGDAG: Variable para sa trailer URL
 let trailerUrl = ''; 
 
 document.addEventListener("DOMContentLoaded", async () => {
     const item = await fetchDetails();
     if (item) {
-        // Populate Main Details
         document.title = item.title || item.name;
         document.getElementById("movie-title").textContent = item.title || item.name;
         document.getElementById("movie-overview").textContent = item.overview;
         
-        // ✅ BAGONG DAGDAG: I-play muna ang trailer
         if (item.videos && item.videos.results.length > 0) {
             displayTrailer(item.videos.results);
         } else {
-            // Kung walang mahanap na video, itago na lang ang player para malinis
             document.getElementById('movie-player').style.display = 'none';
         }
 
@@ -42,7 +38,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function fetchDetails() {
     try {
-        // ✅ BINAGO: Dinagdagan ng 'videos' sa append_to_response para makuha ang trailer
         const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}&append_to_response=credits,similar,videos`);
         const data = await res.json();
         return data;
@@ -52,18 +47,14 @@ async function fetchDetails() {
     }
 }
 
-// ✅ BAGONG DAGDAG: Function para hanapin at i-display ang trailer
 function displayTrailer(videos) {
     const player = document.getElementById("movie-player");
-    // Hanapin ang official trailer mula sa YouTube
     const officialTrailer = videos.find(video => video.site === 'YouTube' && video.type === 'Trailer');
     
     if (officialTrailer) {
-        // I-save ang trailer URL para magamit mamaya kung sakali
         trailerUrl = `https://www.youtube.com/embed/${officialTrailer.key}?autoplay=1&mute=1`;
         player.src = trailerUrl;
     } else {
-        // Kung walang "Official Trailer", kunin na lang ang kahit anong video mula sa YouTube
         const anyVideo = videos.find(video => video.site === 'YouTube');
         if (anyVideo) {
             trailerUrl = `https://www.youtube.com/embed/${anyVideo.key}?autoplay=1&mute=1`;
@@ -72,38 +63,35 @@ function displayTrailer(videos) {
     }
 }
 
-
 function populateServerSelector(item) {
     const serverSelect = document.getElementById("server-select");
-    serverSelect.innerHTML = ''; // Linisin ang options
+    serverSelect.innerHTML = ''; 
 
-    // ✅ BINAGO: Maglagay ng placeholder option sa simula
     const placeholderOption = document.createElement("option");
     placeholderOption.value = "";
     placeholderOption.textContent = "--- Select a Server to Watch Full Movie ---";
     serverSelect.appendChild(placeholderOption);
 
     const servers = window.SERVER_LIST || [];
+    
+    // ✅ BINAGO ANG PART NA ITO
     servers.forEach(server => {
         const option = document.createElement("option");
-        option.value = server;
-        option.textContent = server;
+        // Ang 'value' ay ang totoong pangalan para sa code
+        option.value = server.realName; 
+        // Ang ipapakita sa user ay ang display name
+        option.textContent = server.displayName; 
         serverSelect.appendChild(option);
     });
     
-    // ❌ TINANGGAL: Hindi na mag-a-autoplay ng full movie pagka-load
-    // updatePlayer(servers[0], item); 
-
     serverSelect.addEventListener("change", () => {
         const selectedServer = serverSelect.value;
         const season = document.getElementById("season-select")?.value || 1;
         const episode = document.getElementById("episode-select")?.value || 1;
         
-        // ✅ BINAGO: I-update lang ang player kung may piniling valid server
         if (selectedServer) {
             updatePlayer(selectedServer, item, season, episode);
         } else {
-            // Kung sakaling ma-reset, ibalik sa trailer
             const player = document.getElementById("movie-player");
             if (trailerUrl) player.src = trailerUrl;
         }
@@ -182,15 +170,12 @@ async function handleTVShow(item) {
             option.textContent = `E${ep.episode_number}: ${ep.name}`;
             episodeSelect.appendChild(option);
         });
-        
-        // ✅ BINAGO: Huwag munang i-update ang player dito para manatili sa trailer
-        // updatePlayer(document.getElementById("server-select").value, item, seasonNumber, 1);
     }
 
     seasonSelect.addEventListener("change", () => loadEpisodes(seasonSelect.value));
     episodeSelect.addEventListener("change", () => {
         const selectedServer = document.getElementById("server-select").value;
-        if(selectedServer){ // I-update lang kung may server nang napili
+        if(selectedServer){
              updatePlayer(selectedServer, item, seasonSelect.value, episodeSelect.value);
         }
     });

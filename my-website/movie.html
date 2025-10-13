@@ -24,7 +24,8 @@
         .home-button {
             position: absolute;
             left: 10px;
-            top: 10px;
+            top: 50%;
+            transform: translateY(-50%);
             padding: 8px 14px;
             background: none;
             color: white;
@@ -42,27 +43,27 @@
             max-width: 1000px;
             margin: auto;
         }
-        .server-box {
+        /* ✅ BAGONG STYLE PARA SA SERVER SELECTOR */
+        .server-selector {
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             background: #1c1c1c;
             padding: 15px;
             border-radius: 8px;
-            text-align: center;
         }
-        .server-box p {
-            margin-bottom: 10px;
+        .server-selector label {
             font-weight: bold;
-            font-size: 16px;
         }
-        .server-box button {
-            margin-left: 10px;
-            padding: 6px 12px;
+        .server-selector select {
+            padding: 8px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
             border-radius: 5px;
-            font-weight: bold;
-            border: none;
+            font-family: 'Poppins', sans-serif;
         }
-        #start-test-btn { background-color: #4CAF50; color: #fff; }
-        #stop-test-btn { background-color: #f44336; color: #fff; display: none; }
         
         iframe#movie-player {
             width: 100%;
@@ -98,12 +99,9 @@
 
     <div class="page-container">
 
-        <div id="fallback-box" class="server-box">
-            <p>🎬 Find server to play the full movie?</p>
-            <div id="server" style="display:inline-block;"></div>
-            <button id="start-test-btn">🔍 Start Find Server</button>
-            <button id="stop-test-btn">⛔ Stop</button>
-            <p id="active-server-label" style="margin-top:10px; font-size: 13px; color: #ccc;"></p>
+        <div class="server-selector">
+            <label for="server-select">🎬 Server:</label>
+            <select id="server-select"></select>
         </div>
 
         <div class="season-episode-selectors" style="display: none;">
@@ -140,36 +138,9 @@
 
     </div>
 
-    <script src="js/embed.js"></script>
     <script src="js/servers.js"></script>
+    <script src="js/embed.js"></script>
     <script src="js/movie.js"></script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const startBtn = document.getElementById("start-test-btn");
-            const stopBtn = document.getElementById("stop-test-btn");
-            const serverLabel = document.getElementById("active-server-label");
-
-            startBtn.onclick = () => {
-                if (typeof initPlayerWithFallback === 'function') {
-                    autoTesting = true;
-                    startBtn.disabled = true;
-                    stopBtn.style.display = "inline-block";
-                    serverLabel.textContent = "🔍 Searching for best server...";
-                    initPlayerWithFallback();
-                } else {
-                    serverLabel.textContent = "⚠️ initPlayerWithFallback() is not loaded.";
-                }
-            };
-
-            stopBtn.onclick = () => {
-                autoTesting = false;
-                document.getElementById("active-server-label").textContent = "⛔ Auto Find Cancelled.";
-                startBtn.disabled = false;
-                stopBtn.style.display = "none";
-            };
-        });
-    </script>
 
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#e50914">

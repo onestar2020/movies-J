@@ -4,14 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Loading Movie...</title>
-
-    <script>
-      const appVersion = '2.1.2'; // Itaas mo ito sa 2.1.0 mamaya
-    </script>
     
-    <script>
-        document.write(`<link rel="stylesheet" href="css/home.css?v=${appVersion}">`);
-    </script>
+    <link rel="stylesheet" href="css/home.css">
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399"
             crossorigin="anonymous"></script>
@@ -68,19 +62,9 @@
         <div id="similar-movies" style="margin-top: 30px;"></div>
     </div>
 
-    <script>
-        const movieScripts = [
-            'js/servers.js',
-            'js/embed.js',
-            'js/movie.js'
-        ];
-        movieScripts.forEach(src => {
-            const script = document.createElement('script');
-            script.src = `${src}?v=${appVersion}`;
-            script.defer = true;
-            document.body.appendChild(script);
-        });
-    </script>
+    <script src="js/servers.js" defer></script>
+    <script src="js/embed.js" defer></script>
+    <script src="js/movie.js" defer></script>
 
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#e50914">

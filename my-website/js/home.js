@@ -1,4 +1,4 @@
-// ✅ home.js (KUMPLETONG VERSION - October 13, 2025)
+// ✅ home.js (FINAL & WORKING VERSION - October 13, 2025)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -23,8 +23,7 @@ async function loadFeaturedMovie() {
             heroTitle.textContent = featuredMovie.title;
             heroDesc.textContent = featuredMovie.overview;
             watchBtn.onclick = () => goToMoviePage(featuredMovie);
-            // Ang 'openModal' ay nasa baba na, pero ito ay para sa info button
-            infoBtn.onclick = () => goToMoviePage(featuredMovie);
+            infoBtn.onclick = () => goToMoviePage(featuredMovie); // Redirects to movie page for more info
         }
     } catch (error) {
         console.error("Failed to load featured movie:", error);
@@ -93,7 +92,7 @@ function saveToWatchHistory(item) {
     localStorage.setItem("watchHistory", JSON.stringify(history));
 }
 
-// --- SEARCH MODAL LOGIC (KUMPLETO NA) ---
+// --- SEARCH MODAL LOGIC ---
 function openSearchModal() {
   document.getElementById('search-modal').style.display = 'flex';
   document.getElementById('search-input').focus();
@@ -127,7 +126,7 @@ async function searchTMDB() {
   });
 }
 
-// --- WATCH HISTORY MODAL LOGIC (KUMPLETO NA) ---
+// --- WATCH HISTORY MODAL LOGIC ---
 function openWatchHistoryModal() {
   loadWatchHistory();
   document.getElementById('watch-history-modal').style.display = 'flex';

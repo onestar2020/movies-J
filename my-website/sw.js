@@ -1,5 +1,5 @@
 // ✅ sw.js - Service Worker for Movies-J (Updated for Cache Busting)
-const CACHE_VERSION = 'v1.3.7'; // 🔁 Itinaas ang version para mag-update ang cache
+const CACHE_VERSION = 'v1.3.8'; // 🔁 Itinaas ang version para mag-update ang cache
 const CACHE_NAME = `movie-cache-${CACHE_VERSION}`;
 
 // ✅ Idinagdag ang movie.html at movie.js para ma-cache din sila

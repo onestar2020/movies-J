@@ -149,11 +149,6 @@ a {
 }
 .list::-webkit-scrollbar { display: none; }
 
-/*
-==================================================
-✅ ITO ANG BAGONG STYLE PARA SA MOVIE CARD AT TITLE
-==================================================
-*/
 .movie-card {
   width: 180px;
   flex-shrink: 0;
@@ -228,4 +223,52 @@ a {
   .hero-description { font-size: 1rem; }
   .main-container { padding: 0 20px; }
   .movie-card { width: 140px; }
+}
+
+/*
+=====================================================
+✅ STYLES PARA SA CAST AT SIMILAR MOVIES SA MOVIE.HTML
+=====================================================
+*/
+
+#cast-list h2, #similar-movies h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  border-left: 4px solid var(--primary-color);
+  padding-left: 10px;
+}
+
+.extra-list {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+}
+.extra-list::-webkit-scrollbar { display: none; }
+
+.extra-list .movie-card {
+  width: 150px; /* Sukat para sa similar movies */
+}
+
+.cast-item {
+  width: 140px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.cast-item img {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+  border-radius: 8px;
+  background-color: #222;
+}
+
+.cast-item p {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

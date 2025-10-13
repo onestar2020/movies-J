@@ -1,11 +1,11 @@
-// ✅ home.js (Updated with Featured Movie logic and More Info button fix)
+// ✅ home.js (KUMPLETONG VERSION - October 13, 2025)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL_W500 = 'https://image.tmdb.org/t/p/w500';
 const IMG_URL_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 
-// --- BAGONG FUNCTION PARA SA FEATURED MOVIE ---
+// --- FEATURED MOVIE LOGIC ---
 async function loadFeaturedMovie() {
     const heroSection = document.getElementById('hero-section');
     const heroTitle = document.getElementById('hero-title');
@@ -16,16 +16,15 @@ async function loadFeaturedMovie() {
     try {
         const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
         const data = await res.json();
-        // Get a random movie from the top 5 results
         const featuredMovie = data.results[Math.floor(Math.random() * 5)];
         
         if (featuredMovie) {
             heroSection.style.backgroundImage = `url(${IMG_URL_ORIGINAL}${featuredMovie.backdrop_path})`;
             heroTitle.textContent = featuredMovie.title;
             heroDesc.textContent = featuredMovie.overview;
-            
-            watchBtn.onclick = () => goToMovie(featuredMovie);
-            infoBtn.onclick = () => openModal(featuredMovie.id, 'movie');
+            watchBtn.onclick = () => goToMoviePage(featuredMovie);
+            // Ang 'openModal' ay nasa baba na, pero ito ay para sa info button
+            infoBtn.onclick = () => goToMoviePage(featuredMovie);
         }
     } catch (error) {
         console.error("Failed to load featured movie:", error);
@@ -33,7 +32,7 @@ async function loadFeaturedMovie() {
     }
 }
 
-// --- Fetch data from TMDB ---
+// --- FETCHING DATA LOGIC ---
 async function fetchTrending(type) {
     try {
         const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
@@ -60,6 +59,7 @@ async function fetchTrendingAnime() {
     }
 }
 
+// --- DISPLAY LOGIC ---
 function displayList(items, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -68,7 +68,7 @@ function displayList(items, containerId) {
         if (item.poster_path) {
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
-            movieCard.onclick = () => goToMovie(item);
+            movieCard.onclick = () => goToMoviePage(item);
             movieCard.innerHTML = `
                 <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
                 <p class="movie-title">${item.title || item.name}</p>
@@ -78,7 +78,8 @@ function displayList(items, containerId) {
     });
 }
 
-function goToMovie(item) {
+// --- NAVIGATION & HISTORY ---
+function goToMoviePage(item) {
     const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
     saveToWatchHistory({ id: item.id, title: item.title || item.name, poster_path: item.poster_path, type: type });
     window.location.href = `movie.html?id=${item.id}&type=${type}`;
@@ -92,33 +93,80 @@ function saveToWatchHistory(item) {
     localStorage.setItem("watchHistory", JSON.stringify(history));
 }
 
-// --- MODAL & SEARCH LOGIC ---
-async function openModal(id, type) {
-    // Ito ang function para sa "More Info" button
-    // Simpleng redirect muna sa movie page para gumana
-    window.location.href = `movie.html?id=${id}&type=${type}`;
+// --- SEARCH MODAL LOGIC (KUMPLETO NA) ---
+function openSearchModal() {
+  document.getElementById('search-modal').style.display = 'flex';
+  document.getElementById('search-input').focus();
 }
 
-function openWatchHistoryModal() { /* ... existing code ... */ }
-function loadWatchHistory() { /* ... existing code ... */ }
-function openSearchModal() { /* ... existing code ... */ }
-function closeSearchModal() { /* ... existing code ... */ }
-async function searchTMDB() { /* ... existing code ... */ }
+function closeSearchModal() {
+  document.getElementById('search-modal').style.display = 'none';
+}
 
-// --- BAGONG SCROLL LISTENER ---
-window.addEventListener('scroll', () => {
-    const navbar = document.querySelector('.navbar');
-    if (window.scrollY > 50) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
-    }
-});
+async function searchTMDB() {
+  const query = document.getElementById('search-input').value.trim();
+  const container = document.getElementById('search-results');
+  container.innerHTML = '';
+  if (!query) return;
 
-// --- Main function to initialize the page ---
+  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+  const data = await res.json();
+  const results = data.results.filter(item => item.poster_path && (item.media_type === 'movie' || item.media_type === 'tv'));
+
+  results.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'movie-card';
+    div.style.width = '150px';
+    div.onclick = () => {
+      closeSearchModal();
+      goToMoviePage(item);
+    };
+    div.innerHTML = `<img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
+                     <p class="movie-title">${item.title || item.name}</p>`;
+    container.appendChild(div);
+  });
+}
+
+// --- WATCH HISTORY MODAL LOGIC (KUMPLETO NA) ---
+function openWatchHistoryModal() {
+  loadWatchHistory();
+  document.getElementById('watch-history-modal').style.display = 'flex';
+}
+
+function closeWatchHistoryModal() {
+  document.getElementById('watch-history-modal').style.display = 'none';
+}
+
+function loadWatchHistory() {
+  const history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
+  const container = document.getElementById("watch-history-list");
+  container.innerHTML = "";
+  if (history.length === 0) {
+    container.innerHTML = "<p>No watch history yet.</p>";
+    return;
+  }
+  history.forEach(item => {
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "history-item";
+    itemDiv.onclick = () => {
+      closeWatchHistoryModal();
+      goToMoviePage(item);
+    };
+    itemDiv.innerHTML = `
+        <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title}">
+        <div>
+            <p>${item.title}</p>
+            <span>Watched on: ${new Date(item.timestamp).toLocaleDateString()}</span>
+        </div>
+    `;
+    container.appendChild(itemDiv);
+  });
+}
+
+
+// --- INITIALIZATION ---
 async function init() {
     try {
-        // Run all fetches at the same time for faster loading
         await Promise.all([
             loadFeaturedMovie(),
             fetchTrending('movie').then(items => displayList(items, 'movies-list')),
@@ -130,12 +178,21 @@ async function init() {
     }
 }
 
-// Global functions for modals
+// --- GLOBAL FUNCTIONS & LISTENERS ---
 window.openSearchModal = openSearchModal;
 window.closeSearchModal = closeSearchModal;
 window.searchTMDB = searchTMDB;
-window.goToMovie = goToMovie;
+window.goToMoviePage = goToMoviePage;
 window.openWatchHistoryModal = openWatchHistoryModal;
-window.closeModal = () => { document.querySelectorAll('.modal').forEach(modal => modal.style.display = 'none'); };
+document.getElementById('close-history-modal')?.addEventListener('click', closeWatchHistoryModal);
+
+window.addEventListener('scroll', () => {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+});
 
 document.addEventListener('DOMContentLoaded', init);

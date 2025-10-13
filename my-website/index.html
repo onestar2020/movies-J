@@ -7,7 +7,7 @@
     <title>Movies-J Official Site</title>
 
     <script>
-      const appVersion = '2.0.1'; // New version for the new design
+      const appVersion = '2.0.3'; // Incremented version for ad-blocking update
     </script>
     
     <link rel="manifest" href="manifest.json">
@@ -75,11 +75,59 @@
         </div>
     </footer>
 
-    <div class="modal" id="modal"><div class="modal-content"><button class="close" onclick="closeModal()">&times;</button><div class="modal-body"><img id="modal-image" src="" alt="" /><div class="modal-text"><div class="extra-section"><h3 class="section-title">🎭 Cast</h3><ul id="cast-list"></ul><h3 class="section-title">🎬 Similar Movies</h3><div id="similar-movies"></div></div><h2 id="modal-title"></h2><div class="stars" id="modal-rating"></div><p id="modal-description"></p><div id="tv-controls" style="margin-top: 10px;"><div class="season-episode-selectors" style="display: none;"><label for="season-selector">Season:</label><select id="season-selector"></select><label for="episode-selector">Episode:</label><select id="episode-selector"></select></div></div></div></div><div class="server-selector"><label for="server">Change Server:</label><select id="server" onchange="changeServer()"><option value="">Loading servers...</option></select><p id="active-server-label"></p><p>⚠ Ads shown in free movie servers are not controlled by this site.</p></div><iframe id="modal-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe></div></div>
-    <div class="modal" id="upload-modal"><div class="modal-content"><button class="close" onclick="closeUploadModal()">&times;</button><div class="modal-body" style="text-align: center;"><iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe></div><div class="modal-text" style="text-align: center;"><h2 id="upload-title"></h2><div class="stars" id="upload-rating"></div><p id="upload-description"></p><div><button id="upload-trailer-btn">🎬 Watch Trailer</button><button id="upload-watch-btn">▶ Watch Full Movie</button><a id="upload-download-btn" href="#" target="_blank" download><button>⬇ Download</button></a></div><p>✅ Uploaded via Google Drive. No external ads included.</p></div></div></div>
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeModal()">&times;</button>
+            <div class="modal-body">
+                <img id="modal-image" src="" alt="" />
+                <div class="modal-text">
+                    <div class="extra-section">
+                        <h3 class="section-title">🎭 Cast</h3><ul id="cast-list"></ul>
+                        <h3 class="section-title">🎬 Similar Movies</h3><div id="similar-movies"></div>
+                    </div>
+                    <h2 id="modal-title"></h2>
+                    <div class="stars" id="modal-rating"></div>
+                    <p id="modal-description"></p>
+                    <div id="tv-controls" style="margin-top: 10px;">
+                        <div class="season-episode-selectors" style="display: none;">
+                            <label for="season-selector">Season:</label><select id="season-selector"></select>
+                            <label for="episode-selector">Episode:</label><select id="episode-selector"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="server-selector">
+                <label for="server">Change Server:</label><select id="server" onchange="changeServer()"><option value="">Loading servers...</option></select>
+                <p id="active-server-label"></p><p>⚠ Ads shown in free movie servers are not controlled by this site.</p>
+            </div>
+            <iframe id="modal-video" width="100%" height="400" frameborder="0" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
+        </div>
+    </div>
+    <div class="modal" id="upload-modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeUploadModal()">&times;</button>
+            <div class="modal-body" style="text-align: center;">
+                <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
+            </div>
+            <div class="modal-text" style="text-align: center;">
+                <h2 id="upload-title"></h2>
+                <div class="stars" id="upload-rating"></div>
+                <p id="upload-description"></p>
+                <div>
+                    <button id="upload-trailer-btn">🎬 Watch Trailer</button>
+                    <button id="upload-watch-btn">▶ Watch Full Movie</button>
+                    <a id="upload-download-btn" href="#" target="_blank" download><button>⬇ Download</button></a>
+                </div>
+                <p>✅ Uploaded via Google Drive. No external ads included.</p>
+            </div>
+        </div>
+    </div>
     <div class="search-modal" id="search-modal"><button class="close" onclick="closeSearchModal()">&times;</button><input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" /><div class="results" id="search-results"></div></div>
     <div class="modal" id="watch-history-modal"><div class="modal-content" style="max-width: 600px; padding: 20px;"><span class="close" id="close-history-modal">&times;</span><h2>Watch History</h2><div id="watch-history-list" class="watch-history-list"></div></div></div>
-    <div id="filemoon-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; flex-direction:column;"><button onclick="closeFilemoonModal()" style="position:absolute; top:10px; right:20px; background:#f44336; color:#fff; border:none; padding:10px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">✖ Close</button><iframe id="filemoon-iframe" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="no-referrer" style="width:90%; height:90%; border:none;"></iframe></div>
+    <div id="filemoon-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
+        <button onclick="closeFilemoonModal()" style="position:absolute; top:10px; right:20px; background:#f44336; color:#fff; border:none; padding:10px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">✖ Close</button>
+        <iframe id="filemoon-iframe" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="no-referrer" style="width:90%; height:90%; border:none;" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
+    </div>
 
     <meta name="theme-color" content="#e50914">
     <script src="js/embed.js" defer></script>
@@ -89,13 +137,11 @@
     <script src="js/watchHistory.js" defer></script>
     <script src="pwa.js" defer></script>
     <script src="https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js"></script>
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const API_KEY = "22d74813ded3fecbe3ef632b4814ae3a";
             const BASE_URL = "https://api.themoviedb.org/3";
             const IMG_URL = 'https://image.tmdb.org/t/p/original';
-
             const heroSection = document.getElementById('hero-section');
             const heroTitle = document.getElementById('hero-title');
             const heroDesc = document.getElementById('hero-description');
@@ -106,26 +152,22 @@
                 try {
                     const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
                     const data = await res.json();
-                    const featuredMovie = data.results[Math.floor(Math.random() * data.results.length)]; // Random movie from trending
-
+                    const featuredMovie = data.results[Math.floor(Math.random() * data.results.length)];
                     if (featuredMovie) {
                         heroSection.style.backgroundImage = `url(${IMG_URL}${featuredMovie.backdrop_path})`;
                         heroTitle.textContent = featuredMovie.title;
                         heroDesc.textContent = featuredMovie.overview;
-
                         const movieUrl = `movie.html?id=${featuredMovie.id}&type=movie`;
                         watchBtn.onclick = () => window.location.href = movieUrl;
-                        infoBtn.onclick = () => openModal(featuredMovie.id, 'movie'); // Assuming you have openModal function
+                        infoBtn.onclick = () => openModal(featuredMovie.id, 'movie');
                     }
                 } catch (error) {
                     console.error("Failed to load featured movie:", error);
                     heroTitle.textContent = "Could not load featured movie.";
                 }
             }
-            
             loadFeaturedMovie();
 
-            // Navbar scroll effect
             window.addEventListener('scroll', () => {
                 const navbar = document.querySelector('.navbar');
                 if (window.scrollY > 50) {

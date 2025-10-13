@@ -1,170 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Loading Movie...</title>
-  <link rel="stylesheet" href="css/home.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loading Movie...</title>
+    <link rel="stylesheet" href="css/home.css" />
 
-  <!-- ✅ Google AdSense Auto Ads -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399"
-          crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399"
+            crossorigin="anonymous"></script>
 
-  <style>
-    iframe#movie-player {
-      width: 100%;
-      max-width: 100%;
-      aspect-ratio: 16 / 9;
-      border-radius: 10px;
-    }
+    <style>
+        body {
+            background: #111;
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+        }
+        .header {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+            text-align: center;
+            position: relative;
+        }
+        .home-button {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            padding: 8px 14px;
+            background: none;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        #movie-title {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        .page-container {
+            padding: 20px;
+            max-width: 1000px;
+            margin: auto;
+        }
+        .server-box {
+            margin-bottom: 20px;
+            background: #1c1c1c;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .server-box p {
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .server-box button {
+            margin-left: 10px;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            border: none;
+        }
+        #start-test-btn { background-color: #4CAF50; color: #fff; }
+        #stop-test-btn { background-color: #f44336; color: #fff; display: none; }
+        
+        iframe#movie-player {
+            width: 100%;
+            max-width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 10px;
+            border: none;
+            background-color: #000;
+        }
 
-    .season-episode-selectors {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
+        .season-episode-selectors {
+            display: flex; gap: 10px; align-items: center;
+            flex-wrap: wrap; margin-bottom: 20px;
+        }
+        .season-episode-selectors label { font-weight: bold; font-size: 14px; }
+        .season-episode-selectors select {
+            padding: 6px 10px; background: #222; color: #fff;
+            border: 1px solid #555; border-radius: 5px; min-width: 100px;
+        }
+        .video-container { margin-top: 20px; width: 100%; }
 
-    .season-episode-selectors label {
-      font-weight: bold;
-      font-size: 14px;
-    }
-
-    .season-episode-selectors select {
-      padding: 6px 10px;
-      background: #222;
-      color: #fff;
-      border: 1px solid #555;
-      border-radius: 5px;
-      min-width: 100px;
-    }
-
-    .video-container {
-      margin-top: 20px;
-      width: 100%;
-    }
-
-    @media screen and (max-width: 600px) {
-      h1#movie-title {
-        font-size: 1.4rem;
-      }
-
-      .season-episode-selectors {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .season-episode-selectors label {
-        margin-top: 10px;
-      }
-    }
-  </style>
+        @media screen and (max-width: 600px) {
+            #movie-title { font-size: 1.4rem; }
+            .season-episode-selectors { flex-direction: column; align-items: flex-start; }
+            .season-episode-selectors label { margin-top: 10px; }
+        }
+    </style>
 </head>
 
-<body style="background:#111; color:#fff;">
+<body>
 
-  <!-- Header -->
-  <header style="padding:10px; border-bottom:1px solid #444; text-align:center; position:relative;">
-    <a href="index.html" style="position:absolute; left:10px; top:10px; text-decoration:none;">
-      <button style="padding:8px 14px; background:none; color:white; font-weight:bold; border:none; cursor:pointer;">
-        ⬅ Home
-      </button>
-    </a>
-    <h1 id="movie-title" style="margin:0; font-size:1.8rem;">Loading...</h1>
-  </header>
+    <header class="header">
+        <a href="index.html" class="home-button">⬅ Home</a>
+        <h1 id="movie-title">Loading...</h1>
+    </header>
 
-  <!-- Main Content -->
-  <div class="page-container" style="padding: 20px; max-width: 1000px; margin: auto;">
+    <div class="page-container">
 
-    <!-- Server Box -->
-    <div id="fallback-box" style="margin-bottom: 20px; background:#1c1c1c; padding: 15px; border-radius: 8px; text-align: center;">
-      <p style="margin-bottom: 10px; font-weight: bold; font-size: 16px;">
-        🎬 Find server to play the full movie?
-      </p>
-      <div id="server"></div>
-      <button id="start-test-btn" style="margin-left: 10px; padding: 6px 12px; border-radius: 5px; background-color:#4CAF50; color:#fff; font-weight:bold;">
-        🔍 Start Find Server
-      </button>
-      <button id="stop-test-btn" style="margin-left: 10px; padding: 6px 12px; border-radius: 5px; background-color:#f44336; color:#fff; font-weight:bold; display: none;">
-        ⛔ Stop
-      </button>
-      <p id="active-server-label" style="margin-top:10px; font-size: 13px; color: #ccc;"></p>
+        <div id="fallback-box" class="server-box">
+            <p>🎬 Find server to play the full movie?</p>
+            <div id="server" style="display:inline-block;"></div>
+            <button id="start-test-btn">🔍 Start Find Server</button>
+            <button id="stop-test-btn">⛔ Stop</button>
+            <p id="active-server-label" style="margin-top:10px; font-size: 13px; color: #ccc;"></p>
+        </div>
+
+        <div class="season-episode-selectors" style="display: none;">
+            <label for="season-select">Season:</label>
+            <select id="season-select"></select>
+            <label for="episode-select">Episode:</label>
+            <select id="episode-select"></select>
+        </div>
+
+        <div class="video-container">
+            <iframe id="movie-player"
+                    allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+                    allowfullscreen
+                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms">
+            </iframe>
+        </div>
+
+        <div style="text-align:center; margin:20px 0;">
+            <ins class="adsbygoogle"
+                 style="display:block; text-align:center;"
+                 data-ad-client="ca-pub-5209861049704399"
+                 data-ad-slot="7386887307"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+
+        <p id="movie-overview" style="margin-top:20px; line-height: 1.6;"></p>
+        <p id="movie-rating" style="color:gold; margin-top:10px; font-size: 18px;"></p>
+        <div id="cast-list" style="margin-top:30px;"></div>
+        <div id="similar-movies" style="margin-top: 30px;"></div>
+
     </div>
 
-    <!-- Season & Episode Selector -->
-    <div class="season-episode-selectors" style="display: none;">
-      <label for="season-select">Season:</label>
-      <select id="season-select"></select>
+    <script src="js/embed.js"></script>
+    <script src="js/servers.js"></script>
+    <script src="js/movie.js"></script>
 
-      <label for="episode-select">Episode:</label>
-      <select id="episode-select"></select>
-    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const startBtn = document.getElementById("start-test-btn");
+            const stopBtn = document.getElementById("stop-test-btn");
+            const serverLabel = document.getElementById("active-server-label");
 
-    <!-- Video Player -->
-    <div class="video-container">
-      <iframe id="movie-player" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
-    </div>
+            startBtn.onclick = () => {
+                if (typeof initPlayerWithFallback === 'function') {
+                    autoTesting = true;
+                    startBtn.disabled = true;
+                    stopBtn.style.display = "inline-block";
+                    serverLabel.textContent = "🔍 Searching for best server...";
+                    initPlayerWithFallback();
+                } else {
+                    serverLabel.textContent = "⚠️ initPlayerWithFallback() is not loaded.";
+                }
+            };
 
-    <!-- ✅ AdSense Ad Below Player -->
-    <div style="text-align:center; margin:20px 0;">
-      <ins class="adsbygoogle"
-           style="display:block; text-align:center;"
-           data-ad-client="ca-pub-5209861049704399"
-           data-ad-slot="7386887307"  
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
-    </div>
+            stopBtn.onclick = () => {
+                autoTesting = false;
+                document.getElementById("active-server-label").textContent = "⛔ Auto Find Cancelled.";
+                startBtn.disabled = false;
+                stopBtn.style.display = "none";
+            };
+        });
+    </script>
 
-    <!-- Overview -->
-    <p id="movie-overview" style="margin-top:20px; line-height: 1.6;"></p>
-    <p id="movie-rating" style="color:gold; margin-top:10px; font-size: 18px;"></p>
-
-    <!-- Cast -->
-    <div id="cast-list" style="margin-top:30px;"></div>
-
-    <!-- You May Also Like -->
-    <div id="similar-movies" style="margin-top: 30px;"></div>
-
-  </div>
-
-  <!-- Scripts -->
-  <script src="js/embed.js"></script>
-  <script src="js/servers.js"></script>
-  <script src="js/movie.js"></script>
-
-  <script>
-    // Start/Stop Auto-Find Button Logic
-    document.addEventListener("DOMContentLoaded", () => {
-      const startBtn = document.getElementById("start-test-btn");
-      const stopBtn = document.getElementById("stop-test-btn");
-      const serverLabel = document.getElementById("active-server-label");
-
-      startBtn.onclick = () => {
-        if (typeof initPlayerWithFallback === 'function') {
-          autoTesting = true;
-          startBtn.disabled = true;
-          stopBtn.style.display = "inline-block";
-          serverLabel.textContent = "🔍 Searching for best server...";
-          initPlayerWithFallback();
-        } else {
-          serverLabel.textContent = "⚠️ initPlayerWithFallback() is not loaded.";
-        }
-      };
-
-      stopBtn.onclick = () => {
-        autoTesting = false;
-        document.getElementById("active-server-label").textContent = "⛔ Auto Find Cancelled.";
-        startBtn.disabled = false;
-        stopBtn.style.display = "none";
-      };
-    });
-  </script>
-
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#e50914">
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#e50914">
 </body>
 </html>

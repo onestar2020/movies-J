@@ -4,7 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Loading Movie...</title>
-    <link rel="stylesheet" href="css/home.css" />
+
+    <script>
+      const appVersion = '2.1.0'; // Itugma sa version ng index.html
+    </script>
+    
+    <script>
+        document.write(`<link rel="stylesheet" href="css/home.css?v=${appVersion}">`);
+    </script>
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399"
             crossorigin="anonymous"></script>
@@ -51,7 +58,7 @@
             background: #1c1c1c;
             padding: 15px;
             border-radius: 8px;
-            flex-wrap: wrap; /* ✅ Dinagdag para sa note */
+            flex-wrap: wrap; 
         }
         .server-selector label {
             font-weight: bold;
@@ -64,14 +71,10 @@
             border-radius: 5px;
             font-family: 'Poppins', sans-serif;
         }
-
-        /* ✅ IN-ADD PARA AYUSIN ANG DROPDOWN OPTION COLOR */
         .server-selector select option {
             background: #333;
             color: #fff;
         }
-
-        /* ✅ STYLE PARA SA BAGONG NOTE */
         .server-note {
             width: 100%;
             margin-top: 10px;
@@ -80,7 +83,6 @@
             font-style: italic;
             text-align: center;
         }
-        
         iframe#movie-player {
             width: 100%;
             aspect-ratio: 16 / 9;
@@ -133,9 +135,20 @@
         <div id="similar-movies" style="margin-top: 30px;"></div>
     </div>
 
-    <script src="js/servers.js"></script>
-    <script src="js/embed.js"></script>
-    <script src="js/movie.js"></script>
+    <script>
+        const movieScripts = [
+            'js/servers.js',
+            'js/embed.js',
+            'js/movie.js'
+        ];
+        movieScripts.forEach(src => {
+            const script = document.createElement('script');
+            script.src = `${src}?v=${appVersion}`;
+            script.defer = true;
+            document.body.appendChild(script);
+        });
+    </script>
+
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#e50914">
 </body>

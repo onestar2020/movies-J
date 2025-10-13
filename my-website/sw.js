@@ -1,13 +1,16 @@
-// ✅ sw.js - Service Worker for Movies-J
-const CACHE_VERSION = 'v1.3.3'; // 🔁 Increment this to trigger updates
+// ✅ sw.js - Service Worker for Movies-J (Updated for Cache Busting)
+const CACHE_VERSION = 'v1.3.5'; // 🔁 Itinaas ang version para mag-update ang cache
 const CACHE_NAME = `movie-cache-${CACHE_VERSION}`;
 
+// ✅ Idinagdag ang movie.html at movie.js para ma-cache din sila
 const urlsToCache = [
   './',
   './index.html',
+  './movie.html', // Dinagdag
   './css/home.css',
   './css/trailerModal.css',
   './js/home.js',
+  './js/movie.js', // Dinagdag
   './js/uploads.js',
   './js/watchHistory.js',
   './js/embed.js',
@@ -45,26 +48,26 @@ self.addEventListener('activate', event => {
   self.clients.claim(); // Take control immediately
 });
 
-// ✅ Fetch: Cache-first for same-origin, bypass external domains
+// ✅ Fetch: Inayos para gumana sa versioning (?v=...)
 self.addEventListener('fetch', event => {
   const request = event.request;
   const requestURL = new URL(request.url);
 
-  // Only handle same-origin requests
+  // Handle same-origin requests (iyong mga file mo)
   if (requestURL.origin === location.origin) {
-    if (request.mode === 'navigate') {
-      event.respondWith(
-        fetch(request).catch(() => caches.match('./index.html'))
-      );
-    } else {
-      event.respondWith(
-        caches.match(request).then(cachedResponse => {
-          return cachedResponse || fetch(request);
-        })
-      );
-    }
-  } else {
-    // 🔕 Skip external requests (like Google ads/CSP)
-    return;
+    event.respondWith(
+      caches.open(CACHE_NAME).then(cache => {
+        // Hanapin sa cache, hindi pinapansin ang query string tulad ng ?v=1.2.3
+        return cache.match(request, { ignoreSearch: true }).then(cachedResponse => {
+          // Kung nasa cache, ibigay ang cached version
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Kung wala sa cache, i-fetch sa network
+          return fetch(request);
+        });
+      })
+    );
   }
+  // Para sa external requests (gaya ng TMDB, fonts, ads), hayaan lang dumaan sa network.
 });

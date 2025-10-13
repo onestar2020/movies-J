@@ -7,7 +7,7 @@
     <title>Movies-J Official Site</title>
 
     <script>
-      const appVersion = '2.0.9'; // Final sandbox fix version
+      const appVersion = '2.1.0'; // Final sandbox fix version
     </script>
     
     <link rel="manifest" href="manifest.json">
@@ -18,8 +18,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-    <link rel="stylesheet" href="css/home.css?v=${appVersion}">
+ 
+    <script>
+        document.write(`<link rel="stylesheet" href="css/home.css?v=${appVersion}">`);
+    </script>
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399" crossorigin="anonymous"></script>
 </head>
@@ -130,53 +132,29 @@
     </div>
 
     <meta name="theme-color" content="#e50914">
-    <script src="js/embed.js" defer></script>
-    <script src="js/servers.js" defer></script>
-    <script src="js/uploads.js" defer></script>
-    <script src="js/home.js" defer></script>
-    <script src="js/watchHistory.js" defer></script>
-    <script src="pwa.js" defer></script>
-    <script src="https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js"></script>
+
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const API_KEY = "22d74813ded3fecbe3ef632b4814ae3a";
-            const BASE_URL = "https://api.themoviedb.org/3";
-            const IMG_URL = 'https://image.tmdb.org/t/p/original';
-            const heroSection = document.getElementById('hero-section');
-            const heroTitle = document.getElementById('hero-title');
-            const heroDesc = document.getElementById('hero-description');
-            const watchBtn = document.getElementById('hero-watch-btn');
-            const infoBtn = document.getElementById('hero-info-btn');
-
-            async function loadFeaturedMovie() {
-                try {
-                    const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
-                    const data = await res.json();
-                    const featuredMovie = data.results[Math.floor(Math.random() * data.results.length)];
-                    if (featuredMovie) {
-                        heroSection.style.backgroundImage = `url(${IMG_URL}${featuredMovie.backdrop_path})`;
-                        heroTitle.textContent = featuredMovie.title;
-                        heroDesc.textContent = featuredMovie.overview;
-                        const movieUrl = `movie.html?id=${featuredMovie.id}&type=movie`;
-                        watchBtn.onclick = () => window.location.href = movieUrl;
-                        infoBtn.onclick = () => openModal(featuredMovie.id, 'movie');
-                    }
-                } catch (error) {
-                    console.error("Failed to load featured movie:", error);
-                    heroTitle.textContent = "Could not load featured movie.";
-                }
+        const scripts = [
+            'js/embed.js',
+            'js/servers.js',
+            'js/uploads.js',
+            'js/home.js',
+            'js/watchHistory.js',
+            'pwa.js',
+            'https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js'
+        ];
+        scripts.forEach(src => {
+            const script = document.createElement('script');
+            // Lagyan lang ng version ang local files
+            if (src.startsWith('js/') || src.startsWith('pwa.js')) {
+                script.src = `${src}?v=${appVersion}`;
+            } else {
+                script.src = src; // Para sa external scripts tulad ng jwplayer
             }
-            loadFeaturedMovie();
-
-            window.addEventListener('scroll', () => {
-                const navbar = document.querySelector('.navbar');
-                if (window.scrollY > 50) {
-                    navbar.classList.add('scrolled');
-                } else {
-                    navbar.classList.remove('scrolled');
-                }
-            });
+            script.defer = true;
+            document.body.appendChild(script);
         });
     </script>
-</body>
+    
+    </body>
 </html>

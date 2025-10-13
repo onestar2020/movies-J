@@ -2,234 +2,139 @@
 <html lang="en">
 
 <head>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399"
-          crossorigin="anonymous"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movies-J Official Site</title>
 
-  <script>
-    const appVersion = '1.2.7';
-  </script>
+    <script>
+      const appVersion = '2.0.0'; // New version for the new design
+    </script>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="images/logo.png" type="image/png">
 
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Movies-J Official Site</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-  <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+    <link rel="stylesheet" href="css/home.css?v=${appVersion}">
 
-  <script>
-    document.write(`
-      <link rel="preload" href="css/home.css?v=${appVersion}" as="style" onload="this.rel='stylesheet'">
-      <noscript><link rel="stylesheet" href="css/home.css?v=${appVersion}"></noscript>
-    `);
-  </script>
-
-  <link rel="icon" href="images/logo.png" type="image/png">
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399" crossorigin="anonymous"></script>
 </head>
 
 <body>
-  <div class="container">
-    <div class="main-wrapper">
-
-      <div class="navbar">
-        <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect glow-gradient" />
-        <div class="nav-links">
-          <div class="top-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <a href="index.html" style="text-decoration: none; font-weight: bold; color: white;">🏠 Home</a>
-            <button id="install-btn" style="display: none; padding: 6px 12px; background: #e50914; color: #fff; font-weight: 600; font-size: 14px; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">
-              📲 Install App
-            </button>
-          </div>
-          <div class="bottom-row">
-            <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
-            <button class="watch-history-btn" onclick="openWatchHistoryModal()">
-              <i class="fa-solid fa-clock icon-label" style="margin-right: 6px;"></i>
-              <span class="text-label">Watch History</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <section id="weekly-trending-section">
-        <div id="banner-video-container"></div>
-        <h2 id="banner-title">Loading Trailers...</h2>
-        <div id="banner-controls">
-          <button id="prev-trailer" class="modern-button">← Prev Trailer</button>
-          <button id="next-trailer" class="modern-button">Next Trailer →</button>
-        </div>
-      </section>
-
-      <div class="row"><h2>Trending Movies</h2><div class="list" id="movies-list"></div></div>
-      <div class="row"><h2>Trending TV Shows</h2><div class="list" id="tvshows-list"></div></div>
-      <div class="row"><h2>Trending Anime</h2><div class="list" id="anime-list"></div></div>
-      <div id="upload-pagination" style="text-align:center; margin-top:10px;"></div>
-
-    </div> <div class="modal" id="modal">
-      <div class="modal-content">
-        <button class="close" onclick="closeModal()">&times;</button>
-        <div class="modal-body">
-          <img id="modal-image" src="" alt="" />
-          <div class="modal-text">
-            <div class="extra-section">
-              <h3 class="section-title">🎭 Cast</h3>
-              <ul id="cast-list"></ul>
-              <h3 class="section-title">🎬 Similar Movies</h3>
-              <div id="similar-movies"></div>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect" />
+            <div class="nav-links">
+                <a href="index.html" class="active">Home</a>
+                <a href="#">Movies</a>
+                <a href="#">TV Shows</a>
+                <a href="#">Anime</a>
             </div>
-            <h2 id="modal-title"></h2>
-            <div class="stars" id="modal-rating"></div>
-            <p id="modal-description"></p>
-            <div id="tv-controls" style="margin-top: 10px;">
-              <div class="season-episode-selectors" style="display: none;">
-                <label for="season-selector">Season:</label>
-                <select id="season-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
-                <label for="episode-selector">Episode:</label>
-                <select id="episode-selector" style="margin: 5px 0; padding: 5px; border-radius: 5px;"></select>
-              </div>
+            <div class="nav-actions">
+                <i class="fas fa-search" onclick="openSearchModal()"></i>
+                <button class="watch-history-btn" title="Watch History" onclick="openWatchHistoryModal()">
+                    <i class="fas fa-history"></i>
+                </button>
+                <button id="install-btn" style="display: none;" title="Install App">
+                    <i class="fas fa-download"></i>
+                </button>
             </div>
-          </div>
         </div>
-        <div class="server-selector">
-          <label for="server">Change Server:</label>
-          <select id="server" onchange="changeServer()">
-            <option value="">Loading servers...</option>
-          </select>
-          <p id="active-server-label" style="text-align: center; color: #00f; font-size: 13px; margin-top: 5px;"></p>
-          <p style="font-size: 13px; color: #ff5e00; text-align: center; margin: 10px 0;">
-            ⚠ Ads shown in free movie servers are not controlled by this site.
-          </p>
+    </nav>
+
+    <header class="hero-section" id="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title" id="hero-title">Loading Featured Movie...</h1>
+            <p class="hero-description" id="hero-description"></p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" id="hero-watch-btn"><i class="fas fa-play"></i> Watch Now</button>
+                <button class="btn btn-secondary" id="hero-info-btn"><i class="fas fa-info-circle"></i> More Info</button>
+            </div>
         </div>
-        <iframe id="modal-video" width="100%" height="400" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
-      </div>
-    </div>
+        <div class="hero-fade"></div>
+    </header>
 
-    <div class="modal" id="upload-modal">
-      <div class="modal-content">
-        <button class="close" onclick="closeUploadModal()">&times;</button>
-        <div class="modal-body" style="text-align: center;">
-          <iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen allow="fullscreen; autoplay; encrypted-media; accelerometer; gyroscope; picture-in-picture"></iframe>
+    <main class="main-container">
+        <div class="row"><h2>Trending Movies</h2><div class="list" id="movies-list"></div></div>
+        <div class="row"><h2>Trending TV Shows</h2><div class="list" id="tvshows-list"></div></div>
+        <div class="row"><h2>Trending Anime</h2><div class="list" id="anime-list"></div></div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Movies-J. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="disclaimer.html">Disclaimer</a>
+                <a href="about.html">About Us</a>
+                <a href="contact.html">Contact Us</a>
+            </div>
         </div>
-        <div class="modal-text" style="text-align: center;">
-          <h2 id="upload-title"></h2>
-          <div class="stars" id="upload-rating" style="margin-bottom: 10px;"></div>
-          <p id="upload-description"></p>
-          <div style="margin-top: 15px;">
-            <button id="upload-trailer-btn">🎬 Watch Trailer</button>
-            <button id="upload-watch-btn">▶ Watch Full Movie</button>
-            <a id="upload-download-btn" href="#" target="_blank" download>
-              <button>⬇ Download</button>
-            </a>
-          </div>
-          <p style="font-size: 13px; color: #4CAF50; margin-top: 10px;">
-            ✅ Uploaded via Google Drive. No external ads included.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div> <div class="search-modal" id="search-modal">
-    <button class="close" onclick="closeSearchModal()">&times;</button>
-    <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
-    <div class="results" id="search-results"></div>
-  </div>
+    </footer>
 
-  <footer class="footer">
-    <div class="footer-content">
-      <p>&copy; 2025 My Website. All rights reserved.</p>
-      <div class="footer-links">
-        <a href="disclaimer.html">Disclaimer</a>
-        <a href="about.html">About Us</a>
-        <a href="contact.html">Contact Us</a>
-      </div>
-    </div>
-  </footer>
+    <div class="modal" id="modal"><div class="modal-content"><button class="close" onclick="closeModal()">&times;</button><div class="modal-body"><img id="modal-image" src="" alt="" /><div class="modal-text"><div class="extra-section"><h3 class="section-title">🎭 Cast</h3><ul id="cast-list"></ul><h3 class="section-title">🎬 Similar Movies</h3><div id="similar-movies"></div></div><h2 id="modal-title"></h2><div class="stars" id="modal-rating"></div><p id="modal-description"></p><div id="tv-controls" style="margin-top: 10px;"><div class="season-episode-selectors" style="display: none;"><label for="season-selector">Season:</label><select id="season-selector"></select><label for="episode-selector">Episode:</label><select id="episode-selector"></select></div></div></div></div><div class="server-selector"><label for="server">Change Server:</label><select id="server" onchange="changeServer()"><option value="">Loading servers...</option></select><p id="active-server-label"></p><p>⚠ Ads shown in free movie servers are not controlled by this site.</p></div><iframe id="modal-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe></div></div>
+    <div class="modal" id="upload-modal"><div class="modal-content"><button class="close" onclick="closeUploadModal()">&times;</button><div class="modal-body" style="text-align: center;"><iframe id="upload-video" width="100%" height="400" frameborder="0" allowfullscreen></iframe></div><div class="modal-text" style="text-align: center;"><h2 id="upload-title"></h2><div class="stars" id="upload-rating"></div><p id="upload-description"></p><div><button id="upload-trailer-btn">🎬 Watch Trailer</button><button id="upload-watch-btn">▶ Watch Full Movie</button><a id="upload-download-btn" href="#" target="_blank" download><button>⬇ Download</button></a></div><p>✅ Uploaded via Google Drive. No external ads included.</p></div></div></div>
+    <div class="search-modal" id="search-modal"><button class="close" onclick="closeSearchModal()">&times;</button><input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" /><div class="results" id="search-results"></div></div>
+    <div class="modal" id="watch-history-modal"><div class="modal-content" style="max-width: 600px; padding: 20px;"><span class="close" id="close-history-modal">&times;</span><h2>Watch History</h2><div id="watch-history-list" class="watch-history-list"></div></div></div>
+    <div id="filemoon-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; flex-direction:column;"><button onclick="closeFilemoonModal()" style="position:absolute; top:10px; right:20px; background:#f44336; color:#fff; border:none; padding:10px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">✖ Close</button><iframe id="filemoon-iframe" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="no-referrer" style="width:90%; height:90%; border:none;"></iframe></div>
 
-  <div class="modal" id="watch-history-modal">
-    <div class="modal-content" style="max-width: 600px; padding: 20px;">
-      <span class="close" id="close-history-modal">&times;</span>
-      <h2>Watch History</h2>
-      <div id="watch-history-list" class="watch-history-list"></div>
-    </div>
-  </div>
+    <meta name="theme-color" content="#e50914">
+    <script src="js/embed.js" defer></script>
+    <script src="js/servers.js" defer></script>
+    <script src="js/uploads.js" defer></script>
+    <script src="js/home.js" defer></script>
+    <script src="js/watchHistory.js" defer></script>
+    <script src="pwa.js" defer></script>
+    <script src="https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js"></script>
 
-  <div id="filemoon-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
-    <button onclick="closeFilemoonModal()" style="position:absolute; top:10px; right:20px; background:#f44336; color:#fff; border:none; padding:10px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">✖ Close</button>
-    <iframe id="filemoon-iframe" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="no-referrer" style="width:90%; height:90%; border:none;"></iframe>
-  </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const API_KEY = "22d74813ded3fecbe3ef632b4814ae3a";
+            const BASE_URL = "https://api.themoviedb.org/3";
+            const IMG_URL = 'https://image.tmdb.org/t/p/original';
 
-  <meta name="theme-color" content="#e50914">
-  <script src="js/embed.js?v=1.2.6" defer></script>
-  <script src="js/servers.js?v=1.2.6" defer></script>
-  <script src="js/uploads.js?v=1.2.6" defer></script>
-  <script src="js/home.js" defer></script>
-  <script src="js/watchHistory.js?v=1.0.8" defer></script>
-  <script src="pwa.js"></script>
-  <script src="https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js"></script>
+            const heroSection = document.getElementById('hero-section');
+            const heroTitle = document.getElementById('hero-title');
+            const heroDesc = document.getElementById('hero-description');
+            const watchBtn = document.getElementById('hero-watch-btn');
+            const infoBtn = document.getElementById('hero-info-btn');
 
-  <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const prevBtn = document.getElementById("prev-trailer");
-    const nextBtn = document.getElementById("next-trailer");
-    let currentIndex = 0;
-    let trailers = [];
+            async function loadFeaturedMovie() {
+                try {
+                    const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
+                    const data = await res.json();
+                    const featuredMovie = data.results[Math.floor(Math.random() * data.results.length)]; // Random movie from trending
 
-    async function fetchAllTrendingWithTrailers() {
-      const API_KEY = "22d74813ded3fecbe3ef632b4814ae3a";
-      const BASE_URL = "https://api.themoviedb.org/3";
-      try {
-        const trendingRes = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
-        const trendingData = await trendingRes.json();
-        const validItems = trendingData.results.filter(item => item.backdrop_path);
+                    if (featuredMovie) {
+                        heroSection.style.backgroundImage = `url(${IMG_URL}${featuredMovie.backdrop_path})`;
+                        heroTitle.textContent = featuredMovie.title;
+                        heroDesc.textContent = featuredMovie.overview;
 
-        for (const movie of validItems) {
-          const videoRes = await fetch(`${BASE_URL}/movie/${movie.id}/videos?api_key=${API_KEY}`);
-          const videoData = await videoRes.json();
-          const trailer = videoData.results.find(v => v.type === "Trailer" && v.site === "YouTube");
-          if (trailer) {
-            trailers.push({ title: movie.title || movie.name, youtubeKey: trailer.key });
-          }
-        }
-        if (trailers.length > 0) updateBanner(trailers[currentIndex]);
-      } catch (error) {
-        console.error("Error fetching trailers:", error);
-        const titleEl = document.getElementById("banner-title");
-        if(titleEl) titleEl.textContent = "Could not load trailers.";
-      }
-    }
+                        const movieUrl = `movie.html?id=${featuredMovie.id}&type=movie`;
+                        watchBtn.onclick = () => window.location.href = movieUrl;
+                        infoBtn.onclick = () => openModal(featuredMovie.id, 'movie'); // Assuming you have openModal function
+                    }
+                } catch (error) {
+                    console.error("Failed to load featured movie:", error);
+                    heroTitle.textContent = "Could not load featured movie.";
+                }
+            }
+            
+            loadFeaturedMovie();
 
-    function updateBanner(info) {
-      const titleEl = document.getElementById("banner-title");
-      const container = document.getElementById("banner-video-container");
-      if (!titleEl || !container) return;
-
-      titleEl.textContent = info.title;
-
-      const iframe = document.createElement("iframe");
-      iframe.src = `https://www.youtube.com/embed/${info.youtubeKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${info.youtubeKey}&modestbranding=1&rel=0`;
-      iframe.allow = "autoplay; encrypted-media";
-      iframe.allowFullscreen = true;
-      iframe.frameBorder = "0";
-      container.innerHTML = "";
-      container.appendChild(iframe);
-    }
-
-    if (prevBtn) {
-      prevBtn.addEventListener("click", function () {
-        if (trailers.length === 0) return;
-        currentIndex = (currentIndex - 1 + trailers.length) % trailers.length;
-        updateBanner(trailers[currentIndex]);
-      });
-    }
-
-    if (nextBtn) {
-      nextBtn.addEventListener("click", function () {
-        if (trailers.length === 0) return;
-        currentIndex = (currentIndex + 1) % trailers.length;
-        updateBanner(trailers[currentIndex]);
-      });
-    }
-
-    fetchAllTrendingWithTrailers();
-  });
-  </script>
+            // Navbar scroll effect
+            window.addEventListener('scroll', () => {
+                const navbar = document.querySelector('.navbar');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

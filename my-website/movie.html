@@ -43,7 +43,6 @@
             max-width: 1000px;
             margin: auto;
         }
-        /* ✅ BAGONG STYLE PARA SA SERVER SELECTOR */
         .server-selector {
             margin-bottom: 20px;
             display: flex;
@@ -52,6 +51,7 @@
             background: #1c1c1c;
             padding: 15px;
             border-radius: 8px;
+            flex-wrap: wrap; /* ✅ Dinagdag para sa note */
         }
         .server-selector label {
             font-weight: bold;
@@ -64,10 +64,19 @@
             border-radius: 5px;
             font-family: 'Poppins', sans-serif;
         }
+
+        /* ✅ STYLE PARA SA BAGONG NOTE */
+        .server-note {
+            width: 100%;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #aaa;
+            font-style: italic;
+            text-align: center;
+        }
         
         iframe#movie-player {
             width: 100%;
-            max-width: 100%;
             aspect-ratio: 16 / 9;
             border-radius: 10px;
             border: none;
@@ -77,16 +86,9 @@
             display: flex; gap: 10px; align-items: center;
             flex-wrap: wrap; margin-bottom: 20px;
         }
-        .season-episode-selectors label { font-weight: bold; font-size: 14px; }
-        .season-episode-selectors select {
-            padding: 6px 10px; background: #222; color: #fff;
-            border: 1px solid #555; border-radius: 5px; min-width: 100px;
-        }
         .video-container { margin-top: 20px; width: 100%; }
         @media screen and (max-width: 600px) {
             #movie-title { font-size: 1.4rem; }
-            .season-episode-selectors { flex-direction: column; align-items: flex-start; }
-            .season-episode-selectors label { margin-top: 10px; }
         }
     </style>
 </head>
@@ -102,6 +104,7 @@
         <div class="server-selector">
             <label for="server-select">🎬 Server:</label>
             <select id="server-select"></select>
+            <p class="server-note">ℹ️ Select a server to start playing.</p>
         </div>
 
         <div class="season-episode-selectors" style="display: none;">
@@ -119,29 +122,14 @@
             </iframe>
         </div>
 
-        <div style="text-align:center; margin:20px 0;">
-            <ins class="adsbygoogle"
-                 style="display:block; text-align:center;"
-                 data-ad-client="ca-pub-5209861049704399"
-                 data-ad-slot="7386887307"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-            <script>
-                 (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
-        </div>
-
         <p id="movie-overview" style="margin-top:20px; line-height: 1.6;"></p>
-        <p id="movie-rating" style="color:gold; margin-top:10px; font-size: 18px;"></p>
         <div id="cast-list" style="margin-top:30px;"></div>
         <div id="similar-movies" style="margin-top: 30px;"></div>
-
     </div>
 
     <script src="js/servers.js"></script>
     <script src="js/embed.js"></script>
     <script src="js/movie.js"></script>
-
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#e50914">
 </body>

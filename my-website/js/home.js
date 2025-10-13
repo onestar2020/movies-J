@@ -10,27 +10,39 @@ let animeItems = [];
 
 // Fetch data from TMDB
 async function fetchTrending(type) {
-  const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
-  const data = await res.json();
-  return data.results;
+  try {
+    const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
+    const data = await res.json();
+    return data.results;
+  } catch (error) {
+    console.error(`Error fetching trending ${type}:`, error);
+    return [];
+  }
 }
 
 async function fetchTrendingAnime() {
-  let allResults = [];
-  // Fetch a few pages to get enough anime content
-  for (let page = 1; page <= 3; page++) {
-    const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_keywords=210024|287501&with_genres=16&page=${page}`);
-    const data = await res.json();
-    allResults = allResults.concat(data.results);
+  try {
+    let allResults = [];
+    for (let page = 1; page <= 3; page++) {
+      const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_keywords=210024|287501&with_genres=16&page=${page}`);
+      const data = await res.json();
+      allResults = allResults.concat(data.results.map(item => ({ ...item, media_type: 'tv' })));
+    }
+    return allResults;
+  } catch (error) {
+    console.error('Error fetching trending anime:', error);
+    return [];
   }
-  return allResults;
 }
 
-/**
- * ✅ IN-EDIT NA FUNCTION PARA AYUSIN ANG POSTERS
- * This function now wraps each image in a div.movie-card
- * to ensure all posters have uniform size.
- */
+
+/*
+===========================================================
+✅ IN-EDIT NA FUNCTION PARA MAGDAGDAG NG TITLE
+   Ngayon, bukod sa poster, gagawa na rin ito ng
+   <p class="movie-title"> para sa bawat item.
+===========================================================
+*/
 function displayList(items, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -38,19 +50,26 @@ function displayList(items, containerId) {
 
     items.forEach(item => {
         if (item.poster_path) {
-            // Gumawa ng card container para sa bawat poster
+            // Gumawa ng card container
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
-            movieCard.onclick = () => goToMovie(item); // Ilipat ang onclick sa buong card
+            movieCard.onclick = () => goToMovie(item);
 
             // Gumawa ng image sa loob ng card
             const img = document.createElement('img');
             img.src = `${IMG_URL}${item.poster_path}`;
             img.alt = item.title || item.name;
-            img.loading = 'lazy'; // Improve page load speed
+            img.loading = 'lazy';
 
-            // Ipasok ang image sa card, at ang card sa listahan
+            // ✅ GUMAWA NG TITLE ELEMENT (BAGONG DAGDAG)
+            const title = document.createElement('p');
+            title.className = 'movie-title';
+            title.textContent = item.title || item.name;
+
+            // Ipasok ang image at title sa card
             movieCard.appendChild(img);
+            movieCard.appendChild(title); // ✅ IDAGDAG ANG TITLE SA CARD
+            
             container.appendChild(movieCard);
         }
     });
@@ -66,18 +85,14 @@ function goToMovie(item) {
     poster_path: item.poster_path,
     type: type
   });
-  // Ensure you have a movie.html file to handle this
   window.location.href = `movie.html?id=${item.id}&type=${type}`;
 }
 
 // Save item to localStorage watch history
 function saveToWatchHistory(item) {
   let history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
-  // Remove existing entry to move it to the front
   history = history.filter(histItem => !(histItem.id === item.id && histItem.type === item.type));
-  // Add to the front
   history.unshift({ ...item, timestamp: Date.now() });
-  // Keep history limited to 20 items
   if (history.length > 20) history = history.slice(0, 20);
   localStorage.setItem("watchHistory", JSON.stringify(history));
 }
@@ -85,9 +100,11 @@ function saveToWatchHistory(item) {
 // Main function to initialize the page content
 async function init() {
   try {
-    movieItems = await fetchTrending('movie');
-    tvItems = await fetchTrending('tv');
-    animeItems = await fetchTrendingAnime();
+    const [movieItems, tvItems, animeItems] = await Promise.all([
+        fetchTrending('movie'),
+        fetchTrending('tv'),
+        fetchTrendingAnime()
+    ]);
 
     displayList(movieItems, 'movies-list');
     displayList(tvItems, 'tvshows-list');
@@ -97,7 +114,7 @@ async function init() {
   }
 }
 
-// --- MODAL & SEARCH LOGIC --- (Mostly unchanged)
+// --- MODAL & SEARCH LOGIC ---
 
 function openWatchHistoryModal() {
   const modal = document.getElementById("watch-history-modal");
@@ -120,10 +137,11 @@ function loadWatchHistory() {
 
     history.forEach(item => {
         const div = document.createElement('div');
-        div.className = 'movie-card'; // Re-use movie-card style
-        div.style.width = '120px'; // Smaller size for modal
+        div.className = 'movie-card';
+        div.style.width = '120px';
         div.onclick = () => goToMovie(item);
-        div.innerHTML = `<img src="${IMG_URL}${item.poster_path}" alt="${item.title}" loading="lazy">`;
+        div.innerHTML = `<img src="${IMG_URL}${item.poster_path}" alt="${item.title}" loading="lazy">
+                         <p class="movie-title">${item.title}</p>`; // Added title here too
         container.appendChild(div);
     });
 }
@@ -135,6 +153,7 @@ function openSearchModal() {
     document.getElementById('search-input').focus();
   }
 }
+
 function closeSearchModal() {
   const modal = document.getElementById('search-modal');
   if(modal) {
@@ -143,6 +162,7 @@ function closeSearchModal() {
     document.getElementById('search-input').value = '';
   }
 }
+
 async function searchTMDB() {
   const query = document.getElementById('search-input').value.trim();
   const container = document.getElementById('search-results');
@@ -161,7 +181,8 @@ async function searchTMDB() {
       closeSearchModal();
       goToMovie(item);
     };
-    div.innerHTML = `<img src="${IMG_URL}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">`;
+    div.innerHTML = `<img src="${IMG_URL}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
+                     <p class="movie-title">${item.title || item.name}</p>`; // Added title here too
     container.appendChild(div);
   });
 }

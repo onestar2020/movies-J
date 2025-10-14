@@ -6,15 +6,40 @@
     <title>Loading Movie...</title>
     
     <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399"
             crossorigin="anonymous"></script>
 
     <style>
         body { background: #111; color: #fff; font-family: 'Poppins', sans-serif; }
-        .header { padding: 10px; border-bottom: 1px solid #444; text-align: center; position: relative; }
-        .home-button { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); padding: 8px 14px; background: none; color: white; font-weight: bold; border: none; cursor: pointer; text-decoration: none; }
-        #movie-title { margin: 0; font-size: 1.8rem; }
+        .header { padding: 15px; border-bottom: 1px solid #333; text-align: center; position: relative; display: flex; align-items: center; justify-content: center; }
+        
+        .home-button { 
+            position: absolute; 
+            left: 20px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            font-size: 1.1rem;
+            color: #ccc;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .home-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        #movie-title { margin: 0; font-size: 1.6rem; padding: 0 50px; } /* Nagdagdag ng padding para hindi sumiksik */
         .page-container { padding: 20px; max-width: 1000px; margin: auto; }
         .server-selector { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; background: #1c1c1c; padding: 15px; border-radius: 8px; flex-wrap: wrap; }
         .server-selector label { font-weight: bold; }
@@ -24,13 +49,19 @@
         iframe#movie-player { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; border: none; background-color: #000; }
         .season-episode-selectors { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
         .video-container { margin-top: 20px; width: 100%; }
-        @media screen and (max-width: 600px) { #movie-title { font-size: 1.4rem; } }
+        @media screen and (max-width: 600px) { 
+            #movie-title { font-size: 1.2rem; } 
+            .header { padding: 10px; }
+            .home-button { left: 10px; width: 35px; height: 35px; font-size: 1rem; }
+        }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <a href="index.html" class="home-button">⬅ Home</a>
+        <a href="index.html" class="home-button" title="Back to Home">
+            <i class="fas fa-arrow-left"></i>
+        </a>
         <h1 id="movie-title">Loading...</h1>
     </header>
 

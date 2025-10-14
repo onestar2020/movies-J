@@ -14,7 +14,7 @@ body {
   background: var(--dark-color);
   color: #fff;
 }
-/* ===== SCROLL LOCK CLASS (BAGO) ===== */
+/* ===== SCROLL LOCK CLASS ===== */
 body.body-no-scroll {
   overflow: hidden;
 }
@@ -246,34 +246,43 @@ a {
   transform: scale(1.1);
 }
 
-/* ===== DETAILS MODAL STYLES ===== */
+/* ===== DETAILS MODAL STYLES (FIXED FOR MOBILE) ===== */
 #details-modal .details-modal-content {
-  position: relative; background-color: #181818;
-  border-radius: 8px; width: 90%; max-width: 800px;
-  height: auto; max-height: 90vh;
-  overflow: hidden; display: block;
-  padding-top: 56.25%;
+    position: relative;
+    background-color: #181818;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto; /* Para mag-scroll ang modal kung mahaba */
+    display: block;
+    /* Tinanggal ang padding-top para hindi maipit ang content */
 }
+
 .modal-backdrop {
   position: absolute; top: 0; left: 0;
   width: 100%; height: 100%;
   background-size: cover; background-position: center top;
   filter: brightness(0.3); z-index: 1;
 }
+
 .modal-body {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%;
+  position: relative; /* Pinalitan mula sa 'absolute' */
+  z-index: 2;
+  width: 100%;
+  height: auto; /* Hahaba base sa content */
   display: flex; align-items: flex-end;
-  padding: 30px; z-index: 2;
+  padding: 30px;
   background-image: linear-gradient(to top, rgba(24, 24, 24, 1) 20%, transparent 70%);
 }
+
 .modal-body img#modal-poster {
   width: 200px; height: 300px;
   object-fit: cover; border-radius: 6px;
   margin-right: 25px; flex-shrink: 0;
   box-shadow: 0 5px 25px rgba(0,0,0,0.5);
 }
-.modal-text { color: #fff; }
+.modal-text { color: #fff; width: 100%; } /* Added width 100% */
 #modal-title {
   font-size: 2.5rem; font-weight: 700;
   margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
@@ -293,7 +302,6 @@ a {
   border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 5px 12px; border-radius: 15px; font-size: 0.8rem;
 }
-/* ===== BUTTON CONTAINER (BAGO) ===== */
 .modal-buttons {
   margin-top: 20px;
 }
@@ -309,11 +317,10 @@ a {
   .movie-card { width: 140px; }
   #clear-history-btn { top: 10px; right: 50px; }
   
-  .modal-body { flex-direction: column; align-items: center; text-align: center; }
+  .modal-body { flex-direction: column; align-items: center; text-align: center; padding-top: 60%; } /* Added padding-top */
   .modal-body img#modal-poster { display: none; }
   #modal-title { font-size: 2rem; }
   .modal-meta { justify-content: center; }
-  /* ===== BUTTON CONTAINER RESPONSIVE (BAGO) ===== */
   .modal-buttons {
     display: flex;
     justify-content: center;

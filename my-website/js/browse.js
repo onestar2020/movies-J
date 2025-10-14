@@ -1,20 +1,28 @@
-// ✅ js/browse.js (FIXED: Removed duplicate variables)
+// ✅ js/browse.js (UPDATED: With Genre Filtering)
 
 const urlParams = new URLSearchParams(window.location.search);
 const type = urlParams.get('type'); // 'movie', 'tv', or 'anime'
 let currentPage = 1;
+let selectedGenre = ''; // BAGO: Variable para sa piniling genre
 
 // --- MAIN FUNCTION PAGKA-LOAD NG BROWSE PAGE ---
 document.addEventListener("DOMContentLoaded", () => {
-    // I-setup ang page depende sa type
     setupBrowsePage();
-    // I-load ang unang set ng resulta
-    loadContent(currentPage);
+    loadGenres(); // BAGO: I-load ang genres sa dropdown
+    loadContent(currentPage); // I-load ang unang set ng resulta
 
-    // Idagdag ang function sa "Load More" button
     document.getElementById('load-more-btn').addEventListener('click', () => {
-        currentPage++; // Itaas ang page number
-        loadContent(currentPage); // I-load ang susunod na page
+        currentPage++;
+        loadContent(currentPage);
+    });
+
+    // BAGO: Event listener para sa pagbabago ng genre
+    document.getElementById('genre-filter').addEventListener('change', (event) => {
+        selectedGenre = event.target.value;
+        currentPage = 1; // I-reset sa unang page
+        const grid = document.getElementById('browse-grid');
+        grid.innerHTML = ''; // Linisin ang grid bago mag-load ng bago
+        loadContent(currentPage);
     });
 });
 
@@ -23,12 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function setupBrowsePage() {
     const titleElement = document.getElementById('browse-title');
     const navLinks = document.querySelectorAll('.nav-links a');
-    let title = "Browse"; // Default title
+    let title = "Browse";
 
-    // Alisin muna ang 'active' class sa lahat ng links
     navLinks.forEach(link => link.classList.remove('active'));
 
-    // I-set ang title at active link depende sa type
     if (type === 'movie') {
         title = "Movies";
         const movieLink = document.querySelector('a[href="browse.html?type=movie"]');
@@ -41,28 +47,50 @@ function setupBrowsePage() {
         title = "Anime";
         const animeLink = document.querySelector('a[href="browse.html?type=anime"]');
         if (animeLink) animeLink.classList.add('active');
+        // Itago ang genre filter kung anime, dahil specific na ang query nito
+        document.getElementById('genre-filter').style.display = 'none';
     }
     
     if(titleElement) titleElement.textContent = title;
-    document.title = `${title} - Movies-J`; // I-update din ang tab title
+    document.title = `${title} - Movies-J`;
+}
+
+// BAGO: Function para kumuha ng genres at ilagay sa dropdown
+async function loadGenres() {
+    // Ang genre filter ay para lang sa movies at tv shows
+    if (type !== 'movie' && type !== 'tv') return;
+
+    const endpoint = `${BASE_URL}/genre/${type}/list?api_key=${API_KEY}`;
+    try {
+        const res = await fetch(endpoint);
+        const data = await res.json();
+        const genreFilter = document.getElementById('genre-filter');
+        
+        data.genres.forEach(genre => {
+            const option = document.createElement('option');
+            option.value = genre.id;
+            option.textContent = genre.name;
+            genreFilter.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Failed to load genres:", error);
+    }
 }
 
 
-// Function para kumuha at mag-display ng content
+// IN-UPDATE: Function para kumuha at mag-display ng content, kasama na ang genre
 async function loadContent(page) {
-    // NOTE: Ang API_KEY at BASE_URL ay galing na sa home.js
     let endpoint = '';
-    
-    // Alamin kung anong API endpoint ang gagamitin
+    const genreParam = selectedGenre ? `&with_genres=${selectedGenre}` : '';
+
     switch (type) {
         case 'movie':
-            endpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`;
+            endpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}${genreParam}`;
             break;
         case 'tv':
-            endpoint = `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`;
+            endpoint = `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}${genreParam}`;
             break;
         case 'anime':
-            // Ang anime ay special case ng TV shows na may specific keywords/genres
             endpoint = `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_keywords=210024|287501&with_genres=16&sort_by=popularity.desc&page=${page}`;
             break;
         default:
@@ -72,23 +100,26 @@ async function loadContent(page) {
     try {
         const res = await fetch(endpoint);
         const data = await res.json();
-        displayContentGrid(data.results);
+        displayContentGrid(data.results, page === 1); // Ipasa kung ito ba ay unang page load
     } catch (error) {
         console.error("Failed to load content:", error);
     }
 }
 
 
-// Function para i-display ang mga items sa grid
-function displayContentGrid(items) {
+// IN-UPDATE: Function para i-display ang mga items sa grid (na may option na i-clear)
+function displayContentGrid(items, clearGrid) {
     const grid = document.getElementById('browse-grid');
     if (!grid) return;
+
+    if (clearGrid) {
+        grid.innerHTML = ''; // Linisin lang kung kinakailangan (e.g., pagpalit ng genre)
+    }
 
     items.forEach(item => {
         if (item.poster_path) {
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
-            // Ang home.js ay na-load na natin sa browse.html kaya available ang function na ito
             movieCard.onclick = () => showDetailsModal(item);
             
             movieCard.innerHTML = `

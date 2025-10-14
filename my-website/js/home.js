@@ -1,191 +1,195 @@
-// ✅ home.js (Final Version with All Features)
+// ✅ js/movie.js (Updated to Autoplay Trailer First)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
-const IMG_URL_W500 = 'https://image.tmdb.org/t/p/w500';
-const IMG_URL_ORIGINAL = 'https://image.tmdb.org/t/p/original';
+const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
-// --- MAIN FUNCTION PAGKA-LOAD NG PAGE ---
+const urlParams = new URLSearchParams(window.location.search);
+const id = urlParams.get('id');
+const type = urlParams.get('type') || 'movie';
+
+let trailerUrl = ''; // Global variable to store the trailer URL
+
 document.addEventListener("DOMContentLoaded", async () => {
-    // Load lahat ng kailangan para sa homepage
-    loadFeaturedMovie();
-    fetchTrending('movie').then(items => displayList(items, 'movies-list'));
-    fetchTrending('tv').then(items => displayList(items, 'tvshows-list'));
-    fetchTrendingAnime().then(items => displayList(items, 'anime-list'));
-    
-    // Add scroll effect sa navbar
-    window.addEventListener('scroll', () => {
-        const navbar = document.querySelector('.navbar');
-        if (window.scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
-        }
-    });
+    const item = await fetchDetails();
+    if (item) {
+        document.title = item.title || item.name;
+        document.getElementById("movie-title").textContent = item.title || item.name;
+        document.getElementById("movie-overview").textContent = item.overview;
+        
+        // IN-UPDATE: This function now handles the initial state of the player
+        setupInitialPlayer(item);
 
-    // Event listeners para sa Details Modal
-    const detailsModal = document.getElementById('details-modal');
-    if(detailsModal) {
-        document.getElementById('close-details-modal').onclick = closeDetailsModal;
-        detailsModal.addEventListener('click', (event) => {
-            if (event.target === detailsModal) {
-                closeDetailsModal();
-            }
-        });
+        displayCast(item.credits.cast);
+        displaySimilar(item.similar.results);
+        populateServerSelector(item);
+
+        if (type === 'tv') {
+            document.querySelector('.season-episode-selectors').style.display = 'flex';
+            handleTVShow(item);
+        }
     }
 });
 
-// --- FEATURED MOVIE ---
-async function loadFeaturedMovie() {
-    const heroSection = document.getElementById('hero-section');
-    const heroTitle = document.getElementById('hero-title');
-    const heroDesc = document.getElementById('hero-description');
-    const watchBtn = document.getElementById('hero-watch-btn');
-    const infoBtn = document.getElementById('hero-info-btn');
-
+async function fetchDetails() {
     try {
-        const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
+        const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}&append_to_response=credits,similar,videos`);
         const data = await res.json();
-        const featuredMovie = data.results[0]; // Kunin ang #1 trending
-        
-        if (featuredMovie) {
-            heroSection.style.backgroundImage = `url(${IMG_URL_ORIGINAL}${featuredMovie.backdrop_path})`;
-            heroTitle.textContent = featuredMovie.title;
-            heroDesc.textContent = featuredMovie.overview;
-            watchBtn.onclick = () => goToMoviePage(featuredMovie);
-            // Pinalitan para buksan ang modal
-            infoBtn.onclick = () => showDetailsModal(featuredMovie);
-        }
+        return data;
     } catch (error) {
-        console.error("Failed to load featured movie:", error);
-        if(heroTitle) heroTitle.textContent = "Could not load featured movie.";
+        console.error("Failed to fetch details:", error);
+        return null;
     }
 }
 
-// --- FETCHING DATA ---
-async function fetchTrending(type) {
-    try {
-        const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
-        const data = await res.json();
-        return data.results;
-    } catch { return []; }
+// BAGO: This function sets up the trailer to play automatically
+function setupInitialPlayer(item) {
+    const player = document.getElementById("movie-player");
+    const serverNote = document.querySelector(".server-note");
+    const videos = item.videos?.results || [];
+    
+    // Find the official trailer, or fallback to any YouTube video
+    const officialTrailer = videos.find(v => v.site === 'YouTube' && v.type === 'Trailer') || videos.find(v => v.site === 'YouTube');
+
+    if (officialTrailer) {
+        // If a trailer is found, set it to autoplay
+        trailerUrl = `https://www.youtube.com/embed/${officialTrailer.key}?autoplay=1&mute=1&rel=0`;
+        player.src = trailerUrl;
+        serverNote.style.display = 'none'; // Hide the "Select a server" note
+    } else {
+        // If no trailer is found, leave the player blank
+        trailerUrl = '';
+        player.src = '';
+        serverNote.style.display = 'block'; // Show the "Select a server" note
+    }
 }
 
-async function fetchTrendingAnime() {
-    try {
-        const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_keywords=210024|287501&with_genres=16`);
-        const data = await res.json();
-        return data.results.map(item => ({ ...item, media_type: 'tv' }));
-    } catch { return []; }
-}
+function populateServerSelector(item) {
+    const serverSelect = document.getElementById("server-select");
+    serverSelect.innerHTML = ''; 
 
-// --- DISPLAY LISTS ---
-function displayList(items, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '';
-    items.forEach(item => {
-        if (item.poster_path) {
-            const movieCard = document.createElement('div');
-            movieCard.className = 'movie-card';
-            // Pinalitan para buksan ang modal
-            movieCard.onclick = () => showDetailsModal(item);
-            movieCard.innerHTML = `
-                <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
-                <p class="movie-title">${item.title || item.name}</p>
-            `;
-            container.appendChild(movieCard);
+    const placeholderOption = document.createElement("option");
+    placeholderOption.value = "";
+    placeholderOption.textContent = "--- Select a Server to Watch Full Movie ---";
+    serverSelect.appendChild(placeholderOption);
+
+    const servers = window.SERVER_LIST || [];
+    
+    servers.forEach(server => {
+        const option = document.createElement("option");
+        option.value = server.realName; 
+        option.textContent = server.displayName; 
+        serverSelect.appendChild(option);
+    });
+    
+    // IN-UPDATE: The event listener is now more robust
+    serverSelect.addEventListener("change", () => {
+        const selectedServer = serverSelect.value;
+        const player = document.getElementById("movie-player");
+        const serverNote = document.querySelector(".server-note");
+        const season = document.getElementById("season-select")?.value || 1;
+        const episode = document.getElementById("episode-select")?.value || 1;
+        
+        if (selectedServer) {
+            // If a server is selected, update the player and hide the note
+            updatePlayer(selectedServer, item, season, episode);
+            serverNote.style.display = 'none';
+        } else {
+            // If user goes back to "Select a Server", show the trailer again or blank the player
+            if (trailerUrl) {
+                player.src = trailerUrl;
+                serverNote.style.display = 'none';
+            } else {
+                player.src = '';
+                serverNote.style.display = 'block';
+            }
         }
     });
 }
 
-// --- UTILITY FUNCTIONS ---
-function goToMoviePage(item) {
-    const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-    saveToWatchHistory({ id: item.id, title: item.title || item.name, poster_path: item.poster_path, type: type });
-    window.location.href = `movie.html?id=${item.id}&type=${type}`;
+function updatePlayer(server, item, season = 1, episode = 1) {
+    const player = document.getElementById("movie-player");
+    if (!player || !server) return;
+    const url = generateEmbedURL(server, { id: item.id, media_type: type, first_air_date: item.first_air_date }, season, episode);
+    player.src = url;
 }
 
-// --- SEARCH MODAL (WITH SCROLL LOCK) ---
-function openSearchModal() {
-  document.getElementById('search-modal').style.display = 'flex';
-  document.getElementById('search-input').focus();
-  document.body.classList.add('body-no-scroll');
-}
-
-function closeSearchModal() {
-  document.getElementById('search-modal').style.display = 'none';
-  document.body.classList.remove('body-no-scroll');
-}
-
-async function searchTMDB() {
-  const query = document.getElementById('search-input').value.trim();
-  const container = document.getElementById('search-results');
-  container.innerHTML = '';
-  if (!query) return;
-
-  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-  const data = await res.json();
-  const results = data.results.filter(item => item.poster_path && (item.media_type === 'movie' || item.media_type === 'tv'));
-
-  results.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'movie-card';
-    div.style.width = '150px';
-    div.onclick = () => { closeSearchModal(); goToMoviePage(item); };
-    div.innerHTML = `<img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}"><p class="movie-title">${item.title || item.name}</p>`;
-    container.appendChild(div);
-  });
-}
-
-// --- WATCH HISTORY (Kailangan mo pa ring i-edit ang watchHistory.js para sa scroll lock) ---
-// Note: This part just opens the modal. The scroll lock for this modal is in watchHistory.js itself.
-function openWatchHistoryModal() {
-  const modal = document.getElementById('watch-history-modal');
-  if (modal) {
-      modal.style.display = 'flex';
-      // Make sure the function exists before calling it
-      if (typeof loadWatchHistory === 'function') {
-          loadWatchHistory();
-      }
-  }
-}
-
-// --- DETAILS MODAL FUNCTIONS (BAGO) ---
-const genreMap = { 28:"Action", 12:"Adventure", 16:"Animation", 35:"Comedy", 80:"Crime", 99:"Documentary", 18:"Drama", 10751:"Family", 14:"Fantasy", 36:"History", 27:"Horror", 10402:"Music", 9648:"Mystery", 10749:"Romance", 878:"Science Fiction", 10770:"TV Movie", 53:"Thriller", 10752:"War", 37:"Western" };
-
-function showDetailsModal(item) {
-  const modal = document.getElementById('details-modal');
-  document.body.classList.add('body-no-scroll');
-  
-  // Populate data
-  document.querySelector('#details-modal .modal-backdrop').style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
-  document.getElementById('modal-poster').src = `${IMG_URL_W500}${item.poster_path}`;
-  document.getElementById('modal-title').textContent = item.title || item.name;
-  document.getElementById('modal-rating').textContent = `⭐ ${item.vote_average.toFixed(1)}`;
-  document.getElementById('modal-release').textContent = (item.release_date || item.first_air_date || 'N/A').substring(0, 4);
-  document.getElementById('modal-description').textContent = item.overview;
-  
-  // Populate genres
-  const genresContainer = document.getElementById('modal-genres');
-  genresContainer.innerHTML = '';
-  if (item.genre_ids) {
-    item.genre_ids.slice(0, 4).forEach(id => {
-      const genreTag = document.createElement('span');
-      genreTag.className = 'genre-tag';
-      genreTag.textContent = genreMap[id] || 'Unknown';
-      genresContainer.appendChild(genreTag);
+function displayCast(cast) {
+    const castContainer = document.getElementById("cast-list");
+    castContainer.innerHTML = '<h2>🎭 Cast</h2>';
+    const castList = document.createElement('div');
+    castList.className = 'extra-list';
+    
+    cast.slice(0, 10).forEach(person => {
+        if(person.profile_path) {
+            const personDiv = document.createElement('div');
+            personDiv.className = 'cast-item';
+            personDiv.innerHTML = `
+                <img src="${IMG_URL}${person.profile_path}" alt="${person.name}" loading="lazy">
+                <p>${person.name}</p>
+            `;
+            castList.appendChild(personDiv);
+        }
     });
-  }
-  
-  // Bigyan ng function ang "Watch Now" button
-  const watchBtn = document.getElementById('modal-watch-btn');
-  watchBtn.onclick = () => goToMoviePage(item);
-  
-  modal.style.display = 'flex';
+    castContainer.appendChild(castList);
 }
 
-function closeDetailsModal() {
-  document.getElementById('details-modal').style.display = 'none';
-  document.body.classList.remove('body-no-scroll');
+function displaySimilar(similar) {
+    const similarContainer = document.getElementById("similar-movies");
+    similarContainer.innerHTML = '<h2>🎬 You May Also Like</h2>';
+    const similarList = document.createElement('div');
+    similarList.className = 'extra-list';
+
+    similar.slice(0, 10).forEach(item => {
+        if(item.poster_path) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'movie-card'; 
+            itemDiv.onclick = () => window.location.href = `movie.html?id=${item.id}&type=${type}`;
+            itemDiv.innerHTML = `
+                <img src="${IMG_URL}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
+                <p class="movie-title">${item.title || item.name}</p>
+            `;
+            similarList.appendChild(itemDiv);
+        }
+    });
+    similarContainer.appendChild(similarList);
+}
+
+// --- TV Show Specific Logic (No changes here) ---
+async function handleTVShow(item) {
+    const seasonSelect = document.getElementById("season-select");
+    const episodeSelect = document.getElementById("episode-select");
+    
+    item.seasons.forEach(season => {
+        if (season.season_number > 0) {
+            const option = document.createElement("option");
+            option.value = season.season_number;
+            option.textContent = season.name;
+            seasonSelect.appendChild(option);
+        }
+    });
+
+    async function loadEpisodes(seasonNumber) {
+        episodeSelect.innerHTML = "";
+        const res = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNumber}?api_key=${API_KEY}`);
+        const data = await res.json();
+        data.episodes.forEach(ep => {
+            const option = document.createElement("option");
+            option.value = ep.episode_number;
+            option.textContent = `E${ep.episode_number}: ${ep.name}`;
+            episodeSelect.appendChild(option);
+        });
+    }
+
+    seasonSelect.addEventListener("change", () => loadEpisodes(seasonSelect.value));
+    episodeSelect.addEventListener("change", () => {
+        const selectedServer = document.getElementById("server-select").value;
+        if(selectedServer){
+             updatePlayer(selectedServer, item, seasonSelect.value, episodeSelect.value);
+        }
+    });
+
+    if (item.seasons.length > 0) {
+        loadEpisodes(item.seasons.find(s => s.season_number > 0)?.season_number || 1);
+    }
 }

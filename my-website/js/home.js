@@ -1,4 +1,4 @@
-// ✅ home.js (Updated with Details Modal Functionality)
+// ✅ home.js (Final Version with All Features)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    // --- (BAGO) Event listeners para sa Details Modal ---
+    // Event listeners para sa Details Modal
     const detailsModal = document.getElementById('details-modal');
     if(detailsModal) {
         document.getElementById('close-details-modal').onclick = closeDetailsModal;
@@ -46,16 +46,15 @@ async function loadFeaturedMovie() {
     try {
         const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
         const data = await res.json();
-        const featuredMovie = data.results[Math.floor(Math.random() * 10)]; // Get a random movie from top 10
+        const featuredMovie = data.results[0]; // Kunin ang #1 trending
         
         if (featuredMovie) {
             heroSection.style.backgroundImage = `url(${IMG_URL_ORIGINAL}${featuredMovie.backdrop_path})`;
             heroTitle.textContent = featuredMovie.title;
             heroDesc.textContent = featuredMovie.overview;
             watchBtn.onclick = () => goToMoviePage(featuredMovie);
-            
-            // --- (BINAGO) Ito na ang bago para sa "More Info" button ---
-            infoBtn.onclick = () => showDetailsModal(featuredMovie); 
+            // Pinalitan para buksan ang modal
+            infoBtn.onclick = () => showDetailsModal(featuredMovie);
         }
     } catch (error) {
         console.error("Failed to load featured movie:", error);
@@ -89,8 +88,8 @@ function displayList(items, containerId) {
         if (item.poster_path) {
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
-            // (BINAGO) Clicking a card will now open the details modal
-            movieCard.onclick = () => showDetailsModal(item); 
+            // Pinalitan para buksan ang modal
+            movieCard.onclick = () => showDetailsModal(item);
             movieCard.innerHTML = `
                 <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
                 <p class="movie-title">${item.title || item.name}</p>
@@ -107,14 +106,16 @@ function goToMoviePage(item) {
     window.location.href = `movie.html?id=${item.id}&type=${type}`;
 }
 
-// --- SEARCH MODAL ---
+// --- SEARCH MODAL (WITH SCROLL LOCK) ---
 function openSearchModal() {
   document.getElementById('search-modal').style.display = 'flex';
   document.getElementById('search-input').focus();
+  document.body.classList.add('body-no-scroll');
 }
 
 function closeSearchModal() {
   document.getElementById('search-modal').style.display = 'none';
+  document.body.classList.remove('body-no-scroll');
 }
 
 async function searchTMDB() {
@@ -137,16 +138,28 @@ async function searchTMDB() {
   });
 }
 
+// --- WATCH HISTORY (Kailangan mo pa ring i-edit ang watchHistory.js para sa scroll lock) ---
+// Note: This part just opens the modal. The scroll lock for this modal is in watchHistory.js itself.
+function openWatchHistoryModal() {
+  const modal = document.getElementById('watch-history-modal');
+  if (modal) {
+      modal.style.display = 'flex';
+      // Make sure the function exists before calling it
+      if (typeof loadWatchHistory === 'function') {
+          loadWatchHistory();
+      }
+  }
+}
 
-// --- (BAGO) DETAILS MODAL FUNCTIONS ---
-
+// --- DETAILS MODAL FUNCTIONS (BAGO) ---
 const genreMap = { 28:"Action", 12:"Adventure", 16:"Animation", 35:"Comedy", 80:"Crime", 99:"Documentary", 18:"Drama", 10751:"Family", 14:"Fantasy", 36:"History", 27:"Horror", 10402:"Music", 9648:"Mystery", 10749:"Romance", 878:"Science Fiction", 10770:"TV Movie", 53:"Thriller", 10752:"War", 37:"Western" };
 
 function showDetailsModal(item) {
   const modal = document.getElementById('details-modal');
+  document.body.classList.add('body-no-scroll');
   
-  // Populate modal with data
-  document.querySelector('.modal-backdrop').style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
+  // Populate data
+  document.querySelector('#details-modal .modal-backdrop').style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
   document.getElementById('modal-poster').src = `${IMG_URL_W500}${item.poster_path}`;
   document.getElementById('modal-title').textContent = item.title || item.name;
   document.getElementById('modal-rating').textContent = `⭐ ${item.vote_average.toFixed(1)}`;
@@ -155,18 +168,24 @@ function showDetailsModal(item) {
   
   // Populate genres
   const genresContainer = document.getElementById('modal-genres');
-  genresContainer.innerHTML = ''; // Clear old genres
-  item.genre_ids.slice(0, 4).forEach(id => {
-    const genreTag = document.createElement('span');
-    genreTag.className = 'genre-tag';
-    genreTag.textContent = genreMap[id] || 'Unknown';
-    genresContainer.appendChild(genreTag);
-  });
+  genresContainer.innerHTML = '';
+  if (item.genre_ids) {
+    item.genre_ids.slice(0, 4).forEach(id => {
+      const genreTag = document.createElement('span');
+      genreTag.className = 'genre-tag';
+      genreTag.textContent = genreMap[id] || 'Unknown';
+      genresContainer.appendChild(genreTag);
+    });
+  }
   
-  // Show the modal
+  // Bigyan ng function ang "Watch Now" button
+  const watchBtn = document.getElementById('modal-watch-btn');
+  watchBtn.onclick = () => goToMoviePage(item);
+  
   modal.style.display = 'flex';
 }
 
 function closeDetailsModal() {
   document.getElementById('details-modal').style.display = 'none';
+  document.body.classList.remove('body-no-scroll');
 }

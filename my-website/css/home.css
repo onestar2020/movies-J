@@ -14,6 +14,10 @@ body {
   background: var(--dark-color);
   color: #fff;
 }
+/* ===== SCROLL LOCK CLASS (BAGO) ===== */
+body.body-no-scroll {
+  overflow: hidden;
+}
 a {
   color: #fff;
   text-decoration: none;
@@ -215,7 +219,7 @@ a {
 .close {
   position: absolute; top: 15px; right: 20px;
   font-size: 2rem; cursor: pointer; color: #aaa;
-  z-index: 10; /* Mataas na z-index para siguradong nasa ibabaw */
+  z-index: 10;
 }
 #search-results { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
 
@@ -228,22 +232,12 @@ a {
   overflow-y: auto;
 }
 
-/* ===== MODERN CLEAR HISTORY BUTTON STYLE ===== */
 #clear-history-btn {
-  position: absolute;
-  top: 15px;
-  right: 60px;
-  background: #333;
-  color: #fff;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 18px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute; top: 15px; right: 60px;
+  background: #333; color: #fff; border: none;
+  width: 40px; height: 40px; border-radius: 50%;
+  font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
   transition: background-color 0.3s ease, transform 0.2s ease;
   z-index: 10;
 }
@@ -252,94 +246,56 @@ a {
   transform: scale(1.1);
 }
 
-/* ===== DETAILS MODAL STYLES (BAGO) ===== */
+/* ===== DETAILS MODAL STYLES ===== */
 #details-modal .details-modal-content {
-  position: relative;
-  background-color: #181818;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 800px;
-  height: auto; /* Changed to auto */
-  max-height: 90vh;
-  overflow: hidden;
-  display: block; /* Changed for better control */
-  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  position: relative; background-color: #181818;
+  border-radius: 8px; width: 90%; max-width: 800px;
+  height: auto; max-height: 90vh;
+  overflow: hidden; display: block;
+  padding-top: 56.25%;
 }
-
 .modal-backdrop {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center top;
-  filter: brightness(0.3);
-  z-index: 1;
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-size: cover; background-position: center top;
+  filter: brightness(0.3); z-index: 1;
 }
-
 .modal-body {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: flex-end;
-  padding: 30px;
-  z-index: 2;
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex; align-items: flex-end;
+  padding: 30px; z-index: 2;
   background-image: linear-gradient(to top, rgba(24, 24, 24, 1) 20%, transparent 70%);
 }
-
 .modal-body img#modal-poster {
-  width: 200px;
-  height: 300px;
-  object-fit: cover;
-  border-radius: 6px;
-  margin-right: 25px;
-  flex-shrink: 0;
+  width: 200px; height: 300px;
+  object-fit: cover; border-radius: 6px;
+  margin-right: 25px; flex-shrink: 0;
   box-shadow: 0 5px 25px rgba(0,0,0,0.5);
 }
-
-.modal-text {
-  color: #fff;
-}
-
+.modal-text { color: #fff; }
 #modal-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 10px;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  font-size: 2.5rem; font-weight: 700;
+  margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
-
 .modal-meta {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 15px;
-  font-weight: 600;
-  color: #ccc;
+  display: flex; gap: 20px; margin-bottom: 15px;
+  font-weight: 600; color: #ccc;
 }
-
 #modal-description {
-  font-size: 1rem;
-  line-height: 1.6;
-  max-height: 100px;
-  overflow-y: auto;
+  font-size: 1rem; line-height: 1.6;
+  max-height: 100px; overflow-y: auto;
   margin-bottom: 15px;
 }
-
-.modal-genres {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
+.modal-genres { display: flex; gap: 8px; flex-wrap: wrap; }
 .genre-tag {
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 5px 12px;
-  border-radius: 15px;
-  font-size: 0.8rem;
+  padding: 5px 12px; border-radius: 15px; font-size: 0.8rem;
+}
+/* ===== BUTTON CONTAINER (BAGO) ===== */
+.modal-buttons {
+  margin-top: 20px;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -352,12 +308,16 @@ a {
   .main-container { padding: 0 20px; }
   .movie-card { width: 140px; }
   #clear-history-btn { top: 10px; right: 50px; }
-
-  /* Details Modal Responsive */
+  
   .modal-body { flex-direction: column; align-items: center; text-align: center; }
-  .modal-body img#modal-poster { display: none; /* Itago ang poster sa mobile para mas malinis */ }
+  .modal-body img#modal-poster { display: none; }
   #modal-title { font-size: 2rem; }
   .modal-meta { justify-content: center; }
+  /* ===== BUTTON CONTAINER RESPONSIVE (BAGO) ===== */
+  .modal-buttons {
+    display: flex;
+    justify-content: center;
+  }
 }
 
 /* ===== STYLES PARA SA CAST AT SIMILAR MOVIES ===== */
@@ -369,15 +329,11 @@ a {
   padding-left: 10px;
 }
 .extra-list {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 20px;
+  display: flex; gap: 10px;
+  overflow-x: auto; padding-bottom: 20px;
 }
 .extra-list::-webkit-scrollbar { display: none; }
-.extra-list .movie-card {
-  width: 150px;
-}
+.extra-list .movie-card { width: 150px; }
 .cast-item {
   width: 140px;
   flex-shrink: 0;

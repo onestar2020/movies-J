@@ -1,4 +1,4 @@
-// ✅ home.js (Ibinalik sa simpleng version)
+// ✅ home.js (Updated with Details Modal Functionality)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -22,6 +22,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             navbar.classList.remove('scrolled');
         }
     });
+
+    // --- (BAGO) Event listeners para sa Details Modal ---
+    const detailsModal = document.getElementById('details-modal');
+    if(detailsModal) {
+        document.getElementById('close-details-modal').onclick = closeDetailsModal;
+        detailsModal.addEventListener('click', (event) => {
+            if (event.target === detailsModal) {
+                closeDetailsModal();
+            }
+        });
+    }
 });
 
 // --- FEATURED MOVIE ---
@@ -35,14 +46,16 @@ async function loadFeaturedMovie() {
     try {
         const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
         const data = await res.json();
-        const featuredMovie = data.results[0]; // Kunin ang #1 trending
+        const featuredMovie = data.results[Math.floor(Math.random() * 10)]; // Get a random movie from top 10
         
         if (featuredMovie) {
             heroSection.style.backgroundImage = `url(${IMG_URL_ORIGINAL}${featuredMovie.backdrop_path})`;
             heroTitle.textContent = featuredMovie.title;
             heroDesc.textContent = featuredMovie.overview;
             watchBtn.onclick = () => goToMoviePage(featuredMovie);
-            infoBtn.onclick = () => goToMoviePage(featuredMovie);
+            
+            // --- (BINAGO) Ito na ang bago para sa "More Info" button ---
+            infoBtn.onclick = () => showDetailsModal(featuredMovie); 
         }
     } catch (error) {
         console.error("Failed to load featured movie:", error);
@@ -76,7 +89,8 @@ function displayList(items, containerId) {
         if (item.poster_path) {
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
-            movieCard.onclick = () => goToMoviePage(item);
+            // (BINAGO) Clicking a card will now open the details modal
+            movieCard.onclick = () => showDetailsModal(item); 
             movieCard.innerHTML = `
                 <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
                 <p class="movie-title">${item.title || item.name}</p>
@@ -123,11 +137,36 @@ async function searchTMDB() {
   });
 }
 
-// --- WATCH HISTORY (nasa watchHistory.js na, pero kailangan ang open function) ---
-function openWatchHistoryModal() {
-  loadWatchHistory();
-  document.getElementById('watch-history-modal').style.display = 'flex';
-  document.getElementById('close-history-modal')?.addEventListener('click', () => {
-      document.getElementById('watch-history-modal').style.display = 'none';
+
+// --- (BAGO) DETAILS MODAL FUNCTIONS ---
+
+const genreMap = { 28:"Action", 12:"Adventure", 16:"Animation", 35:"Comedy", 80:"Crime", 99:"Documentary", 18:"Drama", 10751:"Family", 14:"Fantasy", 36:"History", 27:"Horror", 10402:"Music", 9648:"Mystery", 10749:"Romance", 878:"Science Fiction", 10770:"TV Movie", 53:"Thriller", 10752:"War", 37:"Western" };
+
+function showDetailsModal(item) {
+  const modal = document.getElementById('details-modal');
+  
+  // Populate modal with data
+  document.querySelector('.modal-backdrop').style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
+  document.getElementById('modal-poster').src = `${IMG_URL_W500}${item.poster_path}`;
+  document.getElementById('modal-title').textContent = item.title || item.name;
+  document.getElementById('modal-rating').textContent = `⭐ ${item.vote_average.toFixed(1)}`;
+  document.getElementById('modal-release').textContent = (item.release_date || item.first_air_date || 'N/A').substring(0, 4);
+  document.getElementById('modal-description').textContent = item.overview;
+  
+  // Populate genres
+  const genresContainer = document.getElementById('modal-genres');
+  genresContainer.innerHTML = ''; // Clear old genres
+  item.genre_ids.slice(0, 4).forEach(id => {
+    const genreTag = document.createElement('span');
+    genreTag.className = 'genre-tag';
+    genreTag.textContent = genreMap[id] || 'Unknown';
+    genresContainer.appendChild(genreTag);
   });
+  
+  // Show the modal
+  modal.style.display = 'flex';
+}
+
+function closeDetailsModal() {
+  document.getElementById('details-modal').style.display = 'none';
 }

@@ -32,7 +32,7 @@
             </div>
             <div class="nav-actions">
                 <i class="fas fa-search" onclick="openSearchModal()"></i>
-                <button class="watch-history-btn" title="Watch History" onclick="openWatchHistoryModal()">
+                <button class="watch-history-btn" title="Watch History">
                     <i class="fas fa-history"></i>
                 </button>
                 <button id="install-btn" style="display: none;" title="Install App">
@@ -71,36 +71,39 @@
         </div>
     </footer>
 
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <button class="close" onclick="closeModal()">&times;</button>
-            <div class="modal-body">
-                <img id="modal-image" src="" alt="" />
-                <div class="modal-text">
-                    <div class="extra-section">
-                        <h3 class="section-title">🎭 Cast</h3><ul id="cast-list"></ul>
-                        <h3 class="section-title">🎬 Similar Movies</h3><div id="similar-movies"></div>
-                    </div>
-                    <h2 id="modal-title"></h2>
-                    <div class="stars" id="modal-rating"></div>
-                    <p id="modal-description"></p>
-                    <div id="tv-controls" style="margin-top: 10px;">
-                        <div class="season-episode-selectors" style="display: none;">
-                            <label for="season-selector">Season:</label><select id="season-selector"></select>
-                            <label for="episode-selector">Episode:</label><select id="episode-selector"></select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="server-selector">
-                <label for="server">Change Server:</label><select id="server" onchange="changeServer()"><option value="">Loading servers...</option></select>
-                <p id="active-server-label"></p><p>⚠ Ads shown in free movie servers are not controlled by this site.</p>
-            </div>
-            <iframe id="modal-video" width="100%" height="400" frameborder="0" allowfullscreen sandbox="allow-scripts allow-presentation allow-forms"></iframe>
+    <div class="search-modal" id="search-modal">
+        <button class="close" onclick="closeSearchModal()">&times;</button>
+        <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
+        <div class="results" id="search-results"></div>
+    </div>
+
+    <div class="modal" id="watch-history-modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" id="close-history-modal">&times;</span>
+            <h2 style="text-align:center; margin-top: 15px;">Watch History</h2>
+            <div id="watch-history-list"></div>
         </div>
     </div>
-    <div class="search-modal" id="search-modal"><button class="close" onclick="closeSearchModal()">&times;</button><input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" /><div class="results" id="search-results"></div></div>
-    <div class="modal" id="watch-history-modal"><div class="modal-content" style="max-width: 600px; padding: 20px;"><span class="close" id="close-history-modal">&times;</span><h2>Watch History</h2><div id="watch-history-list" class="watch-history-list"></div></div></div>
+
+    <div class="modal" id="details-modal">
+      <div class="details-modal-content">
+        <span class="close" id="close-details-modal">&times;</span>
+        <div class="modal-backdrop"></div>
+        <div class="modal-body">
+            <img id="modal-poster" src="" alt="Poster">
+            <div class="modal-text">
+                <h1 id="modal-title">Movie Title</h1>
+                <div class="modal-meta">
+                    <span id="modal-rating">⭐ 8.5</span>
+                    <span id="modal-release">2024</span>
+                </div>
+                <p id="modal-description">This is the full movie description...</p>
+                <div class="modal-genres" id="modal-genres">
+                    </div>
+            </div>
+        </div>
+      </div>
+    </div>
     
     <meta name="theme-color" content="#e50914">
 

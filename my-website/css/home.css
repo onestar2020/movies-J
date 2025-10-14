@@ -180,7 +180,6 @@ a {
   text-overflow: ellipsis;
 }
 
-
 /* ===== FOOTER ===== */
 .footer {
   padding: 40px 60px;
@@ -205,55 +204,143 @@ a {
 .search-modal { align-items: flex-start; padding-top: 100px; }
 
 .modal-content {
-  background: #181818; 
-  border-radius: 8px; 
+  background: #181818;
+  border-radius: 8px;
   max-width: 700px;
-  width: 90%; 
-  max-height: 90vh; 
-  overflow-y: auto; 
-  position: relative; /* <-- MAHALAGA ITO PARA SA POSITIONING NG BUTTON */
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
 }
 .close {
   position: absolute; top: 15px; right: 20px;
   font-size: 2rem; cursor: pointer; color: #aaa;
-  z-index: 1; /* Para siguradong nasa ibabaw ito */
+  z-index: 10; /* Mataas na z-index para siguradong nasa ibabaw */
 }
 #search-results { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
 
 #watch-history-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Responsive grid */
-  gap: 20px; /* Mas maluwag na spacing */
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
   padding: 20px;
-  max-height: 60vh; 
-  overflow-y: auto; /* Magkakaroon ng scrollbar kung puno na */
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
-/* ===== MODERN CLEAR HISTORY BUTTON STYLE (NEW) ===== */
+/* ===== MODERN CLEAR HISTORY BUTTON STYLE ===== */
 #clear-history-btn {
-  position: absolute; /* Para ma-pwesto natin kahit saan sa loob ng modal */
-  top: 15px;          /* Distansya mula sa taas */
-  right: 60px;         /* Distansya mula sa kanan (para di mag-overlap sa 'X') */
-  background: #333;   /* Mas madilim na background */
+  position: absolute;
+  top: 15px;
+  right: 60px;
+  background: #333;
   color: #fff;
   border: none;
-  width: 40px;          /* Sukat para maging pabilog */
+  width: 40px;
   height: 40px;
-  border-radius: 50%; /* Gawing pabilog */
-  font-size: 18px;      /* Laki ng trash icon */
+  border-radius: 50%;
+  font-size: 18px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  z-index: 1; /* Tinitiyak na nasa ibabaw din ito */
+  z-index: 10;
 }
-
 #clear-history-btn:hover {
-  background-color: #e53935; /* Magiging pula kapag tinapat ang mouse */
-  transform: scale(1.1);   /* Lalaki ng kaunti para may effect */
+  background-color: #e53935;
+  transform: scale(1.1);
 }
 
+/* ===== DETAILS MODAL STYLES (BAGO) ===== */
+#details-modal .details-modal-content {
+  position: relative;
+  background-color: #181818;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px;
+  height: auto; /* Changed to auto */
+  max-height: 90vh;
+  overflow: hidden;
+  display: block; /* Changed for better control */
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center top;
+  filter: brightness(0.3);
+  z-index: 1;
+}
+
+.modal-body {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  padding: 30px;
+  z-index: 2;
+  background-image: linear-gradient(to top, rgba(24, 24, 24, 1) 20%, transparent 70%);
+}
+
+.modal-body img#modal-poster {
+  width: 200px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-right: 25px;
+  flex-shrink: 0;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+}
+
+.modal-text {
+  color: #fff;
+}
+
+#modal-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.modal-meta {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #ccc;
+}
+
+#modal-description {
+  font-size: 1rem;
+  line-height: 1.6;
+  max-height: 100px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+}
+
+.modal-genres {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.genre-tag {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+}
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
@@ -264,15 +351,16 @@ a {
   .hero-description { font-size: 1rem; }
   .main-container { padding: 0 20px; }
   .movie-card { width: 140px; }
-  #clear-history-btn { top: 10px; right: 50px; } /* Adjust button for smaller screens */
+  #clear-history-btn { top: 10px; right: 50px; }
+
+  /* Details Modal Responsive */
+  .modal-body { flex-direction: column; align-items: center; text-align: center; }
+  .modal-body img#modal-poster { display: none; /* Itago ang poster sa mobile para mas malinis */ }
+  #modal-title { font-size: 2rem; }
+  .modal-meta { justify-content: center; }
 }
 
-/*
-=====================================================
-✅ STYLES PARA SA CAST AT SIMILAR MOVIES SA MOVIE.HTML
-=====================================================
-*/
-
+/* ===== STYLES PARA SA CAST AT SIMILAR MOVIES ===== */
 #cast-list h2, #similar-movies h2 {
   font-size: 1.6rem;
   font-weight: 600;
@@ -280,7 +368,6 @@ a {
   border-left: 4px solid var(--primary-color);
   padding-left: 10px;
 }
-
 .extra-list {
   display: flex;
   gap: 10px;
@@ -288,17 +375,14 @@ a {
   padding-bottom: 20px;
 }
 .extra-list::-webkit-scrollbar { display: none; }
-
 .extra-list .movie-card {
-  width: 150px; /* Sukat para sa similar movies */
+  width: 150px;
 }
-
 .cast-item {
   width: 140px;
   flex-shrink: 0;
   text-align: center;
 }
-
 .cast-item img {
   width: 100%;
   height: 210px;
@@ -306,7 +390,6 @@ a {
   border-radius: 8px;
   background-color: #222;
 }
-
 .cast-item p {
   margin-top: 8px;
   font-size: 0.9rem;

@@ -72,6 +72,21 @@ a {
   cursor: pointer;
 }
 
+/* BAGO: Hamburger Menu Icon (hidden sa desktop) */
+.hamburger-menu {
+    display: none;
+    cursor: pointer;
+    z-index: 1002; /* Para siguradong nasa ibabaw */
+}
+.hamburger-menu .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: #fff;
+    transition: all 0.3s ease-in-out;
+}
+
 /* ===== HERO SECTION ===== */
 .hero-section {
   height: 100vh;
@@ -299,17 +314,15 @@ a {
   margin-top: 20px;
 }
 
-/* ===== BAGO: MODERN SEARCH MODAL ===== */
+/* ===== MODERN SEARCH MODAL ===== */
 .search-modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Align to top */
+    align-items: flex-start;
     background: rgba(0, 0, 0, 0.95);
     padding: 20px;
     z-index: 2000;
-    
-    /* Para sa smooth fade-in animation */
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -320,8 +333,8 @@ a {
 }
 .search-content {
     width: 100%;
-    max-width: 800px; /* Mas malapad na container */
-    margin-top: 60px; /* Space from the top */
+    max-width: 800px;
+    margin-top: 60px;
     position: relative;
 }
 .search-modal .close {
@@ -342,7 +355,7 @@ a {
 }
 #search-input {
     width: 100%;
-    padding: 18px 20px 18px 60px; /* Increased padding, space for icon */
+    padding: 18px 20px 18px 60px;
     font-size: 1.2rem;
     color: #fff;
     background-color: #1c1c1c;
@@ -360,15 +373,52 @@ a {
     justify-content: center; 
     gap: 10px; 
     margin-top: 25px;
-    max-height: 60vh; /* Para hindi masyadong mahaba, may scroll na */
+    max-height: 60vh;
     overflow-y: auto;
-    padding-right: 10px; /* Space for scrollbar */
+    padding-right: 10px;
 }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .navbar { padding: 15px 20px; }
-  .nav-links { display: none; }
+  
+  /* IN-UPDATE: Hamburger Menu Logic */
+  .hamburger-menu {
+      display: block; /* Ipakita ang hamburger sa mobile */
+  }
+  .hamburger-menu.active .bar:nth-child(2) {
+      opacity: 0; /* Itago ang gitnang bar */
+  }
+  .hamburger-menu.active .bar:nth-child(1) {
+      transform: translateY(8px) rotate(45deg); /* Gawing "X" */
+  }
+  .hamburger-menu.active .bar:nth-child(3) {
+      transform: translateY(-8px) rotate(-45deg); /* Gawing "X" */
+  }
+
+  .nav-links {
+      position: fixed;
+      left: -100%; /* Simula sa labas ng screen */
+      top: 0;
+      height: 100vh;
+      width: 70%;
+      max-width: 280px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+      background-color: var(--dark-color);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+      transition: left 0.3s ease-in-out;
+  }
+  .nav-links.active {
+      left: 0; /* I-slide papasok sa screen */
+  }
+  .nav-links a {
+      font-size: 1.2rem;
+  }
+  /* ---- End of Hamburger Menu Logic ---- */
+
   .hero-section { padding: 0 20px; }
   .hero-title { font-size: 2.5rem; }
   .hero-description { font-size: 1rem; }
@@ -376,7 +426,7 @@ a {
   .movie-card { width: 140px; }
   #clear-history-btn { top: 10px; right: 50px; }
   
-  .modal-body { flex-direction: column; align-items: center; text-align: center; padding-top: 60%; } /* Added padding-top */
+  .modal-body { flex-direction: column; align-items: center; text-align: center; padding-top: 60%; }
   .modal-body img#modal-poster { display: none; }
   #modal-title { font-size: 2rem; }
   .modal-meta { justify-content: center; }

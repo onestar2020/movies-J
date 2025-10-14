@@ -1,4 +1,4 @@
-// ✅ js/home.js (FIXED: Added safety check for homepage-only functions)
+// ✅ js/home.js (FINAL: With Slideshow, Modern Search, and Hamburger Menu)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -13,19 +13,24 @@ let currentFeaturedIndex = 0;
 // --- MAIN FUNCTION PAGKA-LOAD NG PAGE ---
 document.addEventListener("DOMContentLoaded", async () => {
 
-    // BAGO: Safety check. Ang code sa loob ng 'if' na ito ay sa homepage (index.html) lang gagana.
+    // Safety check para ang homepage-specific code ay sa index.html lang gagana.
     if (document.getElementById('hero-section')) {
-        // Load lahat ng kailangan para sa homepage
-        loadFeaturedMovie(); // This function now starts the slideshow
+        loadFeaturedMovie();
         fetchTrending('movie').then(items => displayList(items, 'movies-list'));
         fetchTrending('tv').then(items => displayList(items, 'tvshows-list'));
         fetchTrendingAnime().then(items => displayList(items, 'anime-list'));
     }
     
-    // Itong scroll effect at modal listeners ay gagana sa lahat ng page (index at browse)
+    // Itong mga functions na ito ay para sa lahat ng page
+    setupUniversalEventListeners();
+});
+
+
+// BAGO: Function para sa lahat ng event listeners na kailangan sa bawat page
+function setupUniversalEventListeners() {
+    // Scroll effect para sa navbar
     window.addEventListener('scroll', () => {
         const navbar = document.querySelector('.navbar');
-        // Magdagdag ng check kung may navbar bago baguhin ang style
         if (navbar) {
             if (window.scrollY > 50) {
                 navbar.classList.add('scrolled');
@@ -35,6 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
+    // Event listener para sa Details Modal
     const detailsModal = document.getElementById('details-modal');
     if(detailsModal) {
         document.getElementById('close-details-modal').onclick = closeDetailsModal;
@@ -44,9 +50,21 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
     }
-});
 
-// --- IN-UPDATE: FEATURED MOVIE SLIDESHOW ---
+    // BAGO: Logic para sa Hamburger Menu
+    const hamburger = document.querySelector('.hamburger-menu');
+    const navLinks = document.querySelector('.nav-links');
+    if (hamburger && navLinks) {
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+    }
+}
+
+
+// --- HOMEPAGE-ONLY FUNCTIONS ---
+
 async function loadFeaturedMovie() {
     try {
         const movieRes = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
@@ -70,7 +88,6 @@ async function loadFeaturedMovie() {
     }
 }
 
-// BAGO: Function para i-update ang hero section content
 function updateHeroSection() {
     const heroSection = document.getElementById('hero-section');
     const heroTitle = document.getElementById('hero-title');
@@ -78,7 +95,6 @@ function updateHeroSection() {
     const watchBtn = document.getElementById('hero-watch-btn');
     const infoBtn = document.getElementById('hero-info-btn');
 
-    // Magdagdag ng check para sigurado
     if (!heroSection || !heroTitle || !heroDesc || !watchBtn || !infoBtn) return;
 
     const item = featuredItems[currentFeaturedIndex];
@@ -97,8 +113,6 @@ function updateHeroSection() {
     }
 }
 
-
-// --- FETCHING DATA ---
 async function fetchTrending(type) {
     try {
         const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
@@ -115,7 +129,6 @@ async function fetchTrendingAnime() {
     } catch { return []; }
 }
 
-// --- DISPLAY LISTS ---
 function displayList(items, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -134,7 +147,9 @@ function displayList(items, containerId) {
     });
 }
 
-// --- UTILITY FUNCTIONS ---
+
+// --- UNIVERSAL FUNCTIONS (Gagana sa lahat ng page) ---
+
 function goToMoviePage(item) {
     const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
     if (typeof saveToWatchHistory === 'function') {
@@ -143,7 +158,6 @@ function goToMoviePage(item) {
     window.location.href = `movie.html?id=${item.id}&type=${type}`;
 }
 
-// --- IN-UPDATE: MODERN SEARCH MODAL ---
 function openSearchModal() {
   const modal = document.getElementById('search-modal');
   modal.classList.add('active');
@@ -192,8 +206,6 @@ async function searchTMDB() {
     });
 }
 
-
-// --- WATCH HISTORY ---
 function openWatchHistoryModal() {
   const modal = document.getElementById('watch-history-modal');
   if (modal) {
@@ -204,7 +216,6 @@ function openWatchHistoryModal() {
   }
 }
 
-// --- DETAILS MODAL FUNCTIONS ---
 const genreMap = { 28:"Action", 12:"Adventure", 16:"Animation", 35:"Comedy", 80:"Crime", 99:"Documentary", 18:"Drama", 10751:"Family", 14:"Fantasy", 36:"History", 27:"Horror", 10402:"Music", 9648:"Mystery", 10749:"Romance", 878:"Science Fiction", 10770:"TV Movie", 53:"Thriller", 10752:"War", 37:"Western" };
 
 function showDetailsModal(item) {

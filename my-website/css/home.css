@@ -154,50 +154,190 @@ a {
 }
 .row {
   margin-bottom: 40px;
+  position: relative; /* Kailangan para sa positioning ng buttons */
 }
 .row h2 {
   font-size: 1.6rem;
   font-weight: 600;
   margin-bottom: 15px;
 }
+
+/* BAGO: Container para sa listahan at scroll buttons */
+.list-container {
+    position: relative;
+    margin: 0 -10px; /* Space para sa buttons */
+}
+
 .list {
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  padding-bottom: 20px;
+  padding: 0 10px 20px 10px;
+  scroll-behavior: smooth;
 }
 .list::-webkit-scrollbar { display: none; }
 
+/* BAGO: Styles para sa scroll buttons ng homepage */
+.list-container .scroll-btn {
+    position: absolute;
+    top: 0;
+    bottom: 20px; /* Itaas ng konti para hindi sagad */
+    width: 50px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    font-size: 2.5rem;
+    cursor: pointer;
+    z-index: 20;
+    display: none; 
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.list-container .scroll-btn.left {
+    left: 0;
+    border-radius: 0 8px 8px 0;
+}
+.list-container .scroll-btn.right {
+    right: 0;
+    border-radius: 8px 0 0 8px;
+}
+@media (min-width: 769px) {
+    .list-container:hover .scroll-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 1;
+    }
+}
+
+
+/* IN-UPDATE: Modern Movie Card Hover Effect */
 .movie-card {
   width: 180px;
   flex-shrink: 0;
-  border-radius: 8px;
   background-color: var(--light-dark-color);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
-  overflow: hidden;
-}
-.movie-card:hover {
-  transform: scale(1.08) translateY(-5px);
-  z-index: 10;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.7);
+  position: relative;
+  border-radius: 5px;
+  overflow: visible; /* Payagan lumabas ang details panel */
 }
 .movie-card img {
   width: 100%;
   aspect-ratio: 2 / 3;
   object-fit: cover;
   display: block;
+  border-radius: 5px;
 }
-.movie-title {
-  padding: 10px 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  text-align: center;
-  color: #e0e0e0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.movie-card .movie-title { /* Itago by default, ililipat sa details panel */
+    display: none;
 }
+
+/* BAGO: Details Panel na lalabas sa Hover */
+.movie-card-details {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--light-dark-color);
+    padding: 12px;
+    border-radius: 0 0 5px 5px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(100%);
+    transition: all 0.3s ease;
+}
+.movie-card-details h3 { /* Para sa title sa loob ng panel */
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 8px;
+}
+.card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+.card-buttons {
+    display: flex;
+    gap: 10px;
+}
+.card-buttons button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #888;
+    background: rgba(42, 42, 42, 0.6);
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+.card-buttons button:hover {
+    border-color: #fff;
+    background-color: #333;
+}
+
+/* Logic para sa pag-hover sa Desktop */
+@media (min-width: 769px) {
+    .movie-card:hover {
+        transform: scale(1.15) translateY(-10%);
+        z-index: 10;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    }
+    .movie-card:hover .movie-card-details {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+}
+
+/* ===== BAGO: STATIC PAGE STYLES ===== */
+.static-page-container {
+    padding: 120px 40px 60px; /* Top padding for navbar, side, bottom */
+    min-height: 80vh; /* Ensure footer is pushed down */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.static-page-content {
+    background-color: var(--light-dark-color);
+    padding: 30px 40px;
+    border-radius: 8px;
+    max-width: 800px;
+    width: 100%;
+}
+.static-page-content h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 30px;
+}
+.static-page-content p, .static-page-content ul {
+    line-height: 1.8;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+.static-page-content a {
+    color: var(--primary-color);
+    text-decoration: none; /* Removed underline for a cleaner look */
+    transition: opacity 0.2s ease;
+}
+.static-page-content a:hover {
+    opacity: 0.8;
+}
+.static-page-content strong {
+    color: #fff;
+}
+.static-page-content ul {
+    list-style-position: inside;
+    padding-left: 10px;
+}
+
 
 /* ===== FOOTER ===== */
 .footer {
@@ -257,6 +397,66 @@ a {
   background-color: #e53935;
   transform: scale(1.1);
 }
+
+/* BAGO: Modern Watch History Item Styles */
+.history-item {
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 6px;
+    aspect-ratio: 2 / 3;
+}
+.history-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+.history-item:hover img {
+    transform: scale(1.1);
+}
+.history-item-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+}
+.history-item-title {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.play-icon-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.play-icon-overlay i {
+    font-size: 2.5rem;
+    color: #fff;
+}
+.history-item:hover .play-icon-overlay {
+    opacity: 1;
+}
+
 
 /* ===== DETAILS MODAL ===== */
 #details-modal .details-modal-content {
@@ -378,27 +578,86 @@ a {
     padding-right: 10px;
 }
 
+/* ===== WELCOME MODAL ===== */
+.welcome-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.welcome-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+.welcome-modal-content {
+    background-color: var(--light-dark-color);
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+.welcome-modal-overlay.active .welcome-modal-content {
+    transform: scale(1);
+}
+.welcome-modal-content h2 {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    color: #fff;
+}
+.welcome-modal-content p {
+    color: #ccc;
+    line-height: 1.7;
+    margin-bottom: 25px;
+}
+#welcome-modal-close-btn {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+#welcome-modal-close-btn:hover {
+    opacity: 0.8;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .navbar { padding: 15px 20px; }
   
-  /* IN-UPDATE: Hamburger Menu Logic */
   .hamburger-menu {
-      display: block; /* Ipakita ang hamburger sa mobile */
+      display: block;
   }
   .hamburger-menu.active .bar:nth-child(2) {
-      opacity: 0; /* Itago ang gitnang bar */
+      opacity: 0;
   }
   .hamburger-menu.active .bar:nth-child(1) {
-      transform: translateY(8px) rotate(45deg); /* Gawing "X" */
+      transform: translateY(8px) rotate(45deg);
   }
   .hamburger-menu.active .bar:nth-child(3) {
-      transform: translateY(-8px) rotate(-45deg); /* Gawing "X" */
+      transform: translateY(-8px) rotate(-45deg);
   }
 
   .nav-links {
       position: fixed;
-      left: -100%; /* Simula sa labas ng screen */
+      left: -100%;
       top: 0;
       height: 100vh;
       width: 70%;
@@ -412,12 +671,11 @@ a {
       transition: left 0.3s ease-in-out;
   }
   .nav-links.active {
-      left: 0; /* I-slide papasok sa screen */
+      left: 0;
   }
   .nav-links a {
       font-size: 1.2rem;
   }
-  /* ---- End of Hamburger Menu Logic ---- */
 
   .hero-section { padding: 0 20px; }
   .hero-title { font-size: 2.5rem; }
@@ -434,6 +692,8 @@ a {
     display: flex;
     justify-content: center;
   }
+  .static-page-container { padding: 100px 20px 40px; }
+  .static-page-content h1 { font-size: 2rem; }
 }
 
 /* ===== STYLES PARA SA CAST AT SIMILAR MOVIES ===== */
@@ -444,12 +704,54 @@ a {
   border-left: 4px solid var(--primary-color);
   padding-left: 10px;
 }
-.extra-list {
-  display: flex; gap: 10px;
-  overflow-x: auto; padding-bottom: 20px;
+
+.extra-list-container {
+    position: relative;
 }
-.extra-list::-webkit-scrollbar { display: none; }
+.extra-list {
+  display: flex; 
+  gap: 10px;
+  overflow-x: auto; 
+  padding-bottom: 20px;
+  scroll-behavior: smooth;
+}
+.extra-list::-webkit-scrollbar { 
+    display: none;
+}
 .extra-list .movie-card { width: 150px; }
+
+.extra-list-container .scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 10;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.extra-list-container .scroll-btn.left {
+    left: -20px;
+}
+.extra-list-container .scroll-btn.right {
+    right: -20px;
+}
+@media (min-width: 769px) {
+    .extra-list-container:hover .scroll-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 1;
+    }
+}
+
 .cast-item {
   width: 140px;
   flex-shrink: 0;

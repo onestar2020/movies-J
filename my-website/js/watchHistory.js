@@ -41,11 +41,12 @@ document.addEventListener("DOMContentLoaded", function () {
       const div = document.createElement("div");
       div.className = "history-item";
       div.style.cssText = `
-        margin: 10px 0;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-      `;
+    display: flex;
+    flex-direction: column; /* Para magkapatong ang image, title, at button */
+    align-items: center;
+    text-align: center;
+    gap: 8px; /* Espasyo sa pagitan ng image at text */
+`;
 
       const img = document.createElement('img');
       img.src = item.poster_path

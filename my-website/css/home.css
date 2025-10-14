@@ -212,7 +212,14 @@ a {
   font-size: 2rem; cursor: pointer; color: #aaa;
 }
 #search-results { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
-#watch-history-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 20px; }
+#watch-history-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Responsive grid */
+  gap: 20px; /* Mas maluwag na spacing */
+  padding: 20px;
+  max-height: 60vh; 
+  overflow-y: auto; /* Magkakaroon ng scrollbar kung puno na */
+}
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {

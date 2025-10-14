@@ -1,68 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Disclaimer - Movies-J</title>
-  <link rel="stylesheet" href="css/home.css">
-  <link rel="icon" href="images/logo.png" type="image/png">
-  <meta name="theme-color" content="#000000">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Disclaimer - Movies-J</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="images/logo.png" type="image/png">
+    <meta name="theme-color" content="#e50914">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/home.css">
 </head>
 <body>
-  <!-- Navbar -->
-  <div class="navbar">
-    <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect glow-gradient" />
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
-    </div>
-  </div>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <img src="images/logo.png" alt="Movies-J Logo" class="logo-effect" />
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="browse.html?type=movie">Movies</a>
+                <a href="browse.html?type=tv">TV Shows</a>
+                <a href="browse.html?type=anime">Anime</a>
+            </div>
+            <div class="nav-actions">
+                <i class="fas fa-search" onclick="openSearchModal()"></i>
+                <button class="watch-history-btn" title="Watch History">
+                    <i class="fas fa-history"></i>
+                </button>
+                <button id="install-btn" style="display: none;" title="Install App">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+            <div class="hamburger-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
 
-  <!-- Page Content -->
-  <div class="content-page">
-    <h1 style="text-align: center; margin-top: 30px;">Disclaimer</h1>
-    <div style="max-width: 800px; margin: 20px auto; padding: 20px; background: #1c1c1c; border-radius: 10px; box-shadow: 0 0 10px rgba(255,255,255,0.1);">
-      <p style="line-height: 1.8;">
-        All content available on this website is provided strictly for informational, educational, and non-commercial purposes. We do not host or store any video files on our servers.
-        <br><br>
-        All movies displayed on this site are either:
-        <ul style="margin-left: 20px; line-height: 1.6;">
-          <li>Embedded from free and publicly accessible third-party sources, or</li>
-          <li>Uploaded by the site owner to a personal Google Drive, shared for free viewing.</li>
-        </ul>
-        We aim to provide only content that falls under public domain, creative commons, or fair use provisions. No copyright infringement is intended.
-        <br><br>
-        If you are the copyright holder of any content presented and believe it is being misused or shared without proper authorization, please contact us immediately at <strong>othertosixwan@gmail.com</strong>. We will promptly investigate and remove the content as needed.
-      </p>
-    </div>
-  </div>
+    <main class="static-page-container">
+        <div class="static-page-content">
+            <h1>Disclaimer</h1>
+            <p>
+                All content available on this website is provided strictly for informational, educational, and non-commercial purposes. We do not host or store any video files on our servers.
+            </p>
+            <p>
+                All movies displayed on this site are embedded from free and publicly accessible third-party sources. We simply link to the content that is already available on the internet.
+            </p>
+            <p>
+                We aim to provide only content that falls under public domain, creative commons, or fair use provisions. No copyright infringement is intended.
+            </p>
+            <p>
+                If you are the copyright holder of any content presented and believe it is being misused or shared without proper authorization, please contact us immediately at <a href="mailto:othertosixwan@gmail.com"><strong>othertosixwan@gmail.com</strong></a>. We will promptly investigate and remove the content as needed.
+            </p>
+        </div>
+    </main>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-content">
-      <p>&copy; 2025 My Website. All rights reserved.</p>
-      <div class="footer-links">
-        <a href="disclaimer.html">Disclaimer</a>
-        <a href="about.html">About Us</a>
-        <a href="contact.html">Contact Us</a>
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Movies-J. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="disclaimer.html">Disclaimer</a>
+                <a href="about.html">About Us</a>
+                <a href="contact.html">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+
+    <div class="search-modal" id="search-modal">
+      <div class="search-content">
+          <button class="close" onclick="closeSearchModal()">&times;</button>
+          <div class="search-input-container">
+              <i class="fas fa-search"></i>
+              <input type="text" id="search-input" placeholder="Search for movies, TV shows, or anime..." oninput="searchTMDB()" />
+          </div>
+          <div class="results" id="search-results"></div>
+          <div id="no-results-message" style="display: none; color: #888; text-align: center; margin-top: 40px;">
+              <p>No results found. Try a different keyword.</p>
+          </div>
       </div>
     </div>
-  </footer>
-
-  <!-- Optional Search Modal -->
-  <div class="search-modal" id="search-modal">
-    <button class="close" onclick="closeSearchModal()">&times;</button>
-    <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
-    <div class="results" id="search-results"></div>
-  </div>
-<script defer src="js/uploads.js"></script>
-  <script src="js/home.js"></script>
-
-<link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#e50914">
-
-<script src="js/antiInspect.js" defer></script>
-
+    <div class="modal" id="watch-history-modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" id="close-history-modal">&times;</span>
+            <h2 style="text-align:center; margin-top: 15px;">Watch History</h2>
+            <div id="watch-history-list"></div>
+        </div>
+    </div>
+    <div class="modal" id="details-modal">
+      <div class="details-modal-content">
+        <span class="close" id="close-details-modal">&times;</span>
+        <div class="modal-backdrop"></div>
+        <div class="modal-body">
+            <img id="modal-poster" src="" alt="Poster">
+            <div class="modal-text">
+                <h1 id="modal-title">Movie Title</h1>
+                <div class="modal-meta">
+                    <span id="modal-rating">⭐ 8.5</span>
+                    <span id="modal-release">2024</span>
+                </div>
+                <p id="modal-description">This is the full movie description...</p>
+                <div class="modal-genres" id="modal-genres"></div>
+                <div class="modal-buttons">
+                    <button class="btn btn-primary" id="modal-watch-btn">
+                        <i class="fas fa-play"></i> Watch Now
+                    </button>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    
+    <script src="js/home.js" defer></script>
+    <script src="js/watchHistory.js" defer></script>
+    <script src="js/antiInspect.js" defer></script>
 </body>
 </html>

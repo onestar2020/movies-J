@@ -1,4 +1,4 @@
-// ✅ js/movie.js (Final Version - Corrected Trailer Logic)
+// ✅ js/movie.js (UPDATED: With Premium Server Buttons)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -8,7 +8,9 @@ const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id');
 const type = urlParams.get('type') || 'movie';
 
-let trailerUrl = ''; // Global variable to store the trailer URL
+let trailerUrl = ''; 
+let currentSeasonNumber = 1;
+let currentEpisodeNumber = 1;
 
 document.addEventListener("DOMContentLoaded", async () => {
     const item = await fetchDetails();
@@ -17,15 +19,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("movie-title").textContent = item.title || item.name;
         document.getElementById("movie-overview").textContent = item.overview;
         
-        // This function now handles the initial state of the player
         setupInitialPlayer(item);
-
         displayCast(item.credits.cast);
         displaySimilar(item.similar.results);
-        populateServerSelector(item);
+        populateServerSelector(item); // Ito na ang gagawa ng mga bagong buttons
 
         if (type === 'tv') {
-            document.querySelector('.season-episode-selectors').style.display = 'flex';
+            document.querySelector('.tv-show-browser').style.display = 'block';
             handleTVShow(item);
         }
     }
@@ -42,74 +42,54 @@ async function fetchDetails() {
     }
 }
 
-// BAGO: More robust function to find and play the trailer
+// IN-UPDATE: Tinanggal ang reference sa .server-note
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
-    const serverNote = document.querySelector(".server-note");
 
-    // Defensive check: Ensure videos object and results array exist and are not empty
     if (item.videos && item.videos.results && item.videos.results.length > 0) {
         const videos = item.videos.results;
-        
-        // Find an official trailer first, then fall back to any other video labeled as a "Trailer", then any video from YouTube
-        const officialTrailer = videos.find(v => v.type === 'Trailer' && v.official === true && v.site === 'YouTube');
-        const anyTrailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube');
-        const anyYouTubeVideo = videos.find(v => v.site === 'YouTube');
-
-        const bestVideo = officialTrailer || anyTrailer || anyYouTubeVideo;
+        const bestVideo = videos.find(v => v.type === 'Trailer' && v.official === true && v.site === 'YouTube') || videos.find(v => v.type === 'Trailer' && v.site === 'YouTube') || videos.find(v => v.site === 'YouTube');
 
         if (bestVideo) {
-            // If a suitable video is found, set it to autoplay
             trailerUrl = `https://www.youtube.com/embed/${bestVideo.key}?autoplay=1&mute=1&rel=0`;
             player.src = trailerUrl;
-            serverNote.style.display = 'none'; // Hide the note
-            return; // Exit the function successfully
+            return;
         }
     }
 
-    // Fallback: If no videos are found or no suitable trailer exists, leave the player blank
-    trailerUrl = '';
-    player.src = '';
-    serverNote.style.display = 'block'; // Show the "Select a server" note
+    if (type === 'movie') {
+        trailerUrl = '';
+        player.src = '';
+    }
 }
 
-
+// IN-UPDATE: Kompleto nang pinalitan para gumawa ng buttons
 function populateServerSelector(item) {
-    const serverSelect = document.getElementById("server-select");
-    serverSelect.innerHTML = ''; 
-
-    const placeholderOption = document.createElement("option");
-    placeholderOption.value = "";
-    placeholderOption.textContent = "--- Select a Server to Watch Full Movie ---";
-    serverSelect.appendChild(placeholderOption);
+    const serverButtonsContainer = document.getElementById("server-buttons-container");
+    serverButtonsContainer.innerHTML = ''; 
 
     const servers = window.SERVER_LIST || [];
     
-    servers.forEach(server => {
-        const option = document.createElement("option");
-        option.value = server.realName; 
-        option.textContent = server.displayName; 
-        serverSelect.appendChild(option);
-    });
-    
-    serverSelect.addEventListener("change", () => {
-        const selectedServer = serverSelect.value;
-        const player = document.getElementById("movie-player");
-        const serverNote = document.querySelector(".server-note");
-        const season = document.getElementById("season-select")?.value || 1;
-        const episode = document.getElementById("episode-select")?.value || 1;
+    servers.forEach((server, index) => {
+        const serverBtn = document.createElement("button");
+        serverBtn.className = 'server-btn';
+        serverBtn.textContent = server.displayName;
+        serverBtn.dataset.server = server.realName; // Itago ang real name sa data attribute
+
+        serverBtn.addEventListener('click', () => {
+            // Alisin ang active class sa lahat ng buttons
+            document.querySelectorAll('.server-btn').forEach(btn => btn.classList.remove('active'));
+            // Idagdag ang active class sa pinindot na button
+            serverBtn.classList.add('active');
+            
+            updatePlayer(server.realName, item, currentSeasonNumber, currentEpisodeNumber);
+        });
         
-        if (selectedServer) {
-            updatePlayer(selectedServer, item, season, episode);
-            serverNote.style.display = 'none';
-        } else {
-            if (trailerUrl) {
-                player.src = trailerUrl;
-                serverNote.style.display = 'none';
-            } else {
-                player.src = '';
-                serverNote.style.display = 'block';
-            }
+        serverButtonsContainer.appendChild(serverBtn);
+
+        // Awtomatikong i-select ang unang server kung walang trailer
+        if (index === 0 && !trailerUrl) {
+            serverBtn.click();
         }
     });
 }
@@ -117,86 +97,154 @@ function populateServerSelector(item) {
 function updatePlayer(server, item, season = 1, episode = 1) {
     const player = document.getElementById("movie-player");
     if (!player || !server) return;
+
+    currentSeasonNumber = season;
+    currentEpisodeNumber = episode;
+
     const url = generateEmbedURL(server, { id: item.id, media_type: type, first_air_date: item.first_air_date }, season, episode);
     player.src = url;
 }
 
-function displayCast(cast) {
-    const castContainer = document.getElementById("cast-list");
-    castContainer.innerHTML = '<h2>🎭 Cast</h2>';
-    const castList = document.createElement('div');
-    castList.className = 'extra-list';
-    
-    cast.slice(0, 10).forEach(person => {
-        if(person.profile_path) {
-            const personDiv = document.createElement('div');
-            personDiv.className = 'cast-item';
-            personDiv.innerHTML = `
-                <img src="${IMG_URL}${person.profile_path}" alt="${person.name}" loading="lazy">
-                <p>${person.name}</p>
-            `;
-            castList.appendChild(personDiv);
-        }
+
+function createScrollableList(containerId, title, items, renderItemFunc) {
+    const container = document.getElementById(containerId);
+    if (!container || !items || items.length === 0) {
+        if (container) container.style.display = 'none';
+        return;
+    };
+    container.innerHTML = `<h2>${title}</h2>`;
+    const listContainer = document.createElement('div');
+    listContainer.className = 'extra-list-container';
+    const list = document.createElement('div');
+    list.className = 'extra-list';
+    items.forEach(item => {
+        const itemElement = renderItemFunc(item);
+        if (itemElement) list.appendChild(itemElement);
     });
-    castContainer.appendChild(castList);
+    const scrollBtnLeft = document.createElement('button');
+    scrollBtnLeft.className = 'scroll-btn left';
+    scrollBtnLeft.innerHTML = '&lt;';
+    const scrollBtnRight = document.createElement('button');
+    scrollBtnRight.className = 'scroll-btn right';
+    scrollBtnRight.innerHTML = '&gt;';
+    listContainer.appendChild(list);
+    listContainer.appendChild(scrollBtnLeft);
+    listContainer.appendChild(scrollBtnRight);
+    container.appendChild(listContainer);
+    scrollBtnLeft.addEventListener('click', () => list.scrollLeft -= list.clientWidth * 0.7);
+    scrollBtnRight.addEventListener('click', () => list.scrollLeft += list.clientWidth * 0.7);
+}
+
+function displayCast(cast) {
+    createScrollableList('cast-list', '🎭 Cast', cast.slice(0, 20), (person) => {
+        if (!person.profile_path) return null;
+        const personDiv = document.createElement('div');
+        personDiv.className = 'cast-item';
+        personDiv.innerHTML = `<img src="${IMG_URL}${person.profile_path}" alt="${person.name}" loading="lazy"><p>${person.name}</p>`;
+        return personDiv;
+    });
 }
 
 function displaySimilar(similar) {
-    const similarContainer = document.getElementById("similar-movies");
-    similarContainer.innerHTML = '<h2>🎬 You May Also Like</h2>';
-    const similarList = document.createElement('div');
-    similarList.className = 'extra-list';
-
-    similar.slice(0, 10).forEach(item => {
-        if(item.poster_path) {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'movie-card'; 
-            itemDiv.onclick = () => window.location.href = `movie.html?id=${item.id}&type=${type}`;
-            itemDiv.innerHTML = `
-                <img src="${IMG_URL}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
-                <p class="movie-title">${item.title || item.name}</p>
-            `;
-            similarList.appendChild(itemDiv);
-        }
+    createScrollableList('similar-movies', '🎬 You May Also Like', similar.slice(0, 20), (item) => {
+        if (!item.poster_path) return null;
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'movie-card'; 
+        itemDiv.onclick = () => window.location.href = `movie.html?id=${item.id}&type=${type}`;
+        itemDiv.innerHTML = `<img src="${IMG_URL}${item.poster_path}" alt="${item.title || item.name}" loading="lazy"><p class="movie-title">${item.title || item.name}</p>`;
+        return itemDiv;
     });
-    similarContainer.appendChild(similarList);
 }
 
-// --- TV Show Specific Logic (No changes here) ---
+
+// --- TV SHOW LOGIC ---
 async function handleTVShow(item) {
-    const seasonSelect = document.getElementById("season-select");
-    const episodeSelect = document.getElementById("episode-select");
-    
-    item.seasons.forEach(season => {
-        if (season.season_number > 0) {
-            const option = document.createElement("option");
-            option.value = season.season_number;
-            option.textContent = season.name;
-            seasonSelect.appendChild(option);
+    const seasonBtn = document.getElementById('season-selector-btn');
+    const seasonMenu = document.getElementById('season-dropdown-menu');
+    const selectedSeasonName = document.getElementById('selected-season-name');
+    const episodeListContainer = document.getElementById('episode-list-container');
+
+    seasonBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        seasonMenu.style.display = seasonMenu.style.display === 'block' ? 'none' : 'block';
+    });
+    window.addEventListener('click', () => {
+        if (seasonMenu.style.display === 'block') {
+            seasonMenu.style.display = 'none';
         }
     });
-
+    
     async function loadEpisodes(seasonNumber) {
-        episodeSelect.innerHTML = "";
+        episodeListContainer.innerHTML = '<h3 style="padding: 20px; text-align: center;">Loading episodes...</h3>';
         const res = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNumber}?api_key=${API_KEY}`);
         const data = await res.json();
-        data.episodes.forEach(ep => {
-            const option = document.createElement("option");
-            option.value = ep.episode_number;
-            option.textContent = `E${ep.episode_number}: ${ep.name}`;
-            episodeSelect.appendChild(option);
+        episodeListContainer.innerHTML = '';
+
+        if (data.episodes.length === 0) {
+            episodeListContainer.innerHTML = '<h3 style="padding: 20px; text-align: center;">No episodes found for this season.</h3>';
+            return;
+        }
+
+        data.episodes.forEach((ep, index) => {
+            const card = document.createElement('div');
+            card.className = 'episode-card';
+            card.dataset.episodeNumber = ep.episode_number;
+            
+            card.innerHTML = `
+                <img class="episode-thumbnail" src="${ep.still_path ? `https://image.tmdb.org/t/p/w300${ep.still_path}` : (item.backdrop_path ? `https://image.tmdb.org/t/p/w500${item.backdrop_path}` : 'images/logo.png')}" alt="${ep.name}">
+                <div class="episode-details">
+                    <h3>E${ep.episode_number}: ${ep.name}</h3>
+                    <p>${ep.overview || 'No description available.'}</p>
+                </div>
+            `;
+
+            card.addEventListener('click', () => {
+                // IN-UPDATE: Hanapin ang active server button
+                const activeServerBtn = document.querySelector('.server-btn.active');
+                const selectedServer = activeServerBtn ? activeServerBtn.dataset.server : null;
+                
+                document.querySelectorAll('.episode-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+
+                if (selectedServer) {
+                    updatePlayer(selectedServer, item, seasonNumber, ep.episode_number);
+                } else if (trailerUrl) {
+                    document.getElementById("movie-player").src = trailerUrl;
+                }
+            });
+
+            episodeListContainer.appendChild(card);
+            
+            if (index === 0) {
+                currentSeasonNumber = seasonNumber;
+                currentEpisodeNumber = ep.episode_number;
+                // I-click ito pero huwag i-trigger ang player kung wala pang server
+                if (document.querySelector('.server-btn.active')) {
+                    card.click();
+                } else {
+                    card.classList.add('active');
+                }
+            }
         });
     }
 
-    seasonSelect.addEventListener("change", () => loadEpisodes(seasonSelect.value));
-    episodeSelect.addEventListener("change", () => {
-        const selectedServer = document.getElementById("server-select").value;
-        if(selectedServer){
-             updatePlayer(selectedServer, item, seasonSelect.value, episodeSelect.value);
+    item.seasons.forEach(season => {
+        if (season.season_number > 0) {
+            const seasonOption = document.createElement('button');
+            seasonOption.textContent = season.name;
+            seasonOption.addEventListener('click', () => {
+                selectedSeasonName.textContent = season.name;
+                loadEpisodes(season.season_number);
+            });
+            seasonMenu.appendChild(seasonOption);
         }
     });
 
-    if (item.seasons.length > 0) {
-        loadEpisodes(item.seasons.find(s => s.season_number > 0)?.season_number || 1);
+    const firstSeason = item.seasons.find(s => s.season_number > 0);
+    if (firstSeason) {
+        selectedSeasonName.textContent = firstSeason.name;
+        loadEpisodes(firstSeason.season_number);
+    } else {
+        document.querySelector('.tv-show-browser').innerHTML = '<h3 style="text-align: center; color: #888;">No seasons available for this series.</h3>';
     }
 }

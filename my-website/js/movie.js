@@ -1,4 +1,4 @@
-// ✅ js/movie.js (Updated to handle Display Names)
+// ✅ js/movie.js (Updated to Autoplay Trailer First)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -8,7 +8,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id');
 const type = urlParams.get('type') || 'movie';
 
-let trailerUrl = ''; 
+let trailerUrl = ''; // Global variable to store the trailer URL
 
 document.addEventListener("DOMContentLoaded", async () => {
     const item = await fetchDetails();
@@ -17,16 +17,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("movie-title").textContent = item.title || item.name;
         document.getElementById("movie-overview").textContent = item.overview;
         
-        if (item.videos && item.videos.results.length > 0) {
-            displayTrailer(item.videos.results);
-        } else {
-            document.getElementById('movie-player').style.display = 'none';
-        }
+        // IN-UPDATE: This function now handles the initial state of the player
+        setupInitialPlayer(item);
 
         displayCast(item.credits.cast);
         displaySimilar(item.similar.results);
-
-        // Populate Server Dropdown
         populateServerSelector(item);
 
         if (type === 'tv') {
@@ -47,19 +42,25 @@ async function fetchDetails() {
     }
 }
 
-function displayTrailer(videos) {
+// BAGO: This function sets up the trailer to play automatically
+function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
-    const officialTrailer = videos.find(video => video.site === 'YouTube' && video.type === 'Trailer');
+    const serverNote = document.querySelector(".server-note");
+    const videos = item.videos?.results || [];
     
+    // Find the official trailer, or fallback to any YouTube video
+    const officialTrailer = videos.find(v => v.site === 'YouTube' && v.type === 'Trailer') || videos.find(v => v.site === 'YouTube');
+
     if (officialTrailer) {
-        trailerUrl = `https://www.youtube.com/embed/${officialTrailer.key}?autoplay=1&mute=1`;
+        // If a trailer is found, set it to autoplay
+        trailerUrl = `https://www.youtube.com/embed/${officialTrailer.key}?autoplay=1&mute=1&rel=0`;
         player.src = trailerUrl;
+        serverNote.style.display = 'none'; // Hide the "Select a server" note
     } else {
-        const anyVideo = videos.find(video => video.site === 'YouTube');
-        if (anyVideo) {
-            trailerUrl = `https://www.youtube.com/embed/${anyVideo.key}?autoplay=1&mute=1`;
-            player.src = trailerUrl;
-        }
+        // If no trailer is found, leave the player blank
+        trailerUrl = '';
+        player.src = '';
+        serverNote.style.display = 'block'; // Show the "Select a server" note
     }
 }
 
@@ -74,26 +75,34 @@ function populateServerSelector(item) {
 
     const servers = window.SERVER_LIST || [];
     
-    // ✅ BINAGO ANG PART NA ITO
     servers.forEach(server => {
         const option = document.createElement("option");
-        // Ang 'value' ay ang totoong pangalan para sa code
         option.value = server.realName; 
-        // Ang ipapakita sa user ay ang display name
         option.textContent = server.displayName; 
         serverSelect.appendChild(option);
     });
     
+    // IN-UPDATE: The event listener is now more robust
     serverSelect.addEventListener("change", () => {
         const selectedServer = serverSelect.value;
+        const player = document.getElementById("movie-player");
+        const serverNote = document.querySelector(".server-note");
         const season = document.getElementById("season-select")?.value || 1;
         const episode = document.getElementById("episode-select")?.value || 1;
         
         if (selectedServer) {
+            // If a server is selected, update the player and hide the note
             updatePlayer(selectedServer, item, season, episode);
+            serverNote.style.display = 'none';
         } else {
-            const player = document.getElementById("movie-player");
-            if (trailerUrl) player.src = trailerUrl;
+            // If user goes back to "Select a Server", show the trailer again or blank the player
+            if (trailerUrl) {
+                player.src = trailerUrl;
+                serverNote.style.display = 'none';
+            } else {
+                player.src = '';
+                serverNote.style.display = 'block';
+            }
         }
     });
 }
@@ -146,7 +155,7 @@ function displaySimilar(similar) {
     similarContainer.appendChild(similarList);
 }
 
-// --- TV Show Specific Logic (Walang binago dito) ---
+// --- TV Show Specific Logic (No changes here) ---
 async function handleTVShow(item) {
     const seasonSelect = document.getElementById("season-select");
     const episodeSelect = document.getElementById("episode-select");

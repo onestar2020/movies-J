@@ -60,9 +60,24 @@
     </header>
 
     <main class="main-container">
-        <div class="row"><h2>Trending Movies</h2><div class="list" id="movies-list"></div></div>
-        <div class="row"><h2>Trending TV Shows</h2><div class="list" id="tvshows-list"></div></div>
-        <div class="row"><h2>Trending Anime</h2><div class="list" id="anime-list"></div></div>
+        <div class="row">
+            <h2>Trending Movies</h2>
+            <div class="list-container">
+                <div class="list" id="movies-list"></div>
+            </div>
+        </div>
+        <div class="row">
+            <h2>Trending TV Shows</h2>
+            <div class="list-container">
+                <div class="list" id="tvshows-list"></div>
+            </div>
+        </div>
+        <div class="row">
+            <h2>Trending Anime</h2>
+            <div class="list-container">
+                <div class="list" id="anime-list"></div>
+            </div>
+        </div>
     </main>
 
     <footer class="footer">
@@ -120,6 +135,17 @@
             </div>
         </div>
       </div>
+    </div>
+    
+    <div class="welcome-modal-overlay" id="welcome-modal">
+        <div class="welcome-modal-content">
+            <h2>A Quick Note on Ads</h2>
+            <p>
+                Welcome to Movies-J! To help us cover server costs and keep everything free, this website is supported by advertisements.
+            </p>
+            <p>We appreciate your understanding!</p>
+            <button id="welcome-modal-close-btn">Okay, Got It</button>
+        </div>
     </div>
     
     <meta name="theme-color" content="#e50914">

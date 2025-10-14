@@ -1,14 +1,19 @@
-// ✅ home.js (Final Version with All Features)
+// ✅ js/home.js (Final Version with Slideshow Hero Section)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL_W500 = 'https://image.tmdb.org/t/p/w500';
 const IMG_URL_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 
+// --- BAGO: Variables para sa slideshow ---
+let slideshowInterval;
+let featuredItems = [];
+let currentFeaturedIndex = 0;
+
 // --- MAIN FUNCTION PAGKA-LOAD NG PAGE ---
 document.addEventListener("DOMContentLoaded", async () => {
     // Load lahat ng kailangan para sa homepage
-    loadFeaturedMovie();
+    loadFeaturedMovie(); // This function now starts the slideshow
     fetchTrending('movie').then(items => displayList(items, 'movies-list'));
     fetchTrending('tv').then(items => displayList(items, 'tvshows-list'));
     fetchTrendingAnime().then(items => displayList(items, 'anime-list'));
@@ -35,32 +40,61 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// --- FEATURED MOVIE ---
+// --- IN-UPDATE: FEATURED MOVIE SLIDESHOW ---
 async function loadFeaturedMovie() {
+    try {
+        const movieRes = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
+        const movieData = await movieRes.json();
+        
+        const tvRes = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}`);
+        const tvData = await tvRes.json();
+
+        // Pagsamahin ang top 10 movies at top 10 TV shows
+        featuredItems = [...movieData.results.slice(0, 10), ...tvData.results.slice(0, 10)];
+        
+        // I-shuffle para random ang pagkakasunod-sunod
+        featuredItems.sort(() => Math.random() - 0.5);
+
+        if (featuredItems.length > 0) {
+            updateHeroSection(); // Tawagin agad para sa unang item
+            // I-clear ang dating interval kung meron man, bago mag-set ng bago
+            clearInterval(slideshowInterval); 
+            slideshowInterval = setInterval(updateHeroSection, 5000); // Magpalit every 5 seconds
+        }
+    } catch (error) {
+        console.error("Failed to load featured items:", error);
+        const heroTitle = document.getElementById('hero-title');
+        if(heroTitle) heroTitle.textContent = "Could not load featured content.";
+    }
+}
+
+// BAGO: Function para i-update ang hero section content
+function updateHeroSection() {
     const heroSection = document.getElementById('hero-section');
     const heroTitle = document.getElementById('hero-title');
     const heroDesc = document.getElementById('hero-description');
     const watchBtn = document.getElementById('hero-watch-btn');
     const infoBtn = document.getElementById('hero-info-btn');
 
-    try {
-        const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
-        const data = await res.json();
-        const featuredMovie = data.results[0]; // Kunin ang #1 trending
-        
-        if (featuredMovie) {
-            heroSection.style.backgroundImage = `url(${IMG_URL_ORIGINAL}${featuredMovie.backdrop_path})`;
-            heroTitle.textContent = featuredMovie.title;
-            heroDesc.textContent = featuredMovie.overview;
-            watchBtn.onclick = () => goToMoviePage(featuredMovie);
-            // Pinalitan para buksan ang modal
-            infoBtn.onclick = () => showDetailsModal(featuredMovie);
-        }
-    } catch (error) {
-        console.error("Failed to load featured movie:", error);
-        if(heroTitle) heroTitle.textContent = "Could not load featured movie.";
+    // Kunin ang current item base sa index
+    const item = featuredItems[currentFeaturedIndex];
+    
+    if (item) {
+        heroSection.style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
+        heroTitle.textContent = item.title || item.name;
+        heroDesc.textContent = item.overview;
+        watchBtn.onclick = () => goToMoviePage(item);
+        infoBtn.onclick = () => showDetailsModal(item);
+    }
+    
+    // Itaas ang index para sa susunod na item
+    currentFeaturedIndex++;
+    // Kung nasa dulo na ng listahan, bumalik sa simula
+    if (currentFeaturedIndex >= featuredItems.length) {
+        currentFeaturedIndex = 0;
     }
 }
+
 
 // --- FETCHING DATA ---
 async function fetchTrending(type) {
@@ -88,7 +122,6 @@ function displayList(items, containerId) {
         if (item.poster_path) {
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
-            // Pinalitan para buksan ang modal
             movieCard.onclick = () => showDetailsModal(item);
             movieCard.innerHTML = `
                 <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
@@ -138,27 +171,24 @@ async function searchTMDB() {
   });
 }
 
-// --- WATCH HISTORY (Kailangan mo pa ring i-edit ang watchHistory.js para sa scroll lock) ---
-// Note: This part just opens the modal. The scroll lock for this modal is in watchHistory.js itself.
+// --- WATCH HISTORY ---
 function openWatchHistoryModal() {
   const modal = document.getElementById('watch-history-modal');
   if (modal) {
       modal.style.display = 'flex';
-      // Make sure the function exists before calling it
       if (typeof loadWatchHistory === 'function') {
           loadWatchHistory();
       }
   }
 }
 
-// --- DETAILS MODAL FUNCTIONS (BAGO) ---
+// --- DETAILS MODAL FUNCTIONS ---
 const genreMap = { 28:"Action", 12:"Adventure", 16:"Animation", 35:"Comedy", 80:"Crime", 99:"Documentary", 18:"Drama", 10751:"Family", 14:"Fantasy", 36:"History", 27:"Horror", 10402:"Music", 9648:"Mystery", 10749:"Romance", 878:"Science Fiction", 10770:"TV Movie", 53:"Thriller", 10752:"War", 37:"Western" };
 
 function showDetailsModal(item) {
   const modal = document.getElementById('details-modal');
   document.body.classList.add('body-no-scroll');
   
-  // Populate data
   document.querySelector('#details-modal .modal-backdrop').style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
   document.getElementById('modal-poster').src = `${IMG_URL_W500}${item.poster_path}`;
   document.getElementById('modal-title').textContent = item.title || item.name;
@@ -166,7 +196,6 @@ function showDetailsModal(item) {
   document.getElementById('modal-release').textContent = (item.release_date || item.first_air_date || 'N/A').substring(0, 4);
   document.getElementById('modal-description').textContent = item.overview;
   
-  // Populate genres
   const genresContainer = document.getElementById('modal-genres');
   genresContainer.innerHTML = '';
   if (item.genre_ids) {
@@ -178,7 +207,6 @@ function showDetailsModal(item) {
     });
   }
   
-  // Bigyan ng function ang "Watch Now" button
   const watchBtn = document.getElementById('modal-watch-btn');
   watchBtn.onclick = () => goToMoviePage(item);
   

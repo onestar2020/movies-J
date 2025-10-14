@@ -71,11 +71,19 @@
         </div>
     </footer>
 
-    <div class="search-modal" id="search-modal">
+  <div class="search-modal" id="search-modal">
+    <div class="search-content">
         <button class="close" onclick="closeSearchModal()">&times;</button>
-        <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
+        <div class="search-input-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Search for movies, TV shows, or anime..." oninput="searchTMDB()" />
+        </div>
         <div class="results" id="search-results"></div>
+        <div id="no-results-message" style="display: none; color: #888; text-align: center; margin-top: 40px;">
+            <p>No results found. Try a different keyword.</p>
+        </div>
     </div>
+</div>
 
     <div class="modal" id="watch-history-modal">
         <div class="modal-content" style="max-width: 800px;">

@@ -1,11 +1,11 @@
-// ✅ js/home.js (Final Version with Slideshow Hero Section)
+// ✅ js/home.js (Final Version with Slideshow Hero and Modern Search)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL_W500 = 'https://image.tmdb.org/t/p/w500';
 const IMG_URL_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 
-// --- BAGO: Variables para sa slideshow ---
+// --- Variables para sa slideshow ---
 let slideshowInterval;
 let featuredItems = [];
 let currentFeaturedIndex = 0;
@@ -57,7 +57,6 @@ async function loadFeaturedMovie() {
 
         if (featuredItems.length > 0) {
             updateHeroSection(); // Tawagin agad para sa unang item
-            // I-clear ang dating interval kung meron man, bago mag-set ng bago
             clearInterval(slideshowInterval); 
             slideshowInterval = setInterval(updateHeroSection, 5000); // Magpalit every 5 seconds
         }
@@ -76,7 +75,6 @@ function updateHeroSection() {
     const watchBtn = document.getElementById('hero-watch-btn');
     const infoBtn = document.getElementById('hero-info-btn');
 
-    // Kunin ang current item base sa index
     const item = featuredItems[currentFeaturedIndex];
     
     if (item) {
@@ -87,9 +85,7 @@ function updateHeroSection() {
         infoBtn.onclick = () => showDetailsModal(item);
     }
     
-    // Itaas ang index para sa susunod na item
     currentFeaturedIndex++;
-    // Kung nasa dulo na ng listahan, bumalik sa simula
     if (currentFeaturedIndex >= featuredItems.length) {
         currentFeaturedIndex = 0;
     }
@@ -135,41 +131,61 @@ function displayList(items, containerId) {
 // --- UTILITY FUNCTIONS ---
 function goToMoviePage(item) {
     const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-    saveToWatchHistory({ id: item.id, title: item.title || item.name, poster_path: item.poster_path, type: type });
+    // Ensure saveToWatchHistory exists before calling
+    if (typeof saveToWatchHistory === 'function') {
+        saveToWatchHistory({ id: item.id, title: item.title || item.name, poster_path: item.poster_path, type: type });
+    }
     window.location.href = `movie.html?id=${item.id}&type=${type}`;
 }
 
-// --- SEARCH MODAL (WITH SCROLL LOCK) ---
+// --- IN-UPDATE: MODERN SEARCH MODAL ---
 function openSearchModal() {
-  document.getElementById('search-modal').style.display = 'flex';
+  const modal = document.getElementById('search-modal');
+  modal.classList.add('active'); // Use class for animation
   document.getElementById('search-input').focus();
   document.body.classList.add('body-no-scroll');
 }
 
 function closeSearchModal() {
-  document.getElementById('search-modal').style.display = 'none';
+  const modal = document.getElementById('search-modal');
+  modal.classList.remove('active'); // Use class for animation
   document.body.classList.remove('body-no-scroll');
 }
 
 async function searchTMDB() {
-  const query = document.getElementById('search-input').value.trim();
-  const container = document.getElementById('search-results');
-  container.innerHTML = '';
-  if (!query) return;
+    const query = document.getElementById('search-input').value.trim();
+    const container = document.getElementById('search-results');
+    const noResultsMsg = document.getElementById('no-results-message');
+    
+    container.innerHTML = ''; // Clear previous results
+    
+    if (!query) {
+        if(noResultsMsg) noResultsMsg.style.display = 'none'; // Hide message if input is empty
+        return;
+    }
 
-  const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-  const data = await res.json();
-  const results = data.results.filter(item => item.poster_path && (item.media_type === 'movie' || item.media_type === 'tv'));
+    const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    const results = data.results.filter(item => item.poster_path && (item.media_type === 'movie' || item.media_type === 'tv'));
 
-  results.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'movie-card';
-    div.style.width = '150px';
-    div.onclick = () => { closeSearchModal(); goToMoviePage(item); };
-    div.innerHTML = `<img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}"><p class="movie-title">${item.title || item.name}</p>`;
-    container.appendChild(div);
-  });
+    if (noResultsMsg) {
+        if (results.length === 0) {
+            noResultsMsg.style.display = 'block'; // Show message if no results
+        } else {
+            noResultsMsg.style.display = 'none'; // Hide message if there are results
+        }
+    }
+
+    results.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'movie-card';
+        div.style.width = '150px';
+        div.onclick = () => { closeSearchModal(); goToMoviePage(item); };
+        div.innerHTML = `<img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}"><p class="movie-title">${item.title || item.name}</p>`;
+        container.appendChild(div);
+    });
 }
+
 
 // --- WATCH HISTORY ---
 function openWatchHistoryModal() {

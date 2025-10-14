@@ -203,15 +203,23 @@ a {
   align-items: center; justify-content: center;
 }
 .search-modal { align-items: flex-start; padding-top: 100px; }
+
 .modal-content {
-  background: #181818; border-radius: 8px; max-width: 700px;
-  width: 90%; max-height: 90vh; overflow-y: auto; position: relative;
+  background: #181818; 
+  border-radius: 8px; 
+  max-width: 700px;
+  width: 90%; 
+  max-height: 90vh; 
+  overflow-y: auto; 
+  position: relative; /* <-- MAHALAGA ITO PARA SA POSITIONING NG BUTTON */
 }
 .close {
   position: absolute; top: 15px; right: 20px;
   font-size: 2rem; cursor: pointer; color: #aaa;
+  z-index: 1; /* Para siguradong nasa ibabaw ito */
 }
 #search-results { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
+
 #watch-history-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Responsive grid */
@@ -220,6 +228,32 @@ a {
   max-height: 60vh; 
   overflow-y: auto; /* Magkakaroon ng scrollbar kung puno na */
 }
+
+/* ===== MODERN CLEAR HISTORY BUTTON STYLE (NEW) ===== */
+#clear-history-btn {
+  position: absolute; /* Para ma-pwesto natin kahit saan sa loob ng modal */
+  top: 15px;          /* Distansya mula sa taas */
+  right: 60px;         /* Distansya mula sa kanan (para di mag-overlap sa 'X') */
+  background: #333;   /* Mas madilim na background */
+  color: #fff;
+  border: none;
+  width: 40px;          /* Sukat para maging pabilog */
+  height: 40px;
+  border-radius: 50%; /* Gawing pabilog */
+  font-size: 18px;      /* Laki ng trash icon */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  z-index: 1; /* Tinitiyak na nasa ibabaw din ito */
+}
+
+#clear-history-btn:hover {
+  background-color: #e53935; /* Magiging pula kapag tinapat ang mouse */
+  transform: scale(1.1);   /* Lalaki ng kaunti para may effect */
+}
+
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
@@ -230,6 +264,7 @@ a {
   .hero-description { font-size: 1rem; }
   .main-container { padding: 0 20px; }
   .movie-card { width: 140px; }
+  #clear-history-btn { top: 10px; right: 50px; } /* Adjust button for smaller screens */
 }
 
 /*

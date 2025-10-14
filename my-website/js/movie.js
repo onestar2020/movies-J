@@ -1,4 +1,4 @@
-// ✅ js/movie.js (Updated to Autoplay Trailer First)
+// ✅ js/movie.js (Final Version - Corrected Trailer Logic)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("movie-title").textContent = item.title || item.name;
         document.getElementById("movie-overview").textContent = item.overview;
         
-        // IN-UPDATE: This function now handles the initial state of the player
+        // This function now handles the initial state of the player
         setupInitialPlayer(item);
 
         displayCast(item.credits.cast);
@@ -42,27 +42,37 @@ async function fetchDetails() {
     }
 }
 
-// BAGO: This function sets up the trailer to play automatically
+// BAGO: More robust function to find and play the trailer
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
     const serverNote = document.querySelector(".server-note");
-    const videos = item.videos?.results || [];
-    
-    // Find the official trailer, or fallback to any YouTube video
-    const officialTrailer = videos.find(v => v.site === 'YouTube' && v.type === 'Trailer') || videos.find(v => v.site === 'YouTube');
 
-    if (officialTrailer) {
-        // If a trailer is found, set it to autoplay
-        trailerUrl = `https://www.youtube.com/embed/${officialTrailer.key}?autoplay=1&mute=1&rel=0`;
-        player.src = trailerUrl;
-        serverNote.style.display = 'none'; // Hide the "Select a server" note
-    } else {
-        // If no trailer is found, leave the player blank
-        trailerUrl = '';
-        player.src = '';
-        serverNote.style.display = 'block'; // Show the "Select a server" note
+    // Defensive check: Ensure videos object and results array exist and are not empty
+    if (item.videos && item.videos.results && item.videos.results.length > 0) {
+        const videos = item.videos.results;
+        
+        // Find an official trailer first, then fall back to any other video labeled as a "Trailer", then any video from YouTube
+        const officialTrailer = videos.find(v => v.type === 'Trailer' && v.official === true && v.site === 'YouTube');
+        const anyTrailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+        const anyYouTubeVideo = videos.find(v => v.site === 'YouTube');
+
+        const bestVideo = officialTrailer || anyTrailer || anyYouTubeVideo;
+
+        if (bestVideo) {
+            // If a suitable video is found, set it to autoplay
+            trailerUrl = `https://www.youtube.com/embed/${bestVideo.key}?autoplay=1&mute=1&rel=0`;
+            player.src = trailerUrl;
+            serverNote.style.display = 'none'; // Hide the note
+            return; // Exit the function successfully
+        }
     }
+
+    // Fallback: If no videos are found or no suitable trailer exists, leave the player blank
+    trailerUrl = '';
+    player.src = '';
+    serverNote.style.display = 'block'; // Show the "Select a server" note
 }
+
 
 function populateServerSelector(item) {
     const serverSelect = document.getElementById("server-select");
@@ -82,7 +92,6 @@ function populateServerSelector(item) {
         serverSelect.appendChild(option);
     });
     
-    // IN-UPDATE: The event listener is now more robust
     serverSelect.addEventListener("change", () => {
         const selectedServer = serverSelect.value;
         const player = document.getElementById("movie-player");
@@ -91,11 +100,9 @@ function populateServerSelector(item) {
         const episode = document.getElementById("episode-select")?.value || 1;
         
         if (selectedServer) {
-            // If a server is selected, update the player and hide the note
             updatePlayer(selectedServer, item, season, episode);
             serverNote.style.display = 'none';
         } else {
-            // If user goes back to "Select a Server", show the trailer again or blank the player
             if (trailerUrl) {
                 player.src = trailerUrl;
                 serverNote.style.display = 'none';

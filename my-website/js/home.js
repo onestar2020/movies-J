@@ -1,4 +1,4 @@
-// ✅ js/home.js (Final Version with Slideshow Hero and Modern Search)
+// ✅ js/home.js (FIXED: Added safety check for homepage-only functions)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -12,23 +12,29 @@ let currentFeaturedIndex = 0;
 
 // --- MAIN FUNCTION PAGKA-LOAD NG PAGE ---
 document.addEventListener("DOMContentLoaded", async () => {
-    // Load lahat ng kailangan para sa homepage
-    loadFeaturedMovie(); // This function now starts the slideshow
-    fetchTrending('movie').then(items => displayList(items, 'movies-list'));
-    fetchTrending('tv').then(items => displayList(items, 'tvshows-list'));
-    fetchTrendingAnime().then(items => displayList(items, 'anime-list'));
+
+    // BAGO: Safety check. Ang code sa loob ng 'if' na ito ay sa homepage (index.html) lang gagana.
+    if (document.getElementById('hero-section')) {
+        // Load lahat ng kailangan para sa homepage
+        loadFeaturedMovie(); // This function now starts the slideshow
+        fetchTrending('movie').then(items => displayList(items, 'movies-list'));
+        fetchTrending('tv').then(items => displayList(items, 'tvshows-list'));
+        fetchTrendingAnime().then(items => displayList(items, 'anime-list'));
+    }
     
-    // Add scroll effect sa navbar
+    // Itong scroll effect at modal listeners ay gagana sa lahat ng page (index at browse)
     window.addEventListener('scroll', () => {
         const navbar = document.querySelector('.navbar');
-        if (window.scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
+        // Magdagdag ng check kung may navbar bago baguhin ang style
+        if (navbar) {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
         }
     });
 
-    // Event listeners para sa Details Modal
     const detailsModal = document.getElementById('details-modal');
     if(detailsModal) {
         document.getElementById('close-details-modal').onclick = closeDetailsModal;
@@ -49,16 +55,13 @@ async function loadFeaturedMovie() {
         const tvRes = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}`);
         const tvData = await tvRes.json();
 
-        // Pagsamahin ang top 10 movies at top 10 TV shows
         featuredItems = [...movieData.results.slice(0, 10), ...tvData.results.slice(0, 10)];
-        
-        // I-shuffle para random ang pagkakasunod-sunod
         featuredItems.sort(() => Math.random() - 0.5);
 
         if (featuredItems.length > 0) {
-            updateHeroSection(); // Tawagin agad para sa unang item
+            updateHeroSection(); 
             clearInterval(slideshowInterval); 
-            slideshowInterval = setInterval(updateHeroSection, 5000); // Magpalit every 5 seconds
+            slideshowInterval = setInterval(updateHeroSection, 5000);
         }
     } catch (error) {
         console.error("Failed to load featured items:", error);
@@ -74,6 +77,9 @@ function updateHeroSection() {
     const heroDesc = document.getElementById('hero-description');
     const watchBtn = document.getElementById('hero-watch-btn');
     const infoBtn = document.getElementById('hero-info-btn');
+
+    // Magdagdag ng check para sigurado
+    if (!heroSection || !heroTitle || !heroDesc || !watchBtn || !infoBtn) return;
 
     const item = featuredItems[currentFeaturedIndex];
     
@@ -131,7 +137,6 @@ function displayList(items, containerId) {
 // --- UTILITY FUNCTIONS ---
 function goToMoviePage(item) {
     const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-    // Ensure saveToWatchHistory exists before calling
     if (typeof saveToWatchHistory === 'function') {
         saveToWatchHistory({ id: item.id, title: item.title || item.name, poster_path: item.poster_path, type: type });
     }
@@ -141,14 +146,14 @@ function goToMoviePage(item) {
 // --- IN-UPDATE: MODERN SEARCH MODAL ---
 function openSearchModal() {
   const modal = document.getElementById('search-modal');
-  modal.classList.add('active'); // Use class for animation
+  modal.classList.add('active');
   document.getElementById('search-input').focus();
   document.body.classList.add('body-no-scroll');
 }
 
 function closeSearchModal() {
   const modal = document.getElementById('search-modal');
-  modal.classList.remove('active'); // Use class for animation
+  modal.classList.remove('active');
   document.body.classList.remove('body-no-scroll');
 }
 
@@ -157,10 +162,11 @@ async function searchTMDB() {
     const container = document.getElementById('search-results');
     const noResultsMsg = document.getElementById('no-results-message');
     
-    container.innerHTML = ''; // Clear previous results
+    if (!container) return;
+    container.innerHTML = '';
     
     if (!query) {
-        if(noResultsMsg) noResultsMsg.style.display = 'none'; // Hide message if input is empty
+        if(noResultsMsg) noResultsMsg.style.display = 'none';
         return;
     }
 
@@ -170,9 +176,9 @@ async function searchTMDB() {
 
     if (noResultsMsg) {
         if (results.length === 0) {
-            noResultsMsg.style.display = 'block'; // Show message if no results
+            noResultsMsg.style.display = 'block';
         } else {
-            noResultsMsg.style.display = 'none'; // Hide message if there are results
+            noResultsMsg.style.display = 'none';
         }
     }
 
@@ -203,6 +209,7 @@ const genreMap = { 28:"Action", 12:"Adventure", 16:"Animation", 35:"Comedy", 80:
 
 function showDetailsModal(item) {
   const modal = document.getElementById('details-modal');
+  if (!modal) return;
   document.body.classList.add('body-no-scroll');
   
   document.querySelector('#details-modal .modal-backdrop').style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
@@ -230,6 +237,7 @@ function showDetailsModal(item) {
 }
 
 function closeDetailsModal() {
-  document.getElementById('details-modal').style.display = 'none';
+  const modal = document.getElementById('details-modal');
+  if (modal) modal.style.display = 'none';
   document.body.classList.remove('body-no-scroll');
 }

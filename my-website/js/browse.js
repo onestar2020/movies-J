@@ -1,9 +1,4 @@
-// ✅ js/browse.js (NEW FILE)
-
-// Note: Ginagamit pa rin natin ang mga variables na ito, kaya dapat consistent sila sa home.js
-const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
-const BASE_URL = 'https://api.themoviedb.org/3';
-const IMG_URL_W500 = 'https://image.tmdb.org/t/p/w500';
+// ✅ js/browse.js (FIXED: Removed duplicate variables)
 
 const urlParams = new URLSearchParams(window.location.search);
 const type = urlParams.get('type'); // 'movie', 'tv', or 'anime'
@@ -36,22 +31,26 @@ function setupBrowsePage() {
     // I-set ang title at active link depende sa type
     if (type === 'movie') {
         title = "Movies";
-        document.querySelector('a[href="browse.html?type=movie"]').classList.add('active');
+        const movieLink = document.querySelector('a[href="browse.html?type=movie"]');
+        if (movieLink) movieLink.classList.add('active');
     } else if (type === 'tv') {
         title = "TV Shows";
-        document.querySelector('a[href="browse.html?type=tv"]').classList.add('active');
+        const tvLink = document.querySelector('a[href="browse.html?type=tv"]');
+        if (tvLink) tvLink.classList.add('active');
     } else if (type === 'anime') {
         title = "Anime";
-        document.querySelector('a[href="browse.html?type=anime"]').classList.add('active');
+        const animeLink = document.querySelector('a[href="browse.html?type=anime"]');
+        if (animeLink) animeLink.classList.add('active');
     }
     
-    titleElement.textContent = title;
+    if(titleElement) titleElement.textContent = title;
     document.title = `${title} - Movies-J`; // I-update din ang tab title
 }
 
 
 // Function para kumuha at mag-display ng content
 async function loadContent(page) {
+    // NOTE: Ang API_KEY at BASE_URL ay galing na sa home.js
     let endpoint = '';
     
     // Alamin kung anong API endpoint ang gagamitin
@@ -67,7 +66,6 @@ async function loadContent(page) {
             endpoint = `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_keywords=210024|287501&with_genres=16&sort_by=popularity.desc&page=${page}`;
             break;
         default:
-            // Kung walang type, huwag mag-load
             return;
     }
 
@@ -84,12 +82,12 @@ async function loadContent(page) {
 // Function para i-display ang mga items sa grid
 function displayContentGrid(items) {
     const grid = document.getElementById('browse-grid');
+    if (!grid) return;
 
     items.forEach(item => {
         if (item.poster_path) {
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
-            // Dahil nasa browse.js tayo, gamitin natin ang showDetailsModal mula sa home.js
             // Ang home.js ay na-load na natin sa browse.html kaya available ang function na ito
             movieCard.onclick = () => showDetailsModal(item);
             

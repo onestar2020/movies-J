@@ -41,8 +41,7 @@
 
         #movie-title { margin: 0; font-size: 1.6rem; padding: 0 50px; }
         .page-container { padding: 20px; max-width: 1000px; margin: auto; }
-
-        /* BAGO: Styles para sa Modern Server Buttons */
+        
         .server-container {
             background: #1c1c1c;
             padding: 15px;
@@ -83,7 +82,6 @@
             border-color: var(--primary-color);
             font-weight: bold;
         }
-        /* ---- End of Server Button Styles ---- */
         
         iframe#movie-player { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; border: none; background-color: #000; }
         .video-container { margin-top: 20px; width: 100%; }
@@ -142,6 +140,7 @@
             max-height: 400px;
             overflow-y: auto;
         }
+        #episode-list-container::-webkit-scrollbar { display: none; } /* Hide scrollbar */
         .episode-card {
             display: flex;
             gap: 15px;
@@ -183,8 +182,27 @@
             #movie-title { font-size: 1.2rem; } 
             .header { padding: 10px; }
             .home-button { left: 10px; width: 35px; height: 35px; font-size: 1rem; }
-            .episode-card { flex-direction: column; }
-            .episode-thumbnail { width: 100%; }
+            
+            /* IN-UPDATE: Mobile Episode Carousel Styles */
+            #episode-list-container {
+                display: flex;
+                overflow-x: auto;
+                overflow-y: hidden;
+                border: none;
+                padding-bottom: 15px;
+                scroll-snap-type: x mandatory;
+            }
+            .episode-card {
+                flex-direction: column;
+                width: 85%; /* Bawat card ay 85% ng screen width */
+                flex-shrink: 0;
+                border: 1px solid #222;
+                border-radius: 8px;
+                scroll-snap-align: start; /* Para sa smooth snapping */
+            }
+            .episode-thumbnail { 
+                width: 100%; 
+            }
         }
     </style>
 </head>
@@ -202,7 +220,7 @@
         <div class="server-container">
             <label>🎬 Server:</label>
             <div id="server-buttons-container">
-                </div>
+            </div>
         </div>
 
         <div class="tv-show-browser">

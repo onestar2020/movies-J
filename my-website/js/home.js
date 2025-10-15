@@ -1,4 +1,4 @@
-// ✅ js/home.js (FINAL: With Welcome Modal)
+// ✅ js/home.js (FINAL: With Service Worker Registration)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -23,13 +23,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         ]).then(() => {
             setupHomepageCarousels();
         });
-
-        // BAGO: Logic para sa Welcome Modal
         handleWelcomeModal();
     }
     
     // Itong mga functions na ito ay para sa lahat ng page
     setupUniversalEventListeners();
+    registerServiceWorker(); // BAGO: I-rehistro ang "makina" ng PWA
 });
 
 
@@ -61,7 +60,23 @@ function setupUniversalEventListeners() {
     }
 }
 
-// BAGO: Function para sa logic ng Welcome Modal
+// BAGO: Function para i-rehistro ang Service Worker
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            // Gumamit ng tamang path papunta sa js folder
+            navigator.serviceWorker.register('js/sw.js')
+                .then(registration => {
+                    console.log('✅ Service Worker registered successfully:', registration);
+                })
+                .catch(error => {
+                    console.error('❌ Service Worker registration failed:', error);
+                });
+        });
+    }
+}
+
+// Function para sa logic ng Welcome Modal
 function handleWelcomeModal() {
     const welcomeModal = document.getElementById('welcome-modal');
     const closeBtn = document.getElementById('welcome-modal-close-btn');

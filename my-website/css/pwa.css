@@ -1,7 +1,6 @@
 /* ===== PWA INSTALL BANNER STYLES ===== */
 
 .install-banner {
-    display: none; /* Itago by default, ipapakita ng JS */
     position: fixed;
     bottom: 20px;
     left: 50%;
@@ -13,9 +12,22 @@
     border-radius: 10px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.5);
     z-index: 2500;
+    
+    /* IN-UPDATE: Itago by default gamit ang visibility at opacity para sa animation */
     display: flex;
     align-items: center;
     gap: 15px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    transform: translateX(-50%) translateY(20px); /* Initial position for slide-up effect */
+}
+
+/* Class na idadagdag ng JS para ipakita ang banner */
+.install-banner.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
 }
 
 .install-banner-icon img {
@@ -65,4 +77,11 @@
     font-size: 1.5rem;
     cursor: pointer;
     padding: 5px;
+}
+
+/* BAGO: Media Query para itago ang banner sa desktop */
+@media (min-width: 769px) {
+    .install-banner {
+        display: none !important; /* Force hide on desktop */
+    }
 }

@@ -1,19 +1,19 @@
-// ✅ js/home.js (FINAL: With Service Worker Registration)
+// ✅ js/home.js (FINAL: With Mobile-Only PWA Install Banner Logic)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL_W500 = 'https://image.tmdb.org/t/p/w500';
 const IMG_URL_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 
-// --- Variables para sa slideshow ---
+// --- Global Variables ---
 let slideshowInterval;
 let featuredItems = [];
 let currentFeaturedIndex = 0;
+let deferredPrompt; // Variable to hold the install prompt event
 
 // --- MAIN FUNCTION PAGKA-LOAD NG PAGE ---
 document.addEventListener("DOMContentLoaded", async () => {
 
-    // Safety check para ang homepage-specific code ay sa index.html lang gagana.
     if (document.getElementById('hero-section')) {
         loadFeaturedMovie();
         Promise.all([
@@ -26,9 +26,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         handleWelcomeModal();
     }
     
-    // Itong mga functions na ito ay para sa lahat ng page
     setupUniversalEventListeners();
-    registerServiceWorker(); // BAGO: I-rehistro ang "makina" ng PWA
+    registerServiceWorker();
 });
 
 
@@ -58,25 +57,55 @@ function setupUniversalEventListeners() {
             navLinks.classList.toggle('active');
         });
     }
+
+    // Paganahin ang PWA install logic
+    setupPWAInstall();
 }
 
-// BAGO: Function para i-rehistro ang Service Worker
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            // Gumamit ng tamang path papunta sa js folder
             navigator.serviceWorker.register('js/sw.js')
-                .then(registration => {
-                    console.log('✅ Service Worker registered successfully:', registration);
-                })
-                .catch(error => {
-                    console.error('❌ Service Worker registration failed:', error);
-                });
+                .then(registration => console.log('✅ Service Worker registered successfully:', registration))
+                .catch(error => console.error('❌ Service Worker registration failed:', error));
         });
     }
 }
 
-// Function para sa logic ng Welcome Modal
+// IN-UPDATE: Function para sa PWA Install Banner (gamit ang CSS class)
+function setupPWAInstall() {
+    const installBanner = document.getElementById('install-banner');
+    const installBtn = document.getElementById('install-app-btn');
+    const dismissBtn = document.getElementById('dismiss-install-btn');
+
+    // Siguraduhing may banner bago magpatuloy
+    if (!installBanner || !installBtn || !dismissBtn) {
+        return;
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        // Ipakita ang banner gamit ang CSS class para sa animation at mobile-only display
+        installBanner.classList.add('visible');
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        
+        installBanner.classList.remove('visible'); // Itago ang banner
+        deferredPrompt.prompt(); // Ipakita ang official install prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        deferredPrompt = null;
+    });
+
+    dismissBtn.addEventListener('click', () => {
+        installBanner.classList.remove('visible'); // Itago ang banner
+    });
+}
+
+
 function handleWelcomeModal() {
     const welcomeModal = document.getElementById('welcome-modal');
     const closeBtn = document.getElementById('welcome-modal-close-btn');
@@ -85,7 +114,6 @@ function handleWelcomeModal() {
     if (!hasVisited && welcomeModal) {
         welcomeModal.classList.add('active');
         document.body.classList.add('body-no-scroll');
-
         closeBtn.addEventListener('click', () => {
             welcomeModal.classList.remove('active');
             document.body.classList.remove('body-no-scroll');
@@ -96,7 +124,6 @@ function handleWelcomeModal() {
 
 
 // --- HOMEPAGE-ONLY FUNCTIONS ---
-
 async function loadFeaturedMovie() {
     try {
         const movieRes = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
@@ -201,19 +228,14 @@ function setupHomepageCarousels() {
             scrollBtnRight.className = 'scroll-btn right';
             scrollBtnRight.innerHTML = '&gt;';
             container.appendChild(scrollBtnRight);
-            scrollBtnLeft.addEventListener('click', () => {
-                list.scrollLeft -= list.clientWidth * 0.8;
-            });
-            scrollBtnRight.addEventListener('click', () => {
-                list.scrollLeft += list.clientWidth * 0.8;
-            });
+            scrollBtnLeft.addEventListener('click', () => list.scrollLeft -= list.clientWidth * 0.8);
+            scrollBtnRight.addEventListener('click', () => list.scrollLeft += list.clientWidth * 0.8);
         }
     });
 }
 
 
 // --- UNIVERSAL FUNCTIONS (Gagana sa lahat ng page) ---
-
 function goToMoviePage(item) {
     const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
     if (typeof saveToWatchHistory === 'function') {

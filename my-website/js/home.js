@@ -1,4 +1,4 @@
-// ✅ js/home.js (FINAL: With Mobile-Only PWA Install Banner Logic)
+// ✅ js/home.js (FINAL: With Splash Screen Logic)
 
 const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -14,7 +14,20 @@ let deferredPrompt; // Variable to hold the install prompt event
 // --- MAIN FUNCTION PAGKA-LOAD NG PAGE ---
 document.addEventListener("DOMContentLoaded", async () => {
 
+    // Safety check para ang homepage-specific code ay sa index.html lang gagana.
     if (document.getElementById('hero-section')) {
+        // BAGO: Splash Screen Logic
+        const splashScreen = document.getElementById('splash-screen');
+        // Gamitin ang 'load' event para hintaying matapos lahat, kasama ang images
+        window.addEventListener('load', () => {
+            if (splashScreen) {
+                // Mag-antay ng konti para mas smooth tingnan bago mawala
+                setTimeout(() => {
+                    splashScreen.classList.add('hidden');
+                }, 500); 
+            }
+        });
+
         loadFeaturedMovie();
         Promise.all([
             fetchTrending('movie').then(items => displayList(items, 'movies-list')),
@@ -58,7 +71,6 @@ function setupUniversalEventListeners() {
         });
     }
 
-    // Paganahin ang PWA install logic
     setupPWAInstall();
 }
 
@@ -72,36 +84,28 @@ function registerServiceWorker() {
     }
 }
 
-// IN-UPDATE: Function para sa PWA Install Banner (gamit ang CSS class)
 function setupPWAInstall() {
     const installBanner = document.getElementById('install-banner');
     const installBtn = document.getElementById('install-app-btn');
     const dismissBtn = document.getElementById('dismiss-install-btn');
-
-    // Siguraduhing may banner bago magpatuloy
     if (!installBanner || !installBtn || !dismissBtn) {
         return;
     }
-
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        // Ipakita ang banner gamit ang CSS class para sa animation at mobile-only display
         installBanner.classList.add('visible');
     });
-
     installBtn.addEventListener('click', async () => {
         if (!deferredPrompt) return;
-        
-        installBanner.classList.remove('visible'); // Itago ang banner
-        deferredPrompt.prompt(); // Ipakita ang official install prompt
+        installBanner.classList.remove('visible');
+        deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         console.log(`User response to the install prompt: ${outcome}`);
         deferredPrompt = null;
     });
-
     dismissBtn.addEventListener('click', () => {
-        installBanner.classList.remove('visible'); // Itago ang banner
+        installBanner.classList.remove('visible');
     });
 }
 

@@ -1,7 +1,7 @@
-// ✅ js/movie.js (UPDATED: With Premium Server Buttons)
+// ✅ js/movie.js (SUPER SECURE VERSION)
 
-const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
-const BASE_URL = 'https://api.themoviedb.org/3';
+// ALISIN ANG API_KEY
+const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; // Gagamitin na ang Worker
 const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         setupInitialPlayer(item);
         displayCast(item.credits.cast);
         displaySimilar(item.similar.results);
-        populateServerSelector(item); // Ito na ang gagawa ng mga bagong buttons
+        populateServerSelector(item); 
 
         if (type === 'tv') {
             document.querySelector('.tv-show-browser').style.display = 'block';
@@ -33,7 +33,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function fetchDetails() {
     try {
-        const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}&append_to_response=credits,similar,videos`);
+        // Tinanggal ang API_KEY dito, dadaan na sa Worker
+        const res = await fetch(`${BASE_URL}/${type}/${id}?append_to_response=credits,similar,videos`);
         const data = await res.json();
         return data;
     } catch (error) {
@@ -42,7 +43,6 @@ async function fetchDetails() {
     }
 }
 
-// IN-UPDATE: Tinanggal ang reference sa .server-note
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
 
@@ -63,7 +63,6 @@ function setupInitialPlayer(item) {
     }
 }
 
-// IN-UPDATE: Kompleto nang pinalitan para gumawa ng buttons
 function populateServerSelector(item) {
     const serverButtonsContainer = document.getElementById("server-buttons-container");
     serverButtonsContainer.innerHTML = ''; 
@@ -74,12 +73,10 @@ function populateServerSelector(item) {
         const serverBtn = document.createElement("button");
         serverBtn.className = 'server-btn';
         serverBtn.textContent = server.displayName;
-        serverBtn.dataset.server = server.realName; // Itago ang real name sa data attribute
+        serverBtn.dataset.server = server.realName; 
 
         serverBtn.addEventListener('click', () => {
-            // Alisin ang active class sa lahat ng buttons
             document.querySelectorAll('.server-btn').forEach(btn => btn.classList.remove('active'));
-            // Idagdag ang active class sa pinindot na button
             serverBtn.classList.add('active');
             
             updatePlayer(server.realName, item, currentSeasonNumber, currentEpisodeNumber);
@@ -87,7 +84,6 @@ function populateServerSelector(item) {
         
         serverButtonsContainer.appendChild(serverBtn);
 
-        // Awtomatikong i-select ang unang server kung walang trailer
         if (index === 0 && !trailerUrl) {
             serverBtn.click();
         }
@@ -156,8 +152,6 @@ function displaySimilar(similar) {
     });
 }
 
-
-// --- TV SHOW LOGIC ---
 async function handleTVShow(item) {
     const seasonBtn = document.getElementById('season-selector-btn');
     const seasonMenu = document.getElementById('season-dropdown-menu');
@@ -176,7 +170,8 @@ async function handleTVShow(item) {
     
     async function loadEpisodes(seasonNumber) {
         episodeListContainer.innerHTML = '<h3 style="padding: 20px; text-align: center;">Loading episodes...</h3>';
-        const res = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNumber}?api_key=${API_KEY}`);
+        // Tinanggal ang API_KEY dito
+        const res = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNumber}`);
         const data = await res.json();
         episodeListContainer.innerHTML = '';
 
@@ -199,7 +194,6 @@ async function handleTVShow(item) {
             `;
 
             card.addEventListener('click', () => {
-                // IN-UPDATE: Hanapin ang active server button
                 const activeServerBtn = document.querySelector('.server-btn.active');
                 const selectedServer = activeServerBtn ? activeServerBtn.dataset.server : null;
                 
@@ -218,7 +212,6 @@ async function handleTVShow(item) {
             if (index === 0) {
                 currentSeasonNumber = seasonNumber;
                 currentEpisodeNumber = ep.episode_number;
-                // I-click ito pero huwag i-trigger ang player kung wala pang server
                 if (document.querySelector('.server-btn.active')) {
                     card.click();
                 } else {

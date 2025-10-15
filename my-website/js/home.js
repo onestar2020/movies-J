@@ -1,7 +1,7 @@
-// ✅ js/home.js (FINAL: With Splash Screen Logic)
+// ✅ js/home.js (SUPER SECURE VERSION)
 
-const API_KEY = '22d74813ded3fecbe3ef632b4814ae3a';
-const BASE_URL = 'https://api.themoviedb.org/3';
+// WALA NANG API_KEY DITO
+const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; // Ito na ang bago at secure mong URL
 const IMG_URL_W500 = 'https://image.tmdb.org/t/p/w500';
 const IMG_URL_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 
@@ -130,9 +130,9 @@ function handleWelcomeModal() {
 // --- HOMEPAGE-ONLY FUNCTIONS ---
 async function loadFeaturedMovie() {
     try {
-        const movieRes = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
+        const movieRes = await fetch(`${BASE_URL}/trending/movie/week`);
         const movieData = await movieRes.json();
-        const tvRes = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}`);
+        const tvRes = await fetch(`${BASE_URL}/trending/tv/week`);
         const tvData = await tvRes.json();
         featuredItems = [...movieData.results.slice(0, 10), ...tvData.results.slice(0, 10)];
         featuredItems.sort(() => Math.random() - 0.5);
@@ -168,7 +168,7 @@ function updateHeroSection() {
 
 async function fetchTrending(type) {
     try {
-        const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
+        const res = await fetch(`${BASE_URL}/trending/${type}/week`);
         const data = await res.json();
         return data.results;
     } catch { return []; }
@@ -176,7 +176,7 @@ async function fetchTrending(type) {
 
 async function fetchTrendingAnime() {
     try {
-        const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_keywords=210024|287501&with_genres=16`);
+        const res = await fetch(`${BASE_URL}/discover/tv?with_keywords=210024|287501&with_genres=16`);
         const data = await res.json();
         return data.results.map(item => ({ ...item, media_type: 'tv' }));
     } catch { return []; }
@@ -271,7 +271,7 @@ async function searchTMDB() {
         if(noResultsMsg) noResultsMsg.style.display = 'none';
         return;
     }
-    const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+    const res = await fetch(`${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`);
     const data = await res.json();
     const results = data.results.filter(item => item.poster_path && (item.media_type === 'movie' || item.media_type === 'tv'));
     if (noResultsMsg) {

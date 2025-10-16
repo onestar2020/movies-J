@@ -4,7 +4,7 @@
   // --- DEVELOPER SWITCH ---
   // Palitan ito ng 'false' para i-disable ang lahat ng proteksyon at makapag-inspect.
   // Ibalik sa 'true' kapag tapos ka na para protektahan ulit ang site.
-  const protectionEnabled = false;
+  const protectionEnabled = true;
 
   // Kung naka-disable ang proteksyon, huwag nang ituloy ang script.
   if (!protectionEnabled) {

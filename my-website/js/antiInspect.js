@@ -1,5 +1,19 @@
-// FINAL LOCKED-DOWN VERSION
+// ANTI-INSPECT SCRIPT (with Developer Switch)
 (function () {
+
+  // --- DEVELOPER SWITCH ---
+  // Palitan ito ng 'false' para i-disable ang lahat ng proteksyon at makapag-inspect.
+  // Ibalik sa 'true' kapag tapos ka na para protektahan ulit ang site.
+  const protectionEnabled = false;
+
+  // Kung naka-disable ang proteksyon, huwag nang ituloy ang script.
+  if (!protectionEnabled) {
+    console.warn("Anti-inspect protection is currently DISABLED for development.");
+    return;
+  }
+
+  // --- Mula dito, ang code ay tatakbo lang kung protectionEnabled ay 'true' ---
+
   document.addEventListener("DOMContentLoaded", () => {
     
     // Ang function na nagla-lock ng page
@@ -16,7 +30,7 @@
       };
 
       setTimeout(() => {
-        location.replace("blank.html");
+        location.replace("about:blank"); // Mas compatible kaysa sa "blank.html"
       }, 100);
     }
 

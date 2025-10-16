@@ -57,6 +57,7 @@
         triggerLockdown();
       }
     });
+    
 
     // 3. I-detect ang debugger pause
     setInterval(() => {

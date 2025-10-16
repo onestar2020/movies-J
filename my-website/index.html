@@ -262,14 +262,50 @@
     </footer>
 
     <div class="search-modal" id="search-modal">
+        <div class="search-content">
+            <button class="close" onclick="closeSearchModal()">&times;</button>
+            <div class="search-input-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Search for movies, TV shows, or anime..." oninput="searchTMDB()" />
+            </div>
+            <div class="results" id="search-results"></div>
+            <div id="no-results-message" style="display: none; color: #888; text-align: center; margin-top: 40px;">
+                <p>No results found. Try a different keyword.</p>
+            </div>
         </div>
+    </div>
 
     <div class="modal" id="watch-history-modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" id="close-history-modal">&times;</span>
+            <h2 style="text-align:center; margin-top: 15px;">Watch History</h2>
+            <div id="watch-history-list"></div>
         </div>
+    </div>
 
     <div class="modal" id="details-modal">
+      <div class="details-modal-content">
+        <span class="close" id="close-details-modal">&times;</span>
+        <div class="modal-backdrop"></div>
+        <div class="modal-body">
+            <img id="modal-poster" src="" alt="Poster">
+            <div class="modal-text">
+                <h1 id="modal-title">Movie Title</h1>
+                <div class="modal-meta">
+                    <span id="modal-rating">⭐ 8.5</span>
+                    <span id="modal-release">2024</span>
+                </div>
+                <p id="modal-description">This is the full movie description...</p>
+                <div class="modal-genres" id="modal-genres"></div>
+                <div class="modal-buttons">
+                    <button class="btn btn-primary" id="modal-watch-btn">
+                        <i class="fas fa-play"></i> Watch Now
+                    </button>
+                </div>
+            </div>
+        </div>
       </div>
-    
+    </div>
     <div class="welcome-modal-overlay" id="welcome-modal">
         <div class="welcome-modal-content">
             <h2>A Note About Video Ads</h2>
@@ -345,6 +381,5 @@
     <script src="js/home.js" defer></script>
     <script src="js/watchHistory.js" defer></script>
     <script src="https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js" defer></script>
-    <script src="js/antiInspect.js" defer></script>
-</body>
+    </body>
 </html>

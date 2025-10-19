@@ -19,167 +19,75 @@
     <link rel="stylesheet" href="css/pwa.css">
 
     <style>
-        /* --- IYONG EXISTING STYLES DITO --- */
+        /* --- Styles --- */
         #splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--dark-color);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.5s ease-out;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--dark-color); z-index: 9999; display: flex;
+            align-items: center; justify-content: center; transition: opacity 0.5s ease-out;
         }
-        #splash-screen.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-        #splash-logo {
-            width: 200px;
-            animation: fadeIn 1.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        #splash-screen.hidden { opacity: 0; visibility: hidden; }
+        #splash-logo { width: 200px; animation: fadeIn 1.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- PREMIUM DONATION MODAL CSS STARTS HERE --- */
-        #supportBtn {
-            cursor: pointer;
-            margin-left: 15px;
-            color: #ffc107;
-            font-weight: 500;
-        }
-
+        #supportBtn { cursor: pointer; margin-left: 15px; color: #ffc107; font-weight: 500; }
         .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
-            overflow: auto;
-            animation: fadeIn 0.3s;
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85);
+            overflow: auto; animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: #181818; color: #f1f1f1; margin: 8% auto; padding: 30px 40px;
+            border: 1px solid #333; width: 90%; max-width: 700px; border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); position: relative; text-align: center;
+            /* Allow modal itself to scroll if needed, but not limiting text body */
+             max-height: 85vh; 
+             overflow-y: auto; 
         }
         
-        .modal-content {
-            background-color: #181818;
-            color: #f1f1f1;
-            margin: 8% auto;
-            padding: 30px 40px;
-            border: 1px solid #333;
-            width: 90%;
-            max-width: 700px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            position: relative;
-            text-align: center;
-        }
-
+        /* --- REVERTED CSS FOR MESSAGE BODY --- */
         .modal-text-body {
-            color: #ccc;
-            font-size: 16px;
-            line-height: 1.6;
-            margin-top: 20px;
-            margin-bottom: 30px;
-            text-align: left; /* Mas maganda basahin kapag left-aligned ang paragraphs */
-            border-top: 1px solid #444;
-            border-bottom: 1px solid #444;
-            padding: 20px 0;
+            color: #ccc; font-size: 16px; line-height: 1.6; margin-top: 20px;
+            margin-bottom: 30px; text-align: left; border-top: 1px solid #444;
+            border-bottom: 1px solid #444; padding: 20px; /* Kept side padding */
+             /* REMOVED max-height and overflow-y */
         }
-        .modal-text-body p {
-            margin: 0 0 1em 0; /* Nagbibigay ng space sa pagitan ng paragraphs */
-        }
-        .modal-text-body p:last-child {
-            margin-bottom: 0;
-        }
-        .modal-text-body strong {
-            color: #ffc107; /* Highlight the goal */
-        }
+        /* --- END OF REVERT --- */
 
+        .modal-text-body p { margin: 0 0 1em 0; }
+        .modal-text-body p:last-child { margin-bottom: 0; }
+        .modal-text-body strong { color: #ffc107; }
         .close-btn {
-            color: #aaa;
-            position: absolute;
-            top: 15px;
-            right: 25px;
-            font-size: 32px;
-            font-weight: bold;
-            transition: color 0.2s;
+            color: #aaa; position: absolute; top: 15px; right: 25px; font-size: 32px;
+            font-weight: bold; transition: color 0.2s; cursor: pointer;
         }
-        .close-btn:hover,
-        .close-btn:focus {
-            color: #fff;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .donation-container {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
+        .close-btn:hover, .close-btn:focus { color: #fff; text-decoration: none; }
+        .donation-container { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; }
         .donation-box {
-            background-color: #282828;
-            border-radius: 10px;
-            padding: 25px;
-            width: 45%;
-            min-width: 280px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background-color: #282828; border-radius: 10px; padding: 25px; width: 45%;
+            min-width: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-
-        .donation-box h3 {
-            margin-top: 0;
-            color: #fff;
-        }
-
-        .qr-code {
-            width: 160px;
-            height: 160px;
-            border-radius: 8px;
-            border: 3px solid #fff;
-        }
-
-        .account-details {
-            margin-top: 15px;
-            line-height: 1.5;
-            font-size: 14px;
-        }
-
+        .donation-box h3 { margin-top: 0; color: #fff; }
+        .qr-code { width: 160px; height: 160px; border-radius: 8px; border: 3px solid #fff; }
+        .account-details { margin-top: 15px; line-height: 1.5; font-size: 14px; }
         .paypal-button {
-            display: inline-block;
-            padding: 12px 30px;
-            margin-top: 20px;
-            background-color: #0070BA;
-            color: white !important;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
+            display: inline-block; padding: 12px 30px; margin-top: 20px; background-color: #0070BA;
+            color: white !important; text-decoration: none; border-radius: 5px; font-weight: bold;
             transition: background-color 0.2s;
         }
-        .paypal-button:hover {
-            background-color: #005ea6;
+        .paypal-button:hover { background-color: #005ea6; }
+        @media screen and (max-width: 650px) {
+            .modal-content { margin: 15% auto; padding: 20px; } 
+            .donation-box { width: 100%; }
         }
 
-        @media screen and (max-width: 650px) {
-            .modal-content {
-                margin: 20% auto;
-                padding: 20px;
-            }
-            .donation-box {
-                width: 100%;
-            }
+        .install-button-mobile {
+            display: none !important; cursor: pointer; color: #4CAF50;
+            font-weight: 500; padding: 15px 0;
         }
-        /* --- PREMIUM DONATION MODAL CSS ENDS HERE --- */
+        .install-button-mobile i { margin-right: 8px; }
+        @media (max-width: 768px) {
+            .nav-links.active .install-button-mobile.visible { display: block !important; }
+        }
     </style>
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399" crossorigin="anonymous"></script>
@@ -199,14 +107,12 @@
                 <a href="browse.html?type=tv">TV Shows</a>
                 <a href="browse.html?type=anime">Anime</a>
                 <a id="supportBtn">Support Me ❤️</a>
+                <a id="installAppBtnMobile" class="install-button-mobile"> <i class="fas fa-download"></i> Download App </a>
             </div>
             <div class="nav-actions">
-                <i class="fas fa-search" onclick="openSearchModal()"></i>
+                <i class="fas fa-search"></i> 
                 <button class="watch-history-btn" title="Watch History">
                     <i class="fas fa-history"></i>
-                </button>
-                <button id="install-btn" style="display: none;" title="Install App">
-                    <i class="fas fa-download"></i>
                 </button>
             </div>
             <div class="hamburger-menu">
@@ -218,40 +124,25 @@
     </nav>
 
     <header class="hero-section" id="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title" id="hero-title">Loading Featured Movie...</h1>
-            <p class="hero-description" id="hero-description"></p>
-            <div class="hero-buttons">
-                <button class="btn btn-primary" id="hero-watch-btn"><i class="fas fa-play"></i> Watch Now</button>
-                <button class="btn btn-secondary" id="hero-info-btn"><i class="fas fa-info-circle"></i> More Info</button>
-            </div>
-        </div>
-        <div class="hero-fade"></div>
+         <div class="hero-content">
+             <h1 class="hero-title" id="hero-title">Loading...</h1>
+             <p class="hero-description" id="hero-description"></p>
+             <div class="hero-buttons">
+                 <button class="btn btn-primary" id="hero-watch-btn"><i class="fas fa-play"></i> Watch Now</button>
+                 <button class="btn btn-secondary" id="hero-info-btn"><i class="fas fa-info-circle"></i> More Info</button>
+             </div>
+         </div>
+         <div class="hero-fade"></div>
     </header>
 
     <main class="main-container">
-        <div class="row">
-            <h2>Trending Movies</h2>
-            <div class="list-container">
-                <div class="list" id="movies-list"></div>
-            </div>
-        </div>
-        <div class="row">
-            <h2>Trending TV Shows</h2>
-            <div class="list-container">
-                <div class="list" id="tvshows-list"></div>
-            </div>
-        </div>
-        <div class="row">
-            <h2>Trending Anime</h2>
-            <div class="list-container">
-                <div class="list" id="anime-list"></div>
-            </div>
-        </div>
+         <div class="row"><h2>Trending Movies</h2><div class="list-container"><div class="list" id="movies-list"></div></div></div>
+         <div class="row"><h2>Trending TV Shows</h2><div class="list-container"><div class="list" id="tvshows-list"></div></div></div>
+         <div class="row"><h2>Trending Anime</h2><div class="list-container"><div class="list" id="anime-list"></div></div></div>
     </main>
 
     <footer class="footer">
-        <div class="footer-content">
+         <div class="footer-content">
             <p>&copy; 2025 Movies-J. All rights reserved.</p>
             <div class="footer-links">
                 <a href="disclaimer.html">Disclaimer</a>
@@ -261,126 +152,34 @@
         </div>
     </footer>
 
-    <div class="search-modal" id="search-modal">
-        <div class="search-content">
-            <button class="close" onclick="closeSearchModal()">&times;</button>
-            <div class="search-input-container">
-                <i class="fas fa-search"></i>
-                <input type="text" id="search-input" placeholder="Search for movies, TV shows, or anime..." oninput="searchTMDB()" />
-            </div>
-            <div class="results" id="search-results"></div>
-            <div id="no-results-message" style="display: none; color: #888; text-align: center; margin-top: 40px;">
-                <p>No results found. Try a different keyword.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" id="watch-history-modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <span class="close" id="close-history-modal">&times;</span>
-            <h2 style="text-align:center; margin-top: 15px;">Watch History</h2>
-            <div id="watch-history-list"></div>
-        </div>
-    </div>
-
-    <div class="modal" id="details-modal">
-      <div class="details-modal-content">
-        <span class="close" id="close-details-modal">&times;</span>
-        <div class="modal-backdrop"></div>
-        <div class="modal-body">
-            <img id="modal-poster" src="" alt="Poster">
-            <div class="modal-text">
-                <h1 id="modal-title">Movie Title</h1>
-                <div class="modal-meta">
-                    <span id="modal-rating">⭐ 8.5</span>
-                    <span id="modal-release">2024</span>
-                </div>
-                <p id="modal-description">This is the full movie description...</p>
-                <div class="modal-genres" id="modal-genres"></div>
-                <div class="modal-buttons">
-                    <button class="btn btn-primary" id="modal-watch-btn">
-                        <i class="fas fa-play"></i> Watch Now
-                    </button>
-                </div>
-            </div>
-        </div>
-      </div>
-    </div>
-    <div class="welcome-modal-overlay" id="welcome-modal">
-        <div class="welcome-modal-content">
-            <h2>A Note About Video Ads</h2>
-            <p>
-                Welcome to Movies-J! To keep our library free for everyone, we use third-party video servers.
-            </p>
-            <p>
-                Please be aware that these servers may display their own pop-ups or video ads. These are not from us, and unfortunately, we do not have control over them.
-            </p>
-             <p>Our number one goal is to upgrade to <strong>premium, ad-free servers</strong>. Your understanding and patience mean a lot as we work towards this!</p>
-            <button id="welcome-modal-close-btn">I Understand</button>
-        </div>
-    </div>
-    <div class="install-banner" id="install-banner">
-        </div>
-
+    <div class="search-modal" id="search-modal"></div>
+    <div class="modal" id="watch-history-modal"></div>
+    <div class="modal" id="details-modal"></div>
+    <div class="welcome-modal-overlay" id="welcome-modal"></div>
+    <div class="install-banner" id="install-banner"></div>
+    
     <div id="supportModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
-            
             <h2>Welcome! I'm Jay.</h2>
             <div class="modal-text-body">
                 <p>Like you, I'm a huge movie, TV, and anime fan. I started Movies-J as a passion project because I wanted a simple, clean, and reliable place to watch my favorite titles. This site is run and maintained by just one person – me!</p>
                 <p>Your support goes directly into making the site better for everyone. Our main goal is to save up for <strong>premium, ad-free servers</strong>. Every donation brings us one step closer to a much better viewing experience for our entire community.</p>
                 <p>Thank you for being here and for your support!</p>
             </div>
-            
             <div class="donation-container">
-                <div class="donation-box">
-                    <h3>Donate with GCash</h3>
-                    <img src="images/gcash-qr.png" alt="GCash QR Code" class="qr-code">
-                    <p class="account-details">
-                        <strong>Name:</strong> JAY JOVEN D.<br> 
-                        <strong>Number:</strong> 0950 082 XXXX
-                    </p>
-                </div>
-                
-                <div class="donation-box">
-                    <h3>Donate with PayPal</h3>
-                    <p>Click the button below to send your support through PayPal.</p>
-                    <a href="https://paypal.me/jayjoven2025" target="_blank" class="paypal-button">
-                        Donate via PayPal
-                    </a>
-                </div>
+                 <div class="donation-box"><h3>Donate with GCash</h3><img src="images/gcash-qr.png" class="qr-code"><p class="account-details"><strong>Name:</strong> JAY JOVEN D.<br><strong>Number:</strong> 0950 XXX XXXX</p></div>
+                 <div class="donation-box"><h3>Donate with PayPal</h3><p>Click below...</p><a href="https://paypal.me/jayjoven2025" target="_blank" class="paypal-button">Donate via PayPal</a></div>
             </div>
-
-        </div>
+       </div>
     </div>
+    
     <meta name="theme-color" content="#e50914">
-
-    <script>
-    // SCRIPT PARA SA DONATION MODAL
-    const supportModal = document.getElementById("supportModal");
-    const supportBtn = document.getElementById("supportBtn");
-    const closeBtn = document.querySelector("#supportModal .close-btn");
-
-    supportBtn.onclick = function(event) {
-      event.preventDefault();
-      supportModal.style.display = "block";
-    }
-    closeBtn.onclick = function() {
-      supportModal.style.display = "none";
-    }
-    window.addEventListener("click", function(event) {
-        if (event.target == supportModal) {
-            supportModal.style.display = "none";
-        }
-    });
-    </script>
 
     <script src="js/embed.js" defer></script>
     <script src="js/servers.js" defer></script>
-    <script src="js/home.js" defer></script>
-    <script src="js/watchHistory.js" defer></script>
+    <script src="js/watchHistory.js" defer></script> 
     <script src="https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js" defer></script>
-    <script src="js/antiInspect.js" defer></script>
+    <script src="js/home.js" defer></script> 
 </body>
 </html>

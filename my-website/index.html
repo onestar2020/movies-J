@@ -90,7 +90,7 @@
             <button class="close">&times;</button> 
             <div class="search-input-container">
                 <i class="fas fa-search"></i>
-                <input type="text" id="search-input" placeholder="Search..." />
+                <input type="text" id="search-input" placeholder="Search..." oninput="debounceSearch()" />
             </div>
             <div class="results" id="search-results"></div>
             <div id="no-results-message" style="display: none;">No results found.</div>
@@ -120,12 +120,12 @@
         </div>
         </div>
     <div class="welcome-modal-overlay" id="welcome-modal">
-        <div class="welcome-modal-content">
-            <h2>A Note About Video Ads</h2>
-            <p>Welcome! We use third-party servers which may show ads...</p>
-            <p>Our goal is to get premium, ad-free servers soon...</p>
-            <button id="welcome-modal-close-btn">I Understand</button>
-        </div>
+       <div class="welcome-modal-content">
+        <h2>A Quick Note on Ads</h2>
+        <p>Welcome to Movies-J! To help us cover server costs and keep everything free, this website is supported by advertisements.</p>
+        <p>We appreciate your understanding!</p>
+        <button id="welcome-modal-close-btn">Okay, Got It</button>
+    </div>
     </div>
     
     <div class="install-banner" id="install-banner"> 
@@ -138,11 +138,9 @@
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h2>Welcome! I'm Jay.</h2>
-            <div class="modal-text-body">
-                 <p>Like you, I'm a huge movie fan...</p>
-                 <p>I started Movies-J as a passion project...</p>
-                 <p>Your support goes directly into making the site better...</p>
-                 <p>Our main goal is to save up for <strong>premium, ad-free servers</strong>...</p>
+           <div class="modal-text-body">
+                 <p>Like you, I'm a huge movie, TV, and anime fan. I started Movies-J as a passion project because I wanted a simple, clean, and reliable place to watch my favorite titles. This site is run and maintained by just one person – me!</p>
+                 <p>Your support goes directly into making the site better for everyone. Our main goal is to save up for <strong>premium, ad-free servers</strong>. Every donation brings us one step closer to a much better viewing experience for our entire community.</p>
                  <p>Thank you for being here and for your support!</p>
             </div>
             <div class="donation-container">

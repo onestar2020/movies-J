@@ -62,7 +62,7 @@
     }
     .nav-dropdown-menu {
         position: static; /* Remove absolute positioning */
-        display: block; 
+        display: block;
         opacity: 1;
         background: none;
         border: none;
@@ -71,9 +71,18 @@
         width: 100%;
         padding: 0;
         max-height: 0; /* Collapse by default */
-        overflow: hidden;
+        overflow-y: auto; /* <--- Pinalitan dito (allows vertical scroll) */
         transition: max-height 0.3s ease-out; /* Animate collapse */
+
+        /* Optional: Hide scrollbar visually but keep functionality */
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
     }
+    /* Optional: Hide scrollbar visually for Webkit browsers (Chrome, Safari) */
+    .nav-dropdown-menu::-webkit-scrollbar {
+        display: none;
+    }
+
     .nav-dropdown-menu a {
         font-size: 0.9em; /* Make sub-links smaller */
         color: #ccc;
@@ -83,7 +92,7 @@
 
     /* BAGO: JS-driven toggle for mobile */
     .nav-dropdown.mobile-active .nav-dropdown-menu {
-       max-height: 500px; /* Expand to show items */
+       max-height: 170px; /* <--- Pinalitan dito (approx 5 items) */
     }
     .nav-dropdown.mobile-active .nav-dropdown-toggle .fa-chevron-down {
         transform: rotate(180deg);

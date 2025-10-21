@@ -63,6 +63,11 @@ const COLLECTIONS_LIST = [ // <--- Pinalitan ang pangalan dito
     id: 87359, // Transformers Collection
     type: "collection" // Ito ay Collection ID
   },
+     {
+    name: "Kung Fu Panda", // Tinanggal ang "Collection" sa name
+    id: 77816, // Transformers Collection
+    type: "collection" // Ito ay Collection ID
+  },
   // Magdagdag ng iba pa dito...
   // {
   //   name: "Harry Potter",

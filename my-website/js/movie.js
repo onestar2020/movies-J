@@ -29,6 +29,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             handleTVShow(item);
         }
     }
+    
+    // --- BAGO: Idinagdag para sa fullscreen rotation ---
+    setupFullscreenRotation(); 
 });
 
 async function fetchDetails() {
@@ -239,5 +242,69 @@ async function handleTVShow(item) {
         loadEpisodes(firstSeason.season_number);
     } else {
         document.querySelector('.tv-show-browser').innerHTML = '<h3 style="text-align: center; color: #888;">No seasons available for this series.</h3>';
+    }
+}
+
+// --- BAGO: Fullscreen Landscape Lock ---
+
+/**
+ * Sets up event listeners to detect fullscreen changes.
+ */
+function setupFullscreenRotation() {
+    document.addEventListener("fullscreenchange", () => {
+        if (document.fullscreenElement) {
+            // User just entered fullscreen
+            console.log("Entered fullscreen. Attempting to lock landscape...");
+            lockLandscape();
+        } else {
+            // User just exited fullscreen
+            console.log("Exited fullscreen. Unlocking orientation...");
+            unlockOrientation();
+        }
+    });
+
+    // Note: Some browsers use prefixed versions
+    document.addEventListener("webkitfullscreenchange", () => {
+         if (document.webkitFullscreenElement) {
+            console.log("Entered webkit fullscreen. Attempting to lock landscape...");
+            lockLandscape();
+        } else {
+            console.log("Exited webkit fullscreen. Unlocking orientation...");
+            unlockOrientation();
+        }
+    });
+}
+
+/**
+ * Attempts to lock the screen orientation to landscape.
+ */
+async function lockLandscape() {
+    try {
+        // Check if the Screen Orientation API is available
+        if (screen.orientation && typeof screen.orientation.lock === 'function') {
+            // Request to lock the orientation
+            await screen.orientation.lock('landscape');
+            console.log("Orientation locked to landscape.");
+        } else {
+            console.warn("Screen Orientation API not supported on this browser.");
+        }
+    } catch (err) {
+        // This might fail if the user denies permission or 
+        // if the browser has restrictions.
+        console.error("Failed to lock orientation:", err);
+    }
+}
+
+/**
+ * Unlocks the screen orientation when exiting fullscreen.
+ */
+function unlockOrientation() {
+    try {
+        if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+            screen.orientation.unlock();
+            console.log("Orientation unlocked.");
+        }
+    } catch (err) {
+        console.error("Failed to unlock orientation:", err);
     }
 }

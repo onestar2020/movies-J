@@ -15,6 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
  
     <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/dropdown.css">
     
     <style>
         .browse-container {
@@ -85,11 +86,16 @@
         <div class="navbar-container">
             <img src="images/logo-512.png" alt="Movies-J Logo" class="logo-effect" />
             <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="browse.html?type=movie">Movies</a>
-                <a href="browse.html?type=tv">TV Shows</a>
-                <a href="browse.html?type=anime">Anime</a>
-            </div>
+    <a href="index.html">Home</a>
+    <a href="browse.html?type=movie">Movies</a>
+    <a href="browse.html?type=tv">TV Shows</a>
+    <a href="browse.html?type=anime">Anime</a>
+    <div class="nav-dropdown">
+        <a class="nav-dropdown-toggle">Collections <i class="fas fa-chevron-down"></i></a>
+        <div class="nav-dropdown-menu">
+    </div>
+    </div>
+    </div>
             <div class="nav-actions">
                 <i class="fas fa-search" onclick="openSearchModal()"></i>
                 <button class="watch-history-btn" title="Watch History">
@@ -183,8 +189,8 @@
 
     <script src="js/home.js" defer></script> 
     <script src="js/watchHistory.js" defer></script>
-    
     <script src="js/browse.js" defer></script>
     <script src="js/antiInspect.js" defer></script>
+    <script src="js/collections-list.js" defer></script>    
 </body>
 </html>

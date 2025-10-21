@@ -73,6 +73,22 @@ function setupUniversalEventListeners() {
         console.error("Hamburger menu or nav links not found!");
     }
 
+    // --- BAGO: Collections Dropdown (Mobile) ---
+    const dropdownToggle = document.querySelector(".nav-dropdown-toggle");
+    if (dropdownToggle) {
+        dropdownToggle.addEventListener("click", (e) => {
+            // Only run on mobile (when hamburger is visible)
+            if (window.innerWidth <= 768) {
+                e.preventDefault(); // Prevent navigation
+                const dropdown = dropdownToggle.closest('.nav-dropdown');
+                if (dropdown) {
+                    dropdown.classList.toggle('mobile-active');
+                }
+            }
+        });
+    }
+    // --- END BAGO ---
+
     // --- Search Icon Click ---
     const searchIcon = document.querySelector(".nav-actions .fa-search");
     if (searchIcon) {
@@ -133,6 +149,10 @@ function setupUniversalEventListeners() {
 
     // --- PWA Install Setup ---
     setupPWAInstall(); // Run PWA setup
+
+    // --- BAGO: Populate Collections Dropdown ---
+    populateCollectionsDropdown();
+    // --- END BAGO ---
 }
 
 
@@ -547,6 +567,34 @@ function closeDetailsModal() {
     const modal = document.getElementById('details-modal');
     if (modal) modal.style.display = 'none';
     document.body.classList.remove('body-no-scroll');
+}
+
+// --- BAGO: Auto-generates the collections dropdown menu ---
+function populateCollectionsDropdown() {
+    // Hanapin ang *lahat* ng dropdown menu sa page
+    const dropdownMenus = document.querySelectorAll(".nav-dropdown-menu");
+    
+    // Pinalitan ang pangalan para tumugma sa Step 1
+    if (typeof COLLECTIONS_LIST === 'undefined' || COLLECTIONS_LIST.length === 0) {
+        console.warn("Collections list (COLLECTIONS_LIST) not found or is empty.");
+        // Itago ang buong dropdown kung walang laman
+        document.querySelectorAll(".nav-dropdown").forEach(d => d.style.display = 'none');
+        return;
+    }
+
+    dropdownMenus.forEach(menu => {
+        // Linisin muna ang menu bago punan
+        menu.innerHTML = ''; 
+
+        // Punan ang bawat menu ng mga item galing sa listahan
+        COLLECTIONS_LIST.forEach(collection => {
+            const link = document.createElement('a');
+            // BAGO: Idinagdag ang &type=${collection.type} sa URL
+            link.href = `collection.html?id=${collection.id}&name=${encodeURIComponent(collection.name)}&type=${collection.type}`;
+            link.textContent = collection.name;
+            menu.appendChild(link);
+        });
+    });
 }
 
 // Define saveToWatchHistory globally IF NOT DEFINED BY watchHistory.js

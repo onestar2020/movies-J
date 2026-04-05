@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J-Vault - Downloads</title>
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .vault-header { padding: 80px 20px 40px; text-align: center; }
+        .vault-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 20px; max-width: 1400px; margin: auto; }
+        .dl-card { background: #1c1c1c; border-radius: 10px; overflow: hidden; border: 1px solid #333; transition: 0.3s; }
+        .dl-card:hover { transform: translateY(-5px); border-color: #ff9800; }
+        .dl-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .dl-info { padding: 15px; }
+        .dl-info h3 { font-size: 1rem; margin-bottom: 10px; }
+        .dl-btn { display: block; text-align: center; background: #ff9800; color: #000; padding: 10px; border-radius: 5px; font-weight: bold; text-decoration: none; }
+        .user-nav { position: fixed; top: 0; left: 0; width: 100%; padding: 15px 60px; background: #141414; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
+    </style>
+</head>
+<body>
+    <nav class="user-nav">
+        <div class="logo">Movies-J <span style="color:#ff9800">VAULT</span></div>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <span id="userName" style="font-size:0.9rem; color:#aaa;">Checking...</span>
+            <button id="logoutBtn" style="background:none; border:1px solid #444; color:#888; padding:5px 12px; border-radius:5px; cursor:pointer;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="vault-header">
+        <h1>Welcome to Your Vault</h1>
+        <p>Premium direct downloads for Movies-J supporters.</p>
+    </div>
+
+    <div class="vault-grid" id="vaultContainer">
+        </div>
+
+    <script type="module" src="js/vault.js"></script>
+</body>
+</html>

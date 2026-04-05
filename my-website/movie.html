@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Loading Movie...</title>
+    <title>Movies-J - Player</title>
     
     <link rel="icon" href="images/logo-192.png" type="image/png">
     <link rel="stylesheet" href="css/home.css">
@@ -13,249 +13,138 @@
             crossorigin="anonymous"></script>
 
     <style>
-        body { background: #111; color: #fff; font-family: 'Poppins', sans-serif; }
-        .header { padding: 15px; border-bottom: 1px solid #333; text-align: center; position: relative; display: flex; align-items: center; justify-content: center; }
+        body { background: #111; color: #fff; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
         
+        /* Header & Navigation */
+        .header { padding: 15px; border-bottom: 1px solid #333; text-align: center; position: relative; display: flex; align-items: center; justify-content: center; background: #141414; }
         .home-button { 
-            position: absolute; 
-            left: 20px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            font-size: 1.1rem;
-            color: #ccc;
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            cursor: pointer;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            position: absolute; left: 20px; top: 50%; transform: translateY(-50%); 
+            font-size: 1.1rem; color: #ccc; background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2); width: 40px; height: 40px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            text-decoration: none; transition: 0.3s;
         }
-        .home-button:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: #fff;
-        }
-
+        .home-button:hover { background-color: rgba(255, 255, 255, 0.2); color: #fff; }
         #movie-title { margin: 0; font-size: 1.6rem; padding: 0 50px; }
-        .page-container { padding: 20px; max-width: 1000px; margin: auto; }
-        
-        .server-container {
-            background: #1c1c1c;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .server-container label {
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        #server-buttons-container {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .server-btn {
-            background-color: #333;
-            color: #ccc;
-            border: 1px solid #555;
-            border-radius: 5px;
-            padding: 8px 15px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .server-btn:hover {
-            background-color: #444;
-            color: #fff;
-        }
-        .server-btn.active {
-            background-color: var(--primary-color);
-            color: #fff;
-            border-color: var(--primary-color);
-            font-weight: bold;
-        }
-        
-        iframe#movie-player { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; border: none; background-color: #000; }
-        .video-container { margin-top: 20px; width: 100%; }
 
-        .tv-show-browser {
-            margin: 25px 0;
-            display: none;
+        /* Main Layout */
+        .page-container { padding: 20px; max-width: 1400px; margin: auto; }
+        .main-content-wrapper { display: flex; gap: 25px; align-items: flex-start; margin-top: 10px; }
+
+        /* Left Side: Player & Info */
+        .player-column { flex: 2.8; min-width: 0; }
+        .video-container { width: 100%; margin-bottom: 20px; }
+        iframe#movie-player { 
+            width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; border: none; 
+            background-color: #000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); 
         }
-        .season-selector-container {
-            position: relative;
-            margin-bottom: 20px;
-            width: fit-content;
+
+        /* Right Side: Sidebar */
+        .sidebar-column {
+            flex: 1.2; background: #181818; padding: 20px; border-radius: 12px;
+            position: sticky; top: 20px; max-height: calc(100vh - 40px);
+            overflow-y: auto; border: 1px solid #222;
         }
+
+        /* Server Controls */
+        .server-container label { display: block; margin-bottom: 15px; font-weight: bold; font-size: 1rem; color: #aaa; }
+        #server-buttons-container { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 25px; }
+        .server-btn {
+            background-color: #333; color: #ccc; border: 1px solid #444;
+            border-radius: 5px; padding: 8px 12px; font-family: inherit;
+            font-size: 0.85rem; cursor: pointer; transition: 0.2s;
+        }
+        .server-btn:hover { background-color: #444; color: #fff; }
+        .server-btn.active { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+
+        /* Collection Sidebar Section */
+        #collection-sidebar { display: none; margin-top: 10px; border-top: 1px solid #333; padding-top: 20px; }
+        #collection-list-container { display: flex; flex-direction: column; gap: 10px; }
+
+        /* TV Browser (Episodes) */
+        .tv-show-browser { display: none; margin-top: 10px; border-top: 1px solid #333; padding-top: 20px; }
         #season-selector-btn {
-            background-color: #1c1c1c;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 12px 20px;
-            font-size: 1.1rem;
-            font-weight: 500;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            width: 100%; background-color: #222; border: 1px solid #444; color: #fff;
+            padding: 12px; border-radius: 5px; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
         }
         #season-dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: #1c1c1c;
-            border: 1px solid #444;
-            border-radius: 5px;
-            margin-top: 5px;
-            max-height: 250px;
-            overflow-y: auto;
-            z-index: 10;
-            display: none;
+            position: absolute; background: #222; border: 1px solid #444; width: calc(100% - 40px);
+            z-index: 100; border-radius: 5px; display: none; margin-top: -10px;
         }
         #season-dropdown-menu button {
-            display: block;
-            width: 100%;
-            padding: 12px 20px;
-            background: none;
-            border: none;
-            color: #fff;
-            text-align: left;
-            cursor: pointer;
-        }
-        #season-dropdown-menu button:hover {
-            background-color: #333;
-        }
-        #episode-list-container {
-            border: 1px solid #222;
-            border-radius: 8px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        #episode-list-container::-webkit-scrollbar { display: none; } /* Hide scrollbar */
-        .episode-card {
-            display: flex;
-            gap: 15px;
-            padding: 15px;
-            cursor: pointer;
-            border-bottom: 1px solid #222;
-            transition: background-color 0.2s ease;
-        }
-        .episode-card:last-child {
-            border-bottom: none;
-        }
-        .episode-card:hover {
-            background-color: #1a1a1a;
-        }
-        .episode-card.active {
-            background-color: #252525;
-            border-left: 3px solid var(--primary-color);
-        }
-        .episode-thumbnail {
-            width: 160px;
-            flex-shrink: 0;
-            aspect-ratio: 16 / 9;
-            object-fit: cover;
-            border-radius: 5px;
-            background-color: #000;
-        }
-        .episode-details h3 {
-            font-size: 1rem;
-            margin: 0 0 5px;
-        }
-        .episode-details p {
-            font-size: 0.85rem;
-            color: #aaa;
-            line-height: 1.5;
-            margin: 0;
+            display: block; width: 100%; padding: 10px 15px; background: none; border: none; color: #fff; text-align: left; cursor: pointer;
         }
 
-        @media screen and (max-width: 600px) { 
-            #movie-title { font-size: 1.2rem; } 
-            .header { padding: 10px; }
-            .home-button { left: 10px; width: 35px; height: 35px; font-size: 1rem; }
-            
-            #episode-list-container {
-                display: flex;
-                overflow-x: auto;
-                overflow-y: hidden;
-                border: none;
-                padding-bottom: 15px;
-                scroll-snap-type: x mandatory;
-            }
-            .episode-card {
-                flex-direction: column;
-                width: 85%; /* Bawat card ay 85% ng screen width */
-                flex-shrink: 0;
-                border: 1px solid #222;
-                border-radius: 8px;
-                scroll-snap-align: start; /* Para sa smooth snapping */
-            }
-            .episode-thumbnail { 
-                width: 100%; 
-            }
+        #episode-list-container { display: flex; flex-direction: column; gap: 10px; max-height: 450px; }
+        .episode-card { display: flex; gap: 12px; padding: 10px; border-radius: 8px; cursor: pointer; background: #222; border: 1px solid transparent; transition: 0.2s; }
+        .episode-card:hover { background: #2a2a2a; }
+        .episode-card.active { border-color: var(--primary-color); background: #252525; }
+        .episode-thumbnail { width: 100px; aspect-ratio: 16/9; object-fit: cover; border-radius: 4px; }
+        .episode-details h3 { font-size: 0.85rem; margin: 0; }
+        .episode-details p { font-size: 0.75rem; color: #888; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* Info & Cast */
+        #movie-overview { color: #ccc; line-height: 1.6; font-size: 1rem; margin-top: 20px; }
+        #cast-list, #similar-movies { margin-top: 40px; }
+
+        @media screen and (max-width: 1024px) {
+            .main-content-wrapper { flex-direction: column; }
+            .sidebar-column { width: 100%; position: static; max-height: none; }
         }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <a href="index.html" class="home-button" title="Back to Home">
-            <i class="fas fa-arrow-left"></i>
-        </a>
+        <a href="index.html" class="home-button" title="Back to Home"><i class="fas fa-arrow-left"></i></a>
         <h1 id="movie-title">Loading...</h1>
     </header>
 
     <div class="page-container">
-
-        <div class="server-container">
-            <label>🎬 Server:</label>
-            <div id="server-buttons-container">
+        <div class="main-content-wrapper">
+            
+            <div class="player-column">
+                <div class="video-container">
+                    <iframe id="movie-player" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>
+                </div>
+                <p id="movie-overview"></p>
+                <div id="cast-list"></div>
+                <div id="similar-movies"></div>
             </div>
-        </div>
 
-        <div class="tv-show-browser">
-            <div class="season-selector-container">
-                <button id="season-selector-btn">
-                    <span id="selected-season-name">Season 1</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div id="season-dropdown-menu">
+            <div class="sidebar-column">
+                <div class="server-container">
+                    <label><i class="fas fa-server"></i> Choose Server:</label>
+                    <div id="server-buttons-container"></div>
+                </div>
+
+                <div id="collection-sidebar">
+                    <label style="display: block; margin-bottom: 10px; color: #aaa; font-weight: bold;">
+                        <i class="fas fa-layer-group"></i> Movie Collection:
+                    </label>
+                    <div id="collection-list-container"></div>
+                </div>
+
+                <div class="tv-show-browser">
+                    <label style="display: block; margin-bottom: 10px; color: #aaa; font-weight: bold;">Episodes:</label>
+                    <div class="season-selector-container">
+                        <button id="season-selector-btn">
+                            <span id="selected-season-name">Season 1</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div id="season-dropdown-menu"></div>
+                    </div>
+                    <div id="episode-list-container"></div>
                 </div>
             </div>
-            <div id="episode-list-container">
-            </div>
-        </div>
 
-        <div class="video-container">
-           <iframe id="movie-player"
-                allow="fullscreen; autoplay; picture-in-picture; encrypted-media; screen-orientation"
-                allowfullscreen
-                sandbox="allow-scripts allow-same-origin allow-presentation allow-forms">
-        </iframe>
         </div>
-
-        <p id="movie-overview" style="margin-top:20px; line-height: 1.6;"></p>
-        <div id="cast-list" style="margin-top:30px;"></div>
-        <div id="similar-movies" style="margin-top: 30px;"></div>
     </div>
 
     <script src="js/servers.js" defer></script>
     <script src="js/embed.js" defer></script>
     <script src="js/movie.js" defer></script>
     <script src="js/antiInspect.js" defer></script>
-    <script src="js/collections-list.js" defer></script>
-
-    <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#e50914">
 </body>
 </html>

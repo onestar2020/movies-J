@@ -1,4 +1,4 @@
-// ✅ js/vault.js - FULL RE-OPTIMIZED VERSION
+// ✅ js/vault.js - FINAL SYNC VERSION
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { 
     getAuth, 
@@ -10,7 +10,7 @@ import {
     browserLocalPersistence 
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 
-// Eksaktong config mula sa iyong Firebase Console
+// Firebase Configuration mula sa iyong console
 const firebaseConfig = {
   apiKey: "AIzaSyAauNF6VBg_bcC1kDjxw6W03C7vvSUKY-Q",
   authDomain: "movies-j-vault.firebaseapp.com",
@@ -26,87 +26,94 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// Pilitin ang browser na i-remember ang login (Persistence)
+// Pilitin ang browser na i-remember ang session (para hindi laging login)
 setPersistence(auth, browserLocalPersistence);
 
-// --- Auth State Logic ---
+// --- Authentication Watcher ---
 onAuthStateChanged(auth, (user) => {
-    const currentPage = window.location.pathname;
-    const isLoginPage = currentPage.includes("login.html");
-    const isVaultPage = currentPage.includes("vault.html");
+    const path = window.location.pathname;
+    const isLoginPage = path.includes("login.html");
+    const isVaultPage = path.includes("vault.html");
 
     if (user) {
-        console.log("✅ User is logged in:", user.displayName);
-        // Kung nasa login page, lipat sa vault
+        console.log("✅ Access Granted:", user.displayName);
+        
+        // Redirect kung nasa login page pero logged in na
         if (isLoginPage) {
             window.location.href = "vault.html";
         }
-        // I-display ang pangalan
+
+        // I-update ang UI sa Vault
         const userNameEl = document.getElementById("userName");
-        if (userNameEl) userNameEl.textContent = user.displayName;
+        if (userNameEl) {
+            userNameEl.textContent = user.displayName;
+        }
         
-        // I-render ang mga movies
+        // Tawagin ang function para ipakita ang movies
         if (document.getElementById("vaultContainer")) {
             renderVault();
         }
     } else {
-        console.log("❌ No user detected.");
-        // Kung nasa vault pero hindi logged in, balik sa login
+        console.log("❌ No active session.");
+        // Redirect pabalik sa login kung sinusubukang pumasok sa vault nang hindi logged in
         if (isVaultPage) {
             window.location.href = "login.html";
         }
     }
 });
 
-// --- Button Click Listeners ---
+// --- Button Event Listeners ---
 window.addEventListener("DOMContentLoaded", () => {
     const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
 
     if (loginBtn) {
-        loginBtn.onclick = async () => {
+        loginBtn.addEventListener("click", async () => {
             try {
-                const result = await signInWithPopup(auth, provider);
-                console.log("Login Success:", result.user);
+                await signInWithPopup(auth, provider);
             } catch (error) {
-                console.error("Firebase Login Error:", error.code, error.message);
-                // Detalyadong alert para malaman natin ang error
-                alert(`Login Error: ${error.code}\n\nMake sure to wait 5 minutes after saving settings in Google Cloud.`);
+                console.error("Auth Error:", error.code);
+                alert("Login Failed: " + error.message);
             }
-        };
+        });
     }
 
     if (logoutBtn) {
-        logoutBtn.onclick = async () => {
+        logoutBtn.addEventListener("click", async () => {
             try {
                 await signOut(auth);
                 window.location.href = "index.html";
             } catch (error) {
                 console.error("Logout Error:", error);
             }
-        };
+        });
     }
 });
 
-// --- Content Renderer ---
+// --- Main Renderer (Sync with uploads.js) ---
 function renderVault() {
     const container = document.getElementById("vaultContainer");
     
-    // Check kung loaded na ang data mula sa js/uploads.js
-    if (typeof uploads === 'undefined' || !Array.isArray(uploads)) {
-        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 50px;">
-            <p style="color: #888;">Fetching vault content... Make sure uploads.js is loaded.</p>
-        </div>`;
+    // Sinisiguro na mahanap ang 'uploads' variable mula sa uploads.js
+    const data = window.uploads || (typeof uploads !== 'undefined' ? uploads : null);
+
+    if (!data || !Array.isArray(data)) {
+        container.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
+                <i class="fas fa-folder-open" style="font-size: 3rem; color: #333; margin-bottom: 15px;"></i>
+                <p style="color: #888;">Your vault is currently empty or loading...</p>
+            </div>`;
         return;
     }
 
-    container.innerHTML = uploads.map(item => `
-        <div class="dl-card fade-in">
+    // I-generate ang HTML cards para sa bawat movie sa listahan
+    container.innerHTML = data.map(item => `
+        <div class="dl-card">
             <div class="dl-badge">Premium</div>
-            <img src="images/logo-192.png" alt="Movie Logo">
+            <img src="images/logo-192.png" alt="Movies-J">
             <div class="dl-info">
                 <h3>${item.title}</h3>
-                <p>Direct Google Drive Access</p>
+                <p style="color: #666; font-size: 0.8rem; margin-bottom: 15px;">Verified Direct Link</p>
                 <a href="https://drive.google.com/uc?export=download&id=${item.id}" target="_blank" class="dl-btn">
                     <i class="fas fa-download"></i> Download Now
                 </a>

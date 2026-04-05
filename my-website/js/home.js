@@ -150,9 +150,7 @@ function setupUniversalEventListeners() {
     // --- PWA Install Setup ---
     setupPWAInstall(); // Run PWA setup
 
-    // --- BAGO: Populate Collections Dropdown ---
-    populateCollectionsDropdown();
-    // --- END BAGO ---
+ 
 }
 
 

@@ -1,7 +1,6 @@
 // ✅ js/movie.js (SUPER SECURE VERSION)
 
-// ALISIN ANG API_KEY
-const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; // Gagamitin na ang Worker
+const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; 
 const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -24,6 +23,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         displaySimilar(item.similar.results);
         populateServerSelector(item); 
 
+        // --- DITO NATIN TINATAWAG ANG COLLECTION SIDEBAR ---
+        if (item.belongs_to_collection) {
+            handleCollection(item.belongs_to_collection.id);
+        }
+
         if (type === 'tv') {
             document.querySelector('.tv-show-browser').style.display = 'block';
             handleTVShow(item);
@@ -33,7 +37,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function fetchDetails() {
     try {
-        // Tinanggal ang API_KEY dito, dadaan na sa Worker
         const res = await fetch(`${BASE_URL}/${type}/${id}?append_to_response=credits,similar,videos`);
         const data = await res.json();
         return data;
@@ -100,7 +103,6 @@ function updatePlayer(server, item, season = 1, episode = 1) {
     const url = generateEmbedURL(server, { id: item.id, media_type: type, first_air_date: item.first_air_date }, season, episode);
     player.src = url;
 }
-
 
 function createScrollableList(containerId, title, items, renderItemFunc) {
     const container = document.getElementById(containerId);
@@ -170,7 +172,6 @@ async function handleTVShow(item) {
     
     async function loadEpisodes(seasonNumber) {
         episodeListContainer.innerHTML = '<h3 style="padding: 20px; text-align: center;">Loading episodes...</h3>';
-        // Tinanggal ang API_KEY dito
         const res = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNumber}`);
         const data = await res.json();
         episodeListContainer.innerHTML = '';
@@ -239,5 +240,55 @@ async function handleTVShow(item) {
         loadEpisodes(firstSeason.season_number);
     } else {
         document.querySelector('.tv-show-browser').innerHTML = '<h3 style="text-align: center; color: #888;">No seasons available for this series.</h3>';
+    }
+}
+
+async function handleCollection(collectionId) {
+    const container = document.getElementById('collection-sidebar');
+    const listContainer = document.getElementById('collection-list-container');
+    
+    try {
+        const res = await fetch(`${BASE_URL}/collection/${collectionId}`);
+        const data = await res.json();
+        
+        if (data.parts && data.parts.length > 1) {
+            const today = new Date(); // Get current date
+
+            container.style.display = 'block'; 
+            listContainer.innerHTML = ''; 
+            
+            const sortedParts = data.parts.sort((a, b) => 
+                new Date(a.release_date) - new Date(b.release_date)
+            );
+
+            sortedParts.forEach(movie => {
+                if (movie.id == id) return;
+
+                // --- BAGO: Released movies filter ---
+                const releaseDate = movie.release_date ? new Date(movie.release_date) : null;
+                if (!releaseDate || releaseDate > today) return;
+
+                const card = document.createElement('div');
+                card.className = 'episode-card'; 
+                
+                card.innerHTML = `
+                    <img class="episode-thumbnail" src="${IMG_URL}${movie.poster_path}" alt="${movie.title}">
+                    <div class="episode-details">
+                        <h3 style="font-size: 0.85rem;">${movie.title}</h3>
+                        <p>${movie.release_date ? movie.release_date.substring(0,4) : 'N/A'}</p>
+                    </div>
+                `;
+
+                card.onclick = () => window.location.href = `movie.html?id=${movie.id}&type=movie`;
+                listContainer.appendChild(card);
+            });
+
+            // I-hide ang container kung walang released movies na natira sa collection
+            if (listContainer.children.length === 0) {
+                container.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error("Failed to load collection:", error);
     }
 }

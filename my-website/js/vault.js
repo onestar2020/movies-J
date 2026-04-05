@@ -1,18 +1,16 @@
-// ✅ js/vault.js - FINAL SYNC VERSION
+// ✅ js/vault.js - FIREBASE DATABASE WITH POSTERS & INFO
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { 
-    getAuth, 
-    GoogleAuthProvider, 
-    signInWithPopup, 
-    onAuthStateChanged, 
-    signOut,
-    setPersistence,
-    browserLocalPersistence 
+    getAuth, GoogleAuthProvider, signInWithPopup, 
+    onAuthStateChanged, signOut, setPersistence, browserLocalPersistence 
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+import { 
+    getFirestore, collection, getDocs 
+} from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-// Firebase Configuration mula sa iyong console
+// Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAauNF6VBg_bcC1kDjxw6W03C7vvSUKY-Q",
+  apiKey: "AIzaSyAauNF6VBg_bcC1kDjxw6WO3cTvvSUKY-Q", 
   authDomain: "movies-j-vault.firebaseapp.com",
   projectId: "movies-j-vault",
   storageBucket: "movies-j-vault.firebasestorage.app",
@@ -21,103 +19,121 @@ const firebaseConfig = {
   measurementId: "G-TH5LWS3R11"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+const db = getFirestore(app);
+let allMoviesData = []; 
 
-// Pilitin ang browser na i-remember ang session (para hindi laging login)
 setPersistence(auth, browserLocalPersistence);
 
-// --- Authentication Watcher ---
+// Authentication Watcher
 onAuthStateChanged(auth, (user) => {
-    const path = window.location.pathname;
-    const isLoginPage = path.includes("login.html");
-    const isVaultPage = path.includes("vault.html");
+    const isLoginPage = window.location.pathname.includes("login.html");
+    const isVaultPage = window.location.pathname.includes("vault.html");
 
     if (user) {
-        console.log("✅ Access Granted:", user.displayName);
-        
-        // Redirect kung nasa login page pero logged in na
-        if (isLoginPage) {
-            window.location.href = "vault.html";
-        }
-
-        // I-update ang UI sa Vault
+        if (isLoginPage) window.location.href = "vault.html";
         const userNameEl = document.getElementById("userName");
-        if (userNameEl) {
-            userNameEl.textContent = user.displayName;
-        }
-        
-        // Tawagin ang function para ipakita ang movies
-        if (document.getElementById("vaultContainer")) {
-            renderVault();
-        }
+        if (userNameEl) userNameEl.textContent = user.displayName;
+        if (document.getElementById("vaultContainer")) loadMoviesFromDB();
     } else {
-        console.log("❌ No active session.");
-        // Redirect pabalik sa login kung sinusubukang pumasok sa vault nang hindi logged in
-        if (isVaultPage) {
-            window.location.href = "login.html";
-        }
+        if (isVaultPage) window.location.href = "login.html";
     }
 });
 
-// --- Button Event Listeners ---
+// Fetch Data from Firestore
+async function loadMoviesFromDB() {
+    const container = document.getElementById("vaultContainer");
+    container.innerHTML = `<h3 style="color: #888; text-align: center; grid-column: 1/-1;">Loading premium movies...</h3>`;
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "movies"));
+        allMoviesData = [];
+        querySnapshot.forEach((doc) => allMoviesData.push({ id: doc.id, ...doc.data() }));
+
+        allMoviesData.sort((a, b) => (b.timestamp ? b.timestamp.toMillis() : 0) - (a.timestamp ? a.timestamp.toMillis() : 0));
+        renderVault(allMoviesData);
+    } catch (error) {
+        console.error("Error fetching movies:", error);
+        container.innerHTML = `<h3 style="color: #ff4444; text-align: center; grid-column: 1/-1;">Failed to load movies.</h3>`;
+    }
+}
+
+// Search & Buttons
 window.addEventListener("DOMContentLoaded", () => {
     const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
+    const searchInput = document.getElementById("vaultSearchInput");
 
-    if (loginBtn) {
-        loginBtn.addEventListener("click", async () => {
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Auth Error:", error.code);
-                alert("Login Failed: " + error.message);
-            }
-        });
-    }
+    if (loginBtn) loginBtn.addEventListener("click", async () => { try { await signInWithPopup(auth, provider); } catch (e) { alert("Error: " + e.message); } });
+    if (logoutBtn) logoutBtn.addEventListener("click", async () => { await signOut(auth); window.location.href = "index.html"; });
 
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", async () => {
-            try {
-                await signOut(auth);
-                window.location.href = "index.html";
-            } catch (error) {
-                console.error("Logout Error:", error);
-            }
+    if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            const term = e.target.value.toLowerCase();
+            renderVault(allMoviesData.filter(m => m.title && m.title.toLowerCase().includes(term)));
         });
     }
 });
 
-// --- Main Renderer (Sync with uploads.js) ---
-function renderVault() {
-    const container = document.getElementById("vaultContainer");
-    
-    // Sinisiguro na mahanap ang 'uploads' variable mula sa uploads.js
-    const data = window.uploads || (typeof uploads !== 'undefined' ? uploads : null);
+function getButtonStyles(platform) {
+    const p = platform.toLowerCase();
+    if (p.includes("drive")) return "background: #ff9800; color: #000;";
+    if (p.includes("mediafire")) return "background: #0078D7; color: #fff;";
+    if (p.includes("mega")) return "background: #D9272E; color: #fff;";
+    if (p.includes("terabox")) return "background: #4F46E5; color: #fff;";
+    return "background: #333; color: #fff;"; 
+}
 
-    if (!data || !Array.isArray(data)) {
+// Main Renderer (Updated for Posters and File Info)
+function renderVault(data) {
+    const container = document.getElementById("vaultContainer");
+
+    if (!data || data.length === 0) {
         container.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
                 <i class="fas fa-folder-open" style="font-size: 3rem; color: #333; margin-bottom: 15px;"></i>
-                <p style="color: #888;">Your vault is currently empty or loading...</p>
+                <p style="color: #888;">No movies found.</p>
             </div>`;
         return;
     }
 
-    // I-generate ang HTML cards para sa bawat movie sa listahan
-    container.innerHTML = data.map(item => `
+    container.innerHTML = data.map(item => {
+        let buttonsHTML = '';
+        if (item.links && Array.isArray(item.links)) {
+            buttonsHTML = item.links.map(link => `
+                <a href="${link.url}" target="_blank" class="dl-btn" style="${getButtonStyles(link.platform)}">
+                    <i class="fas fa-download"></i> ${link.platform}
+                </a>
+            `).join('');
+        }
+
+        // Gamitin ang poster URL galing DB, kung wala, fallback sa default logo
+        const imageSource = item.posterUrl ? item.posterUrl : 'images/logo-192.png';
+        const fileQualityInfo = item.fileInfo ? item.fileInfo : 'Verified Direct Link';
+
+        return `
         <div class="dl-card">
-            <div class="dl-badge">Premium</div>
-            <img src="images/logo-192.png" alt="Movies-J">
+            <div class="badge-container">
+                ${item.isNew ? '<span class="new-badge">NEW</span>' : '<span></span>'}
+                <span class="dl-badge">Premium</span>
+            </div>
+            
+            <img src="${imageSource}" alt="${item.title}" style="object-fit: cover;">
+            
             <div class="dl-info">
                 <h3>${item.title}</h3>
-                <p style="color: #666; font-size: 0.8rem; margin-bottom: 15px;">Verified Direct Link</p>
-                <a href="https://drive.google.com/uc?export=download&id=${item.id}" target="_blank" class="dl-btn">
-                    <i class="fas fa-download"></i> Download Now
-                </a>
+                
+                <p style="font-size: 0.75rem; color: #aaa; margin-top: -10px; margin-bottom: 15px; word-break: break-all;">
+                    ${fileQualityInfo}
+                </p>
+
+                <div class="dl-links-container">
+                    ${buttonsHTML}
+                </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }

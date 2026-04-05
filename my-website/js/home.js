@@ -12,6 +12,8 @@ let deferredPrompt; // Single global declaration
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("DOM fully loaded and parsed.");
 
+
+    
     // --- Splash Screen Logic ---
     const splashScreen = document.getElementById('splash-screen');
     if (splashScreen) {

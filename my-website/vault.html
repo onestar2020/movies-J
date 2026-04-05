@@ -3,38 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J-Vault - Downloads</title>
+    <title>J-Vault - Premium Downloads</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        .vault-header { padding: 80px 20px 40px; text-align: center; }
-        .vault-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 20px; max-width: 1400px; margin: auto; }
-        .dl-card { background: #1c1c1c; border-radius: 10px; overflow: hidden; border: 1px solid #333; transition: 0.3s; }
-        .dl-card:hover { transform: translateY(-5px); border-color: #ff9800; }
-        .dl-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-        .dl-info { padding: 15px; }
-        .dl-info h3 { font-size: 1rem; margin-bottom: 10px; }
-        .dl-btn { display: block; text-align: center; background: #ff9800; color: #000; padding: 10px; border-radius: 5px; font-weight: bold; text-decoration: none; }
-        .user-nav { position: fixed; top: 0; left: 0; width: 100%; padding: 15px 60px; background: #141414; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
+        :root {
+            --primary: #ff9800;
+            --bg: #0a0a0a;
+            --card: #141414;
+        }
+
+        body { 
+            background-color: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        /* Navigation Bar */
+        .user-nav { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            padding: 15px 5%; 
+            background: rgba(20, 20, 20, 0.95); 
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #222; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .logo { font-weight: 800; letter-spacing: 1px; font-size: 1.2rem; }
+
+        #logoutBtn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #333;
+            color: #ccc;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        #logoutBtn:hover {
+            background: #ff4444;
+            color: white;
+            border-color: #ff4444;
+        }
+
+        /* Header */
+        .vault-header { 
+            padding: 140px 20px 60px; 
+            text-align: center; 
+            background: linear-gradient(to bottom, #111, var(--bg));
+        }
+
+        .vault-header h1 { 
+            font-size: 2.5rem; 
+            margin-bottom: 10px; 
+            color: var(--primary);
+        }
+
+        .vault-header p { color: #888; font-size: 1.1rem; }
+
+        /* Grid System */
+        .vault-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 25px; 
+            padding: 0 5% 100px; 
+            max-width: 1400px; 
+            margin: auto; 
+        }
+
+        /* Movie Card Design */
+        .dl-card { 
+            background: var(--card); 
+            border-radius: 15px; 
+            overflow: hidden; 
+            border: 1px solid #222; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .dl-card:hover { 
+            transform: translateY(-10px); 
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(255, 152, 0, 0.2);
+        }
+
+        .dl-card img { 
+            width: 100%; 
+            height: 200px;
+            object-fit: contain; 
+            background: #1a1a1a;
+            padding: 20px;
+            box-sizing: border-box;
+            border-bottom: 1px solid #222;
+        }
+
+        .dl-info { padding: 20px; }
+        .dl-info h3 { font-size: 1.1rem; margin: 0 0 15px 0; color: #efefef; }
+
+        .dl-btn { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+            background: var(--primary); 
+            color: #000; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            text-decoration: none; 
+            transition: 0.3s;
+        }
+
+        .dl-btn:hover { 
+            background: #ffa726;
+            transform: scale(1.02);
+        }
+
+        .dl-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--primary);
+            color: black;
+            font-size: 0.7rem;
+            font-weight: 900;
+            padding: 4px 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            z-index: 2;
+        }
+
+        @media (max-width: 768px) {
+            .vault-header h1 { font-size: 1.8rem; }
+            .user-nav { padding: 15px 20px; }
+        }
     </style>
 </head>
 <body>
     <nav class="user-nav">
-        <div class="logo">Movies-J <span style="color:#ff9800">VAULT</span></div>
-        <div style="display:flex; align-items:center; gap:15px;">
-            <span id="userName" style="font-size:0.9rem; color:#aaa;">Checking...</span>
-            <button id="logoutBtn" style="background:none; border:1px solid #444; color:#888; padding:5px 12px; border-radius:5px; cursor:pointer;">Logout</button>
+        <div class="logo">Movies-J <span style="color:var(--primary)">VAULT</span></div>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <div style="text-align: right; display: none; @media (min-width: 600px) { display: block; }">
+                <span id="userName" style="font-size:0.85rem; font-weight:600; color:#fff; display:block;">Checking Auth...</span>
+                <span style="font-size:0.7rem; color:var(--primary);">Verified Supporter</span>
+            </div>
+            <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
     </nav>
 
     <div class="vault-header">
-        <h1>Welcome to Your Vault</h1>
-        <p>Premium direct downloads for Movies-J supporters.</p>
+        <div style="margin-bottom: 15px;">
+            <i class="fas fa-unlock-alt" style="color: var(--primary); font-size: 2rem;"></i>
+        </div>
+        <h1>Premium Downloads</h1>
+        <p>Direct Google Drive access for your favorite movies.</p>
     </div>
 
     <div class="vault-grid" id="vaultContainer">
         </div>
 
+    <script src="js/uploads.js"></script>
+    
     <script type="module" src="js/vault.js"></script>
 </body>
 </html>

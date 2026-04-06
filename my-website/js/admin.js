@@ -1,4 +1,4 @@
-// ✅ js/admin.js - STRICT ADMIN ONLY (FIXED LOGOUT BEHAVIOR)
+// ✅ js/admin.js - STRICT ADMIN ONLY (WITH AUTO-GENRE DETECT)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { 
     getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut 
@@ -23,44 +23,42 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 const TMDB_PROXY = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev';
 
-// IYONG NATatanging ID (Master Key)
 const ADMIN_UID = 'ys5KRWrQmbYsLAue4wjKBZmFZnF2'; 
 
-// --- AUTHENTICATION CHECKER ---
 onAuthStateChanged(auth, (user) => {
     const list = document.getElementById('inventoryList');
-    
     if (user) {
         if (user.uid !== ADMIN_UID) {
             alert("ACCESS DENIED: Hindi ka awtorisado para sa page na ito.");
-            signOut(auth).then(() => {
-                window.location.href = "index.html";
-            });
+            signOut(auth).then(() => window.location.href = "index.html");
             return;
         }
-        console.log("✅ Welcome, Master Admin:", user.displayName);
         loadInventory();
     } else {
         list.innerHTML = `
             <div style="text-align:center; padding:40px; border: 2px dashed #333; border-radius: 10px;">
                 <i class="fas fa-user-shield" style="font-size: 2.5rem; color: #ff9800; margin-bottom: 15px;"></i>
                 <h3 style="color: #fff;">Admin Area Restricted</h3>
-                <p style="color: #888; margin-bottom: 25px;">Only the authorized owner can manage this vault.</p>
                 <button id="manualAdminLogin" class="submit-btn" style="max-width: 250px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 10px;">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Login with Google
                 </button>
             </div>
         `;
-        document.getElementById('manualAdminLogin').onclick = () => {
-            signInWithPopup(auth, provider).catch(err => {
-                console.error("Login Error:", err);
-                alert("Login failed: " + err.message);
-            });
-        };
+        document.getElementById('manualAdminLogin').onclick = () => signInWithPopup(auth, provider);
     }
 });
 
-// --- TMDB POSTER FETCHER ---
+// --- BAGO: TMDB Genre ID to Admin Select Value Mapping ---
+const genreMapping = {
+    28: "action", 12: "action", 10759: "action", // Action, Adventure
+    35: "comedy", // Comedy
+    27: "horror", 53: "horror", // Horror, Thriller
+    10749: "romance", 18: "romance", // Romance, Drama
+    878: "scifi", 14: "scifi", 10765: "scifi", // Sci-Fi, Fantasy
+    16: "animation" // Animation
+};
+
+// --- BAGO: Auto Fetch Poster & Auto Select Genre ---
 document.getElementById('fetchPosterBtn').addEventListener('click', async () => {
     const title = document.getElementById('movieTitle').value;
     const btn = document.getElementById('fetchPosterBtn');
@@ -68,12 +66,29 @@ document.getElementById('fetchPosterBtn').addEventListener('click', async () => 
 
     btn.textContent = "Searching...";
     try {
-        const res = await fetch(`${TMDB_PROXY}/search/movie?query=${encodeURIComponent(title)}`);
+        // Gumamit ng multi search para makuha rin kahit TV Show
+        const res = await fetch(`${TMDB_PROXY}/search/multi?query=${encodeURIComponent(title)}`);
         const data = await res.json();
-        if (data.results && data.results.length > 0 && data.results[0].poster_path) {
-            const posterUrl = `https://image.tmdb.org/t/p/w500${data.results[0].poster_path}`;
-            document.getElementById('posterUrl').value = posterUrl;
-            btn.innerHTML = '<i class="fas fa-check"></i> Poster Ready';
+        
+        const result = data.results && data.results.find(item => item.poster_path);
+
+        if (result) {
+            // 1. Set Poster URL
+            document.getElementById('posterUrl').value = `https://image.tmdb.org/t/p/w500${result.poster_path}`;
+            
+            // 2. Auto-Select Genre
+            if (result.genre_ids && result.genre_ids.length > 0) {
+                let matchedGenre = "action"; // Default if walang match
+                for (let id of result.genre_ids) {
+                    if (genreMapping[id]) {
+                        matchedGenre = genreMapping[id];
+                        break; // Stop loop kapag nakahanap na ng tugma
+                    }
+                }
+                document.getElementById('movieGenre').value = matchedGenre;
+            }
+
+            btn.innerHTML = '<i class="fas fa-check"></i> Found!';
             setTimeout(() => btn.innerHTML = '<i class="fas fa-search"></i> Get Poster', 2000);
         } else {
             alert("No poster found.");
@@ -84,21 +99,16 @@ document.getElementById('fetchPosterBtn').addEventListener('click', async () => 
     }
 });
 
-// --- LOAD INVENTORY ---
 async function loadInventory() {
     const list = document.getElementById('inventoryList');
     list.innerHTML = '<p style="text-align: center; color: #888;">Fetching vault items...</p>';
-    
     try {
         const querySnapshot = await getDocs(collection(db, "movies"));
         let movies = [];
         querySnapshot.forEach((doc) => movies.push({ id: doc.id, ...doc.data() }));
         movies.sort((a, b) => (b.timestamp ? b.timestamp.toMillis() : 0) - (a.timestamp ? a.timestamp.toMillis() : 0));
 
-        if(movies.length === 0) {
-            list.innerHTML = '<p style="text-align: center; color: #888;">Vault is empty.</p>';
-            return;
-        }
+        if(movies.length === 0) return list.innerHTML = '<p style="text-align: center; color: #888;">Vault is empty.</p>';
 
         list.innerHTML = '';
         movies.forEach(movie => {
@@ -107,7 +117,7 @@ async function loadInventory() {
             div.innerHTML = `
                 <div class="inv-info">
                     <h4>${movie.title} ${movie.isNew ? '<span style="color:#4caf50;font-size:10px;">(NEW)</span>' : ''}</h4>
-                    <p style="font-size: 0.75rem; color: #666; font-family: monospace;">${movie.fileInfo || 'Direct Link Only'}</p>
+                    <p style="font-size: 0.75rem; color: #666; font-family: monospace;">Category: ${movie.genre || 'N/A'}</p>
                 </div>
                 <div class="inv-actions">
                     <button class="btn-edit" title="Edit"><i class="fas fa-edit"></i></button>
@@ -123,13 +133,10 @@ async function loadInventory() {
     }
 }
 
-// --- CRUD OPERATIONS ---
 async function deleteMovie(id, title) {
     if(confirm(`Sigurado ka bang burahin ang "${title}"?`)) {
-        try {
-            await deleteDoc(doc(db, "movies", id));
-            loadInventory();
-        } catch (error) { alert("Error: " + error.message); }
+        await deleteDoc(doc(db, "movies", id));
+        loadInventory();
     }
 }
 
@@ -141,6 +148,7 @@ function startEdit(movie) {
 
     document.getElementById('editDocId').value = movie.id;
     document.getElementById('movieTitle').value = movie.title || '';
+    document.getElementById('movieGenre').value = movie.genre || 'action'; 
     document.getElementById('posterUrl').value = movie.posterUrl || '';
     document.getElementById('fileInfo').value = movie.fileInfo || '';
     document.getElementById('isNewMovie').checked = movie.isNew || false;
@@ -162,7 +170,6 @@ function startEdit(movie) {
     }
 }
 
-// MANUAL RESET FUNCTION
 function resetForm() {
     document.getElementById('uploadForm').reset();
     document.getElementById('editDocId').value = '';
@@ -200,6 +207,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 
     const movieData = {
         title: document.getElementById('movieTitle').value,
+        genre: document.getElementById('movieGenre').value, 
         isNew: document.getElementById('isNewMovie').checked,
         posterUrl: document.getElementById('posterUrl').value,
         fileInfo: document.getElementById('fileInfo').value,
@@ -216,13 +224,9 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             await addDoc(collection(db, "movies"), movieData);
             statusMsg.textContent = "✅ Tagumpay na naidagdag!";
         }
-        
         statusMsg.style.display = "block";
         statusMsg.style.color = "#4caf50";
-        
-        // MANUAL RESET (DITO NA BINAGO PARA HINDI MAG-LOGOUT)
         resetForm();
-        
         loadInventory();
         setTimeout(() => statusMsg.style.display = "none", 3000);
     } catch (error) {

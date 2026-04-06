@@ -1,4 +1,4 @@
-// ✅ js/vault.js - FIREBASE DATABASE WITH POSTERS & INFO (FIXED FOR CLOUDFLARE)
+// ✅ js/vault.js - FIREBASE DATABASE WITH POSTERS & INFO (FIXED CATEGORY FILTER)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { 
     getAuth, GoogleAuthProvider, signInWithPopup, 
@@ -27,7 +27,7 @@ let allMoviesData = [];
 
 setPersistence(auth, browserLocalPersistence);
 
-// Authentication Watcher (FIXED: Inalis ang .html sa checking)
+// Authentication Watcher
 onAuthStateChanged(auth, (user) => {
     const path = window.location.pathname;
     const isLoginPage = path.includes("login");
@@ -38,7 +38,7 @@ onAuthStateChanged(auth, (user) => {
         const userNameEl = document.getElementById("userName");
         if (userNameEl) userNameEl.textContent = user.displayName;
 
-        // --- ADMIN BUTTON LOGIC (Ibinalik ko dito) ---
+        // --- ADMIN BUTTON LOGIC ---
         if (user.uid === "ys5KRWrQmbYsLAue4wjKBZmFZnF2") {
             if (!document.getElementById("adminLinkBtn")) {
                 const logoutBtn = document.getElementById("logoutBtn");
@@ -77,21 +77,38 @@ async function loadMoviesFromDB() {
     }
 }
 
-// Search & Buttons
+// Search & Buttons (CORRECTED CATEGORY LOGIC)
 window.addEventListener("DOMContentLoaded", () => {
     const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
     const searchInput = document.getElementById("vaultSearchInput");
+    const categorySelect = document.getElementById("vaultCategorySelect"); 
 
     if (loginBtn) loginBtn.addEventListener("click", async () => { try { await signInWithPopup(auth, provider); } catch (e) { alert("Error: " + e.message); } });
     if (logoutBtn) logoutBtn.addEventListener("click", async () => { await signOut(auth); window.location.href = "index.html"; });
 
-    if (searchInput) {
-        searchInput.addEventListener("input", (e) => {
-            const term = e.target.value.toLowerCase();
-            renderVault(allMoviesData.filter(m => m.title && m.title.toLowerCase().includes(term)));
+    function filterVault() {
+        const term = searchInput ? searchInput.value.toLowerCase() : "";
+        const category = categorySelect ? categorySelect.value.toLowerCase() : "all";
+
+        const filteredData = allMoviesData.filter(m => {
+            const movieTitle = m.title ? m.title.toLowerCase() : "";
+            const matchesSearch = movieTitle.includes(term);
+            
+            // TAMA NA LOGIC: Binabasa na niya yung "m.genre" galing database
+            let matchesCategory = true;
+            if (category !== "all") {
+                matchesCategory = (m.genre === category);
+            }
+
+            return matchesSearch && matchesCategory;
         });
+
+        renderVault(filteredData);
     }
+
+    if (searchInput) searchInput.addEventListener("input", filterVault);
+    if (categorySelect) categorySelect.addEventListener("change", filterVault);
 });
 
 function getButtonStyles(platform) {
@@ -129,11 +146,17 @@ function renderVault(data) {
         const imageSource = item.posterUrl ? item.posterUrl : 'images/logo-192.png';
         const fileQualityInfo = item.fileInfo ? item.fileInfo : 'Verified Direct Link';
 
+        let uploadDate = "Premium"; 
+        if (item.timestamp) {
+            const dateObj = item.timestamp.toDate();
+            uploadDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
         return `
         <div class="dl-card">
             <div class="badge-container">
                 ${item.isNew ? '<span class="new-badge">NEW</span>' : '<span></span>'}
-                <span class="dl-badge">Premium</span>
+                <span class="dl-badge">${uploadDate}</span>
             </div>
             
             <img src="${imageSource}" alt="${item.title}" style="object-fit: cover;">

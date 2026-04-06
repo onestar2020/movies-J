@@ -1,4 +1,4 @@
-// ✅ js/movie.js (SUPER SECURE VERSION)
+// ✅ js/movie.js (SUPER SECURE VERSION + NEXT EPISODE BUTTON)
 
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; 
 const IMG_URL = 'https://image.tmdb.org/t/p/w500';
@@ -10,10 +10,12 @@ const type = urlParams.get('type') || 'movie';
 let trailerUrl = ''; 
 let currentSeasonNumber = 1;
 let currentEpisodeNumber = 1;
+let currentItemData = null; // BAGO: Sine-save natin ang item data
 
 document.addEventListener("DOMContentLoaded", async () => {
     const item = await fetchDetails();
     if (item) {
+        currentItemData = item;
         document.title = item.title || item.name;
         document.getElementById("movie-title").textContent = item.title || item.name;
         document.getElementById("movie-overview").textContent = item.overview;
@@ -31,6 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (type === 'tv') {
             document.querySelector('.tv-show-browser').style.display = 'block';
             handleTVShow(item);
+            setupNextEpisodeButton(); // BAGO: Tawagin ang Next Episode setup
         }
     }
 });
@@ -102,6 +105,48 @@ function updatePlayer(server, item, season = 1, episode = 1) {
 
     const url = generateEmbedURL(server, { id: item.id, media_type: type, first_air_date: item.first_air_date }, season, episode);
     player.src = url;
+}
+
+// --- BAGO: NEXT EPISODE BUTTON LOGIC (CLEANER SIDEBAR DESIGN) ---
+function setupNextEpisodeButton() {
+    // Hanapin yung label na "Episodes:" sa sidebar
+    const tvBrowserLabel = document.querySelector('.tv-show-browser label');
+    if (!tvBrowserLabel) return;
+
+    // Ayusin ang alignment para magkatabi yung text at button
+    tvBrowserLabel.style.display = 'flex';
+    tvBrowserLabel.style.justifyContent = 'space-between';
+    tvBrowserLabel.style.alignItems = 'center';
+
+    // Gawa ng bagong button, mas maliit at sleek
+    const nextBtn = document.createElement('button');
+    nextBtn.id = 'next-ep-btn';
+    nextBtn.innerHTML = 'Next Ep <i class="fas fa-step-forward"></i>';
+    // Dark premium design
+    nextBtn.style = "background: #222; border: 1px solid #444; color: #fff; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: all 0.3s ease;";
+    
+    // Hover effect (Magiging Netflix Red pag tinapatan ng mouse)
+    nextBtn.onmouseover = () => { nextBtn.style.background = "#e50914"; nextBtn.style.borderColor = "#e50914"; };
+    nextBtn.onmouseout = () => { nextBtn.style.background = "#222"; nextBtn.style.borderColor = "#444"; };
+
+    // Kapag kinlick ang Next Ep
+    nextBtn.addEventListener('click', () => {
+        const currentActive = document.querySelector('.episode-card.active');
+        if (currentActive && currentActive.nextElementSibling && currentActive.nextElementSibling.classList.contains('episode-card')) {
+            currentActive.nextElementSibling.click();
+            currentActive.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            alert("End of season! Please select the next season.");
+        }
+    });
+
+    // Idikit sa tabi ng "Episodes:"
+    tvBrowserLabel.appendChild(nextBtn);
+
+    // Tanggalin yung lumang malaking red button sa ilalim ng video (kung sakaling nandun pa)
+    const oldContainer = document.getElementById('next-ep-container');
+    if (oldContainer) oldContainer.remove();
 }
 
 function createScrollableList(containerId, title, items, renderItemFunc) {
@@ -187,7 +232,7 @@ async function handleTVShow(item) {
             card.dataset.episodeNumber = ep.episode_number;
             
             card.innerHTML = `
-                <img class="episode-thumbnail" src="${ep.still_path ? `https://image.tmdb.org/t/p/w300${ep.still_path}` : (item.backdrop_path ? `https://image.tmdb.org/t/p/w500${item.backdrop_path}` : 'images/logo.png')}" alt="${ep.name}">
+                <img class="episode-thumbnail" src="${ep.still_path ? `https://image.tmdb.org/t/p/w300${ep.still_path}` : (item.backdrop_path ? `https://image.tmdb.org/t/p/w500${item.backdrop_path}` : 'images/logo-192.png')}" alt="${ep.name}">
                 <div class="episode-details">
                     <h3>E${ep.episode_number}: ${ep.name}</h3>
                     <p>${ep.overview || 'No description available.'}</p>
@@ -252,7 +297,7 @@ async function handleCollection(collectionId) {
         const data = await res.json();
         
         if (data.parts && data.parts.length > 1) {
-            const today = new Date(); // Get current date
+            const today = new Date(); 
 
             container.style.display = 'block'; 
             listContainer.innerHTML = ''; 
@@ -264,7 +309,6 @@ async function handleCollection(collectionId) {
             sortedParts.forEach(movie => {
                 if (movie.id == id) return;
 
-                // --- BAGO: Released movies filter ---
                 const releaseDate = movie.release_date ? new Date(movie.release_date) : null;
                 if (!releaseDate || releaseDate > today) return;
 
@@ -283,7 +327,6 @@ async function handleCollection(collectionId) {
                 listContainer.appendChild(card);
             });
 
-            // I-hide ang container kung walang released movies na natira sa collection
             if (listContainer.children.length === 0) {
                 container.style.display = 'none';
             }

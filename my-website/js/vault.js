@@ -1,4 +1,4 @@
-// ✅ js/vault.js - FIREBASE DATABASE WITH POSTERS & INFO
+// ✅ js/vault.js - FIREBASE DATABASE WITH POSTERS & INFO (FIXED FOR CLOUDFLARE)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { 
     getAuth, GoogleAuthProvider, signInWithPopup, 
@@ -27,15 +27,32 @@ let allMoviesData = [];
 
 setPersistence(auth, browserLocalPersistence);
 
-// Authentication Watcher
+// Authentication Watcher (FIXED: Inalis ang .html sa checking)
 onAuthStateChanged(auth, (user) => {
-    const isLoginPage = window.location.pathname.includes("login.html");
-    const isVaultPage = window.location.pathname.includes("vault.html");
+    const path = window.location.pathname;
+    const isLoginPage = path.includes("login");
+    const isVaultPage = path.includes("vault");
 
     if (user) {
         if (isLoginPage) window.location.href = "vault.html";
         const userNameEl = document.getElementById("userName");
         if (userNameEl) userNameEl.textContent = user.displayName;
+
+        // --- ADMIN BUTTON LOGIC (Ibinalik ko dito) ---
+        if (user.uid === "ys5KRWrQmbYsLAue4wjKBZmFZnF2") {
+            if (!document.getElementById("adminLinkBtn")) {
+                const logoutBtn = document.getElementById("logoutBtn");
+                if (logoutBtn) {
+                    const adminBtn = document.createElement("a");
+                    adminBtn.href = "admin.html";
+                    adminBtn.id = "adminLinkBtn";
+                    adminBtn.innerHTML = '<i class="fas fa-user-cog"></i> Admin';
+                    adminBtn.style = "background: #ff9800; color: black; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 0.8rem; margin-right: 10px; transition: 0.3s;";
+                    logoutBtn.parentNode.insertBefore(adminBtn, logoutBtn);
+                }
+            }
+        }
+
         if (document.getElementById("vaultContainer")) loadMoviesFromDB();
     } else {
         if (isVaultPage) window.location.href = "login.html";
@@ -86,7 +103,7 @@ function getButtonStyles(platform) {
     return "background: #333; color: #fff;"; 
 }
 
-// Main Renderer (Updated for Posters and File Info)
+// Main Renderer
 function renderVault(data) {
     const container = document.getElementById("vaultContainer");
 
@@ -109,7 +126,6 @@ function renderVault(data) {
             `).join('');
         }
 
-        // Gamitin ang poster URL galing DB, kung wala, fallback sa default logo
         const imageSource = item.posterUrl ? item.posterUrl : 'images/logo-192.png';
         const fileQualityInfo = item.fileInfo ? item.fileInfo : 'Verified Direct Link';
 

@@ -14,8 +14,8 @@
         .admin-card h2 { color: #ff9800; text-align: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
-        .form-group input[type="text"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; font-size: 1rem; box-sizing: border-box; }
-        .form-group input[type="text"]:focus { border-color: #ff9800; outline: none; }
+        .form-group input[type="text"], .form-group select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; font-size: 1rem; box-sizing: border-box; outline: none; }
+        .form-group input[type="text"]:focus, .form-group select:focus { border-color: #ff9800; }
         .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
         
         .fetch-group { display: flex; gap: 10px; }
@@ -43,9 +43,22 @@
         <div class="admin-card">
             <h2 id="formHeader">🎬 Upload to Vault</h2>
             <form id="uploadForm">
-                <input type="hidden" id="editDocId"> <div class="form-group">
+                <input type="hidden" id="editDocId"> 
+                <div class="form-group">
                     <label>Movie Title (Type here first)</label>
                     <input type="text" id="movieTitle" placeholder="e.g. Deadpool & Wolverine" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Category / Genre</label>
+                    <select id="movieGenre">
+                        <option value="action">Action & Adventure</option>
+                        <option value="comedy">Comedy</option>
+                        <option value="horror">Horror & Thriller</option>
+                        <option value="romance">Romance & Drama</option>
+                        <option value="scifi">Sci-Fi & Fantasy</option>
+                        <option value="animation">Animation & Anime</option>
+                    </select>
                 </div>
 
                 <div class="form-group">

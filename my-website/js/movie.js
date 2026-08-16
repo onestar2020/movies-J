@@ -1,11 +1,9 @@
-// ✅ js/movie.js (FULL PROTECTED + MOBILE OPTIMIZED + TV/SERIES FIX + LOCALSTORAGE PROGRESS)
+// ✅ js/movie.js (FULL PROTECTED + MOBILE AUTO-SCROLL TO SERVERS/EPISODES)
 
 // ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
 (function() {
-    // Disable Right Click
     document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // Disable DevTools Keyboard Shortcuts
     document.addEventListener('keydown', (e) => {
         if (
             e.key === 'F12' ||
@@ -17,7 +15,6 @@
         }
     });
 
-    // Anti-Debugger Trap Loop (Freezes on Console Open)
     setInterval(() => {
         const startTime = performance.now();
         debugger;
@@ -101,6 +98,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (tvPanel) tvPanel.style.display = "block";
             handleTVShow(item);
             setupNextEpisodeButton();
+        }
+
+        // Auto-Scroll sa mobile papunta sa server panel kapag nag-load ang video
+        if (window.innerWidth <= 900) {
+            setTimeout(() => {
+                const targetPanel = isEpisodic ? document.getElementById("tv-panel") : document.getElementById("server-buttons");
+                if (targetPanel) {
+                    targetPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 800);
         }
     }
 });
@@ -302,7 +309,6 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     currentSeasonNumber = season;
     currentEpisodeNumber = episode;
 
-    // Save Progress sa LocalStorage para sa mobile resume
     if (isEpisodic) {
         localStorage.setItem(storageKey, JSON.stringify({ season: currentSeasonNumber, episode: currentEpisodeNumber }));
     }
@@ -326,7 +332,6 @@ function handleTVShow(item) {
 
     drop.innerHTML = "";
 
-    // Salain lamang ang totoong seasons (season_number > 0)
     const validSeasons = item.seasons.filter(s => s.season_number > 0);
 
     if (validSeasons.length === 0) {
@@ -334,7 +339,6 @@ function handleTVShow(item) {
         return;
     }
 
-    // Default to Season 1 or Saved Progress
     const initialSeason = validSeasons.find(s => s.season_number === currentSeasonNumber) || validSeasons[0];
     currentSeasonNumber = initialSeason.season_number;
     if (currentLabel) currentLabel.textContent = initialSeason.name || `Season ${initialSeason.season_number}`;
@@ -419,6 +423,12 @@ async function loadEpisodes(seasonNum) {
 
             const activeBtn = document.querySelector(".srv-btn.active") || document.querySelector(".srv-btn");
             if (activeBtn) activeBtn.click();
+
+            // Mobile Auto-Scroll on Episode Click
+            if (window.innerWidth <= 900) {
+                const target = document.getElementById("tv-panel");
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         };
 
         list.appendChild(card);
@@ -428,7 +438,6 @@ async function loadEpisodes(seasonNum) {
         }
     });
 
-    // Auto scroll the active episode card into view (useful on mobile horizontal bar)
     const activeEp = list.querySelector('.ep-card.active');
     if (activeEp) {
         activeEp.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
@@ -448,7 +457,6 @@ function setupNextEpisodeButton() {
         if (currentActive && currentActive.nextElementSibling && currentActive.nextElementSibling.classList.contains('ep-card')) {
             currentActive.nextElementSibling.click();
             currentActive.nextElementSibling.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
             alert("End of season! Please select the next season.");
         }

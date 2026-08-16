@@ -1,59 +1,46 @@
-// ✅ js/home.js (MAJOR CLEANUP & FIX VERSION)
+// ✅ js/home.js (SEARCH BAR FIX + DIRECT TMDB FALLBACK + GLOBAL EXPORTS)
 
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev';
+const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
 const IMG_URL_W500 = 'https://image.tmdb.org/t/p/w500';
 const IMG_URL_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 
 let slideshowInterval;
 let featuredItems = [];
 let currentFeaturedIndex = 0;
-let deferredPrompt; // Single global declaration
+let deferredPrompt;
 
 document.addEventListener("DOMContentLoaded", async () => {
-    console.log("DOM fully loaded and parsed.");
-
-
-    
     // --- Splash Screen Logic ---
     const splashScreen = document.getElementById('splash-screen');
     if (splashScreen) {
-        window.addEventListener('load', () => { // Wait for all resources (images)
-            console.log("Window loaded, hiding splash screen.");
+        window.addEventListener('load', () => {
             setTimeout(() => splashScreen.classList.add('hidden'), 500);
         });
-    } else {
-        console.warn("Splash screen element not found!");
     }
 
-    // --- Setup ALL Event Listeners HERE ---
-    setupUniversalEventListeners(); // Includes navbar scroll, modals, hamburger, PWA
+    // --- Setup Universal Listeners ---
+    setupUniversalEventListeners();
     
     // --- Register Service Worker ---
-    registerServiceWorker(); // Call after DOM is ready
+    registerServiceWorker();
 
     // --- Homepage Specific Logic ---
     if (document.getElementById('hero-section')) {
-        console.log("Hero section found, loading homepage content...");
-        loadFeaturedMovie(); // Start loading featured movies
-        // Load trending lists concurrently
+        loadFeaturedMovie();
         Promise.all([
             fetchTrending('movie').then(items => displayList(items, 'movies-list')),
             fetchTrending('tv').then(items => displayList(items, 'tvshows-list')),
             fetchTrendingAnime().then(items => displayList(items, 'anime-list'))
         ]).then(() => {
-            console.log("Trending lists loaded.");
-            setupHomepageCarousels(); // Setup carousels after lists are displayed
+            setupHomepageCarousels();
         }).catch(error => console.error("Error loading trending lists:", error));
-        handleWelcomeModal(); // Show welcome modal if needed
-    } else {
-        console.log("Not on homepage (no hero-section found).");
+        
+        handleWelcomeModal();
     }
-}); // --- END OF DOMContentLoaded ---
-
+});
 
 function setupUniversalEventListeners() {
-    console.log("Setting up universal listeners...");
-
     // --- Navbar Scroll ---
     window.addEventListener('scroll', () => {
         const navbar = document.querySelector('.navbar');
@@ -67,36 +54,15 @@ function setupUniversalEventListeners() {
     const navLinks = document.querySelector(".nav-links");
     if (hamburger && navLinks) {
         hamburger.addEventListener("click", () => {
-            console.log("Hamburger clicked!");
             hamburger.classList.toggle("active");
             navLinks.classList.toggle("active");
         });
-    } else {
-        console.error("Hamburger menu or nav links not found!");
     }
-
-    // --- BAGO: Collections Dropdown (Mobile) ---
-    const dropdownToggle = document.querySelector(".nav-dropdown-toggle");
-    if (dropdownToggle) {
-        dropdownToggle.addEventListener("click", (e) => {
-            // Only run on mobile (when hamburger is visible)
-            if (window.innerWidth <= 768) {
-                e.preventDefault(); // Prevent navigation
-                const dropdown = dropdownToggle.closest('.nav-dropdown');
-                if (dropdown) {
-                    dropdown.classList.toggle('mobile-active');
-                }
-            }
-        });
-    }
-    // --- END BAGO ---
 
     // --- Search Icon Click ---
     const searchIcon = document.querySelector(".nav-actions .fa-search");
     if (searchIcon) {
-        searchIcon.addEventListener("click", openSearchModal); // Attach listener
-    } else {
-        console.warn("Search icon not found.");
+        searchIcon.addEventListener("click", openSearchModal);
     }
 
     // --- Search Modal Close Button ---
@@ -104,14 +70,19 @@ function setupUniversalEventListeners() {
     if (searchModal) {
         const closeSearchBtn = searchModal.querySelector('.close');
         if (closeSearchBtn) {
-            closeSearchBtn.onclick = closeSearchModal; // Use onclick or addEventListener
+            closeSearchBtn.onclick = closeSearchModal;
         }
-         // Optional: Close on overlay click
-         searchModal.addEventListener('click', (event) => {
-             if (event.target === searchModal) {
-                 closeSearchModal();
-             }
-         });
+        searchModal.addEventListener('click', (event) => {
+            if (event.target === searchModal) {
+                closeSearchModal();
+            }
+        });
+    }
+
+    // --- Search Input Listener (Direct Input Hook) ---
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounceSearch);
     }
 
     // --- Details Modal ---
@@ -129,7 +100,7 @@ function setupUniversalEventListeners() {
     // --- Donation Modal ---
     const supportModal = document.getElementById("supportModal");
     const supportBtn = document.getElementById("supportBtn");
-    if (supportModal && supportBtn) { // Check both exist
+    if (supportModal && supportBtn) {
         const closeBtnSupport = supportModal.querySelector(".close-btn");
         supportBtn.onclick = function(event) {
             event.preventDefault();
@@ -140,90 +111,57 @@ function setupUniversalEventListeners() {
                 supportModal.style.display = "none";
             }
         }
-        window.addEventListener("click", function(event) { // Close on overlay click
-            if (event.target == supportModal) {
+        window.addEventListener("click", function(event) {
+            if (event.target === supportModal) {
                 supportModal.style.display = "none";
             }
         });
-    } else {
-         console.warn("Support button or modal not found.");
     }
 
-    // --- PWA Install Setup ---
-    setupPWAInstall(); // Run PWA setup
-
- 
+    // --- PWA Setup ---
+    setupPWAInstall();
 }
-
 
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => { // Use load event for SW registration
-            // *** FIXED PATH ***
-            navigator.serviceWorker.register('js/sw.js') 
-                .then(registration => console.log('✅ Service Worker registered successfully: Scope=', registration.scope))
-                .catch(error => console.error('❌ Service Worker registration failed:', error));
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('js/sw.js')
+                .then(registration => console.log('✅ Service Worker registered:', registration.scope))
+                .catch(error => console.error('❌ Service Worker failed:', error));
         });
-    } else {
-        console.log("Service Worker not supported.");
     }
 }
 
-
 function setupPWAInstall() {
-    console.log("PWA Install Setup: Running...");
     const installBanner = document.getElementById('install-banner');
-    const installBtnBanner = document.getElementById('install-app-btn');
-    const dismissBtnBanner = document.getElementById('dismiss-install-btn');
     const installBtnMobile = document.getElementById('installAppBtnMobile');
 
-    // Hide elements initially
     if (installBtnMobile) {
-        installBtnMobile.style.display = 'none'; // Ensure it's hidden via style
-        installBtnMobile.classList.remove('visible'); // Ensure class is removed
-    } else { console.warn("PWA Install Setup: Mobile install button not found."); }
-    if (installBanner) { installBanner.classList.remove('visible'); }
-    else { console.warn("PWA Install Setup: Install banner element not found."); }
+        installBtnMobile.style.display = 'none';
+        installBtnMobile.classList.remove('visible');
+    }
+    if (installBanner) installBanner.classList.remove('visible');
 
     window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('PWA Install Setup: beforeinstallprompt event fired!');
         e.preventDefault();
         deferredPrompt = e;
 
-        // Show Mobile Button
         if (installBtnMobile) {
-            console.log('PWA Install Setup: Showing mobile install button.');
-            installBtnMobile.style.display = ''; // Remove inline style to let CSS handle it
-            installBtnMobile.classList.add('visible'); // Add class to trigger CSS display
+            installBtnMobile.style.display = '';
+            installBtnMobile.classList.add('visible');
 
-            // Add click listener
-            installBtnMobile.onclick = null; // Clear previous
             installBtnMobile.onclick = async () => {
-                console.log('PWA Install Setup: Mobile install button clicked.');
-                if (!deferredPrompt) { console.warn('PWA Install Setup: deferredPrompt is null.'); return; }
-                installBtnMobile.style.display = 'none'; // Hide immediately
+                if (!deferredPrompt) return;
+                installBtnMobile.style.display = 'none';
                 installBtnMobile.classList.remove('visible');
-                if(installBanner) installBanner.classList.remove('visible');
+                if (installBanner) installBanner.classList.remove('visible');
                 deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`PWA Install Setup: User response: ${outcome}`);
+                await deferredPrompt.userChoice;
                 deferredPrompt = null;
             };
-        } else { console.warn("PWA Install Setup: Mobile button not found when event fired."); }
+        }
     });
-
-    // Add Banner Button Listener
-    if (installBtnBanner) {
-        installBtnBanner.addEventListener('click', async () => { /* ... (keep existing banner logic) ... */ });
-    }
-    // Add Dismiss Button Listener
-    if (dismissBtnBanner && installBanner) {
-        dismissBtnBanner.addEventListener('click', () => { /* ... (keep existing dismiss logic) ... */ });
-    }
-    // App Installed Listener
-    window.addEventListener('appinstalled', () => { /* ... (keep existing appinstalled logic) ... */ });
 }
-
 
 function handleWelcomeModal() {
     const welcomeModal = document.getElementById('welcome-modal');
@@ -241,37 +179,44 @@ function handleWelcomeModal() {
     }
 }
 
-// --- HOMEPAGE SPECIFIC FUNCTIONS ---
+// --- FEATURED HERO SECTION ---
 async function loadFeaturedMovie() {
     if (!document.getElementById('hero-section')) return;
-    console.log("Loading featured movie...");
     try {
-        // Fetch concurrently
-        const [movieRes, tvRes] = await Promise.all([
-            fetch(`${BASE_URL}/trending/movie/week`),
-            fetch(`${BASE_URL}/trending/tv/week`)
-        ]);
-        if (!movieRes.ok || !tvRes.ok) throw new Error('Failed to fetch trending data');
-        const [movieData, tvData] = await Promise.all([movieRes.json(), tvRes.json()]);
+        let movieData = null, tvData = null;
+        try {
+            const [movieRes, tvRes] = await Promise.all([
+                fetch(`${BASE_URL}/trending/movie/week`),
+                fetch(`${BASE_URL}/trending/tv/week`)
+            ]);
+            if (movieRes.ok && tvRes.ok) {
+                movieData = await movieRes.json();
+                tvData = await tvRes.json();
+            }
+        } catch (e) {
+            console.warn("Proxy featured fetch failed, using direct fallback...");
+        }
+
+        if (!movieData || !tvData) {
+            const [movieRes, tvRes] = await Promise.all([
+                fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${TMDB_DIRECT_KEY}`),
+                fetch(`https://api.themoviedb.org/3/trending/tv/week?api_key=${TMDB_DIRECT_KEY}`)
+            ]);
+            movieData = await movieRes.json();
+            tvData = await tvRes.json();
+        }
 
         featuredItems = [...(movieData.results || []).slice(0, 10), ...(tvData.results || []).slice(0, 10)];
-        featuredItems = featuredItems.filter(item => item && item.backdrop_path); // Ensure valid items
-        featuredItems.sort(() => Math.random() - 0.5); // Shuffle
+        featuredItems = featuredItems.filter(item => item && item.backdrop_path);
+        featuredItems.sort(() => Math.random() - 0.5);
 
         if (featuredItems.length > 0) {
-            updateHeroSection(); // Initial update
-            clearInterval(slideshowInterval); // Clear existing interval if any
-            slideshowInterval = setInterval(updateHeroSection, 7000); // Start slideshow (7 seconds)
-        } else {
-            console.warn("No valid featured items found to display.");
-             // Optionally display a default state for the hero section
-             const heroTitle = document.getElementById('hero-title');
-             if(heroTitle) heroTitle.textContent = "No featured content available.";
+            updateHeroSection();
+            clearInterval(slideshowInterval);
+            slideshowInterval = setInterval(updateHeroSection, 7000);
         }
     } catch (error) {
         console.error("Failed to load featured items:", error);
-        const heroTitle = document.getElementById('hero-title');
-        if(heroTitle) heroTitle.textContent = "Error loading content.";
     }
 }
 
@@ -281,74 +226,66 @@ function updateHeroSection() {
     const heroDesc = document.getElementById('hero-description');
     const watchBtn = document.getElementById('hero-watch-btn');
     const infoBtn = document.getElementById('hero-info-btn');
-    if (!heroSection || !heroTitle || !heroDesc || !watchBtn || !infoBtn) return;
+    if (!heroSection || !heroTitle || !heroDesc || !watchBtn || !infoBtn || featuredItems.length === 0) return;
 
-    if (featuredItems.length === 0) return; // Don't proceed if no items
-
-    // Ensure index loops correctly
     currentFeaturedIndex = (currentFeaturedIndex >= featuredItems.length) ? 0 : currentFeaturedIndex;
-
     const item = featuredItems[currentFeaturedIndex];
 
     if (item && item.backdrop_path) {
         heroSection.style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
         heroTitle.textContent = item.title || item.name || "Untitled";
         heroDesc.textContent = item.overview || "";
-        // Use addEventListener for buttons if onclick causes issues, but onclick should be fine here
         watchBtn.onclick = () => goToMoviePage(item);
         infoBtn.onclick = () => showDetailsModal(item);
-         console.log("Hero updated with:", item.title || item.name);
-    } else {
-        console.warn(`Skipping invalid item at index ${currentFeaturedIndex}:`, item);
-        // Skip to the next item immediately if current one is bad
-        currentFeaturedIndex++;
-        updateHeroSection(); // Try updating again
-        return; // Stop this execution
     }
 
-    currentFeaturedIndex++; // Increment for the *next* interval
+    currentFeaturedIndex++;
 }
 
-
 async function fetchTrending(type) {
-    console.log(`Fetching trending ${type}...`);
     try {
-        const res = await fetch(`${BASE_URL}/trending/${type}/week`);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        let res = await fetch(`${BASE_URL}/trending/${type}/week`);
+        if (!res.ok) {
+            res = await fetch(`https://api.themoviedb.org/3/trending/${type}/week?api_key=${TMDB_DIRECT_KEY}`);
+        }
         const data = await res.json();
         return data.results || [];
     } catch (error) {
-        console.error(`Failed to fetch trending ${type}:`, error);
-        return [];
+        try {
+            const res = await fetch(`https://api.themoviedb.org/3/trending/${type}/week?api_key=${TMDB_DIRECT_KEY}`);
+            const data = await res.json();
+            return data.results || [];
+        } catch (e) {
+            return [];
+        }
     }
 }
 
 async function fetchTrendingAnime() {
-    console.log("Fetching trending anime...");
     try {
-        const res = await fetch(`${BASE_URL}/discover/tv?with_keywords=210024|287501&with_genres=16&sort_by=popularity.desc`);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        let res = await fetch(`${BASE_URL}/discover/tv?with_keywords=210024|287501&with_genres=16&sort_by=popularity.desc`);
+        if (!res.ok) {
+            res = await fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_DIRECT_KEY}&with_keywords=210024|287501&with_genres=16&sort_by=popularity.desc`);
+        }
         const data = await res.json();
         return (data.results || []).map(item => ({ ...item, media_type: 'tv' }));
     } catch (error) {
-        console.error("Failed to fetch trending anime:", error);
-        return [];
+        try {
+            const res = await fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_DIRECT_KEY}&with_keywords=210024|287501&with_genres=16&sort_by=popularity.desc`);
+            const data = await res.json();
+            return (data.results || []).map(item => ({ ...item, media_type: 'tv' }));
+        } catch (e) {
+            return [];
+        }
     }
 }
 
-
 function displayList(items, containerId) {
     const container = document.getElementById(containerId);
-    if (!container) { console.error(`Container #${containerId} not found.`); return; }
-    container.innerHTML = ''; // Clear existing
-
-    if (!items || items.length === 0) {
-        // container.innerHTML = "<p>No items to display.</p>"; // Optional message
-        return;
-    }
+    if (!container || !items) return;
+    container.innerHTML = '';
 
     items.forEach(item => {
-        // Added more checks for item validity
         if (item && item.id && item.poster_path && (item.title || item.name)) {
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
@@ -373,70 +310,54 @@ function displayList(items, containerId) {
             const infoBtn = movieCard.querySelector('.info-btn');
             if (playBtn) playBtn.onclick = (e) => { e.stopPropagation(); goToMoviePage(item); };
             if (infoBtn) infoBtn.onclick = (e) => { e.stopPropagation(); showDetailsModal(item); };
-            movieCard.onclick = () => showDetailsModal(item); // Click on card shows details
+            movieCard.onclick = () => showDetailsModal(item);
 
             container.appendChild(movieCard);
         }
     });
 }
 
-
 function setupHomepageCarousels() {
     const listContainers = document.querySelectorAll('.main-container .list-container');
     listContainers.forEach(container => {
         const list = container.querySelector('.list');
-        if (list && list.scrollWidth > list.clientWidth + 10) { // Add a small buffer
-            // Add left scroll button
+        if (list && list.scrollWidth > list.clientWidth + 10) {
             if (!container.querySelector('.scroll-btn.left')) {
                 const scrollBtnLeft = document.createElement('button');
                 scrollBtnLeft.className = 'scroll-btn left';
                 scrollBtnLeft.innerHTML = '&lt;';
-                scrollBtnLeft.setAttribute('aria-label', 'Scroll left');
                 container.appendChild(scrollBtnLeft);
                 scrollBtnLeft.addEventListener('click', () => {
                     list.scrollBy({ left: -list.clientWidth * 0.8, behavior: 'smooth' });
                 });
             }
-             // Add right scroll button
             if (!container.querySelector('.scroll-btn.right')) {
                 const scrollBtnRight = document.createElement('button');
                 scrollBtnRight.className = 'scroll-btn right';
                 scrollBtnRight.innerHTML = '&gt;';
-                scrollBtnRight.setAttribute('aria-label', 'Scroll right');
                 container.appendChild(scrollBtnRight);
                 scrollBtnRight.addEventListener('click', () => {
-                     list.scrollBy({ left: list.clientWidth * 0.8, behavior: 'smooth' });
+                    list.scrollBy({ left: list.clientWidth * 0.8, behavior: 'smooth' });
                 });
             }
-        } else {
-             // Remove buttons if list is not scrollable (optional)
-             const leftBtn = container.querySelector('.scroll-btn.left');
-             const rightBtn = container.querySelector('.scroll-btn.right');
-             if(leftBtn) leftBtn.remove();
-             if(rightBtn) rightBtn.remove();
         }
     });
 }
 
-
-// --- UNIVERSAL FUNCTIONS ---
 function goToMoviePage(item) {
-    if (!item || !item.id) { console.error("goToMoviePage: Invalid item data."); return; }
-    const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+    if (!item || !item.id) return;
+    const itemType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
     
-    // Ensure saveToWatchHistory is defined before calling
     if (typeof saveToWatchHistory === 'function') {
         saveToWatchHistory({
             id: item.id,
             title: item.title || item.name || "Unknown Title",
             poster_path: item.poster_path || "",
-            type: type
+            type: itemType
         });
-    } else {
-        console.warn("saveToWatchHistory function not found when trying to navigate.");
     }
     
-    window.location.href = `movie.html?id=${item.id}&type=${type}`;
+    window.location.href = `movie.html?id=${item.id}&type=${itemType}`;
 }
 
 function openSearchModal() {
@@ -444,10 +365,10 @@ function openSearchModal() {
     const searchInput = document.getElementById('search-input');
     if (modal && searchInput) {
         modal.classList.add('active');
-        searchInput.value = ''; // Clear input
+        searchInput.value = '';
         searchInput.focus();
         document.body.classList.add('body-no-scroll');
-    } else { console.error("Search modal elements not found."); }
+    }
 }
 
 function closeSearchModal() {
@@ -456,22 +377,21 @@ function closeSearchModal() {
         modal.classList.remove('active');
         document.body.classList.remove('body-no-scroll');
         const container = document.getElementById('search-results');
-        if (container) container.innerHTML = ''; // Clear results
+        if (container) container.innerHTML = '';
         const searchInput = document.getElementById('search-input');
-        if (searchInput) searchInput.value = ''; // Clear input
+        if (searchInput) searchInput.value = '';
     }
 }
 
-
-// Debounce search function to avoid too many API calls
+// --- SEARCH FUNCTIONS (EXPOSED TO WINDOW FOR INLINE ONINPUT) ---
 let searchTimeout;
 function debounceSearch() {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
         searchTMDB();
-    }, 300); // Wait 300ms after user stops typing
+    }, 300);
 }
-// Make sure the input calls debounceSearch: oninput="debounceSearch()" in HTML
+window.debounceSearch = debounceSearch;
 
 async function searchTMDB() {
     const searchInput = document.getElementById('search-input');
@@ -480,30 +400,44 @@ async function searchTMDB() {
     if (!searchInput || !container) return;
 
     const query = searchInput.value.trim();
-    container.innerHTML = ''; // Clear previous
+    container.innerHTML = '';
 
     if (!query) {
-        if(noResultsMsg) noResultsMsg.style.display = 'none';
+        if (noResultsMsg) noResultsMsg.style.display = 'none';
         return;
     }
 
-    if (noResultsMsg) noResultsMsg.style.display = 'none'; // Hide while searching
+    if (noResultsMsg) noResultsMsg.style.display = 'none';
 
     try {
-        const res = await fetch(`${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`);
-        if (!res.ok) throw new Error(`Search fetch failed: ${res.status}`);
-        const data = await res.json();
-        const results = (data.results || [])
-            .filter(item => item.poster_path && (item.media_type === 'movie' || item.media_type === 'tv'))
-            .slice(0, 18); // Limit results shown
+        let results = [];
+        try {
+            const res = await fetch(`${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`);
+            if (res.ok) {
+                const data = await res.json();
+                results = data.results || [];
+            }
+        } catch (e) {
+            console.warn("Proxy search failed, using direct TMDb API...");
+        }
 
+        // Direct TMDb Search Fallback
         if (results.length === 0) {
+            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_DIRECT_KEY}&query=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            results = data.results || [];
+        }
+
+        const filtered = results
+            .filter(item => item.poster_path && (item.media_type === 'movie' || item.media_type === 'tv'))
+            .slice(0, 18);
+
+        if (filtered.length === 0) {
             if (noResultsMsg) noResultsMsg.style.display = 'block';
         } else {
-            results.forEach(item => {
+            filtered.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'movie-card search-result-card'; // Add specific class maybe
-                // div.style.width = '150px'; // Better to control size via CSS
+                div.className = 'movie-card search-result-card';
                 div.onclick = () => { closeSearchModal(); goToMoviePage(item); };
                 div.innerHTML = `
                     <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name || ''}" loading="lazy">
@@ -519,7 +453,7 @@ async function searchTMDB() {
         }
     }
 }
-
+window.searchTMDB = searchTMDB;
 
 const genreMap = { 28:"Action", 12:"Adventure", 16:"Animation", 35:"Comedy", 80:"Crime", 99:"Documentary", 18:"Drama", 10751:"Family", 14:"Fantasy", 36:"History", 27:"Horror", 10402:"Music", 9648:"Mystery", 10749:"Romance", 878:"Science Fiction", 10770:"TV Movie", 53:"Thriller", 10752:"War", 37:"Western", 10759: "Action & Adventure", 10762: "Kids", 10763: "News", 10764: "Reality", 10765: "Sci-Fi & Fantasy", 10766: "Soap", 10767: "Talk", 10768: "War & Politics"};
 
@@ -546,13 +480,13 @@ function showDetailsModal(item) {
     if (desc) desc.textContent = item.overview || 'No description.';
     
     if (genres) {
-        genres.innerHTML = ''; // Clear previous
+        genres.innerHTML = '';
         const genreIds = item.genre_ids || [];
-        genreIds.slice(0, 4).forEach(id => {
-            if (genreMap[id]) {
+        genreIds.slice(0, 4).forEach(gid => {
+            if (genreMap[gid]) {
                 const tag = document.createElement('span');
                 tag.className = 'genre-tag';
-                tag.textContent = genreMap[id];
+                tag.textContent = genreMap[gid];
                 genres.appendChild(tag);
             }
         });
@@ -569,45 +503,14 @@ function closeDetailsModal() {
     document.body.classList.remove('body-no-scroll');
 }
 
-// --- BAGO: Auto-generates the collections dropdown menu ---
-function populateCollectionsDropdown() {
-    // Hanapin ang *lahat* ng dropdown menu sa page
-    const dropdownMenus = document.querySelectorAll(".nav-dropdown-menu");
-    
-    // Pinalitan ang pangalan para tumugma sa Step 1
-    if (typeof COLLECTIONS_LIST === 'undefined' || COLLECTIONS_LIST.length === 0) {
-        console.warn("Collections list (COLLECTIONS_LIST) not found or is empty.");
-        // Itago ang buong dropdown kung walang laman
-        document.querySelectorAll(".nav-dropdown").forEach(d => d.style.display = 'none');
-        return;
-    }
-
-    dropdownMenus.forEach(menu => {
-        // Linisin muna ang menu bago punan
-        menu.innerHTML = ''; 
-
-        // Punan ang bawat menu ng mga item galing sa listahan
-        COLLECTIONS_LIST.forEach(collection => {
-            const link = document.createElement('a');
-            // BAGO: Idinagdag ang &type=${collection.type} sa URL
-            link.href = `collection.html?id=${collection.id}&name=${encodeURIComponent(collection.name)}&type=${collection.type}`;
-            link.textContent = collection.name;
-            menu.appendChild(link);
-        });
-    });
-}
-
-// Define saveToWatchHistory globally IF NOT DEFINED BY watchHistory.js
-// This ensures it's available for goToMoviePage
 if (typeof window.saveToWatchHistory === 'undefined') {
     window.saveToWatchHistory = function({ title, id, type = 'movie', poster_path = '' }) {
-        console.warn("Using fallback saveToWatchHistory in home.js");
         try {
             let history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
             history = history.filter(item => !(item.id === id && item.type === type));
             history.unshift({ title, id, type, poster_path, timestamp: Date.now() });
             if (history.length > 20) history = history.slice(0, 20);
             localStorage.setItem("watchHistory", JSON.stringify(history));
-        } catch (e) { console.error("Fallback saveToWatchHistory error:", e); }
+        } catch (e) { console.error("History save error:", e); }
     }
 }

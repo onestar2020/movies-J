@@ -1,5 +1,33 @@
-// ✅ js/movie.js (MOBILE OPTIMIZED + LOCALSTORAGE WATCH PROGRESS)
+// ✅ js/movie.js (FULL PROTECTED + MOBILE OPTIMIZED + TV/SERIES FIX + LOCALSTORAGE PROGRESS)
 
+// ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
+(function() {
+    // Disable Right Click
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Disable DevTools Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (
+            e.key === 'F12' ||
+            (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) ||
+            (e.ctrlKey && ['U', 'u', 'S', 's'].includes(e.key))
+        ) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // Anti-Debugger Trap Loop (Freezes on Console Open)
+    setInterval(() => {
+        const startTime = performance.now();
+        debugger;
+        if (performance.now() - startTime > 100) {
+            window.location.href = "about:blank";
+        }
+    }, 500);
+})();
+
+// ================= 2. CORE MOVIE & TV LOGIC =================
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; 
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
 const IMG_URL = 'https://image.tmdb.org/t/p/w500';

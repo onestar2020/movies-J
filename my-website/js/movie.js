@@ -1,4 +1,4 @@
-// ✅ js/movie.js (FIXED TV SHOW SEASONS & EPISODE LOADING + DIRECT FALLBACKS)
+// ✅ js/movie.js (MOBILE OPTIMIZED + LOCALSTORAGE WATCH PROGRESS)
 
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; 
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
@@ -9,10 +9,20 @@ const id = urlParams.get('id') || '1083818';
 let type = (urlParams.get('type') || 'movie').toLowerCase();
 
 let trailerUrl = ''; 
-let currentSeasonNumber = parseInt(urlParams.get('season')) || 1;
-let currentEpisodeNumber = parseInt(urlParams.get('episode')) || 1;
 let currentItemData = null;
 let isEpisodic = (type === 'tv' || type === 'anime');
+
+// LocalStorage Watch History Tracker
+const storageKey = `movies_j_progress_${id}`;
+let savedProgress = null;
+try {
+    savedProgress = JSON.parse(localStorage.getItem(storageKey));
+} catch (e) {
+    savedProgress = null;
+}
+
+let currentSeasonNumber = parseInt(urlParams.get('season')) || (savedProgress ? savedProgress.season : 1);
+let currentEpisodeNumber = parseInt(urlParams.get('episode')) || (savedProgress ? savedProgress.episode : 1);
 
 document.addEventListener("DOMContentLoaded", async () => {
     if (!id) return;
@@ -21,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (item) {
         currentItemData = item;
 
-        // 1. Title & Headers
+        // 1. Title & Header Info
         const displayTitle = item.title || item.name || item.original_title || "Now Playing";
         document.title = `${displayTitle} - Stream`;
 
@@ -52,7 +62,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // 6. Similar / Recommendations
         renderSimilarSection(item);
 
-        // 7. Collection Sidebar (for movies)
+        // 7. Collection Sidebar (Movies)
         if (item.belongs_to_collection && item.belongs_to_collection.id) {
             handleCollection(item.belongs_to_collection.id);
         }
@@ -67,7 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// Fetch Main Details (Proxy muna, Fallback sa Direct TMDb)
+// Fetch Main Details with Proxy & Direct TMDb Fallback
 async function fetchDetails() {
     let data = null;
 
@@ -173,7 +183,7 @@ async function renderCastSection(item) {
     }
 }
 
-// More Like This (Recommendations)
+// Recommendations
 async function renderSimilarSection(item) {
     const recBox = document.getElementById("rec-container");
     if (!recBox) return;
@@ -223,7 +233,7 @@ function setupInitialPlayer(item) {
     trailerUrl = '';
 }
 
-// Populate Stream Servers
+// Server Buttons
 function populateServerSelector(item) {
     const grid = document.getElementById("server-buttons");
     if (!grid) return;
@@ -264,6 +274,11 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     currentSeasonNumber = season;
     currentEpisodeNumber = episode;
 
+    // Save Progress sa LocalStorage para sa mobile resume
+    if (isEpisodic) {
+        localStorage.setItem(storageKey, JSON.stringify({ season: currentSeasonNumber, episode: currentEpisodeNumber }));
+    }
+
     const mediaData = { 
         id: item.id, 
         tmdb_id: item.id, 
@@ -274,7 +289,7 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     player.src = getEmbedUrl(serverKey, mediaData, typeKey, season, episode);
 }
 
-// TV Seasons at Episodes Setup
+// TV Seasons & Episodes Setup
 function handleTVShow(item) {
     const drop = document.getElementById("season-dropdown");
     const btn = document.getElementById("season-toggle");
@@ -291,7 +306,7 @@ function handleTVShow(item) {
         return;
     }
 
-    // Siguraduhing Season 1 ang default maliban na lang kung may nakalagay sa URL
+    // Default to Season 1 or Saved Progress
     const initialSeason = validSeasons.find(s => s.season_number === currentSeasonNumber) || validSeasons[0];
     currentSeasonNumber = initialSeason.season_number;
     if (currentLabel) currentLabel.textContent = initialSeason.name || `Season ${initialSeason.season_number}`;
@@ -301,7 +316,7 @@ function handleTVShow(item) {
         b.textContent = s.name || `Season ${s.season_number}`;
         b.onclick = () => {
             currentSeasonNumber = s.season_number;
-            currentEpisodeNumber = 1; // reset sa episode 1
+            currentEpisodeNumber = 1;
             if (currentLabel) currentLabel.textContent = b.textContent;
             drop.style.display = "none";
             loadEpisodes(currentSeasonNumber);
@@ -318,11 +333,9 @@ function handleTVShow(item) {
         if (drop.style.display === "block") drop.style.display = "none";
     });
 
-    // I-load agad ang unang season
     loadEpisodes(currentSeasonNumber);
 }
 
-// Load Episodes with Proxy + Direct TMDb Fallback
 async function loadEpisodes(seasonNum) {
     const list = document.getElementById("episode-list");
     if (!list) return;
@@ -331,7 +344,6 @@ async function loadEpisodes(seasonNum) {
 
     let episodes = [];
 
-    // 1. Subukan muna sa Proxy
     try {
         const res = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNum}`);
         if (res.ok) {
@@ -342,7 +354,6 @@ async function loadEpisodes(seasonNum) {
         console.warn("Proxy season fetch failed, trying direct TMDb...");
     }
 
-    // 2. Direct TMDb Fallback
     if (!episodes || episodes.length === 0) {
         try {
             const res = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/${seasonNum}?api_key=${TMDB_DIRECT_KEY}`);
@@ -384,11 +395,16 @@ async function loadEpisodes(seasonNum) {
 
         list.appendChild(card);
 
-        // Auto-select first episode
         if (index === 0 && (!currentEpisodeNumber || currentEpisodeNumber === 1)) {
             card.classList.add("active");
         }
     });
+
+    // Auto scroll the active episode card into view (useful on mobile horizontal bar)
+    const activeEp = list.querySelector('.ep-card.active');
+    if (activeEp) {
+        activeEp.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
 }
 
 // Next Episode Button Handler
@@ -403,7 +419,7 @@ function setupNextEpisodeButton() {
         const currentActive = document.querySelector('.ep-card.active');
         if (currentActive && currentActive.nextElementSibling && currentActive.nextElementSibling.classList.contains('ep-card')) {
             currentActive.nextElementSibling.click();
-            currentActive.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            currentActive.nextElementSibling.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
             alert("End of season! Please select the next season.");

@@ -172,7 +172,7 @@
 
             Object.keys(STREAM_SERVERS).forEach((key) => {
                 const srv = STREAM_SERVERS[key];
-                if (!srv.enabled) return; // Hide Server 4 (Nova), 5 (Vidlink), 7 (KKPhim)
+                if (!srv.enabled) return;
 
                 const btn = document.createElement("button");
                 btn.className = "srv-btn";
@@ -193,32 +193,33 @@
             iframe.src = getEmbedUrl(serverKey, mediaData, typeKey, currentSeason, currentEpisode);
         }
 
-        // 3. Load TMDb Details with Auto-Type Fallback & Cast Cards
+        // 3. Fallback Fetcher (Movie / TV Auto Isolated Calls)
         async function loadContent() {
             setupServers();
+            let data = null;
             let tmdbType = isEpisodic ? "tv" : "movie";
 
             try {
-                let res = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${mediaId}?api_key=${TMDB_API}&append_to_response=external_ids,credits,similar,videos`);
-                let data = await res.json();
+                // Try Primary Fetch
+                let res = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${mediaId}?api_key=${TMDB_API}`);
+                data = await res.json();
 
-                // If movie not found, automatically try TV format
-                if (data.status_code === 34 && tmdbType === "movie") {
-                    tmdbType = "tv";
-                    isEpisodic = true;
-                    res = await fetch(`https://api.themoviedb.org/3/tv/${mediaId}?api_key=${TMDB_API}&append_to_response=external_ids,credits,similar,videos`);
+                // If not found, flip type and retry
+                if (data.status_code === 34 || !data.id) {
+                    tmdbType = tmdbType === "movie" ? "tv" : "movie";
+                    isEpisodic = (tmdbType === "tv");
+                    res = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${mediaId}?api_key=${TMDB_API}`);
                     data = await res.json();
                 }
+
+                if (!data.id) throw new Error("Media ID not found on TMDb");
 
                 // Set Title & Overview
                 const title = data.title || data.name || data.original_title || "Now Playing";
                 document.getElementById("media-title").textContent = title;
                 document.getElementById("page-header-title").textContent = title;
                 document.getElementById("media-overview").textContent = data.overview || "No overview available.";
-                
-                if (data.external_ids && data.external_ids.imdb_id) {
-                    mediaData.imdb_id = data.external_ids.imdb_id;
-                }
+                mediaData.tmdb_id = data.id;
 
                 // Facts
                 const runtime = data.runtime ? `${data.runtime} min` : (data.episode_run_time?.[0] ? `${data.episode_run_time[0]} min` : (data.status || "N/A"));
@@ -235,12 +236,36 @@
                     ${(data.genres || []).map(g => `<span class="meta-badge">${g.name}</span>`).join("")}
                 `;
 
-                // Cast Cards
-                const castBox = document.getElementById("cast-container");
-                castBox.innerHTML = "";
-                const castList = data.credits?.cast || [];
-                if (castList.length > 0) {
-                    castList.slice(0, 15).forEach(c => {
+                // Fetch Credits, Videos, & External IDs separately to avoid API locks
+                fetchDetailsExtra(tmdbType, data.id);
+
+                // Episodic Setup
+                if (isEpisodic && data.seasons) {
+                    document.getElementById("tv-panel").style.display = "block";
+                    buildSeasons(data.seasons);
+                    fetchEpisodes(currentSeason);
+                }
+
+            } catch (err) {
+                console.error("Content Loading Error:", err);
+                selectServer("vidstorm", document.querySelector(".srv-btn"));
+            }
+        }
+
+        async function fetchDetailsExtra(type, id) {
+            // External IDs (for IMDb lookup)
+            fetch(`https://api.themoviedb.org/3/${type}/${id}/external_ids?api_key=${TMDB_API}`)
+                .then(r => r.json())
+                .then(ext => { if (ext.imdb_id) mediaData.imdb_id = ext.imdb_id; })
+                .catch(() => {});
+
+            // Cast
+            fetch(`https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${TMDB_API}`)
+                .then(r => r.json())
+                .then(cred => {
+                    const castBox = document.getElementById("cast-container");
+                    castBox.innerHTML = "";
+                    (cred.cast || []).slice(0, 15).forEach(c => {
                         const pic = c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : 'images/logo-192.png';
                         castBox.innerHTML += `
                             <div class="cast-card">
@@ -252,44 +277,41 @@
                             </div>
                         `;
                     });
-                } else {
-                    castBox.innerHTML = "<p style='color:#777;'>No cast info available.</p>";
-                }
+                }).catch(() => {});
 
-                // Recommendations
-                const recBox = document.getElementById("rec-container");
-                recBox.innerHTML = "";
-                (data.similar?.results || []).slice(0, 12).forEach(item => {
-                    const poster = item.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : 'images/logo-192.png';
-                    recBox.innerHTML += `
-                        <a class="rec-card" href="movie.html?id=${item.id}&type=${tmdbType}">
-                            <img src="${poster}" alt="${item.title || item.name}" loading="lazy">
-                            <h6>${item.title || item.name}</h6>
-                        </a>
-                    `;
-                });
+            // Recommendations
+            fetch(`https://api.themoviedb.org/3/${type}/${id}/similar?api_key=${TMDB_API}`)
+                .then(r => r.json())
+                .then(sim => {
+                    const recBox = document.getElementById("rec-container");
+                    recBox.innerHTML = "";
+                    (sim.results || []).slice(0, 12).forEach(item => {
+                        const poster = item.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : 'images/logo-192.png';
+                        recBox.innerHTML += `
+                            <a class="rec-card" href="movie.html?id=${item.id}&type=${type}">
+                                <img src="${poster}" alt="${item.title || item.name}" loading="lazy">
+                                <h6>${item.title || item.name}</h6>
+                            </a>
+                        `;
+                    });
+                }).catch(() => {});
 
-                // Episodic Setup (TV Shows / Anime)
-                if (isEpisodic && data.seasons) {
-                    document.getElementById("tv-panel").style.display = "block";
-                    buildSeasons(data.seasons);
-                    fetchEpisodes(currentSeason);
-                }
-
-                // Auto-Play Official Trailer
-                const trailer = (data.videos?.results || []).find(v => (v.type === "Trailer" || v.type === "Teaser") && v.site === "YouTube") || data.videos?.results?.[0];
-                if (trailer) {
-                    document.getElementById("movie-player").src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=0&controls=1`;
-                } else {
+            // Auto-Play Trailer
+            fetch(`https://api.themoviedb.org/3/${type}/${id}/videos?api_key=${TMDB_API}`)
+                .then(r => r.json())
+                .then(vids => {
+                    const trailer = (vids.results || []).find(v => (v.type === "Trailer" || v.type === "Teaser") && v.site === "YouTube") || vids.results?.[0];
+                    if (trailer) {
+                        document.getElementById("movie-player").src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=0&controls=1`;
+                    } else {
+                        selectServer("vidstorm", document.querySelector(".srv-btn"));
+                    }
+                }).catch(() => {
                     selectServer("vidstorm", document.querySelector(".srv-btn"));
-                }
-
-            } catch (err) {
-                console.error("Content Loading Error:", err);
-            }
+                });
         }
 
-        // 4. TV/Anime Seasons & Episodes Dispatcher
+        // 4. TV Seasons & Episodes Dispatcher
         function buildSeasons(seasons) {
             const drop = document.getElementById("season-dropdown");
             const btn = document.getElementById("season-toggle");

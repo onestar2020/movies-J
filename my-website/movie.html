@@ -8,6 +8,7 @@
     <link rel="icon" href="images/logo-192.png" type="image/png">
     <link rel="stylesheet" href="css/home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399"
             crossorigin="anonymous"></script>
@@ -33,11 +34,12 @@
 
         /* Left Side: Player & Info */
         .player-column { flex: 2.8; min-width: 0; }
-        .video-container { width: 100%; margin-bottom: 20px; }
-        iframe#movie-player { 
+        .video-container { width: 100%; margin-bottom: 20px; position: relative; }
+        iframe#movie-player, video#hls-player { 
             width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; border: none; 
             background-color: #000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); 
         }
+        video#hls-player { display: none; }
 
         /* Right Side: Sidebar */
         .sidebar-column {
@@ -55,34 +57,37 @@
             font-size: 0.85rem; cursor: pointer; transition: 0.2s;
         }
         .server-btn:hover { background-color: #444; color: #fff; }
-        .server-btn.active { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .server-btn.active { background-color: #e50914; color: #fff; border-color: #e50914; font-weight: bold; }
 
         /* Collection Sidebar Section */
         #collection-sidebar { display: none; margin-top: 10px; border-top: 1px solid #333; padding-top: 20px; }
         #collection-list-container { display: flex; flex-direction: column; gap: 10px; }
 
-        /* TV Browser (Episodes) */
+        /* TV & Anime Browser (Episodes) */
         .tv-show-browser { display: none; margin-top: 10px; border-top: 1px solid #333; padding-top: 20px; }
+        .season-selector-container { position: relative; }
         #season-selector-btn {
             width: 100%; background-color: #222; border: 1px solid #444; color: #fff;
             padding: 12px; border-radius: 5px; cursor: pointer;
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
         }
         #season-dropdown-menu {
-            position: absolute; background: #222; border: 1px solid #444; width: calc(100% - 40px);
-            z-index: 100; border-radius: 5px; display: none; margin-top: -10px;
+            position: absolute; background: #222; border: 1px solid #444; width: 100%;
+            z-index: 100; border-radius: 5px; display: none; top: 100%; margin-top: -10px;
+            max-height: 250px; overflow-y: auto;
         }
         #season-dropdown-menu button {
             display: block; width: 100%; padding: 10px 15px; background: none; border: none; color: #fff; text-align: left; cursor: pointer;
         }
+        #season-dropdown-menu button:hover { background: #333; }
 
-        #episode-list-container { display: flex; flex-direction: column; gap: 10px; max-height: 450px; }
-        .episode-card { display: flex; gap: 12px; padding: 10px; border-radius: 8px; cursor: pointer; background: #222; border: 1px solid transparent; transition: 0.2s; }
+        #episode-list-container { display: flex; flex-direction: column; gap: 10px; max-height: 450px; overflow-y: auto; }
+        .episode-card { display: flex; gap: 12px; padding: 10px; border-radius: 8px; cursor: pointer; background: #222; border: 1px solid transparent; transition: 0.2s; align-items: center; }
         .episode-card:hover { background: #2a2a2a; }
-        .episode-card.active { border-color: var(--primary-color); background: #252525; }
+        .episode-card.active { border-color: #e50914; background: #252525; }
         .episode-thumbnail { width: 100px; aspect-ratio: 16/9; object-fit: cover; border-radius: 4px; }
-        .episode-details h3 { font-size: 0.85rem; margin: 0; }
-        .episode-details p { font-size: 0.75rem; color: #888; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .episode-details h3 { font-size: 0.85rem; margin: 0; color: #fff; }
+        .episode-details p { font-size: 0.75rem; color: #888; margin: 3px 0 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
         /* Info & Cast */
         #movie-overview { color: #ccc; line-height: 1.6; font-size: 1rem; margin-top: 20px; }
@@ -106,7 +111,8 @@
             
             <div class="player-column">
                 <div class="video-container">
-                  <iframe id="movie-player" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; picture-in-picture; xr-spatial-tracking; clipboard-write"></iframe>
+                    <iframe id="movie-player" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; picture-in-picture; clipboard-write"></iframe>
+                    <video id="hls-player" controls autoplay playsinline></video>
                 </div>
                 <p id="movie-overview"></p>
                 <div id="cast-list"></div>
@@ -121,7 +127,7 @@
 
                 <div id="collection-sidebar">
                     <label style="display: block; margin-bottom: 10px; color: #aaa; font-weight: bold;">
-                        <i class="fas fa-layer-group"></i> Movie Collection:
+                        <i class="fas fa-layer-group"></i> Collection:
                     </label>
                     <div id="collection-list-container"></div>
                 </div>
@@ -142,9 +148,183 @@
         </div>
     </div>
 
-    <script src="js/servers.js" defer></script>
-    <script src="js/embed.js" defer></script>
-    <script src="js/movie.js" defer></script>
-    <script src="js/antiInspect.js" defer></script>
+    <script src="js/servers.js"></script>
+    <script>
+        // Core Player & TV/Anime/Movie Dispatcher
+        const TMDB_API_KEY = "1e86095039d9eb32cbcf1aa445b23d92";
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        const mediaId = urlParams.get("id") || "1315772";
+        const mediaType = (urlParams.get("type") || "movie").toLowerCase(); // 'movie', 'tv', o 'anime'
+        let currentSeason = parseInt(urlParams.get("season")) || 1;
+        let currentEpisode = parseInt(urlParams.get("episode")) || 1;
+        let currentServerKey = "vidstorm";
+        let mediaDetails = { id: mediaId, tmdb_id: mediaId, imdb_id: "" };
+        let hlsInstance = null;
+
+        const isEpisodic = mediaType === "tv" || mediaType === "anime";
+
+        // Initialize Server Buttons
+        function initServerButtons() {
+            const container = document.getElementById("server-buttons-container");
+            container.innerHTML = "";
+            
+            Object.keys(STREAM_SERVERS).forEach((key, index) => {
+                const srv = STREAM_SERVERS[key];
+                const btn = document.createElement("button");
+                btn.className = `server-btn ${key === currentServerKey ? "active" : ""}`;
+                btn.textContent = srv.name;
+                btn.onclick = () => switchServer(key);
+                container.appendChild(btn);
+            });
+        }
+
+        // Switch Streaming Server
+        async function switchServer(serverKey) {
+            currentServerKey = serverKey;
+            document.querySelectorAll(".server-btn").forEach(btn => {
+                btn.classList.toggle("active", btn.textContent === STREAM_SERVERS[serverKey].name);
+            });
+
+            const iframe = document.getElementById("movie-player");
+            const video = document.getElementById("hls-player");
+            const srv = STREAM_SERVERS[serverKey];
+
+            if (!srv) return;
+
+            if (srv.type === "api_addon") {
+                iframe.style.display = "none";
+                video.style.display = "block";
+                iframe.src = "";
+                
+                try {
+                    const lookupId = mediaDetails.imdb_id || mediaDetails.id;
+                    const reqUrl = srv.getStreamUrl(lookupId, isEpisodic ? "series" : "movie", currentSeason, currentEpisode);
+                    const res = await fetch(reqUrl);
+                    const data = await res.json();
+
+                    if (data && data.streams && data.streams.length > 0) {
+                        const streamUrl = data.streams[0].url;
+                        if (Hls.isSupported()) {
+                            if (hlsInstance) hlsInstance.destroy();
+                            hlsInstance = new Hls();
+                            hlsInstance.loadSource(streamUrl);
+                            hlsInstance.attachMedia(video);
+                        } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+                            video.src = streamUrl;
+                        }
+                    } else {
+                        alert("Stream not found on this Asian server, please select another server.");
+                    }
+                } catch (err) {
+                    console.error("Addon fetch error:", err);
+                }
+            } else {
+                if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+                video.pause();
+                video.style.display = "none";
+                iframe.style.display = "block";
+
+                const streamType = isEpisodic ? "tv" : "movie";
+                iframe.src = getEmbedUrl(serverKey, mediaDetails, streamType, currentSeason, currentEpisode);
+            }
+        }
+
+        // Load Metadata & Episodes from TMDb
+        async function loadMediaDetails() {
+            initServerButtons();
+            const tmdbType = isEpisodic ? "tv" : "movie";
+            
+            try {
+                const res = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${mediaId}?api_key=${TMDB_API_KEY}&append_to_response=external_ids,credits,similar`);
+                const data = await res.json();
+
+                document.getElementById("movie-title").textContent = data.title || data.name || "Now Playing";
+                document.getElementById("movie-overview").textContent = data.overview || "No overview available.";
+                
+                if (data.external_ids && data.external_ids.imdb_id) {
+                    mediaDetails.imdb_id = data.external_ids.imdb_id;
+                }
+
+                // Setup TV/Anime Episode list
+                if (isEpisodic && data.seasons) {
+                    document.querySelector(".tv-show-browser").style.display = "block";
+                    setupSeasons(data.seasons);
+                    loadSeasonEpisodes(currentSeason);
+                }
+
+                switchServer(currentServerKey);
+            } catch (err) {
+                console.error("TMDb Load Error:", err);
+                switchServer(currentServerKey);
+            }
+        }
+
+        // Setup Seasons UI
+        function setupSeasons(seasons) {
+            const menu = document.getElementById("season-dropdown-menu");
+            const btn = document.getElementById("season-selector-btn");
+            menu.innerHTML = "";
+
+            const validSeasons = seasons.filter(s => s.season_number > 0);
+            validSeasons.forEach(s => {
+                const sBtn = document.createElement("button");
+                sBtn.textContent = s.name || `Season ${s.season_number}`;
+                sBtn.onclick = () => {
+                    currentSeason = s.season_number;
+                    document.getElementById("selected-season-name").textContent = sBtn.textContent;
+                    menu.style.display = "none";
+                    loadSeasonEpisodes(currentSeason);
+                };
+                menu.appendChild(sBtn);
+            });
+
+            btn.onclick = () => {
+                menu.style.display = menu.style.display === "block" ? "none" : "block";
+            };
+        }
+
+        // Fetch and Render Episodes
+        async function loadSeasonEpisodes(seasonNum) {
+            const container = document.getElementById("episode-list-container");
+            container.innerHTML = "<p style='color:#888; padding:10px;'>Loading episodes...</p>";
+
+            try {
+                const res = await fetch(`https://api.themoviedb.org/3/tv/${mediaId}/season/${seasonNum}?api_key=${TMDB_API_KEY}`);
+                const data = await res.json();
+                container.innerHTML = "";
+
+                if (!data.episodes || data.episodes.length === 0) {
+                    container.innerHTML = "<p style='color:#888;'>No episodes available.</p>";
+                    return;
+                }
+
+                data.episodes.forEach(ep => {
+                    const card = document.createElement("div");
+                    card.className = `episode-card ${ep.episode_number === currentEpisode ? "active" : ""}`;
+                    
+                    const thumb = ep.still_path ? `https://image.tmdb.org/t/p/w185${ep.still_path}` : 'images/logo-192.png';
+                    card.innerHTML = `
+                        <img class="episode-thumbnail" src="${thumb}" alt="EP ${ep.episode_number}" loading="lazy">
+                        <div class="episode-details">
+                            <h3>EP ${ep.episode_number}: ${ep.name || "Episode " + ep.episode_number}</h3>
+                            <p>${ep.overview || "No description provided."}</p>
+                        </div>
+                    `;
+                    card.onclick = () => {
+                        currentEpisode = ep.episode_number;
+                        document.querySelectorAll(".episode-card").forEach(c => c.classList.remove("active"));
+                        card.classList.add("active");
+                        switchServer(currentServerKey);
+                    };
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                container.innerHTML = "<p style='color:#f44;'>Failed to load episodes.</p>";
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", loadMediaDetails);
+    </script>
 </body>
 </html>

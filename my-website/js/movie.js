@@ -1,4 +1,4 @@
-// ✅ js/movie.js (SUPER SECURE + FULL FALLBACKS + EXACT UI SYNC)
+// ✅ js/movie.js (FIXED TV SHOW SEASONS & EPISODE LOADING + DIRECT FALLBACKS)
 
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; 
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (item) {
         currentItemData = item;
 
-        // 1. Title at Header Text
+        // 1. Title & Headers
         const displayTitle = item.title || item.name || item.original_title || "Now Playing";
         document.title = `${displayTitle} - Stream`;
 
@@ -39,25 +39,25 @@ document.addEventListener("DOMContentLoaded", async () => {
                 : "No overview available.";
         }
 
-        // 3. Facts (Runtime, Release Date, Rating, Country) & Badges
+        // 3. Facts & Badges
         renderMetadata(item);
 
-        // 4. Player at Servers
+        // 4. Player & Server Setup
         setupInitialPlayer(item);
         populateServerSelector(item);
 
         // 5. Cast Section
         renderCastSection(item);
 
-        // 6. Similar / Recommendations Section
+        // 6. Similar / Recommendations
         renderSimilarSection(item);
 
-        // 7. Collection Sidebar (Movies)
+        // 7. Collection Sidebar (for movies)
         if (item.belongs_to_collection && item.belongs_to_collection.id) {
             handleCollection(item.belongs_to_collection.id);
         }
 
-        // 8. TV Show Seasons & Episodes
+        // 8. TV Shows & Episodes
         if (isEpisodic && item.seasons) {
             const tvPanel = document.getElementById("tv-panel");
             if (tvPanel) tvPanel.style.display = "block";
@@ -67,11 +67,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// Fetch Main Details with Proxy & Direct Fallback
+// Fetch Main Details (Proxy muna, Fallback sa Direct TMDb)
 async function fetchDetails() {
     let data = null;
 
-    // Subukan muna sa Cloudflare Proxy
     try {
         const res = await fetch(`${BASE_URL}/${type}/${id}?append_to_response=external_ids,credits,similar,videos`);
         if (res.ok) {
@@ -81,13 +80,11 @@ async function fetchDetails() {
         console.warn("Proxy fetch failed, switching to direct TMDb API:", e);
     }
 
-    // Fallback: Direct TMDb kung nag-fail ang worker
     if (!data || data.status_code === 34) {
         try {
             let tmdbRes = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
             data = await tmdbRes.json();
 
-            // Auto-detect kung TV pala
             if (data.status_code === 34 && type === 'movie') {
                 type = 'tv';
                 isEpisodic = true;
@@ -102,22 +99,19 @@ async function fetchDetails() {
     return data;
 }
 
-// Inilalagay ang Values sa Facts Grid at Badges
+// Facts Grid at Badges
 function renderMetadata(item) {
-    // Runtime
     const runtime = item.runtime || (item.episode_run_time && item.episode_run_time[0]);
     const runtimeElem = document.getElementById("fact-runtime");
     if (runtimeElem) {
         runtimeElem.textContent = runtime ? `${runtime} min` : (item.status || "N/A");
     }
 
-    // Release Date
     const releaseElem = document.getElementById("fact-release");
     if (releaseElem) {
         releaseElem.textContent = item.release_date || item.first_air_date || "N/A";
     }
 
-    // Rating
     const ratingElem = document.getElementById("fact-rating");
     if (ratingElem) {
         ratingElem.textContent = item.vote_average && item.vote_average > 0 
@@ -125,7 +119,6 @@ function renderMetadata(item) {
             : "Unrated";
     }
 
-    // Country
     const countryElem = document.getElementById("fact-country");
     if (countryElem) {
         const country = (item.production_countries && item.production_countries[0]?.name) ||
@@ -134,7 +127,6 @@ function renderMetadata(item) {
         countryElem.textContent = country;
     }
 
-    // Badges / Tags
     const badgeBox = document.getElementById("media-badges");
     if (badgeBox) {
         badgeBox.innerHTML = `
@@ -152,7 +144,6 @@ async function renderCastSection(item) {
 
     let castList = item.credits && item.credits.cast ? item.credits.cast : [];
 
-    // Fallback: Kunin ang credits kung walang laman
     if (castList.length === 0) {
         try {
             const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${TMDB_DIRECT_KEY}`);
@@ -182,7 +173,7 @@ async function renderCastSection(item) {
     }
 }
 
-// More Like This (Similar / Recommendations)
+// More Like This (Recommendations)
 async function renderSimilarSection(item) {
     const recBox = document.getElementById("rec-container");
     if (!recBox) return;
@@ -215,7 +206,7 @@ async function renderSimilarSection(item) {
     }
 }
 
-// Setup Player Video / Trailer
+// Setup Player
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
     if (!player) return;
@@ -243,7 +234,7 @@ function populateServerSelector(item) {
         const serverKeys = Object.keys(STREAM_SERVERS);
         let firstActiveBtn = null;
 
-        serverKeys.forEach((key, index) => {
+        serverKeys.forEach((key) => {
             const srv = STREAM_SERVERS[key];
             if (!srv.enabled) return;
 
@@ -257,11 +248,9 @@ function populateServerSelector(item) {
             };
 
             grid.appendChild(btn);
-
             if (!firstActiveBtn) firstActiveBtn = btn;
         });
 
-        // Kung walang trailer, automatic i-play ang unang server
         if (!trailerUrl && firstActiveBtn) {
             firstActiveBtn.click();
         }
@@ -285,7 +274,7 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     player.src = getEmbedUrl(serverKey, mediaData, typeKey, season, episode);
 }
 
-// TV Seasons at Episodes Logic
+// TV Seasons at Episodes Setup
 function handleTVShow(item) {
     const drop = document.getElementById("season-dropdown");
     const btn = document.getElementById("season-toggle");
@@ -294,11 +283,25 @@ function handleTVShow(item) {
 
     drop.innerHTML = "";
 
-    item.seasons.filter(s => s.season_number > 0).forEach(s => {
+    // Salain lamang ang totoong seasons (season_number > 0)
+    const validSeasons = item.seasons.filter(s => s.season_number > 0);
+
+    if (validSeasons.length === 0) {
+        document.getElementById("episode-list").innerHTML = "<p style='color:#777; padding:10px;'>No seasons available.</p>";
+        return;
+    }
+
+    // Siguraduhing Season 1 ang default maliban na lang kung may nakalagay sa URL
+    const initialSeason = validSeasons.find(s => s.season_number === currentSeasonNumber) || validSeasons[0];
+    currentSeasonNumber = initialSeason.season_number;
+    if (currentLabel) currentLabel.textContent = initialSeason.name || `Season ${initialSeason.season_number}`;
+
+    validSeasons.forEach(s => {
         const b = document.createElement("button");
         b.textContent = s.name || `Season ${s.season_number}`;
         b.onclick = () => {
             currentSeasonNumber = s.season_number;
+            currentEpisodeNumber = 1; // reset sa episode 1
             if (currentLabel) currentLabel.textContent = b.textContent;
             drop.style.display = "none";
             loadEpisodes(currentSeasonNumber);
@@ -306,59 +309,89 @@ function handleTVShow(item) {
         drop.appendChild(b);
     });
 
-    btn.onclick = () => {
+    btn.onclick = (e) => {
+        e.stopPropagation();
         drop.style.display = (drop.style.display === "block") ? "none" : "block";
     };
 
+    window.addEventListener("click", () => {
+        if (drop.style.display === "block") drop.style.display = "none";
+    });
+
+    // I-load agad ang unang season
     loadEpisodes(currentSeasonNumber);
 }
 
+// Load Episodes with Proxy + Direct TMDb Fallback
 async function loadEpisodes(seasonNum) {
     const list = document.getElementById("episode-list");
     if (!list) return;
 
-    list.innerHTML = "<p style='color:#777; padding:10px;'>Loading episodes...</p>";
+    list.innerHTML = "<p style='color:#777; padding:15px; text-align:center;'>Loading episodes...</p>";
 
+    let episodes = [];
+
+    // 1. Subukan muna sa Proxy
     try {
-        const res = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/${seasonNum}?api_key=${TMDB_DIRECT_KEY}`);
-        const data = await res.json();
-        list.innerHTML = "";
-
-        if (!data.episodes || data.episodes.length === 0) {
-            list.innerHTML = "<p style='color:#777; padding:10px;'>No episodes found.</p>";
-            return;
+        const res = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNum}`);
+        if (res.ok) {
+            const data = await res.json();
+            episodes = data.episodes || [];
         }
-
-        data.episodes.forEach(ep => {
-            const card = document.createElement("div");
-            card.className = `ep-card ${ep.episode_number === currentEpisodeNumber ? "active" : ""}`;
-            const thumb = ep.still_path ? `https://image.tmdb.org/t/p/w185${ep.still_path}` : 'images/logo-192.png';
-            
-            card.innerHTML = `
-                <img src="${thumb}" alt="EP ${ep.episode_number}" loading="lazy">
-                <div class="ep-info">
-                    <h4>EP ${ep.episode_number}: ${ep.name || "Episode " + ep.episode_number}</h4>
-                    <p>${ep.overview || "No description provided."}</p>
-                </div>
-            `;
-
-            card.onclick = () => {
-                currentEpisodeNumber = ep.episode_number;
-                document.querySelectorAll(".ep-card").forEach(c => c.classList.remove("active"));
-                card.classList.add("active");
-
-                const activeBtn = document.querySelector(".srv-btn.active") || document.querySelector(".srv-btn");
-                if (activeBtn) activeBtn.click();
-            };
-
-            list.appendChild(card);
-        });
     } catch (e) {
-        list.innerHTML = "<p style='color:#f55; padding:10px;'>Failed to load episodes.</p>";
+        console.warn("Proxy season fetch failed, trying direct TMDb...");
     }
+
+    // 2. Direct TMDb Fallback
+    if (!episodes || episodes.length === 0) {
+        try {
+            const res = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/${seasonNum}?api_key=${TMDB_DIRECT_KEY}`);
+            const data = await res.json();
+            episodes = data.episodes || [];
+        } catch (e) {
+            console.error("Direct TMDb season fetch error:", e);
+        }
+    }
+
+    list.innerHTML = "";
+
+    if (!episodes || episodes.length === 0) {
+        list.innerHTML = "<p style='color:#777; padding:15px; text-align:center;'>No episodes found for this season.</p>";
+        return;
+    }
+
+    episodes.forEach((ep, index) => {
+        const card = document.createElement("div");
+        card.className = `ep-card ${ep.episode_number === currentEpisodeNumber ? "active" : ""}`;
+        const thumb = ep.still_path ? `https://image.tmdb.org/t/p/w185${ep.still_path}` : 'images/logo-192.png';
+        
+        card.innerHTML = `
+            <img src="${thumb}" alt="EP ${ep.episode_number}" loading="lazy">
+            <div class="ep-info">
+                <h4>EP ${ep.episode_number}: ${ep.name || "Episode " + ep.episode_number}</h4>
+                <p>${ep.overview || "No description provided."}</p>
+            </div>
+        `;
+
+        card.onclick = () => {
+            currentEpisodeNumber = ep.episode_number;
+            document.querySelectorAll(".ep-card").forEach(c => c.classList.remove("active"));
+            card.classList.add("active");
+
+            const activeBtn = document.querySelector(".srv-btn.active") || document.querySelector(".srv-btn");
+            if (activeBtn) activeBtn.click();
+        };
+
+        list.appendChild(card);
+
+        // Auto-select first episode
+        if (index === 0 && (!currentEpisodeNumber || currentEpisodeNumber === 1)) {
+            card.classList.add("active");
+        }
+    });
 }
 
-// Next Episode Button Setup
+// Next Episode Button Handler
 function setupNextEpisodeButton() {
     const nextBtn = document.getElementById('next-ep-btn');
     if (!nextBtn) return;
@@ -378,15 +411,21 @@ function setupNextEpisodeButton() {
     };
 }
 
-// Collection Sidebar
+// Collection Sidebar Handler
 async function handleCollection(collectionId) {
     const container = document.getElementById('collection-sidebar');
     const listContainer = document.getElementById('collection-list-container');
     if (!container || !listContainer) return;
     
     try {
-        const res = await fetch(`https://api.themoviedb.org/3/collection/${collectionId}?api_key=${TMDB_DIRECT_KEY}`);
-        const data = await res.json();
+        let res = await fetch(`${BASE_URL}/collection/${collectionId}`);
+        let data = null;
+        if (res.ok) data = await res.json();
+        
+        if (!data || !data.parts) {
+            res = await fetch(`https://api.themoviedb.org/3/collection/${collectionId}?api_key=${TMDB_DIRECT_KEY}`);
+            data = await res.json();
+        }
         
         if (data.parts && data.parts.length > 1) {
             const today = new Date(); 

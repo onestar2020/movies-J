@@ -32,14 +32,15 @@
 
         /* Sidebar Panels */
         .panel { background: var(--card-bg); border: 1px solid #252525; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-        .panel-label { font-size: 0.95rem; font-weight: 600; color: #ccc; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-        .panel-label i { color: var(--primary); }
+        .panel-label { font-size: 0.95rem; font-weight: 600; color: #ccc; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .panel-label-left { display: flex; align-items: center; gap: 8px; }
+        .panel-label-left i { color: var(--primary); }
 
         /* Server Buttons */
         .server-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .srv-btn { background: #252525; border: 1px solid #333; color: #ccc; padding: 12px 10px; border-radius: 8px; font-family: inherit; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; }
-        .srv-btn:hover { background: #333; color: #fff; }
-        .srv-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; }
+        .srv-btn, .server-btn { background: #252525; border: 1px solid #333; color: #ccc; padding: 12px 10px; border-radius: 8px; font-family: inherit; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; }
+        .srv-btn:hover, .server-btn:hover { background: #333; color: #fff; }
+        .srv-btn.active, .server-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; }
 
         /* TV Episode Navigator */
         .tv-navigator { display: none; }
@@ -48,12 +49,12 @@
         .season-dropdown button { width: 100%; padding: 10px 15px; background: none; border: none; color: #ccc; text-align: left; cursor: pointer; font-family: inherit; }
         .season-dropdown button:hover { background: #333; color: #fff; }
         .episode-list { display: flex; flex-direction: column; gap: 10px; max-height: 480px; overflow-y: auto; padding-right: 5px; }
-        .ep-card { display: flex; gap: 12px; padding: 10px; border-radius: 8px; background: #202020; border: 1px solid transparent; cursor: pointer; transition: 0.2s; align-items: center; }
-        .ep-card:hover { background: #282828; }
-        .ep-card.active { border-color: var(--primary); background: #252525; }
-        .ep-card img { width: 100px; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; }
-        .ep-info h4 { font-size: 0.85rem; color: #fff; font-weight: 500; }
-        .ep-info p { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .ep-card, .episode-card { display: flex; gap: 12px; padding: 10px; border-radius: 8px; background: #202020; border: 1px solid transparent; cursor: pointer; transition: 0.2s; align-items: center; }
+        .ep-card:hover, .episode-card:hover { background: #282828; }
+        .ep-card.active, .episode-card.active { border-color: var(--primary); background: #252525; }
+        .ep-card img, .episode-card img { width: 100px; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; }
+        .ep-info h4, .episode-details h3 { font-size: 0.85rem; color: #fff; font-weight: 500; }
+        .ep-info p, .episode-details p { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
         /* Media Info */
         .meta-header { margin: 25px 0 15px; }
@@ -133,13 +134,23 @@
         <aside class="side-stage">
             <div class="panel">
                 <div class="panel-label">
-                    <i class="fas fa-play-circle"></i> Choose Server to Watch Full:
+                    <div class="panel-label-left">
+                        <i class="fas fa-play-circle"></i> Choose Server to Watch Full:
+                    </div>
                 </div>
                 <div class="server-grid" id="server-buttons"></div>
             </div>
 
+            <!-- TV Episode Navigator -->
             <div class="panel tv-navigator" id="tv-panel">
-                <div class="panel-label"><i class="fas fa-list"></i> Episodes:</div>
+                <div class="panel-label">
+                    <div class="panel-label-left">
+                        <i class="fas fa-list"></i> Episodes:
+                    </div>
+                    <button id="next-ep-btn" style="background: #222; border: 1px solid #444; color: #fff; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; transition: 0.2s;">
+                        Next Ep <i class="fas fa-step-forward"></i>
+                    </button>
+                </div>
                 <button class="season-btn" id="season-toggle">
                     <span id="season-current-label">Season 1</span>
                     <i class="fas fa-chevron-down"></i>
@@ -147,207 +158,22 @@
                 <div class="season-dropdown" id="season-dropdown"></div>
                 <div class="episode-list" id="episode-list"></div>
             </div>
+
+            <!-- Collection Sidebar -->
+            <div class="panel" id="collection-sidebar" style="display: none;">
+                <div class="panel-label">
+                    <div class="panel-label-left">
+                        <i class="fas fa-film"></i> Collection:
+                    </div>
+                </div>
+                <div class="episode-list" id="collection-list-container"></div>
+            </div>
         </aside>
 
     </div>
 
+    <!-- External Script Call -->
     <script src="js/servers.js"></script>
-    <script>
-        const TMDB_API = "1e86095039d9eb32cbcf1aa445b23d92";
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        const mediaId = urlParams.get("id") || "1083818";
-        let mediaType = (urlParams.get("type") || "movie").toLowerCase();
-        let currentSeason = parseInt(urlParams.get("season")) || 1;
-        let currentEpisode = parseInt(urlParams.get("episode")) || 1;
-        
-        let mediaData = { id: mediaId, tmdb_id: mediaId, imdb_id: "" };
-        let activeServer = null;
-        let isEpisodic = (mediaType === "tv" || mediaType === "anime");
-
-        // 1. Setup Only Active Server Buttons (Server 1 - 4)
-        function setupServers() {
-            const grid = document.getElementById("server-buttons");
-            grid.innerHTML = "";
-
-            Object.keys(STREAM_SERVERS).forEach((key) => {
-                const srv = STREAM_SERVERS[key];
-                if (!srv.enabled) return; // Hide Server 4 (Nova), 5 (Vidlink), 7 (KKPhim)
-
-                const btn = document.createElement("button");
-                btn.className = "srv-btn";
-                btn.textContent = srv.name;
-                btn.onclick = () => selectServer(key, btn);
-                grid.appendChild(btn);
-            });
-        }
-
-        // 2. Play Selected Stream Server
-        function selectServer(serverKey, btnElement) {
-            activeServer = serverKey;
-            document.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
-            if (btnElement) btnElement.classList.add("active");
-
-            const iframe = document.getElementById("movie-player");
-            const typeKey = isEpisodic ? "tv" : "movie";
-            iframe.src = getEmbedUrl(serverKey, mediaData, typeKey, currentSeason, currentEpisode);
-        }
-
-        // 3. Load TMDb Details with Auto-Type Fallback & Cast Cards
-        async function loadContent() {
-            setupServers();
-            let tmdbType = isEpisodic ? "tv" : "movie";
-
-            try {
-                let res = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${mediaId}?api_key=${TMDB_API}&append_to_response=external_ids,credits,similar,videos`);
-                let data = await res.json();
-
-                // If movie not found, automatically try TV format
-                if (data.status_code === 34 && tmdbType === "movie") {
-                    tmdbType = "tv";
-                    isEpisodic = true;
-                    res = await fetch(`https://api.themoviedb.org/3/tv/${mediaId}?api_key=${TMDB_API}&append_to_response=external_ids,credits,similar,videos`);
-                    data = await res.json();
-                }
-
-                // Set Title & Overview
-                const title = data.title || data.name || data.original_title || "Now Playing";
-                document.getElementById("media-title").textContent = title;
-                document.getElementById("page-header-title").textContent = title;
-                document.getElementById("media-overview").textContent = data.overview || "No overview available.";
-                
-                if (data.external_ids && data.external_ids.imdb_id) {
-                    mediaData.imdb_id = data.external_ids.imdb_id;
-                }
-
-                // Facts
-                const runtime = data.runtime ? `${data.runtime} min` : (data.episode_run_time?.[0] ? `${data.episode_run_time[0]} min` : (data.status || "N/A"));
-                document.getElementById("fact-runtime").textContent = runtime;
-                document.getElementById("fact-release").textContent = data.release_date || data.first_air_date || "N/A";
-                document.getElementById("fact-rating").textContent = (data.vote_average && data.vote_average > 0) ? `★ ${data.vote_average.toFixed(1)}` : "Unrated";
-                document.getElementById("fact-country").textContent = data.production_countries?.[0]?.name || data.origin_country?.[0] || "Global";
-
-                // Badges
-                const badgeBox = document.getElementById("media-badges");
-                badgeBox.innerHTML = `
-                    <span class="meta-badge">${tmdbType.toUpperCase()}</span>
-                    <span class="meta-badge">${data.status || "Released"}</span>
-                    ${(data.genres || []).map(g => `<span class="meta-badge">${g.name}</span>`).join("")}
-                `;
-
-                // Cast Cards
-                const castBox = document.getElementById("cast-container");
-                castBox.innerHTML = "";
-                const castList = data.credits?.cast || [];
-                if (castList.length > 0) {
-                    castList.slice(0, 15).forEach(c => {
-                        const pic = c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : 'images/logo-192.png';
-                        castBox.innerHTML += `
-                            <div class="cast-card">
-                                <img src="${pic}" alt="${c.name}" loading="lazy">
-                                <div class="cast-name">
-                                    <h6>${c.name}</h6>
-                                    <span>${c.character || ""}</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    castBox.innerHTML = "<p style='color:#777;'>No cast info available.</p>";
-                }
-
-                // Recommendations
-                const recBox = document.getElementById("rec-container");
-                recBox.innerHTML = "";
-                (data.similar?.results || []).slice(0, 12).forEach(item => {
-                    const poster = item.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : 'images/logo-192.png';
-                    recBox.innerHTML += `
-                        <a class="rec-card" href="movie.html?id=${item.id}&type=${tmdbType}">
-                            <img src="${poster}" alt="${item.title || item.name}" loading="lazy">
-                            <h6>${item.title || item.name}</h6>
-                        </a>
-                    `;
-                });
-
-                // Episodic Setup (TV Shows / Anime)
-                if (isEpisodic && data.seasons) {
-                    document.getElementById("tv-panel").style.display = "block";
-                    buildSeasons(data.seasons);
-                    fetchEpisodes(currentSeason);
-                }
-
-                // Auto-Play Official Trailer
-                const trailer = (data.videos?.results || []).find(v => (v.type === "Trailer" || v.type === "Teaser") && v.site === "YouTube") || data.videos?.results?.[0];
-                if (trailer) {
-                    document.getElementById("movie-player").src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=0&controls=1`;
-                } else {
-                    selectServer("vidstorm", document.querySelector(".srv-btn"));
-                }
-
-            } catch (err) {
-                console.error("Content Loading Error:", err);
-            }
-        }
-
-        // 4. TV/Anime Seasons & Episodes Dispatcher
-        function buildSeasons(seasons) {
-            const drop = document.getElementById("season-dropdown");
-            const btn = document.getElementById("season-toggle");
-            drop.innerHTML = "";
-
-            seasons.filter(s => s.season_number > 0).forEach(s => {
-                const b = document.createElement("button");
-                b.textContent = s.name || `Season ${s.season_number}`;
-                b.onclick = () => {
-                    currentSeason = s.season_number;
-                    document.getElementById("season-current-label").textContent = b.textContent;
-                    drop.style.display = "none";
-                    fetchEpisodes(currentSeason);
-                };
-                drop.appendChild(b);
-            });
-
-            btn.onclick = () => {
-                drop.style.display = (drop.style.display === "block") ? "none" : "block";
-            };
-        }
-
-        async function fetchEpisodes(seasonNum) {
-            const list = document.getElementById("episode-list");
-            list.innerHTML = "<p style='color:#777; padding:10px;'>Loading episodes...</p>";
-
-            try {
-                const res = await fetch(`https://api.themoviedb.org/3/tv/${mediaId}/season/${seasonNum}?api_key=${TMDB_API}`);
-                const data = await res.json();
-                list.innerHTML = "";
-
-                (data.episodes || []).forEach(ep => {
-                    const card = document.createElement("div");
-                    card.className = `ep-card ${ep.episode_number === currentEpisode ? "active" : ""}`;
-                    const thumb = ep.still_path ? `https://image.tmdb.org/t/p/w185${ep.still_path}` : 'images/logo-192.png';
-                    
-                    card.innerHTML = `
-                        <img src="${thumb}" alt="EP ${ep.episode_number}" loading="lazy">
-                        <div class="ep-info">
-                            <h4>EP ${ep.episode_number}: ${ep.name || "Episode " + ep.episode_number}</h4>
-                            <p>${ep.overview || "No description provided."}</p>
-                        </div>
-                    `;
-                    card.onclick = () => {
-                        currentEpisode = ep.episode_number;
-                        document.querySelectorAll(".ep-card").forEach(c => c.classList.remove("active"));
-                        card.classList.add("active");
-                        if (activeServer) selectServer(activeServer);
-                        else selectServer("vidstorm", document.querySelector(".srv-btn"));
-                    };
-                    list.appendChild(card);
-                });
-            } catch (e) {
-                list.innerHTML = "<p style='color:#f55;'>Failed to load episodes.</p>";
-            }
-        }
-
-        window.addEventListener("DOMContentLoaded", loadContent);
-    </script>
+    <script src="js/movie.js"></script>
 </body>
 </html>

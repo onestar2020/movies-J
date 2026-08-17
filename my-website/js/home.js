@@ -1,4 +1,4 @@
-// ✅ js/home.js (SEARCH BAR FIX + DIRECT TMDB FALLBACK + GLOBAL EXPORTS)
+// ✅ js/home.js (SEARCH BAR FIX + DIRECT TMDB FALLBACK + GLOBAL EXPORTS + REALTIME USERS)
 
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev';
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
@@ -514,3 +514,75 @@ if (typeof window.saveToWatchHistory === 'undefined') {
         } catch (e) { console.error("History save error:", e); }
     }
 }
+
+// ================= ACTIVE USERS TRACKER (FIREBASE) =================
+(function initActiveUsersTracker() {
+    const DATABASE_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
+    
+    // Gumawa ng random ID para sa current visitor
+    const visitorId = 'user_' + Math.random().toString(36).substr(2, 9);
+    const connectionRefUrl = `${DATABASE_URL}/active_users/${visitorId}.json`;
+    const allUsersRefUrl = `${DATABASE_URL}/active_users.json`;
+
+    // Sabihin sa DB na online tayo
+    function setOnline() {
+        fetch(connectionRefUrl, {
+            method: 'PUT',
+            body: JSON.stringify({ timestamp: Date.now() }),
+            keepalive: true // Para siguradong pumasok kahit isasara ang browser
+        }).catch(e => console.error("Firebase connection error:", e));
+    }
+
+    // Sabihin sa DB na aalis na tayo
+    function setOffline() {
+        fetch(connectionRefUrl, {
+            method: 'DELETE',
+            keepalive: true
+        }).catch(e => console.error("Firebase disconnect error:", e));
+    }
+
+    // Kunin kung ilan lahat ang online
+    async function updateOnlineCount() {
+        try {
+            const res = await fetch(allUsersRefUrl);
+            const data = await res.json();
+            
+            if (data) {
+                // Alisin ang inactive users (mas matanda sa 2 minuto)
+                const now = Date.now();
+                let count = 0;
+                
+                for (const key in data) {
+                    if (now - data[key].timestamp < 120000) { 
+                        count++;
+                    } else {
+                        // Linisin ang mga patay na data sa DB
+                        fetch(`${DATABASE_URL}/active_users/${key}.json`, { method: 'DELETE' });
+                    }
+                }
+                
+                const countElem = document.getElementById("online-count");
+                if (countElem) {
+                    countElem.textContent = count > 0 ? count : 1;
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to fetch active users count");
+        }
+    }
+
+    // Initial setup
+    setOnline();
+    updateOnlineCount();
+
+    // I-update ang timestamp tuwing 1 minuto para di ma-detect na offline
+    setInterval(() => {
+        setOnline();
+        updateOnlineCount();
+    }, 60000);
+
+    // Kapag sinarado ng user ang tab o nag-refresh, i-delete agad ang sarili sa DB
+    window.addEventListener('beforeunload', () => {
+        setOffline();
+    });
+})();

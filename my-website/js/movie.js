@@ -1,4 +1,4 @@
-// ✅ js/movie.js (FULL PROTECTED + MOBILE AUTO-SCROLL TO SERVERS/EPISODES)
+// ✅ js/movie.js (FULL PROTECTED + MOBILE AUTO-SCROLL TO SERVERS/EPISODES + REALTIME USERS)
 
 // ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
 (function() {
@@ -519,3 +519,66 @@ async function handleCollection(collectionId) {
         console.error("Failed to load collection:", error);
     }
 }
+
+// ================= 3. ACTIVE USERS TRACKER (FIREBASE) =================
+(function initActiveUsersTracker() {
+    const DATABASE_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
+    
+    const visitorId = 'user_' + Math.random().toString(36).substr(2, 9);
+    const connectionRefUrl = `${DATABASE_URL}/active_users/${visitorId}.json`;
+    const allUsersRefUrl = `${DATABASE_URL}/active_users.json`;
+
+    function setOnline() {
+        fetch(connectionRefUrl, {
+            method: 'PUT',
+            body: JSON.stringify({ timestamp: Date.now() }),
+            keepalive: true
+        }).catch(e => console.error("Firebase connection error:", e));
+    }
+
+    function setOffline() {
+        fetch(connectionRefUrl, {
+            method: 'DELETE',
+            keepalive: true
+        }).catch(e => console.error("Firebase disconnect error:", e));
+    }
+
+    async function updateOnlineCount() {
+        try {
+            const res = await fetch(allUsersRefUrl);
+            const data = await res.json();
+            
+            if (data) {
+                const now = Date.now();
+                let count = 0;
+                
+                for (const key in data) {
+                    if (now - data[key].timestamp < 120000) { 
+                        count++;
+                    } else {
+                        fetch(`${DATABASE_URL}/active_users/${key}.json`, { method: 'DELETE' });
+                    }
+                }
+                
+                const countElem = document.getElementById("online-count");
+                if (countElem) {
+                    countElem.textContent = count > 0 ? count : 1;
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to fetch active users count");
+        }
+    }
+
+    setOnline();
+    updateOnlineCount();
+
+    setInterval(() => {
+        setOnline();
+        updateOnlineCount();
+    }, 60000);
+
+    window.addEventListener('beforeunload', () => {
+        setOffline();
+    });
+})();

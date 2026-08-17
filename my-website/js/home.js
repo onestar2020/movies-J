@@ -1,4 +1,4 @@
-// ✅ js/home.js (SEARCH BAR FIX + DIRECT TMDB FALLBACK + GLOBAL EXPORTS + REALTIME USERS)
+// ✅ js/home.js (SEARCH BAR FIX + DIRECT TMDB FALLBACK + OFFICIAL FIREBASE PRESENCE)
 
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev';
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
@@ -11,7 +11,10 @@ let currentFeaturedIndex = 0;
 let deferredPrompt;
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // --- Splash Screen Logic ---
+    // --- 1. Initialize Real-Time Active Users Tracker ---
+    initFirebasePresence();
+
+    // --- 2. Splash Screen Logic ---
     const splashScreen = document.getElementById('splash-screen');
     if (splashScreen) {
         window.addEventListener('load', () => {
@@ -19,13 +22,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // --- Setup Universal Listeners ---
+    // --- 3. Setup Universal Listeners ---
     setupUniversalEventListeners();
     
-    // --- Register Service Worker ---
+    // --- 4. Register Service Worker ---
     registerServiceWorker();
 
-    // --- Homepage Specific Logic ---
+    // --- 5. Homepage Specific Logic ---
     if (document.getElementById('hero-section')) {
         loadFeaturedMovie();
         Promise.all([
@@ -515,74 +518,45 @@ if (typeof window.saveToWatchHistory === 'undefined') {
     }
 }
 
-// ================= ACTIVE USERS TRACKER (FIREBASE) =================
-(function initActiveUsersTracker() {
-    const DATABASE_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
-    
-    // Gumawa ng random ID para sa current visitor
-    const visitorId = 'user_' + Math.random().toString(36).substr(2, 9);
-    const connectionRefUrl = `${DATABASE_URL}/active_users/${visitorId}.json`;
-    const allUsersRefUrl = `${DATABASE_URL}/active_users.json`;
+// ================= OFFICIAL FIREBASE REALTIME PRESENCE SYSTEM =================
+function initFirebasePresence() {
+    if (typeof firebase === 'undefined') return;
 
-    // Sabihin sa DB na online tayo
-    function setOnline() {
-        fetch(connectionRefUrl, {
-            method: 'PUT',
-            body: JSON.stringify({ timestamp: Date.now() }),
-            keepalive: true // Para siguradong pumasok kahit isasara ang browser
-        }).catch(e => console.error("Firebase connection error:", e));
+    const firebaseConfig = {
+        apiKey: "AIzaSyChLRuEGAVTO3Y-_lGqKYF9YUCVx5i5Feo",
+        authDomain: "movies-j-stream.firebaseapp.com",
+        databaseURL: "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "movies-j-stream",
+        storageBucket: "movies-j-stream.firebasestorage.app",
+        messagingSenderId: "1088305700283",
+        appId: "1:1088305700283:web:1b94c89927d4b88240789e",
+        measurementId: "G-LMNWJGZ9K4"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
     }
 
-    // Sabihin sa DB na aalis na tayo
-    function setOffline() {
-        fetch(connectionRefUrl, {
-            method: 'DELETE',
-            keepalive: true
-        }).catch(e => console.error("Firebase disconnect error:", e));
-    }
+    const db = firebase.database();
+    const onlineUsersRef = db.ref('active_users');
+    const connectedRef = db.ref('.info/connected');
 
-    // Kunin kung ilan lahat ang online
-    async function updateOnlineCount() {
-        try {
-            const res = await fetch(allUsersRefUrl);
-            const data = await res.json();
-            
-            if (data) {
-                // Alisin ang inactive users (mas matanda sa 2 minuto)
-                const now = Date.now();
-                let count = 0;
-                
-                for (const key in data) {
-                    if (now - data[key].timestamp < 120000) { 
-                        count++;
-                    } else {
-                        // Linisin ang mga patay na data sa DB
-                        fetch(`${DATABASE_URL}/active_users/${key}.json`, { method: 'DELETE' });
-                    }
-                }
-                
-                const countElem = document.getElementById("online-count");
-                if (countElem) {
-                    countElem.textContent = count > 0 ? count : 1;
-                }
-            }
-        } catch (e) {
-            console.warn("Failed to fetch active users count");
+    connectedRef.on('value', (snap) => {
+        if (snap.val() === true) {
+            const userRef = onlineUsersRef.push();
+            userRef.onDisconnect().remove();
+            userRef.set({
+                online: true,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
         }
-    }
-
-    // Initial setup
-    setOnline();
-    updateOnlineCount();
-
-    // I-update ang timestamp tuwing 1 minuto para di ma-detect na offline
-    setInterval(() => {
-        setOnline();
-        updateOnlineCount();
-    }, 60000);
-
-    // Kapag sinarado ng user ang tab o nag-refresh, i-delete agad ang sarili sa DB
-    window.addEventListener('beforeunload', () => {
-        setOffline();
     });
-})();
+
+    onlineUsersRef.on('value', (snapshot) => {
+        const count = snapshot.numChildren() || 1;
+        const countElem = document.getElementById("online-count");
+        if (countElem) {
+            countElem.textContent = count;
+        }
+    });
+}

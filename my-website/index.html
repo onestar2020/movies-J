@@ -23,7 +23,7 @@
         /* --- Styles --- */
         #splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background-color:var(--dark-color);z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .5s ease-out}#splash-screen.hidden{opacity:0;visibility:hidden}#splash-logo{width:200px;animation:fadeIn 1.5s ease-in-out}@keyframes fadeIn{from{opacity:0}to{opacity:1}}#supportBtn{cursor:pointer;margin-left:15px;color:#ffc107;font-weight:500}.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.85);overflow:auto;animation:fadeIn .3s}.modal-content{background-color:#181818;color:#f1f1f1;margin:8% auto;padding:30px 40px;border:1px solid #333;width:90%;max-width:700px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,.5);position:relative;text-align:center;max-height:85vh;overflow-y:auto}.modal-text-body{color:#ccc;font-size:16px;line-height:1.6;margin-top:20px;margin-bottom:30px;text-align:left;border-top:1px solid #444;border-bottom:1px solid #444;padding:20px}.modal-text-body p{margin:0 0 1em}.modal-text-body p:last-child{margin-bottom:0}.modal-text-body strong{color:#ffc107}.close,.close-btn{color:#aaa;position:absolute;top:15px;right:25px;font-size:32px;font-weight:700;transition:color .2s;cursor:pointer}.close:focus,.close:hover,.close-btn:focus,.close-btn:hover{color:#fff;text-decoration:none}.donation-container{display:flex;justify-content:space-around;flex-wrap:wrap;gap:20px}.donation-box{background-color:#282828;border-radius:10px;padding:25px;width:45%;min-width:280px;display:flex;flex-direction:column;align-items:center;justify-content:center}.donation-box h3{margin-top:0;color:#fff}.qr-code{width:160px;height:160px;border-radius:8px;border:3px solid #fff}.account-details{margin-top:15px;line-height:1.5;font-size:14px}.paypal-button{display:inline-block;padding:12px 30px;margin-top:20px;background-color:#0070ba;color:#fff!important;text-decoration:none;border-radius:5px;font-weight:700;transition:background-color .2s}.paypal-button:hover{background-color:#005ea6}@media screen and (max-width:650px){.modal-content{margin:15% auto;padding:20px}.donation-box{width:100%}}.install-button-mobile{display:none!important;cursor:pointer;color:#4caf50;font-weight:500;padding:15px 0}.install-button-mobile i{margin-right:8px}@media (max-width:768px){.nav-links.active .install-button-mobile.visible{display:block!important}}
 
-        /* BAGO: Pulse animation para sa Active User Dot */
+        /* Active User Counter Styling */
         @keyframes pulseDot {
             0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.8); }
             70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
@@ -66,6 +66,10 @@
     </style>
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399" crossorigin="anonymous"></script>
+
+    <!-- Firebase App & Realtime Database SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 
 <body>
@@ -90,7 +94,6 @@
             </div>
 
             <div class="nav-actions">
-                <!-- GUARANTEED VISIBLE ONLINE COUNTER -->
                 <div id="online-counter-badge" title="Users Currently Online">
                     <div id="online-dot"></div>
                     <span id="online-count">1</span> Online
@@ -208,7 +211,6 @@
             </div>
        </div>
     </div>
-    
     
     <meta name="theme-color" content="#e50914">
 

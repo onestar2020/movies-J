@@ -29,6 +29,35 @@
             70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
         }
+
+        /* BAGO: CSS Fix para hindi magpatong sa mobile */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px; 
+            flex-wrap: nowrap; 
+        }
+        
+        .active-users-counter {
+             display: flex; 
+             align-items: center; 
+             gap: 6px; 
+             font-size: 0.85rem; 
+             font-weight: 600; 
+             color: #fff; 
+             background: rgba(0,0,0,0.5); 
+             padding: 5px 12px; 
+             border-radius: 20px; 
+             border: 1px solid #333; 
+             white-space: nowrap; 
+        }
+
+        @media (max-width: 600px) {
+            .active-users-counter {
+                padding: 4px 8px;
+                font-size: 0.7rem;
+            }
+        }
     </style>
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399" crossorigin="anonymous"></script>
@@ -57,7 +86,7 @@
 </div>
             <div class="nav-actions">
                 <!-- BAGO: Active Users Counter -->
-                <div class="active-users-counter" title="Users Online Now" style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; color: #fff; background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 20px; border: 1px solid #333; margin-right: 10px;">
+                <div class="active-users-counter" title="Users Online Now">
                     <div style="width: 8px; height: 8px; background-color: #4CAF50; border-radius: 50%; box-shadow: 0 0 8px #4CAF50; animation: pulse 1.5s infinite;"></div>
                     <span id="online-count">1</span> Online
                 </div>

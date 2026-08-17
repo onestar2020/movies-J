@@ -30,26 +30,25 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
         }
 
-        /* BAGO: CSS Fix para hindi magpatong sa mobile */
+        /* BAGO: Counter CSS Alignment */
         .nav-actions {
-            display: flex;
+            display: flex !important;
             align-items: center;
-            gap: 10px; 
-            flex-wrap: nowrap; 
+            gap: 10px;
         }
-        
+
         .active-users-counter {
-             display: flex; 
-             align-items: center; 
-             gap: 6px; 
-             font-size: 0.85rem; 
-             font-weight: 600; 
-             color: #fff; 
-             background: rgba(0,0,0,0.5); 
-             padding: 5px 12px; 
-             border-radius: 20px; 
-             border: 1px solid #333; 
-             white-space: nowrap; 
+            display: flex !important;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            white-space: nowrap;
         }
 
         @media (max-width: 600px) {
@@ -71,21 +70,19 @@
     <nav class="navbar">
         <div class="navbar-container">
             <img src="images/logo-512.png" alt="Movies-J Logo" class="logo-effect" />
-           <div class="nav-links">
-    <a href="index.html" class="active">Home</a>
-    <a href="browse.html?type=movie">Movies</a>
-    <a href="browse.html?type=tv">TV Shows</a>
-    <a href="browse.html?type=anime">Anime</a>
-   
-<a href="vault.html" style="color: #ff9800; font-weight: bold;">
-    <i class="fas fa-lock"></i> J-Vault DOWNLOADS
-</a>
-
-    <a id="supportBtn">Support Me ❤️</a>
-    <a id="installAppBtnMobile" class="install-button-mobile"> <i class="fas fa-download"></i> Download App </a>
-</div>
+            <div class="nav-links">
+                <a href="index.html" class="active">Home</a>
+                <a href="browse.html?type=movie">Movies</a>
+                <a href="browse.html?type=tv">TV Shows</a>
+                <a href="browse.html?type=anime">Anime</a>
+                <a href="vault.html" style="color: #ff9800; font-weight: bold;">
+                    <i class="fas fa-lock"></i> J-Vault DOWNLOADS
+                </a>
+                <a id="supportBtn">Support Me ❤️</a>
+                <a id="installAppBtnMobile" class="install-button-mobile"> <i class="fas fa-download"></i> Download App </a>
+            </div>
             <div class="nav-actions">
-                <!-- BAGO: Active Users Counter -->
+                <!-- BAGO: Active Users Counter Element -->
                 <div class="active-users-counter" title="Users Online Now">
                     <div style="width: 8px; height: 8px; background-color: #4CAF50; border-radius: 50%; box-shadow: 0 0 8px #4CAF50; animation: pulse 1.5s infinite;"></div>
                     <span id="online-count">1</span> Online
@@ -145,14 +142,16 @@
             <div class="results" id="search-results"></div>
             <div id="no-results-message" style="display: none;">No results found.</div>
         </div>
-        </div>
+    </div>
+
     <div class="modal" id="watch-history-modal">
         <div class="modal-content" style="max-width: 800px;">
             <span class="close" id="close-history-modal">&times;</span> 
             <h2>Watch History</h2>
             <div id="watch-history-list"></div>
-            </div>
         </div>
+    </div>
+
     <div class="modal" id="details-modal">
         <div class="details-modal-content">
             <span class="close" id="close-details-modal">&times;</span> 
@@ -168,14 +167,15 @@
                 </div>
             </div>
         </div>
-        </div>
+    </div>
+
     <div class="welcome-modal-overlay" id="welcome-modal">
         <div class="welcome-modal-content">
-        <h2>A Quick Note on Ads</h2>
-        <p>Welcome to Movies-J! To help us cover server costs and keep everything free, this website is supported by advertisements.</p>
-        <p>We appreciate your understanding!</p>
-        <button id="welcome-modal-close-btn">Okay, Got It</button>
-    </div>
+            <h2>A Quick Note on Ads</h2>
+            <p>Welcome to Movies-J! To help us cover server costs and keep everything free, this website is supported by advertisements.</p>
+            <p>We appreciate your understanding!</p>
+            <button id="welcome-modal-close-btn">Okay, Got It</button>
+        </div>
     </div>
     
     <div class="install-banner" id="install-banner"> 

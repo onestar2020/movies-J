@@ -1,4 +1,6 @@
-// ✅ js/changelog.js (STANDALONE CHANGELOG MODULE)
+// ✅ js/changelog.js (AUTO NOTIFICATION BADGE + LOCALSTORAGE TRACKER)
+
+const CURRENT_APP_VERSION = "v2.4"; // ⬅️ PALITAN ITO TUWING MAY BAGONG UPDATE (e.g. v2.5)
 
 const SITE_CHANGELOGS = [
     {
@@ -25,7 +27,7 @@ const SITE_CHANGELOGS = [
 ];
 
 function initChangelogModule() {
-    // 1. Gumawa ng Modal DOM kung wala pa
+    // 1. Setup ng Modal Container
     let overlay = document.getElementById('changelog-modal-overlay');
     if (!overlay) {
         overlay = document.createElement('div');
@@ -58,7 +60,6 @@ function initChangelogModule() {
         `;
         document.body.appendChild(overlay);
 
-        // Close events
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) overlay.classList.remove('show');
         });
@@ -68,12 +69,30 @@ function initChangelogModule() {
         };
     }
 
-    // 2. I-bind sa lahat ng button na may class/id
+    // 2. Notification Dot Checker
     const btn = document.getElementById('changelog-btn');
+    const lastSeenVersion = localStorage.getItem('movies_j_last_version');
+
     if (btn) {
+        // Lagyan ng red dot kung bago ang version o hindi pa nabubuksan
+        if (lastSeenVersion !== CURRENT_APP_VERSION) {
+            btn.style.position = 'relative';
+            if (!document.getElementById('changelog-unread-dot')) {
+                const dot = document.createElement('span');
+                dot.id = 'changelog-unread-dot';
+                dot.style.cssText = "position:absolute; top:2px; right:2px; width:8px; height:8px; background:#e50914; border-radius:50%; border:1px solid #000;";
+                btn.appendChild(dot);
+            }
+        }
+
         btn.onclick = (e) => {
             e.preventDefault();
             overlay.classList.add('show');
+
+            // Tanggalin ang dot at i-save sa browser
+            localStorage.setItem('movies_j_last_version', CURRENT_APP_VERSION);
+            const dot = document.getElementById('changelog-unread-dot');
+            if (dot) dot.remove();
         };
     }
 }

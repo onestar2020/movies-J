@@ -1,4 +1,4 @@
-// ✅ js/movie.js (FULL PROTECTED + TRADEMARK TRAILER-FIRST + UNRELEASED BLOCKER + ORGANIZED COLLECTIONS + REALTIME USERS)
+// ✅ js/movie.js (FULL PROTECTED + CUSTOM DARK THEME MODAL + TRADEMARK TRAILER-FIRST + UNRELEASED BLOCKER + ORGANIZED COLLECTIONS + REALTIME USERS)
 
 // ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
 (function() {
@@ -118,6 +118,46 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 });
+
+// Helper: Custom Theme Modal Notification
+function showThemeModal(title, message, badgeText = '') {
+    let overlay = document.getElementById('custom-theme-modal');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'custom-theme-modal';
+        overlay.className = 'custom-modal-overlay';
+        overlay.innerHTML = `
+            <div class="custom-modal-card">
+                <div class="custom-modal-icon">🎬</div>
+                <h3 class="custom-modal-title" id="custom-modal-title">Notice</h3>
+                <div id="custom-modal-badge-container"></div>
+                <p class="custom-modal-desc" id="custom-modal-desc"></p>
+                <button class="custom-modal-btn" id="custom-modal-close-btn">Understood</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.classList.remove('show');
+        });
+
+        document.getElementById('custom-modal-close-btn').onclick = () => {
+            overlay.classList.remove('show');
+        };
+    }
+
+    document.getElementById('custom-modal-title').textContent = title;
+    document.getElementById('custom-modal-desc').textContent = message;
+
+    const badgeContainer = document.getElementById('custom-modal-badge-container');
+    if (badgeText) {
+        badgeContainer.innerHTML = `<span class="custom-modal-badge">${badgeText}</span>`;
+    } else {
+        badgeContainer.innerHTML = '';
+    }
+
+    overlay.classList.add('show');
+}
 
 // Helper: Release Status Calculator
 function getReleaseStatus(airDateStr) {
@@ -299,7 +339,7 @@ function setupInitialPlayer(item) {
     trailerUrl = '';
 }
 
-// Server Buttons (Trademark: Trailer First, Select Server to Stream Full Media)
+// Server Buttons (Blocked for Unreleased Movies with Custom Theme Modal)
 function populateServerSelector(item) {
     const grid = document.getElementById("server-buttons");
     if (!grid) return;
@@ -320,7 +360,11 @@ function populateServerSelector(item) {
             btn.onclick = () => {
                 if (!isEpisodic && !isMovieReleased) {
                     const status = getReleaseStatus(item.release_date);
-                    alert(`This movie has not been released yet (${status.label}).\nEnjoy the official trailer for now!`);
+                    showThemeModal(
+                        "Not Yet Released",
+                        "This movie is currently unreleased in official channels. We are playing the official trailer for you in the meantime.",
+                        status.label
+                    );
                     if (trailerUrl) {
                         const player = document.getElementById("movie-player");
                         if (player) player.src = trailerUrl;
@@ -403,7 +447,7 @@ function handleTVShow(item) {
     loadEpisodes(currentSeasonNumber);
 }
 
-// TV Episode Loader
+// TV Episode Loader (with Custom Modal on Click)
 async function loadEpisodes(seasonNum) {
     const list = document.getElementById("episode-list");
     if (!list) return;
@@ -471,7 +515,11 @@ async function loadEpisodes(seasonNum) {
 
         card.onclick = () => {
             if (!status.isReleased) {
-                alert(`Episode ${ep.episode_number} is not yet released!\nStatus: ${status.label}`);
+                showThemeModal(
+                    `Episode ${ep.episode_number} Unreleased`,
+                    `"${ep.name || 'This episode'}" has not aired yet. Please check back on its release date.`,
+                    status.label
+                );
                 return;
             }
 
@@ -497,7 +545,7 @@ async function loadEpisodes(seasonNum) {
     }
 }
 
-// Next Episode Button Handler
+// Next Episode Button Handler (with Custom Modal)
 function setupNextEpisodeButton() {
     const nextBtn = document.getElementById('next-ep-btn');
     if (!nextBtn) return;
@@ -510,13 +558,21 @@ function setupNextEpisodeButton() {
         if (currentActive && currentActive.nextElementSibling && currentActive.nextElementSibling.classList.contains('ep-card')) {
             const nextCard = currentActive.nextElementSibling;
             if (nextCard.classList.contains('unreleased')) {
-                alert("Next episode is not yet released!");
+                showThemeModal(
+                    "Upcoming Episode",
+                    "The next episode is not yet available for streaming.",
+                    "Unreleased"
+                );
                 return;
             }
             nextCard.click();
             nextCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
         } else {
-            alert("End of season! Please select the next season.");
+            showThemeModal(
+                "End of Season",
+                "You have reached the end of this season! Please choose the next season from the selector.",
+                "Season Completed"
+            );
         }
     };
 }
@@ -541,7 +597,6 @@ async function handleCollection(collectionId) {
             container.style.display = 'block'; 
             listContainer.innerHTML = ''; 
             
-            // I-sort mula sa pinakaunang movie papunta sa pinakabago (Story / Release Chronological Order)
             const sortedParts = data.parts.sort((a, b) => 
                 new Date(a.release_date || '9999-12-31') - new Date(b.release_date || '9999-12-31')
             );

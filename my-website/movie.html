@@ -88,11 +88,79 @@
         .rec-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
         .rec-card h6 { padding: 6px; font-size: 0.75rem; color: #ddd; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* Pulse animation para sa Active User Dot */
+        /* Pulse animation */
         @keyframes pulse {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
             70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+
+        /* ================= FLOATING BRAVE AD-BLOCK TOAST ================= */
+        .brave-floating-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99998;
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-left: 4px solid #ff5000;
+            border-radius: 10px;
+            padding: 12px 14px;
+            max-width: 330px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.8), 0 0 10px rgba(255, 80, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideUpToast 0.4s ease-out;
+        }
+
+        @keyframes slideUpToast {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .brave-toast-icon {
+            font-size: 20px;
+            color: #ff5000;
+            flex-shrink: 0;
+        }
+
+        .brave-toast-text {
+            font-size: 0.78rem;
+            color: #ccc;
+            line-height: 1.35;
+        }
+
+        .brave-toast-text strong {
+            color: #fff;
+        }
+
+        .brave-toast-link {
+            color: #ff5000;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 3px;
+        }
+
+        .brave-toast-link:hover {
+            text-decoration: underline;
+        }
+
+        .brave-toast-close {
+            background: transparent;
+            border: none;
+            color: #777;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 2px 4px;
+            line-height: 1;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .brave-toast-close:hover {
+            color: #fff;
         }
 
         /* ================= MOBILE-FIRST RESPONSIVE DESIGN ================= */
@@ -100,7 +168,6 @@
             .container { flex-direction: column; padding: 0 10px; margin-top: 0; gap: 15px; }
             .header { padding: 10px 15px; }
 
-            /* Sticky Video Player sa pinakatuktok habang nag-i-scroll */
             .video-box { 
                 position: sticky; 
                 top: 63px; 
@@ -111,7 +178,6 @@
                 width: calc(100% + 20px);
             }
 
-            /* Layout Reordering: Una ang Player -> Servers & Episodes -> saka Details */
             .main-stage { display: flex; flex-direction: column; }
             .side-stage { order: 2; width: 100%; min-width: 100%; }
             .meta-header { order: 3; }
@@ -125,7 +191,6 @@
             .meta-title { font-size: 1.3rem; }
             .server-grid { grid-template-columns: repeat(2, 1fr); }
 
-            /* Touch-Friendly Compact Horizontal Episode Scroller sa Mobile */
             .episode-list {
                 display: flex;
                 flex-direction: row;
@@ -157,6 +222,14 @@
             .ep-info p, .episode-details p {
                 display: none;
             }
+
+            .brave-floating-toast {
+                bottom: 12px;
+                right: 12px;
+                left: 12px;
+                max-width: none;
+                padding: 10px 12px;
+            }
         }
     </style>
 </head>
@@ -179,6 +252,16 @@
             </button>
         </div>
     </header>
+
+    <!-- Floating Brave Ad-Block Notice -->
+    <div id="braveFloatingToast" class="brave-floating-toast">
+        <i class="fas fa-shield-halved brave-toast-icon"></i>
+        <div class="brave-toast-text">
+            <span>Tired of server pop-up ads? Use <strong>Brave Browser</strong> for ad-free streaming!</span><br>
+            <a href="https://brave.com/" target="_blank" rel="noopener noreferrer" class="brave-toast-link">Get Brave Browser &rarr;</a>
+        </div>
+        <button class="brave-toast-close" onclick="dismissBraveToast()" title="Close">&times;</button>
+    </div>
 
     <div class="container">
         
@@ -252,6 +335,22 @@
         </aside>
 
     </div>
+
+    <!-- Dismissal Logic -->
+    <script>
+        function dismissBraveToast() {
+            const toast = document.getElementById('braveFloatingToast');
+            if (toast) {
+                toast.style.display = 'none';
+                sessionStorage.setItem('movies_j_brave_toast_dismissed', 'true');
+            }
+        }
+
+        if (sessionStorage.getItem('movies_j_brave_toast_dismissed') === 'true') {
+            const toast = document.getElementById('braveFloatingToast');
+            if (toast) toast.style.display = 'none';
+        }
+    </script>
 
     <!-- External Script Calls -->
     <script src="js/servers.js"></script>

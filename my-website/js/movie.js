@@ -1,4 +1,4 @@
-// ✅ js/movie.js (FULL PROTECTED + MOBILE AUTO-SCROLL TO SERVERS/EPISODES + REALTIME USERS + UNRELEASED COUNTDOWN)
+// ✅ js/movie.js (FULL PROTECTED + UNRELEASED MOVIE BLOCKER + ORGANIZED COLLECTIONS + REALTIME USERS)
 
 // ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
 (function() {
@@ -36,6 +36,7 @@ let type = (urlParams.get('type') || 'movie').toLowerCase();
 let trailerUrl = ''; 
 let currentItemData = null;
 let isEpisodic = (type === 'tv' || type === 'anime');
+let isMovieReleased = true;
 
 // LocalStorage Watch History Tracker
 const storageKey = `movies_j_progress_${id}`;
@@ -55,6 +56,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const item = await fetchDetails();
     if (item) {
         currentItemData = item;
+
+        // Release check para sa Movies
+        if (!isEpisodic) {
+            const relStatus = getReleaseStatus(item.release_date);
+            isMovieReleased = relStatus.isReleased;
+        }
 
         // 1. Title & Header Info
         const displayTitle = item.title || item.name || item.original_title || "Now Playing";
@@ -87,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // 6. Similar / Recommendations
         renderSimilarSection(item);
 
-        // 7. Collection Sidebar (Movies)
+        // 7. Organized Collection Sidebar (Watch Order for Franchise)
         if (item.belongs_to_collection && item.belongs_to_collection.id) {
             handleCollection(item.belongs_to_collection.id);
         }
@@ -100,7 +107,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             setupNextEpisodeButton();
         }
 
-        // Auto-Scroll sa mobile papunta sa server panel kapag nag-load ang video
+        // Mobile Auto-Scroll
         if (window.innerWidth <= 900) {
             setTimeout(() => {
                 const targetPanel = isEpisodic ? document.getElementById("tv-panel") : document.getElementById("server-buttons");
@@ -112,15 +119,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// Fetch Main Details with Proxy & Direct TMDb Fallback
+// Helper: Release Status Calculator
+function getReleaseStatus(airDateStr) {
+    if (!airDateStr) return { isReleased: true, label: '' };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const airDate = new Date(airDateStr);
+    airDate.setHours(0, 0, 0, 0);
+
+    const diffTime = airDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 0) {
+        return { isReleased: true, label: '' };
+    } else if (diffDays === 1) {
+        return { isReleased: false, label: 'Releasing Tomorrow' };
+    } else if (diffDays <= 30) {
+        return { isReleased: false, label: `In Theaters in ${diffDays} days` };
+    } else {
+        return { isReleased: false, label: `Release: ${airDateStr}` };
+    }
+}
+
+// Fetch Details
 async function fetchDetails() {
     let data = null;
-
     try {
         const res = await fetch(`${BASE_URL}/${type}/${id}?append_to_response=external_ids,credits,similar,videos`);
-        if (res.ok) {
-            data = await res.json();
-        }
+        if (res.ok) data = await res.json();
     } catch (e) {
         console.warn("Proxy fetch failed, switching to direct TMDb API:", e);
     }
@@ -174,9 +202,14 @@ function renderMetadata(item) {
 
     const badgeBox = document.getElementById("media-badges");
     if (badgeBox) {
+        const relStatus = !isEpisodic ? getReleaseStatus(item.release_date) : { isReleased: true };
+        const statusBadge = !relStatus.isReleased 
+            ? `<span class="meta-badge" style="background:#e50914; color:#fff; font-weight:bold;">${relStatus.label}</span>` 
+            : `<span class="meta-badge">${item.status || "Released"}</span>`;
+
         badgeBox.innerHTML = `
             <span class="meta-badge">${type.toUpperCase()}</span>
-            <span class="meta-badge">${item.status || "Released"}</span>
+            ${statusBadge}
             ${(item.genres || []).map(g => `<span class="meta-badge">${g.name}</span>`).join("")}
         `;
     }
@@ -188,7 +221,6 @@ async function renderCastSection(item) {
     if (!castBox) return;
 
     let castList = item.credits && item.credits.cast ? item.credits.cast : [];
-
     if (castList.length === 0) {
         try {
             const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${TMDB_DIRECT_KEY}`);
@@ -224,7 +256,6 @@ async function renderSimilarSection(item) {
     if (!recBox) return;
 
     let similarList = item.similar && item.similar.results ? item.similar.results : [];
-
     if (similarList.length === 0) {
         try {
             const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/similar?api_key=${TMDB_DIRECT_KEY}`);
@@ -251,7 +282,7 @@ async function renderSimilarSection(item) {
     }
 }
 
-// Setup Player
+// Setup Player (Loads Trailer by Default for Unreleased Movies)
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
     if (!player) return;
@@ -268,7 +299,7 @@ function setupInitialPlayer(item) {
     trailerUrl = '';
 }
 
-// Server Buttons
+// Server Buttons (Blocked for Unreleased Movies)
 function populateServerSelector(item) {
     const grid = document.getElementById("server-buttons");
     if (!grid) return;
@@ -284,9 +315,20 @@ function populateServerSelector(item) {
             if (!srv.enabled) return;
 
             const btn = document.createElement("button");
-            btn.className = "srv-btn";
+            btn.className = `srv-btn ${!isEpisodic && !isMovieReleased ? 'disabled-srv' : ''}`;
             btn.textContent = srv.name;
+            
             btn.onclick = () => {
+                if (!isEpisodic && !isMovieReleased) {
+                    const status = getReleaseStatus(item.release_date);
+                    alert(`This movie has not been released yet (${status.label}).\nPlaying the official trailer instead.`);
+                    if (trailerUrl) {
+                        const player = document.getElementById("movie-player");
+                        if (player) player.src = trailerUrl;
+                    }
+                    return;
+                }
+
                 document.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
                 updatePlayer(key, item, currentSeasonNumber, currentEpisodeNumber);
@@ -296,7 +338,8 @@ function populateServerSelector(item) {
             if (!firstActiveBtn) firstActiveBtn = btn;
         });
 
-        if (!trailerUrl && firstActiveBtn) {
+        // Kung released na ang movie at walang trailer, i-play agad ang server 1
+        if (isMovieReleased && !trailerUrl && firstActiveBtn) {
             firstActiveBtn.click();
         }
     }
@@ -323,30 +366,6 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     player.src = getEmbedUrl(serverKey, mediaData, typeKey, season, episode);
 }
 
-// ================= [BAGONG CODE] RELEASE STATUS HELPER =================
-function getEpisodeReleaseStatus(airDateStr) {
-    if (!airDateStr) return { isReleased: true, label: '' };
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const airDate = new Date(airDateStr);
-    airDate.setHours(0, 0, 0, 0);
-
-    const diffTime = airDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays <= 0) {
-        return { isReleased: true, label: '' };
-    } else if (diffDays === 1) {
-        return { isReleased: false, label: 'Airing Tomorrow' };
-    } else if (diffDays <= 7) {
-        return { isReleased: false, label: `Airing in ${diffDays} days` };
-    } else {
-        return { isReleased: false, label: `Release: ${airDateStr}` };
-    }
-}
-
 // TV Seasons & Episodes Setup
 function handleTVShow(item) {
     const drop = document.getElementById("season-dropdown");
@@ -355,7 +374,6 @@ function handleTVShow(item) {
     if (!drop || !btn || !item.seasons) return;
 
     drop.innerHTML = "";
-
     const validSeasons = item.seasons.filter(s => s.season_number > 0);
 
     if (validSeasons.length === 0) {
@@ -392,7 +410,7 @@ function handleTVShow(item) {
     loadEpisodes(currentSeasonNumber);
 }
 
-// ================= [BINAGO DITO] LOAD EPISODES WITH UNRELEASED CHECK =================
+// TV Episode Loader
 async function loadEpisodes(seasonNum) {
     const list = document.getElementById("episode-list");
     if (!list) return;
@@ -400,7 +418,6 @@ async function loadEpisodes(seasonNum) {
     list.innerHTML = "<p style='color:#777; padding:15px; text-align:center;'>Loading episodes...</p>";
 
     let episodes = [];
-
     try {
         const res = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNum}`);
         if (res.ok) {
@@ -422,26 +439,24 @@ async function loadEpisodes(seasonNum) {
     }
 
     list.innerHTML = "";
-
     if (!episodes || episodes.length === 0) {
         list.innerHTML = "<p style='color:#777; padding:15px; text-align:center;'>No episodes found for this season.</p>";
         return;
     }
 
-    // Hanapin ang pinakahuling released na episode sakaling unreleased ang kasalukuyang nakapili
-    const releasedEpisodes = episodes.filter(ep => getEpisodeReleaseStatus(ep.air_date).isReleased);
+    const releasedEpisodes = episodes.filter(ep => getReleaseStatus(ep.air_date).isReleased);
     const lastReleasedEpNum = releasedEpisodes.length > 0 ? releasedEpisodes[releasedEpisodes.length - 1].episode_number : null;
 
     let targetSelectedEpNum = currentEpisodeNumber;
     const currentTargetEp = episodes.find(e => e.episode_number === targetSelectedEpNum);
     
-    if (currentTargetEp && !getEpisodeReleaseStatus(currentTargetEp.air_date).isReleased) {
+    if (currentTargetEp && !getReleaseStatus(currentTargetEp.air_date).isReleased) {
         targetSelectedEpNum = lastReleasedEpNum || 1;
         currentEpisodeNumber = targetSelectedEpNum;
     }
 
     episodes.forEach((ep) => {
-        const status = getEpisodeReleaseStatus(ep.air_date);
+        const status = getReleaseStatus(ep.air_date);
         const card = document.createElement("div");
         card.className = `ep-card ${ep.episode_number === targetSelectedEpNum && status.isReleased ? "active" : ""} ${!status.isReleased ? "unreleased" : ""}`;
         const thumb = ep.still_path ? `https://image.tmdb.org/t/p/w185${ep.still_path}` : 'images/logo-192.png';
@@ -474,7 +489,6 @@ async function loadEpisodes(seasonNum) {
             const activeBtn = document.querySelector(".srv-btn.active") || document.querySelector(".srv-btn");
             if (activeBtn) activeBtn.click();
 
-            // Mobile Auto-Scroll on Episode Click
             if (window.innerWidth <= 900) {
                 const target = document.getElementById("tv-panel");
                 if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -514,7 +528,7 @@ function setupNextEpisodeButton() {
     };
 }
 
-// Collection Sidebar Handler
+// ================= 3. ORGANIZED COLLECTION SIDEBAR (CHRONOLOGICAL STORY ORDER) =================
 async function handleCollection(collectionId) {
     const container = document.getElementById('collection-sidebar');
     const listContainer = document.getElementById('collection-list-container');
@@ -531,34 +545,39 @@ async function handleCollection(collectionId) {
         }
         
         if (data.parts && data.parts.length > 1) {
-            const today = new Date(); 
-
             container.style.display = 'block'; 
             listContainer.innerHTML = ''; 
             
+            // I-sort mula sa pinakaunang movie papunta sa pinakabago (Story / Release Chronological Order)
             const sortedParts = data.parts.sort((a, b) => 
-                new Date(a.release_date || 0) - new Date(b.release_date || 0)
+                new Date(a.release_date || '9999-12-31') - new Date(b.release_date || '9999-12-31')
             );
 
-            sortedParts.forEach(movie => {
-                if (movie.id == id) return;
-
-                const releaseDate = movie.release_date ? new Date(movie.release_date) : null;
-                if (!releaseDate || releaseDate > today) return;
-
-                const card = document.createElement('div');
-                card.className = 'ep-card'; 
+            sortedParts.forEach((movie, index) => {
+                const isCurrentMovie = (movie.id == id);
+                const relStatus = getReleaseStatus(movie.release_date);
                 const posterImg = movie.poster_path ? `${IMG_URL}${movie.poster_path}` : 'images/logo-192.png';
+                const releaseYear = movie.release_date ? movie.release_date.substring(0, 4) : 'Upcoming';
+                
+                const card = document.createElement('div');
+                card.className = `ep-card ${isCurrentMovie ? 'active' : ''} ${!relStatus.isReleased ? 'unreleased' : ''}`;
+                card.style.position = 'relative';
                 
                 card.innerHTML = `
-                    <img src="${posterImg}" alt="${movie.title || 'Movie'}" style="width: 60px; aspect-ratio: 2/3; border-radius: 4px; object-fit: cover;">
-                    <div class="ep-info">
-                        <h4>${movie.title || 'Untitled'}</h4>
-                        <p>${movie.release_date ? movie.release_date.substring(0,4) : 'N/A'}</p>
+                    <div style="position:relative; width:60px; aspect-ratio:2/3; flex-shrink:0;">
+                        <img src="${posterImg}" alt="${movie.title || 'Movie'}" style="width:100%; height:100%; border-radius:4px; object-fit:cover;">
+                        <span style="position:absolute; top:2px; left:2px; background:rgba(0,0,0,0.8); color:#ffd700; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:2px;">#${index + 1}</span>
+                    </div>
+                    <div class="ep-info" style="flex:1; margin-left:10px;">
+                        <h4>${movie.title || 'Untitled'} ${isCurrentMovie ? '<span style="color:#e50914; font-size:11px;">(Watching)</span>' : ''}</h4>
+                        <p>${releaseYear} ${!relStatus.isReleased ? `• <span style="color:#e50914; font-weight:bold;">${relStatus.label}</span>` : ''}</p>
                     </div>
                 `;
 
-                card.onclick = () => window.location.href = `movie.html?id=${movie.id}&type=movie`;
+                if (!isCurrentMovie) {
+                    card.onclick = () => window.location.href = `movie.html?id=${movie.id}&type=movie`;
+                }
+
                 listContainer.appendChild(card);
             });
 
@@ -571,7 +590,7 @@ async function handleCollection(collectionId) {
     }
 }
 
-// ================= 3. ACTIVE USERS TRACKER (FIREBASE) =================
+// ================= 4. ACTIVE USERS TRACKER (FIREBASE) =================
 (function initActiveUsersTracker() {
     const DATABASE_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
     

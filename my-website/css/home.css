@@ -816,3 +816,13 @@ a {
 .ep-card.unreleased:hover {
     border-color: #444 !important;
 }
+
+.srv-btn.disabled-srv {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #444 !important;
+}
+.srv-btn.disabled-srv:hover {
+    background: #1f1f1f !important;
+    border-color: #e50914 !important;
+}

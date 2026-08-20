@@ -7,6 +7,7 @@
     
     <link rel="icon" href="images/logo-192.png" type="image/png">
     <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/changelog.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
@@ -20,6 +21,7 @@
         .home-btn { font-size: 1rem; color: #ccc; background: #222; border: 1px solid #333; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.2s; }
         .home-btn:hover { background: var(--primary); color: #fff; }
         .header-title { font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50%; text-align: center; }
+        .header-actions { display: flex; align-items: center; gap: 10px; }
 
         /* Layout */
         .container { max-width: 1400px; margin: 15px auto; padding: 0 15px; display: flex; gap: 25px; }
@@ -86,7 +88,7 @@
         .rec-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
         .rec-card h6 { padding: 6px; font-size: 0.75rem; color: #ddd; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* BAGO: Pulse animation para sa Active User Dot */
+        /* Pulse animation para sa Active User Dot */
         @keyframes pulse {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
             70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
@@ -153,7 +155,7 @@
                 width: 100%;
             }
             .ep-info p, .episode-details p {
-                display: none; /* Hide long overview on mobile pills for cleaner UI */
+                display: none;
             }
         }
     </style>
@@ -164,10 +166,17 @@
         <a href="index.html" class="home-btn" title="Back"><i class="fas fa-arrow-left"></i></a>
         <div class="header-title" id="page-header-title">Now Playing</div>
         
-        <!-- BAGO: Active Users Counter para sa Movie Page -->
-        <div class="active-users-counter" title="Users Online Now" style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; color: #fff; background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 20px; border: 1px solid #333;">
-            <div style="width: 6px; height: 6px; background-color: #4CAF50; border-radius: 50%; box-shadow: 0 0 6px #4CAF50; animation: pulse 1.5s infinite;"></div>
-            <span id="online-count">1</span> Online
+        <div class="header-actions">
+            <!-- Active Users Counter -->
+            <div class="active-users-counter" title="Users Online Now" style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; color: #fff; background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 20px; border: 1px solid #333;">
+                <div style="width: 6px; height: 6px; background-color: #4CAF50; border-radius: 50%; box-shadow: 0 0 6px #4CAF50; animation: pulse 1.5s infinite;"></div>
+                <span id="online-count">1</span> Online
+            </div>
+
+            <!-- Changelog / Updates Notification Button -->
+            <button id="changelog-btn" class="changelog-nav-btn" title="What's New / Logs">
+                <i class="fas fa-bell"></i>
+            </button>
         </div>
     </header>
 
@@ -247,5 +256,6 @@
     <!-- External Script Calls -->
     <script src="js/servers.js"></script>
     <script src="js/movie.js"></script>
+    <script src="js/changelog.js"></script>
 </body>
 </html>

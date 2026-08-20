@@ -159,7 +159,7 @@ function showThemeModal(title, message, badgeText = '') {
     overlay.classList.add('show');
 }
 
-// Helper: Release Status Calculator
+// Helper: Release Status Calculator (Smart Context for Movies & TV)
 function getReleaseStatus(airDateStr) {
     if (!airDateStr) return { isReleased: true, label: '' };
 
@@ -172,12 +172,14 @@ function getReleaseStatus(airDateStr) {
     const diffTime = airDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+    const mediumText = isEpisodic ? "Airing" : "In Theaters";
+
     if (diffDays <= 0) {
         return { isReleased: true, label: '' };
     } else if (diffDays === 1) {
-        return { isReleased: false, label: 'Releasing Tomorrow' };
+        return { isReleased: false, label: isEpisodic ? 'Airing Tomorrow' : 'Releasing Tomorrow' };
     } else if (diffDays <= 30) {
-        return { isReleased: false, label: `In Theaters in ${diffDays} days` };
+        return { isReleased: false, label: `${mediumText} in ${diffDays} days` };
     } else {
         return { isReleased: false, label: `Release: ${airDateStr}` };
     }

@@ -65,91 +65,81 @@
             animation: pulseDot 1.5s infinite !important;
         }
 
-        /* Brave Browser Tip Banner Styling */
-        .brave-banner {
-            background: linear-gradient(90deg, #181818 0%, #2b1114 50%, #181818 100%);
-            border-bottom: 1px solid rgba(229, 9, 20, 0.35);
-            color: #e0e0e0;
-            font-size: 0.8rem;
-            padding: 7px 16px;
+        /* ================= FLOATING BRAVE AD-BLOCK TOAST ================= */
+        .brave-floating-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99998;
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-left: 4px solid #ff5000;
+            border-radius: 10px;
+            padding: 12px 14px;
+            max-width: 330px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.8), 0 0 10px rgba(255, 80, 0, 0.15);
             display: flex;
             align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 1000;
-            text-align: center;
-            box-sizing: border-box;
+            gap: 10px;
+            animation: slideUpToast 0.4s ease-out;
         }
 
-        .brave-banner-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            padding-right: 20px;
+        @keyframes slideUpToast {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
-        .brave-banner-badge {
-            background: #ff5000;
+        .brave-toast-icon {
+            font-size: 20px;
+            color: #ff5000;
+            flex-shrink: 0;
+        }
+
+        .brave-toast-text {
+            font-size: 0.78rem;
+            color: #ccc;
+            line-height: 1.35;
+        }
+
+        .brave-toast-text strong {
             color: #fff;
+        }
+
+        .brave-toast-link {
+            color: #ff5000;
             font-weight: 700;
-            font-size: 10px;
-            padding: 2px 7px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 3px;
         }
 
-        .brave-banner-text strong {
-            color: #fff;
-        }
-
-        .brave-banner-link {
-            color: #ff9800;
+        .brave-toast-link:hover {
             text-decoration: underline;
-            font-weight: 600;
-            margin-left: 4px;
-            transition: color 0.2s ease;
         }
 
-        .brave-banner-link:hover {
-            color: #ffa726;
-        }
-
-        .brave-banner-close {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
+        .brave-toast-close {
             background: transparent;
             border: none;
-            color: #888;
-            font-size: 1.2rem;
+            color: #777;
+            font-size: 1.1rem;
             cursor: pointer;
+            padding: 2px 4px;
             line-height: 1;
-            padding: 4px;
+            margin-left: auto;
+            flex-shrink: 0;
         }
 
-        .brave-banner-close:hover {
+        .brave-toast-close:hover {
             color: #fff;
         }
 
-        @media (max-width: 768px) {
-            .brave-banner {
-                font-size: 0.73rem;
-                padding: 6px 12px;
-            }
-            .brave-banner-content {
-                gap: 5px;
-                padding-right: 18px;
-            }
-            .brave-banner-badge {
-                font-size: 9px;
-                padding: 1px 5px;
+        @media (max-width: 600px) {
+            .brave-floating-toast {
+                bottom: 12px;
+                right: 12px;
+                left: 12px;
+                max-width: none;
+                padding: 10px 12px;
             }
         }
     </style>
@@ -166,16 +156,14 @@
         <img src="images/logo-512.png" alt="Movies-J Logo" id="splash-logo" />
     </div>
 
-    <!-- Brave Browser Tip Banner -->
-    <div id="braveBanner" class="brave-banner">
-        <div class="brave-banner-content">
-            <span class="brave-banner-badge"><i class="fas fa-shield-alt"></i> Tip</span>
-            <span class="brave-banner-text">
-                Tired of annoying server pop-up ads? We recommend using <strong>Brave Browser</strong> for a smoother, ad-free streaming experience!
-            </span>
-            <a href="https://brave.com/" target="_blank" rel="noopener noreferrer" class="brave-banner-link">Get Brave <i class="fas fa-external-link-alt" style="font-size: 9px;"></i></a>
+    <!-- Floating Brave Ad-Block Notice -->
+    <div id="braveFloatingToast" class="brave-floating-toast">
+        <i class="fas fa-shield-halved brave-toast-icon"></i>
+        <div class="brave-toast-text">
+            <span>Tired of server pop-up ads? Use <strong>Brave Browser</strong> for ad-free streaming!</span><br>
+            <a href="https://brave.com/" target="_blank" rel="noopener noreferrer" class="brave-toast-link">Get Brave Browser &rarr;</a>
         </div>
-        <button class="brave-banner-close" onclick="dismissBraveBanner()" title="Dismiss">&times;</button>
+        <button class="brave-toast-close" onclick="dismissBraveToast()" title="Close">&times;</button>
     </div>
 
     <nav class="navbar">
@@ -321,17 +309,17 @@
     <meta name="theme-color" content="#e50914">
 
     <script>
-        function dismissBraveBanner() {
-            const banner = document.getElementById('braveBanner');
-            if (banner) {
-                banner.style.display = 'none';
-                sessionStorage.setItem('movies_j_brave_dismissed', 'true');
+        function dismissBraveToast() {
+            const toast = document.getElementById('braveFloatingToast');
+            if (toast) {
+                toast.style.display = 'none';
+                sessionStorage.setItem('movies_j_brave_toast_dismissed', 'true');
             }
         }
 
-        if (sessionStorage.getItem('movies_j_brave_dismissed') === 'true') {
-            const banner = document.getElementById('braveBanner');
-            if (banner) banner.style.display = 'none';
+        if (sessionStorage.getItem('movies_j_brave_toast_dismissed') === 'true') {
+            const toast = document.getElementById('braveFloatingToast');
+            if (toast) toast.style.display = 'none';
         }
     </script>
 

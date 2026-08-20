@@ -1,4 +1,4 @@
-// ✅ js/movie.js (FULL PROTECTED + UNRELEASED MOVIE BLOCKER + ORGANIZED COLLECTIONS + REALTIME USERS)
+// ✅ js/movie.js (FULL PROTECTED + TRADEMARK TRAILER-FIRST + UNRELEASED BLOCKER + ORGANIZED COLLECTIONS + REALTIME USERS)
 
 // ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
 (function() {
@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // 3. Facts & Badges
         renderMetadata(item);
 
-        // 4. Player & Server Setup
+        // 4. Player & Server Setup (Trailer First as Trademark)
         setupInitialPlayer(item);
         populateServerSelector(item);
 
@@ -282,7 +282,7 @@ async function renderSimilarSection(item) {
     }
 }
 
-// Setup Player (Loads Trailer by Default for Unreleased Movies)
+// Setup Player (Loads Trailer First by Default)
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
     if (!player) return;
@@ -299,7 +299,7 @@ function setupInitialPlayer(item) {
     trailerUrl = '';
 }
 
-// Server Buttons (Blocked for Unreleased Movies)
+// Server Buttons (Trademark: Trailer First, Select Server to Stream Full Media)
 function populateServerSelector(item) {
     const grid = document.getElementById("server-buttons");
     if (!grid) return;
@@ -308,7 +308,6 @@ function populateServerSelector(item) {
 
     if (typeof STREAM_SERVERS !== "undefined") {
         const serverKeys = Object.keys(STREAM_SERVERS);
-        let firstActiveBtn = null;
 
         serverKeys.forEach((key) => {
             const srv = STREAM_SERVERS[key];
@@ -321,7 +320,7 @@ function populateServerSelector(item) {
             btn.onclick = () => {
                 if (!isEpisodic && !isMovieReleased) {
                     const status = getReleaseStatus(item.release_date);
-                    alert(`This movie has not been released yet (${status.label}).\nPlaying the official trailer instead.`);
+                    alert(`This movie has not been released yet (${status.label}).\nEnjoy the official trailer for now!`);
                     if (trailerUrl) {
                         const player = document.getElementById("movie-player");
                         if (player) player.src = trailerUrl;
@@ -335,13 +334,7 @@ function populateServerSelector(item) {
             };
 
             grid.appendChild(btn);
-            if (!firstActiveBtn) firstActiveBtn = btn;
         });
-
-        // Kung released na ang movie at walang trailer, i-play agad ang server 1
-        if (isMovieReleased && !trailerUrl && firstActiveBtn) {
-            firstActiveBtn.click();
-        }
     }
 }
 

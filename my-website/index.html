@@ -64,6 +64,94 @@
             border-radius: 50% !important;
             animation: pulseDot 1.5s infinite !important;
         }
+
+        /* Brave Browser Tip Banner Styling */
+        .brave-banner {
+            background: linear-gradient(90deg, #181818 0%, #2b1114 50%, #181818 100%);
+            border-bottom: 1px solid rgba(229, 9, 20, 0.35);
+            color: #e0e0e0;
+            font-size: 0.8rem;
+            padding: 7px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1000;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .brave-banner-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding-right: 20px;
+        }
+
+        .brave-banner-badge {
+            background: #ff5000;
+            color: #fff;
+            font-weight: 700;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .brave-banner-text strong {
+            color: #fff;
+        }
+
+        .brave-banner-link {
+            color: #ff9800;
+            text-decoration: underline;
+            font-weight: 600;
+            margin-left: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .brave-banner-link:hover {
+            color: #ffa726;
+        }
+
+        .brave-banner-close {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 1.2rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px;
+        }
+
+        .brave-banner-close:hover {
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .brave-banner {
+                font-size: 0.73rem;
+                padding: 6px 12px;
+            }
+            .brave-banner-content {
+                gap: 5px;
+                padding-right: 18px;
+            }
+            .brave-banner-badge {
+                font-size: 9px;
+                padding: 1px 5px;
+            }
+        }
     </style>
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399" crossorigin="anonymous"></script>
@@ -76,6 +164,18 @@
 <body>
     <div id="splash-screen">
         <img src="images/logo-512.png" alt="Movies-J Logo" id="splash-logo" />
+    </div>
+
+    <!-- Brave Browser Tip Banner -->
+    <div id="braveBanner" class="brave-banner">
+        <div class="brave-banner-content">
+            <span class="brave-banner-badge"><i class="fas fa-shield-alt"></i> Tip</span>
+            <span class="brave-banner-text">
+                Tired of annoying server pop-up ads? We recommend using <strong>Brave Browser</strong> for a smoother, ad-free streaming experience!
+            </span>
+            <a href="https://brave.com/" target="_blank" rel="noopener noreferrer" class="brave-banner-link">Get Brave <i class="fas fa-external-link-alt" style="font-size: 9px;"></i></a>
+        </div>
+        <button class="brave-banner-close" onclick="dismissBraveBanner()" title="Dismiss">&times;</button>
     </div>
 
     <nav class="navbar">
@@ -219,6 +319,21 @@
     </div>
     
     <meta name="theme-color" content="#e50914">
+
+    <script>
+        function dismissBraveBanner() {
+            const banner = document.getElementById('braveBanner');
+            if (banner) {
+                banner.style.display = 'none';
+                sessionStorage.setItem('movies_j_brave_dismissed', 'true');
+            }
+        }
+
+        if (sessionStorage.getItem('movies_j_brave_dismissed') === 'true') {
+            const banner = document.getElementById('braveBanner');
+            if (banner) banner.style.display = 'none';
+        }
+    </script>
 
     <script src="js/embed.js" defer></script>
     <script src="js/servers.js" defer></script>

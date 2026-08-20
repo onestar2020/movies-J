@@ -71,12 +71,45 @@
 
         .overview-text { color: #bbb; line-height: 1.6; font-size: 0.88rem; margin: 12px 0 25px; }
 
-        /* Cast Scroller */
+        /* Cast Scroller (Desktop & Mobile Optimized) */
         .section-heading { font-size: 1.05rem; font-weight: 600; margin-bottom: 12px; }
-        .cast-scroller { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
-        .cast-scroller::-webkit-scrollbar { display: none; }
-        .cast-card { flex: 0 0 115px; background: var(--card-bg); border-radius: 8px; overflow: hidden; border: 1px solid #222; flex-shrink: 0; }
-        .cast-card img { width: 100%; aspect-ratio: 1/1.2; object-fit: cover; }
+        .cast-scroller { 
+            display: flex; 
+            gap: 12px; 
+            overflow-x: auto; 
+            padding-bottom: 12px; 
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            cursor: grab;
+        }
+        .cast-scroller:active {
+            cursor: grabbing;
+        }
+        .cast-scroller::-webkit-scrollbar { 
+            height: 6px; 
+        }
+        .cast-scroller::-webkit-scrollbar-track { 
+            background: #181818; 
+            border-radius: 4px; 
+        }
+        .cast-scroller::-webkit-scrollbar-thumb { 
+            background: #333; 
+            border-radius: 4px; 
+        }
+        .cast-scroller::-webkit-scrollbar-thumb:hover { 
+            background: #e50914; 
+        }
+
+        .cast-card { 
+            flex: 0 0 115px; 
+            background: var(--card-bg); 
+            border-radius: 8px; 
+            overflow: hidden; 
+            border: 1px solid #222; 
+            flex-shrink: 0; 
+            user-select: none;
+        }
+        .cast-card img { width: 100%; aspect-ratio: 1/1.2; object-fit: cover; pointer-events: none; }
         .cast-name { padding: 8px; font-size: 0.75rem; text-align: center; }
         .cast-name h6 { color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cast-name span { color: var(--text-muted); font-size: 0.68rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -336,7 +369,7 @@
 
     </div>
 
-    <!-- Dismissal Logic -->
+    <!-- Dismissal & Cast Horizontal Scrolling Logic -->
     <script>
         function dismissBraveToast() {
             const toast = document.getElementById('braveFloatingToast');
@@ -349,6 +382,39 @@
         if (sessionStorage.getItem('movies_j_brave_toast_dismissed') === 'true') {
             const toast = document.getElementById('braveFloatingToast');
             if (toast) toast.style.display = 'none';
+        }
+
+        // Horizontal Mouse Wheel & Drag-to-Scroll para sa Cast Container
+        const castSlider = document.getElementById('cast-container');
+        if (castSlider) {
+            // 1. Mouse Wheel Scroll (Left/Right)
+            castSlider.addEventListener('wheel', (evt) => {
+                if (evt.deltaY !== 0) {
+                    evt.preventDefault();
+                    castSlider.scrollLeft += evt.deltaY;
+                }
+            }, { passive: false });
+
+            // 2. Click-and-Drag to Scroll sa Desktop
+            let isDown = false;
+            let startX, scrollLeft;
+
+            castSlider.addEventListener('mousedown', (e) => {
+                isDown = true;
+                startX = e.pageX - castSlider.offsetLeft;
+                scrollLeft = castSlider.scrollLeft;
+            });
+
+            castSlider.addEventListener('mouseleave', () => { isDown = false; });
+            castSlider.addEventListener('mouseup', () => { isDown = false; });
+
+            castSlider.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - castSlider.offsetLeft;
+                const walk = (x - startX) * 1.5;
+                castSlider.scrollLeft = scrollLeft - walk;
+            });
         }
     </script>
 

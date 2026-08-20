@@ -1,4 +1,4 @@
-// ✅ js/movie.js (FULL PROTECTED + MOBILE AUTO-SCROLL TO SERVERS/EPISODES + REALTIME USERS)
+// ✅ js/movie.js (FULL PROTECTED + MOBILE AUTO-SCROLL TO SERVERS/EPISODES + REALTIME USERS + UNRELEASED COUNTDOWN)
 
 // ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
 (function() {
@@ -323,6 +323,30 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     player.src = getEmbedUrl(serverKey, mediaData, typeKey, season, episode);
 }
 
+// ================= [BAGONG CODE] RELEASE STATUS HELPER =================
+function getEpisodeReleaseStatus(airDateStr) {
+    if (!airDateStr) return { isReleased: true, label: '' };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const airDate = new Date(airDateStr);
+    airDate.setHours(0, 0, 0, 0);
+
+    const diffTime = airDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 0) {
+        return { isReleased: true, label: '' };
+    } else if (diffDays === 1) {
+        return { isReleased: false, label: 'Airing Tomorrow' };
+    } else if (diffDays <= 7) {
+        return { isReleased: false, label: `Airing in ${diffDays} days` };
+    } else {
+        return { isReleased: false, label: `Release: ${airDateStr}` };
+    }
+}
+
 // TV Seasons & Episodes Setup
 function handleTVShow(item) {
     const drop = document.getElementById("season-dropdown");
@@ -368,6 +392,7 @@ function handleTVShow(item) {
     loadEpisodes(currentSeasonNumber);
 }
 
+// ================= [BINAGO DITO] LOAD EPISODES WITH UNRELEASED CHECK =================
 async function loadEpisodes(seasonNum) {
     const list = document.getElementById("episode-list");
     if (!list) return;
@@ -403,20 +428,45 @@ async function loadEpisodes(seasonNum) {
         return;
     }
 
-    episodes.forEach((ep, index) => {
+    // Hanapin ang pinakahuling released na episode sakaling unreleased ang kasalukuyang nakapili
+    const releasedEpisodes = episodes.filter(ep => getEpisodeReleaseStatus(ep.air_date).isReleased);
+    const lastReleasedEpNum = releasedEpisodes.length > 0 ? releasedEpisodes[releasedEpisodes.length - 1].episode_number : null;
+
+    let targetSelectedEpNum = currentEpisodeNumber;
+    const currentTargetEp = episodes.find(e => e.episode_number === targetSelectedEpNum);
+    
+    if (currentTargetEp && !getEpisodeReleaseStatus(currentTargetEp.air_date).isReleased) {
+        targetSelectedEpNum = lastReleasedEpNum || 1;
+        currentEpisodeNumber = targetSelectedEpNum;
+    }
+
+    episodes.forEach((ep) => {
+        const status = getEpisodeReleaseStatus(ep.air_date);
         const card = document.createElement("div");
-        card.className = `ep-card ${ep.episode_number === currentEpisodeNumber ? "active" : ""}`;
+        card.className = `ep-card ${ep.episode_number === targetSelectedEpNum && status.isReleased ? "active" : ""} ${!status.isReleased ? "unreleased" : ""}`;
         const thumb = ep.still_path ? `https://image.tmdb.org/t/p/w185${ep.still_path}` : 'images/logo-192.png';
         
+        const badgeHtml = !status.isReleased 
+            ? `<span class="ep-badge-unreleased" style="position:absolute; top:6px; left:6px; background:#e50914; color:#fff; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; z-index:2; text-shadow:0 1px 2px rgba(0,0,0,0.8);">${status.label}</span>` 
+            : '';
+
         card.innerHTML = `
-            <img src="${thumb}" alt="EP ${ep.episode_number}" loading="lazy">
-            <div class="ep-info">
+            <div style="position:relative; width:100px; flex-shrink:0; display:flex;">
+                <img src="${thumb}" alt="EP ${ep.episode_number}" loading="lazy" style="width:100%; border-radius:4px; object-fit:cover;">
+                ${badgeHtml}
+            </div>
+            <div class="ep-info" style="flex:1; margin-left:10px;">
                 <h4>EP ${ep.episode_number}: ${ep.name || "Episode " + ep.episode_number}</h4>
                 <p>${ep.overview || "No description provided."}</p>
             </div>
         `;
 
         card.onclick = () => {
+            if (!status.isReleased) {
+                alert(`Episode ${ep.episode_number} is not yet released!\nStatus: ${status.label}`);
+                return;
+            }
+
             currentEpisodeNumber = ep.episode_number;
             document.querySelectorAll(".ep-card").forEach(c => c.classList.remove("active"));
             card.classList.add("active");
@@ -432,10 +482,6 @@ async function loadEpisodes(seasonNum) {
         };
 
         list.appendChild(card);
-
-        if (index === 0 && (!currentEpisodeNumber || currentEpisodeNumber === 1)) {
-            card.classList.add("active");
-        }
     });
 
     const activeEp = list.querySelector('.ep-card.active');
@@ -455,8 +501,13 @@ function setupNextEpisodeButton() {
     nextBtn.onclick = () => {
         const currentActive = document.querySelector('.ep-card.active');
         if (currentActive && currentActive.nextElementSibling && currentActive.nextElementSibling.classList.contains('ep-card')) {
-            currentActive.nextElementSibling.click();
-            currentActive.nextElementSibling.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
+            const nextCard = currentActive.nextElementSibling;
+            if (nextCard.classList.contains('unreleased')) {
+                alert("Next episode is not yet released!");
+                return;
+            }
+            nextCard.click();
+            nextCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
         } else {
             alert("End of season! Please select the next season.");
         }

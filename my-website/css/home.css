@@ -807,3 +807,12 @@ a {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.ep-card.unreleased {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    filter: grayscale(30%);
+}
+.ep-card.unreleased:hover {
+    border-color: #444 !important;
+}

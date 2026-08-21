@@ -1,8 +1,19 @@
 // ✅ js/changelog.js (AUTO NOTIFICATION BADGE + LOCALSTORAGE TRACKER)
 
-const CURRENT_APP_VERSION = "v2.4"; // ⬅️ PALITAN ITO TUWING MAY BAGONG UPDATE (e.g. v2.5)
+const CURRENT_APP_VERSION = "v2.5"; // ⬅️ Na-update na sa v2.5 para lumitaw ang red dot sa users
 
 const SITE_CHANGELOGS = [
+    {
+        version: "v2.5",
+        date: "August 21, 2026",
+        title: "Quality Transparency, Ad-Block Tip & UI Polish",
+        changes: [
+            "Smart Quality Detector: May live indicators na ang mga server buttons at metadata kung (HD) o (CAM / SD) pa ang copy.",
+            "Video Quality Notice Modal: Nagbibigay ng paalala kapag kakalabas pa lang ng movie sa sinehan para iwas kalituhan sa video quality.",
+            "Cast Scroller Optimization: Inayos ang smooth horizontal wheel/drag scrolling at tinanggal ang mga placeholder cards na walang picture.",
+            "Floating Brave Browser Tip: Dagdag na dismissable recommendation banner para sa mas malinis at ad-free streaming experience."
+        ]
+    },
     {
         version: "v2.4",
         date: "August 20, 2026",

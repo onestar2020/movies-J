@@ -1,4 +1,4 @@
-// ✅ js/movie.js (FULL PROTECTED + CUSTOM DARK THEME MODAL + TRADEMARK TRAILER-FIRST + UNRELEASED BLOCKER + ORGANIZED COLLECTIONS + REALTIME USERS)
+// ✅ js/movie.js (FULL PROTECTED + TRADEMARK TRAILER-FIRST + UNRELEASED BLOCKER + CAM/HD QUALITY DETECTOR + ORGANIZED COLLECTIONS + REALTIME USERS)
 
 // ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
 (function() {
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         setupInitialPlayer(item);
         populateServerSelector(item);
 
-        // 5. Cast Section
+        // 5. Cast Section (Filtered - No blank cards)
         renderCastSection(item);
 
         // 6. Similar / Recommendations
@@ -185,6 +185,40 @@ function getReleaseStatus(airDateStr) {
     }
 }
 
+// Helper: Smart Video Quality & CAM Detector
+function getQualityStatus(releaseDateStr) {
+    if (isEpisodic) {
+        return { quality: 'HD', isCamLikely: false, badge: 'HD 1080p' };
+    }
+    if (!releaseDateStr) {
+        return { quality: 'HD', isCamLikely: false, badge: 'HD' };
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const relDate = new Date(releaseDateStr);
+    relDate.setHours(0, 0, 0, 0);
+
+    const diffDays = Math.floor((today - relDate) / (1000 * 60 * 60 * 24));
+
+    // Kung kakalabas pa lang sa sinehan (0 hanggang 50 days)
+    if (diffDays >= 0 && diffDays <= 50) {
+        return {
+            quality: 'CAM',
+            isCamLikely: true,
+            badge: 'CAM / Telesync',
+            message: 'This movie was recently released in theaters. Stream servers may currently provide a Cinema / CAM copy until the official HD digital release is out.'
+        };
+    }
+
+    return {
+        quality: 'HD',
+        isCamLikely: false,
+        badge: 'HD 1080p',
+        message: ''
+    };
+}
+
 // Fetch Details
 async function fetchDetails() {
     let data = null;
@@ -245,19 +279,26 @@ function renderMetadata(item) {
     const badgeBox = document.getElementById("media-badges");
     if (badgeBox) {
         const relStatus = !isEpisodic ? getReleaseStatus(item.release_date) : { isReleased: true };
+        const qualityStatus = getQualityStatus(item.release_date || item.first_air_date);
+
         const statusBadge = !relStatus.isReleased 
             ? `<span class="meta-badge" style="background:#e50914; color:#fff; font-weight:bold;">${relStatus.label}</span>` 
             : `<span class="meta-badge">${item.status || "Released"}</span>`;
 
+        const qualityBadge = relStatus.isReleased
+            ? `<span class="meta-badge" style="background:${qualityStatus.isCamLikely ? '#ff9800' : '#4CAF50'}; color:#fff; font-weight:bold;">${qualityStatus.badge}</span>`
+            : '';
+
         badgeBox.innerHTML = `
             <span class="meta-badge">${type.toUpperCase()}</span>
             ${statusBadge}
+            ${qualityBadge}
             ${(item.genres || []).map(g => `<span class="meta-badge">${g.name}</span>`).join("")}
         `;
     }
 }
 
-// Cast Cards
+// Cast Cards (FILTERED: Tanggal ang walang picture)
 async function renderCastSection(item) {
     const castBox = document.getElementById("cast-container");
     if (!castBox) return;
@@ -274,9 +315,13 @@ async function renderCastSection(item) {
     }
 
     castBox.innerHTML = "";
-    if (castList.length > 0) {
-        castList.slice(0, 15).forEach(c => {
-            const pic = c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : 'images/logo-192.png';
+    
+    // I-filter: Ipapakita lang ang mga artistang may tunay na larawan
+    const validCast = castList.filter(c => c.profile_path && c.name && c.name.trim() !== "");
+
+    if (validCast.length > 0) {
+        validCast.slice(0, 15).forEach(c => {
+            const pic = `https://image.tmdb.org/t/p/w185${c.profile_path}`;
             castBox.innerHTML += `
                 <div class="cast-card">
                     <img src="${pic}" alt="${c.name}" loading="lazy">
@@ -288,7 +333,7 @@ async function renderCastSection(item) {
             `;
         });
     } else {
-        castBox.innerHTML = "<p style='color:#777;'>No cast info available.</p>";
+        castBox.innerHTML = "<p style='color:#777; padding:10px;'>No cast info available.</p>";
     }
 }
 
@@ -341,7 +386,7 @@ function setupInitialPlayer(item) {
     trailerUrl = '';
 }
 
-// Server Buttons (Blocked for Unreleased Movies with Custom Theme Modal)
+// Server Buttons (with Quality Badge & CAM Notice)
 function populateServerSelector(item) {
     const grid = document.getElementById("server-buttons");
     if (!grid) return;
@@ -350,6 +395,7 @@ function populateServerSelector(item) {
 
     if (typeof STREAM_SERVERS !== "undefined") {
         const serverKeys = Object.keys(STREAM_SERVERS);
+        const qualityStatus = getQualityStatus(item.release_date || item.first_air_date);
 
         serverKeys.forEach((key) => {
             const srv = STREAM_SERVERS[key];
@@ -357,9 +403,16 @@ function populateServerSelector(item) {
 
             const btn = document.createElement("button");
             btn.className = `srv-btn ${!isEpisodic && !isMovieReleased ? 'disabled-srv' : ''}`;
-            btn.textContent = srv.name;
+            
+            // Server button text na may quality indicator
+            const qTag = isMovieReleased 
+                ? `<span style="font-size:10px; margin-left:4px; opacity:0.8; color:${qualityStatus.isCamLikely ? '#ffb74d' : '#81c784'};">(${qualityStatus.quality})</span>` 
+                : '';
+            
+            btn.innerHTML = `${srv.name} ${qTag}`;
             
             btn.onclick = () => {
+                // Kung unreleased pa ang movie
                 if (!isEpisodic && !isMovieReleased) {
                     const status = getReleaseStatus(item.release_date);
                     showThemeModal(
@@ -372,6 +425,16 @@ function populateServerSelector(item) {
                         if (player) player.src = trailerUrl;
                     }
                     return;
+                }
+
+                // Kung CAM print pa lang
+                if (qualityStatus.isCamLikely && !sessionStorage.getItem(`cam_notified_${item.id}`)) {
+                    showThemeModal(
+                        "Video Quality Notice",
+                        qualityStatus.message,
+                        qualityStatus.badge
+                    );
+                    sessionStorage.setItem(`cam_notified_${item.id}`, 'true');
                 }
 
                 document.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));

@@ -1,7 +1,8 @@
-// ✅ js/changelog.js (AUTO NOTIFICATION BADGE + LOCALSTORAGE TRACKER)
+// ✅ js/changelog.js (STATIC + DYNAMIC FIREBASE CHANGELOG MERGE)
 
-const CURRENT_APP_VERSION = "v2.6"; // ⬅️ Na-update na sa v2.6 para lumitaw ang red dot sa users
+const FIREBASE_DB_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
 
+// Mga lumang logs na naka-hardcode para laging nandiyan
 const SITE_CHANGELOGS = [
     {
         version: "v2.6",
@@ -48,7 +49,31 @@ const SITE_CHANGELOGS = [
     }
 ];
 
-function initChangelogModule() {
+async function initChangelogModule() {
+    let allLogs = [...SITE_CHANGELOGS];
+    let latestVersion = SITE_CHANGELOGS[0].version;
+
+    try {
+        const res = await fetch(`${FIREBASE_DB_URL}/changelogs.json`);
+        const data = await res.json();
+        
+        if (data) {
+            const firebaseLogs = Object.keys(data).map(key => ({
+                id: key,
+                ...data[key]
+            }));
+
+            // Pagsamahin ang Firebase logs at static logs, tapos i-sort ayon sa bago
+            allLogs = [...firebaseLogs, ...SITE_CHANGELOGS].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            
+            if (allLogs.length > 0) {
+                latestVersion = allLogs[0].version;
+            }
+        }
+    } catch (err) {
+        console.warn("Could not fetch changelogs from Firebase:", err);
+    }
+
     // 1. Setup ng Modal Container
     let overlay = document.getElementById('changelog-modal-overlay');
     if (!overlay) {
@@ -56,37 +81,41 @@ function initChangelogModule() {
         overlay.id = 'changelog-modal-overlay';
         overlay.className = 'changelog-overlay';
 
-        const logsHtml = SITE_CHANGELOGS.map(log => `
-            <div class="changelog-item">
-                <div class="changelog-date">
-                    <span class="changelog-version">${log.version}</span>
-                    <span>${log.date}</span>
-                </div>
-                <h4>${log.title}</h4>
-                <ul>
-                    ${log.changes.map(c => `<li>${c}</li>`).join('')}
-                </ul>
-            </div>
-        `).join('');
-
-        overlay.innerHTML = `
-            <div class="changelog-card">
-                <div class="changelog-header">
-                    <h3>🚀 System Updates & Logs</h3>
-                    <button class="changelog-close" id="changelog-close-btn" aria-label="Close">&times;</button>
-                </div>
-                <div class="changelog-body">
-                    ${logsHtml}
-                </div>
-            </div>
-        `;
         document.body.appendChild(overlay);
 
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) overlay.classList.remove('show');
         });
+    }
 
-        document.getElementById('changelog-close-btn').onclick = () => {
+    const logsHtml = allLogs.map(log => `
+        <div class="changelog-item">
+            <div class="changelog-date">
+                <span class="changelog-version">${log.version}</span>
+                <span>${log.date}</span>
+            </div>
+            <h4>${log.title}</h4>
+            <ul>
+                ${(log.changes || []).map(c => `<li>${c}</li>`).join('')}
+            </ul>
+        </div>
+    `).join('');
+
+    overlay.innerHTML = `
+        <div class="changelog-card">
+            <div class="changelog-header">
+                <h3>🚀 System Updates & Logs</h3>
+                <button class="changelog-close" id="changelog-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <div class="changelog-body">
+                ${logsHtml}
+            </div>
+        </div>
+    `;
+
+    const closeBtn = document.getElementById('changelog-close-btn');
+    if (closeBtn) {
+        closeBtn.onclick = () => {
             overlay.classList.remove('show');
         };
     }
@@ -96,8 +125,7 @@ function initChangelogModule() {
     const lastSeenVersion = localStorage.getItem('movies_j_last_version');
 
     if (btn) {
-        // Lagyan ng red dot kung bago ang version o hindi pa nabubuksan
-        if (lastSeenVersion !== CURRENT_APP_VERSION) {
+        if (lastSeenVersion !== latestVersion) {
             btn.style.position = 'relative';
             if (!document.getElementById('changelog-unread-dot')) {
                 const dot = document.createElement('span');
@@ -111,8 +139,7 @@ function initChangelogModule() {
             e.preventDefault();
             overlay.classList.add('show');
 
-            // Tanggalin ang dot at i-save sa browser
-            localStorage.setItem('movies_j_last_version', CURRENT_APP_VERSION);
+            localStorage.setItem('movies_j_last_version', latestVersion);
             const dot = document.getElementById('changelog-unread-dot');
             if (dot) dot.remove();
         };

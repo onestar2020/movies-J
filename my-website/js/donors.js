@@ -4,12 +4,12 @@ const DONORS_LIST = [
     {
         name: "Mark D.",
         amount: "₱200",
-        amountVal: 200, // numerical value para sa calculation
+        amountVal: 200,
         date: "Aug 21, 2026",
         message: "Solid ng Movies-J! Keep it up idol Jay."
     },
     {
-        name: "Anonymous",
+        name: "Aljhon",
         amount: "₱100",
         amountVal: 100,
         date: "Aug 20, 2026",
@@ -37,7 +37,7 @@ function renderDonorsAndHighlights() {
         }
     }
 
-    // 2. Render sa Navbar Highlights (Kasama ang amount/price sa Latest)
+    // 2. Render sa Navbar Highlights (Top & Latest Donor)
     const highlightContainer = document.getElementById('donor-nav-highlights');
     if (highlightContainer && DONORS_LIST && DONORS_LIST.length > 0) {
         const topDonor = [...DONORS_LIST].sort((a, b) => b.amountVal - a.amountVal)[0];
@@ -54,7 +54,7 @@ function renderDonorsAndHighlights() {
     }
 }
 
-// Function para kopyahin ang Gmail at magpakita ng dark toast sa halip na mailto popup
+// Function para kopyahin ang Gmail at magpakita ng dark toast
 function copyDonationEmail() {
     const email = "jayjovendinawanao29@gmail.com";
     navigator.clipboard.writeText(email).then(() => {

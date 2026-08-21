@@ -1193,3 +1193,17 @@ a {
         display: none; /* Itago sa mobile navbar para hindi magsiksikan */
     }
 }
+/* Ayos para sa Mobile Navbar & Donor Badges */
+@media (max-width: 900px) {
+    .donor-nav-ticker {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin: 10px 0;
+        align-items: flex-start;
+    }
+    .nav-donor-tag {
+        font-size: 0.75rem;
+        padding: 4px 10px;
+    }
+}

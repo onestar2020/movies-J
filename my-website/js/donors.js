@@ -37,20 +37,18 @@ function renderDonorsAndHighlights() {
         }
     }
 
-    // 2. Render sa Navbar Highlights (Top Donor & Latest Donor)
+    // 2. Render sa Navbar Highlights (Kasama ang amount/price sa Latest)
     const highlightContainer = document.getElementById('donor-nav-highlights');
     if (highlightContainer && DONORS_LIST && DONORS_LIST.length > 0) {
-        // Hanapin ang pinakamalaki (Top Donor)
         const topDonor = [...DONORS_LIST].sort((a, b) => b.amountVal - a.amountVal)[0];
-        // Kunin ang pinakabago (Latest Donor - Index 0)
         const latestDonor = DONORS_LIST[0];
 
         highlightContainer.innerHTML = `
-            <div class="nav-donor-tag top-donor" title="Top Supporter: ${topDonor.name} (${topDonor.amount})">
+            <div class="nav-donor-tag top-donor" onclick="document.getElementById('supportBtn').click()" title="Top Supporter: ${topDonor.name} (${topDonor.amount})">
                 <i class="fas fa-crown"></i> <span>Top: <strong>${topDonor.name}</strong> (${topDonor.amount})</span>
             </div>
-            <div class="nav-donor-tag latest-donor" title="Latest Supporter: ${latestDonor.name} (${latestDonor.amount})">
-                <i class="fas fa-sparkles"></i> <span>Latest: <strong>${latestDonor.name}</strong></span>
+            <div class="nav-donor-tag latest-donor" onclick="document.getElementById('supportBtn').click()" title="Latest Supporter: ${latestDonor.name} (${latestDonor.amount})">
+                <i class="fas fa-sparkles"></i> <span>Latest: <strong>${latestDonor.name}</strong> (${latestDonor.amount})</span>
             </div>
         `;
     }

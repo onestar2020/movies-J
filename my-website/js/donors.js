@@ -2,18 +2,18 @@
 
 const DONORS_LIST = [
     {
+        name: "Aljhon",
+        amount: "₱50",
+        amountVal: 50,
+        date: "Aug 21, 2026",
+        message: "Pang-kape at server support!"
+    },
+    {
         name: "Mark D.",
         amount: "₱200",
         amountVal: 200,
-        date: "Aug 21, 2026",
-        message: "Solid ng Movies-J! Keep it up idol Jay."
-    },
-    {
-        name: "Aljhon",
-        amount: "₱100",
-        amountVal: 100,
         date: "Aug 20, 2026",
-        message: "Pang-kape at server support!"
+        message: "Solid ng Movies-J! Keep it up idol Jay."
     }
 ];
 
@@ -40,7 +40,9 @@ function renderDonorsAndHighlights() {
     // 2. Render sa Navbar Highlights (Top & Latest Donor)
     const highlightContainer = document.getElementById('donor-nav-highlights');
     if (highlightContainer && DONORS_LIST && DONORS_LIST.length > 0) {
+        // Awtomatikong kinukuha ang may pinakamataas na amount
         const topDonor = [...DONORS_LIST].sort((a, b) => b.amountVal - a.amountVal)[0];
+        // Awtomatikong kinukuha ang pinakaunang item sa array bilang latest
         const latestDonor = DONORS_LIST[0];
 
         highlightContainer.innerHTML = `

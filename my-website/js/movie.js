@@ -1,4 +1,4 @@
-// ✅ js/movie.js (FULL PROTECTED + TRADEMARK TRAILER-FIRST + UNRELEASED BLOCKER + CAM/HD QUALITY DETECTOR + ORGANIZED COLLECTIONS + REALTIME USERS)
+// ✅ js/movie.js (FULL PROTECTED + TRADEMARK TRAILER-FIRST + UNRELEASED BLOCKER + 90-DAY CAM/HD QUALITY DETECTOR + ORGANIZED COLLECTIONS + REALTIME USERS)
 
 // ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
 (function() {
@@ -185,13 +185,13 @@ function getReleaseStatus(airDateStr) {
     }
 }
 
-// Helper: Smart Video Quality & CAM Detector (Safe 60-Day Window)
+// Helper: Smart Video Quality & CAM Detector (Safe 90-Day / 3-Month Window)
 function getQualityStatus(releaseDateStr) {
     if (isEpisodic) {
         return { quality: 'HD', isCamLikely: false, badge: 'HD 1080p' };
     }
     if (!releaseDateStr) {
-        return { quality: 'HD', isCamLikely: false, badge: 'HD' };
+        return { quality: 'Auto', isCamLikely: false, badge: 'Standard' };
     }
 
     const today = new Date();
@@ -201,17 +201,17 @@ function getQualityStatus(releaseDateStr) {
 
     const diffDays = Math.floor((today - relDate) / (1000 * 60 * 60 * 24));
 
-    // 0 - 60 days: Theatrical Window / CAM print expected
-    if (diffDays >= 0 && diffDays <= 60) {
+    // 0 hanggang 90 Days (~3 buwan): Kadalasan CAM/Cinema print pa ang kopya sa servers
+    if (diffDays >= 0 && diffDays <= 90) {
         return {
-            quality: 'CAM',
+            quality: 'CAM / SD',
             isCamLikely: true,
             badge: 'CAM / Telesync',
             message: 'This movie was recently released in theaters. Stream servers may currently provide a Cinema / CAM copy until the official HD digital release is out.'
         };
     }
 
-    // 60+ days: Official Digital WEB-DL/HD release
+    // 90+ Days: Ligtas na opisyal nang may WEB-DL/HD digital release
     return {
         quality: 'HD',
         isCamLikely: false,

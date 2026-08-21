@@ -75,7 +75,7 @@
     </div>
 
     <script>
-        // Exact Firebase Config mula sa Screenshot
+        // Ilagay dito ang kinopya mula sa Firebase Project Settings
         const firebaseConfig = {
             apiKey: "AIzaSyCnL6uEGAVTC3V-_IGqKYFRVuCXx5I5Feo",
             authDomain: "movies-j-stream.firebaseapp.com",
@@ -124,7 +124,6 @@
             const message = document.getElementById('dMessage').value.trim();
             const dateStr = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
 
-            // Isave sa Firebase Database node 'donors'
             db.ref('donors').push({
                 name: name,
                 amountVal: amountVal,
@@ -145,7 +144,6 @@
                     return;
                 }
                 
-                // I-sort mula pinakabago pababa
                 const sortedKeys = Object.keys(data).sort((a, b) => data[b].timestamp - data[a].timestamp);
                 
                 container.innerHTML = sortedKeys.map(key => {

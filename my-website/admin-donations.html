@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movies-J Admin - Donors Manager</title>
+    <title>Movies-J Admin Panel</title>
     
     <link rel="icon" href="images/logo-192.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -12,32 +12,40 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
         body { background: #0f0f0f; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .admin-card { background: #181818; border: 1px solid #333; border-radius: 12px; padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        h2 { color: #e50914; margin-bottom: 20px; text-align: center; font-size: 1.4rem; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 5px; }
-        input { width: 100%; background: #252525; border: 1px solid #444; border-radius: 6px; padding: 10px 12px; color: #fff; font-size: 0.9rem; outline: none; }
-        input:focus { border-color: #e50914; }
-        .btn { width: 100%; background: #e50914; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .admin-card { background: #181818; border: 1px solid #333; border-radius: 12px; padding: 25px; width: 100%; max-width: 550px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        h2 { color: #e50914; margin-bottom: 15px; text-align: center; font-size: 1.3rem; }
+        
+        .admin-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .tab-btn { flex: 1; background: #222; border: 1px solid #444; color: #aaa; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s; }
+        .tab-btn.active { background: #e50914; color: #fff; border-color: #e50914; }
+        
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px; }
+        input, textarea { width: 100%; background: #252525; border: 1px solid #444; border-radius: 6px; padding: 10px; color: #fff; font-size: 0.85rem; outline: none; }
+        input:focus, textarea:focus { border-color: #e50914; }
+        textarea { resize: vertical; min-height: 80px; }
+        
+        .btn { width: 100%; background: #e50914; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
         .btn:hover { background: #b20710; }
         .hidden { display: none; }
-        .donor-preview { margin-top: 25px; border-top: 1px solid #333; padding-top: 15px; }
-        .donor-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 0.85rem; border-left: 3px solid #e50914; }
-        .delete-btn { color: #ff5252; cursor: pointer; background: transparent; border: none; font-size: 1rem; padding: 4px 8px; }
+        
+        .list-preview { margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; max-height: 250px; overflow-y: auto; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px 12px; border-radius: 6px; margin-bottom: 8px; font-size: 0.82rem; border-left: 3px solid #e50914; }
+        .delete-btn { color: #ff5252; cursor: pointer; background: transparent; border: none; font-size: 0.95rem; padding: 4px 8px; }
         .delete-btn:hover { color: #ff1744; }
     </style>
 </head>
 <body>
 
     <div class="admin-card">
-        <h2>🎬 Movies-J Donors Manager</h2>
+        <h2>🎬 Movies-J Admin Dashboard</h2>
 
         <!-- PIN Entry Section -->
         <div id="authSection">
-            <p style="font-size:0.85rem; color:#bbb; text-align:center; margin-bottom:15px;">Admin Protected Area. Enter Master PIN to access:</p>
+            <p style="font-size:0.85rem; color:#bbb; text-align:center; margin-bottom:15px;">Admin Protected Area. Enter Master PIN:</p>
             <form onsubmit="verifyPin(event)">
                 <div class="form-group">
-                    <input type="password" id="adminPinInput" placeholder="Enter Admin PIN" style="text-align:center; font-size:1.2rem; letter-spacing:4px;" required autofocus>
+                    <input type="password" id="adminPinInput" placeholder="Enter PIN" style="text-align:center; font-size:1.2rem; letter-spacing:4px;" required autofocus>
                 </div>
                 <button type="submit" class="btn"><i class="fas fa-lock-open"></i> Unlock Dashboard</button>
             </form>
@@ -45,42 +53,76 @@
 
         <!-- Admin Control Panel -->
         <div id="managerSection" class="hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <span style="font-size:0.8rem; color:#81c784;"><i class="fas fa-check-circle"></i> Authenticated Admin</span>
                 <a href="#" onclick="logoutAdmin()" style="color:#ff5252; font-size:0.8rem; text-decoration:none;"><i class="fas fa-sign-out-alt"></i> Lock</a>
             </div>
 
-            <form id="addDonorForm" onsubmit="addDonor(event)">
-                <div class="form-group">
-                    <label>Donor Display Name</label>
-                    <input type="text" id="dName" placeholder="e.g. Mark D." required>
-                </div>
-                <div class="form-group">
-                    <label>Amount Donated (₱)</label>
-                    <input type="number" id="dAmount" placeholder="e.g. 200" required>
-                </div>
-                <div class="form-group">
-                    <label>Message / Note</label>
-                    <input type="text" id="dMessage" placeholder="e.g. Salamat idol Jay!" required>
-                </div>
-                <button type="submit" id="submitBtn" class="btn"><i class="fas fa-plus"></i> Add Verified Supporter</button>
-            </form>
+            <!-- TABS -->
+            <div class="admin-tabs">
+                <button class="tab-btn active" id="tabDonorsBtn" onclick="switchTab('donors')"><i class="fas fa-heart"></i> Supporters</button>
+                <button class="tab-btn" id="tabUpdatesBtn" onclick="switchTab('updates')"><i class="fas fa-rocket"></i> System Updates</button>
+            </div>
 
-            <div class="donor-preview">
-                <h4 style="font-size:0.9rem; margin-bottom:10px; color:#ffd700;"><i class="fas fa-list"></i> Live Donors List:</h4>
-                <div id="donorsListAdmin">Loading...</div>
+            <!-- 1. DONORS TAB -->
+            <div id="donorsTabContent">
+                <form id="addDonorForm" onsubmit="addDonor(event)">
+                    <div class="form-group">
+                        <label>Donor Display Name</label>
+                        <input type="text" id="dName" placeholder="e.g. Mark D." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount Donated (₱)</label>
+                        <input type="number" id="dAmount" placeholder="e.g. 200" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Message / Note</label>
+                        <input type="text" id="dMessage" placeholder="e.g. Salamat idol Jay!" required>
+                    </div>
+                    <button type="submit" id="donorSubmitBtn" class="btn"><i class="fas fa-plus"></i> Add Supporter</button>
+                </form>
+
+                <div class="list-preview">
+                    <h4 style="font-size:0.85rem; margin-bottom:10px; color:#ffd700;"><i class="fas fa-list"></i> Live Donors:</h4>
+                    <div id="donorsListAdmin">Loading...</div>
+                </div>
+            </div>
+
+            <!-- 2. SYSTEM UPDATES / CHANGELOG TAB -->
+            <div id="updatesTabContent" class="hidden">
+                <form id="addUpdateForm" onsubmit="addChangelog(event)">
+                    <div style="display:flex; gap:10px;">
+                        <div class="form-group" style="flex:1;">
+                            <label>Version Tag</label>
+                            <input type="text" id="uVersion" placeholder="e.g. v2.7" required>
+                        </div>
+                        <div class="form-group" style="flex:2;">
+                            <label>Release Title</label>
+                            <input type="text" id="uTitle" placeholder="e.g. Fast Stream & UI Fixes" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Changes (Isang bullet per line / bagong linya):</label>
+                        <textarea id="uChanges" placeholder="Server Buffering Fix: Mas mabilis ang loading.&#10;Added Player Controls: May subtitle toggle na." required></textarea>
+                    </div>
+                    <button type="submit" id="updateSubmitBtn" class="btn" style="background:#2e7d32;"><i class="fas fa-paper-plane"></i> Publish Update Log</button>
+                </form>
+
+                <div class="list-preview">
+                    <h4 style="font-size:0.85rem; margin-bottom:10px; color:#64b5f6;"><i class="fas fa-history"></i> Published Updates:</h4>
+                    <div id="updatesListAdmin">Loading...</div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const FIREBASE_DB_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
-        const ADMIN_PIN = "2929"; // ⬅️ Ang iyong secret admin PIN
+        const ADMIN_PIN = "2929";
 
         function verifyPin(e) {
             e.preventDefault();
-            const entered = document.getElementById('adminPinInput').value;
-            if (entered === ADMIN_PIN) {
+            if (document.getElementById('adminPinInput').value === ADMIN_PIN) {
                 sessionStorage.setItem("moviesj_admin_auth", "true");
                 showAdminPanel();
             } else {
@@ -93,6 +135,7 @@
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('managerSection').classList.remove('hidden');
             loadDonorsForAdmin();
+            loadUpdatesForAdmin();
         }
 
         function logoutAdmin() {
@@ -100,87 +143,108 @@
             location.reload();
         }
 
+        function switchTab(tab) {
+            if (tab === 'donors') {
+                document.getElementById('donorsTabContent').classList.remove('hidden');
+                document.getElementById('updatesTabContent').classList.add('hidden');
+                document.getElementById('tabDonorsBtn').classList.add('active');
+                document.getElementById('tabUpdatesBtn').classList.remove('active');
+            } else {
+                document.getElementById('donorsTabContent').classList.add('hidden');
+                document.getElementById('updatesTabContent').classList.remove('hidden');
+                document.getElementById('tabDonorsBtn').classList.remove('active');
+                document.getElementById('tabUpdatesBtn').classList.add('active');
+            }
+        }
+
+        // ================= DONORS LOGIC =================
         async function loadDonorsForAdmin() {
             const container = document.getElementById('donorsListAdmin');
             try {
                 const res = await fetch(`${FIREBASE_DB_URL}/donors.json`);
                 const data = await res.json();
-                
-                if (!data) {
-                    container.innerHTML = "<p style='color:#666; font-size:0.8rem; text-align:center;'>No donors in database yet.</p>";
-                    return;
-                }
+                if (!data) { container.innerHTML = "<p style='color:#666; font-size:0.8rem;'>No donors yet.</p>"; return; }
 
-                const sortedKeys = Object.keys(data).sort((a, b) => (data[b].timestamp || 0) - (data[a].timestamp || 0));
-
-                container.innerHTML = sortedKeys.map(key => {
-                    const d = data[key];
-                    return `
-                        <div class="donor-row">
-                            <div>
-                                <strong>${d.name}</strong> — <span style="color:#4CAF50;">₱${d.amountVal}</span>
-                                <div style="font-size:0.75rem; color:#888;">"${d.message}" • ${d.date}</div>
-                            </div>
-                            <button class="delete-btn" onclick="deleteDonor('${key}')" title="Delete"><i class="fas fa-trash"></i></button>
+                const sorted = Object.keys(data).sort((a, b) => (data[b].timestamp || 0) - (data[a].timestamp || 0));
+                container.innerHTML = sorted.map(key => `
+                    <div class="item-row">
+                        <div>
+                            <strong>${data[key].name}</strong> — <span style="color:#4CAF50;">₱${data[key].amountVal}</span>
+                            <div style="font-size:0.75rem; color:#888;">"${data[key].message}" • ${data[key].date}</div>
                         </div>
-                    `;
-                }).join('');
-            } catch (err) {
-                container.innerHTML = "<p style='color:#ff5252; font-size:0.8rem;'>Error loading list.</p>";
-            }
+                        <button class="delete-btn" onclick="deleteItem('donors', '${key}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                `).join('');
+            } catch (e) { container.innerHTML = "<p style='color:#ff5252;'>Error loading.</p>"; }
         }
 
         async function addDonor(e) {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
+            const btn = document.getElementById('donorSubmitBtn');
             btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
+            const payload = {
+                name: document.getElementById('dName').value.trim(),
+                amountVal: Number(document.getElementById('dAmount').value),
+                message: document.getElementById('dMessage').value.trim(),
+                date: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date()),
+                timestamp: Date.now()
+            };
+            await fetch(`${FIREBASE_DB_URL}/donors.json`, { method: 'POST', body: JSON.stringify(payload) });
+            document.getElementById('addDonorForm').reset();
+            btn.disabled = false;
+            loadDonorsForAdmin();
+        }
 
-            const name = document.getElementById('dName').value.trim();
-            const amountVal = Number(document.getElementById('dAmount').value);
-            const message = document.getElementById('dMessage').value.trim();
-            const dateStr = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
+        // ================= CHANGELOG / UPDATES LOGIC =================
+        async function loadUpdatesForAdmin() {
+            const container = document.getElementById('updatesListAdmin');
+            try {
+                const res = await fetch(`${FIREBASE_DB_URL}/changelogs.json`);
+                const data = await res.json();
+                if (!data) { container.innerHTML = "<p style='color:#666; font-size:0.8rem;'>No updates posted yet.</p>"; return; }
+
+                const sorted = Object.keys(data).sort((a, b) => (data[b].timestamp || 0) - (data[a].timestamp || 0));
+                container.innerHTML = sorted.map(key => `
+                    <div class="item-row" style="border-left-color:#2e7d32;">
+                        <div>
+                            <strong style="color:#64b5f6;">${data[key].version}</strong>: <strong>${data[key].title}</strong>
+                            <div style="font-size:0.75rem; color:#888;">${data[key].date} • ${data[key].changes.length} points</div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteItem('changelogs', '${key}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                `).join('');
+            } catch (e) { container.innerHTML = "<p style='color:#ff5252;'>Error loading.</p>"; }
+        }
+
+        async function addChangelog(e) {
+            e.preventDefault();
+            const btn = document.getElementById('updateSubmitBtn');
+            btn.disabled = true;
+
+            const changesText = document.getElementById('uChanges').value.trim();
+            const changesArray = changesText.split('\n').map(s => s.trim()).filter(s => s.length > 0);
 
             const payload = {
-                name: name,
-                amountVal: amountVal,
-                message: message,
-                date: dateStr,
+                version: document.getElementById('uVersion').value.trim(),
+                title: document.getElementById('uTitle').value.trim(),
+                changes: changesArray,
+                date: new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date()),
                 timestamp: Date.now()
             };
 
-            try {
-                const res = await fetch(`${FIREBASE_DB_URL}/donors.json`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (res.ok) {
-                    document.getElementById('addDonorForm').reset();
-                    loadDonorsForAdmin();
-                } else {
-                    alert("Failed to save to database.");
-                }
-            } catch (err) {
-                alert("Network Error: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i class="fas fa-plus"></i> Add Verified Supporter`;
-            }
+            await fetch(`${FIREBASE_DB_URL}/changelogs.json`, { method: 'POST', body: JSON.stringify(payload) });
+            document.getElementById('addUpdateForm').reset();
+            btn.disabled = false;
+            loadUpdatesForAdmin();
         }
 
-        async function deleteDonor(key) {
-            if (!confirm("Are you sure you want to delete this supporter?")) return;
-            try {
-                await fetch(`${FIREBASE_DB_URL}/donors/${key}.json`, { method: 'DELETE' });
-                loadDonorsForAdmin();
-            } catch (err) {
-                alert("Error deleting: " + err.message);
-            }
+        async function deleteItem(path, key) {
+            if (!confirm(`Delete this ${path} entry?`)) return;
+            await fetch(`${FIREBASE_DB_URL}/${path}/${key}.json`, { method: 'DELETE' });
+            if (path === 'donors') loadDonorsForAdmin();
+            else loadUpdatesForAdmin();
         }
 
-        // Auto-login kung nasa session pa
         if (sessionStorage.getItem("moviesj_admin_auth") === "true") {
             showAdminPanel();
         }

@@ -178,7 +178,7 @@
                 <a href="vault.html" style="color: #ff9800; font-weight: bold;">
                     <i class="fas fa-lock"></i> J-Vault DOWNLOADS
                 </a>
-                <a id="supportBtn">Support Me ❤️</a>
+                <a id="supportBtn">Donations 💖</a>
                 <a id="installAppBtnMobile" class="install-button-mobile"> <i class="fas fa-download"></i> Download App </a>
             </div>
 
@@ -290,20 +290,46 @@
         <div class="install-banner-actions"> <button id="install-app-btn">Install</button> <button id="dismiss-install-btn" title="Dismiss">&times;</button> </div>
     </div>
 
+    <!-- Donations & Verified Supporters Modal -->
     <div id="supportModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h2>Welcome! I'm Jay.</h2>
-           <div class="modal-text-body">
+            <div class="modal-text-body">
                  <p>Like you, I'm a huge movie, TV, and anime fan. I started Movies-J as a passion project because I wanted a simple, clean, and reliable place to watch my favorite titles. This site is run and maintained by just one person – me!</p>
                  <p>Your support goes directly into making the site better for everyone. Our main goal is to save up for <strong>premium, ad-free servers</strong>. Every donation brings us one step closer to a much better viewing experience for our entire community.</p>
                  <p>Thank you for being here and for your support!</p>
             </div>
+            
             <div class="donation-container">
-                 <div class="donation-box"><h3>Donate with GCash</h3><img src="images/gcash-qr.png" class="qr-code"><p class="account-details"><strong>Name:</strong> JAY JOVEN D.<br><strong>Number:</strong> 0950 XXX XXXX</p></div>
-                 <div class="donation-box"><h3>Donate with PayPal</h3><p>Click below...</p><a href="https://paypal.me/jayjoven2025" target="_blank" class="paypal-button">Donate via PayPal</a></div>
+                 <div class="donation-box">
+                     <h3>Donate with GCash</h3>
+                     <img src="images/gcash-qr.png" class="qr-code">
+                     <p class="account-details"><strong>Name:</strong> JAY JOVEN D.<br><strong>Number:</strong> 0950 XXX XXXX</p>
+                 </div>
+                 <div class="donation-box">
+                     <h3>Donate with PayPal</h3>
+                     <p>Click below...</p>
+                     <a href="https://paypal.me/jayjoven2025" target="_blank" class="paypal-button">Donate via PayPal</a>
+                 </div>
             </div>
-       </div>
+
+            <!-- Send Proof via Gmail Box -->
+            <div class="proof-instruction-box">
+                <p><strong>Want your name & message featured below?</strong><br>Send a screenshot of your donation receipt along with your Display Name, Amount, and Message to:</p>
+                <a href="mailto:jayjovendinawanao@gmail.com?subject=Movies-J%20Donation%20Proof" class="email-proof-btn">
+                    <i class="fas fa-envelope"></i> Send Proof via Gmail
+                </a>
+            </div>
+
+            <!-- Verified Supporters Wall -->
+            <div class="donors-wall-section">
+                <div class="donors-wall-title">
+                    <i class="fas fa-award"></i> Verified Supporters
+                </div>
+                <div class="donors-wall-grid" id="donors-wall-container"></div>
+            </div>
+        </div>
     </div>
     
     <meta name="theme-color" content="#e50914">
@@ -325,6 +351,7 @@
 
     <script src="js/embed.js" defer></script>
     <script src="js/servers.js" defer></script>
+    <script src="js/donors.js" defer></script>
     <script src="js/watchHistory.js" defer></script> 
     <script src="js/changelog.js" defer></script>
     <script src="https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js" defer></script>

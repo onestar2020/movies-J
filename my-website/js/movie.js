@@ -185,7 +185,7 @@ function getReleaseStatus(airDateStr) {
     }
 }
 
-// Helper: Smart Video Quality & CAM Detector
+// Helper: Smart Video Quality & CAM Detector (Safe 60-Day Window)
 function getQualityStatus(releaseDateStr) {
     if (isEpisodic) {
         return { quality: 'HD', isCamLikely: false, badge: 'HD 1080p' };
@@ -201,8 +201,8 @@ function getQualityStatus(releaseDateStr) {
 
     const diffDays = Math.floor((today - relDate) / (1000 * 60 * 60 * 24));
 
-    // Kung kakalabas pa lang sa sinehan (0 hanggang 50 days)
-    if (diffDays >= 0 && diffDays <= 50) {
+    // 0 - 60 days: Theatrical Window / CAM print expected
+    if (diffDays >= 0 && diffDays <= 60) {
         return {
             quality: 'CAM',
             isCamLikely: true,
@@ -211,6 +211,7 @@ function getQualityStatus(releaseDateStr) {
         };
     }
 
+    // 60+ days: Official Digital WEB-DL/HD release
     return {
         quality: 'HD',
         isCamLikely: false,

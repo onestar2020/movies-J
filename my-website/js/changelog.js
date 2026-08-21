@@ -1,8 +1,19 @@
 // ✅ js/changelog.js (AUTO NOTIFICATION BADGE + LOCALSTORAGE TRACKER)
 
-const CURRENT_APP_VERSION = "v2.5"; // ⬅️ Na-update na sa v2.5 para lumitaw ang red dot sa users
+const CURRENT_APP_VERSION = "v2.6"; // ⬅️ Na-update na sa v2.6 para lumitaw ang red dot sa users
 
 const SITE_CHANGELOGS = [
+    {
+        version: "v2.6",
+        date: "August 21, 2026",
+        title: "Verified Supporters Wall & Real-Time Sync",
+        changes: [
+            "Real-Time Supporters Wall: Live dynamic database sync para sa lahat ng verified supporters at donasyon via GCash/PayPal.",
+            "Dynamic Navbar Badges: Awtomatikong pinapakita ang 👑 Top Supporter at ✨ Latest Supporter badges sa desktop at mobile header.",
+            "Secure Admin Manager: Pinabilis na admin dashboard para sa instant adding at removal ng supporters nang walang code editing.",
+            "Mobile UI/UX Refinement: Inayos ang responsive layout ng support modal at mobile drawer badges para fit sa lahat ng screen sizes."
+        ]
+    },
     {
         version: "v2.5",
         date: "August 21, 2026",

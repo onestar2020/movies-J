@@ -1207,3 +1207,41 @@ a {
         padding: 4px 10px;
     }
 }
+
+/* ✅ MOBILE MENU DONOR BADGES STYLING */
+@media (max-width: 900px) {
+    /* Ginagawang horizontal at centered ang container */
+    #donor-nav-highlights,
+    .donor-nav-ticker {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 6px !important;
+        width: 100% !important;
+        margin: 12px 0 !important;
+        padding: 0 10px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Pinaliit at ginawang compact ang pills */
+    .nav-donor-tag {
+        font-size: 0.72rem !important;
+        padding: 5px 9px !important;
+        border-radius: 20px !important;
+        white-space: nowrap !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        line-height: 1 !important;
+        border-width: 1px !important;
+    }
+
+    .nav-donor-tag i {
+        font-size: 0.75rem !important;
+    }
+
+    .nav-donor-tag strong {
+        font-weight: 600 !important;
+    }
+}

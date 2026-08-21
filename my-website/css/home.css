@@ -1123,3 +1123,73 @@ a {
         max-height: 200px;
     }
 }
+
+/* ================= DONOR NAVBAR HIGHLIGHTS & MODAL STYLES ================= */
+.donor-nav-ticker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 10px;
+}
+
+.nav-donor-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    padding: 3px 9px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ccc;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s ease;
+}
+
+.nav-donor-tag strong {
+    color: #fff;
+}
+
+.nav-donor-tag.top-donor {
+    border-color: rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.1);
+    color: #ffd700;
+}
+
+.nav-donor-tag.latest-donor {
+    border-color: rgba(76, 175, 80, 0.4);
+    background: rgba(76, 175, 80, 0.1);
+    color: #81c784;
+}
+
+.nav-donor-tag:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.email-copy-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #e50914;
+    color: #fff;
+    border: none;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.email-copy-action-btn:hover {
+    background: #b20710;
+}
+
+@media (max-width: 900px) {
+    .donor-nav-ticker {
+        display: none; /* Itago sa mobile navbar para hindi magsiksikan */
+    }
+}

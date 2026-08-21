@@ -1,39 +1,77 @@
-// ✅ js/donors.js - VERIFIED SUPPORTERS LIST
+// ✅ js/donors.js - VERIFIED SUPPORTERS & NAVBAR HIGHLIGHTS
 
 const DONORS_LIST = [
     {
         name: "Mark D.",
         amount: "₱200",
-        date: "Aug 2026",
+        amountVal: 200, // numerical value para sa calculation
+        date: "Aug 21, 2026",
         message: "Solid ng Movies-J! Keep it up idol Jay."
     },
     {
         name: "Anonymous",
         amount: "₱100",
-        date: "Aug 2026",
+        amountVal: 100,
+        date: "Aug 20, 2026",
         message: "Pang-kape at server support!"
     }
 ];
 
-function renderDonorsList() {
-    const container = document.getElementById('donors-wall-container');
-    if (!container) return;
-
-    if (!DONORS_LIST || DONORS_LIST.length === 0) {
-        container.innerHTML = `<p style="color:#777; font-size:0.85rem; text-align:center; padding:10px;">Be the first verified supporter!</p>`;
-        return;
+function renderDonorsAndHighlights() {
+    // 1. Render sa Loob ng Modal
+    const wallContainer = document.getElementById('donors-wall-container');
+    if (wallContainer) {
+        if (!DONORS_LIST || DONORS_LIST.length === 0) {
+            wallContainer.innerHTML = `<p style="color:#777; font-size:0.85rem; text-align:center; padding:10px;">Be the first verified supporter!</p>`;
+        } else {
+            wallContainer.innerHTML = DONORS_LIST.map(d => `
+                <div class="donor-item-card">
+                    <div class="donor-item-header">
+                        <span class="donor-name"><i class="fas fa-heart" style="color:#e50914; font-size:11px; margin-right:4px;"></i>${d.name}</span>
+                        <span class="donor-amount">${d.amount}</span>
+                    </div>
+                    <p class="donor-message">"${d.message}"</p>
+                    <span class="donor-date">${d.date}</span>
+                </div>
+            `).join('');
+        }
     }
 
-    container.innerHTML = DONORS_LIST.map(d => `
-        <div class="donor-item-card">
-            <div class="donor-item-header">
-                <span class="donor-name"><i class="fas fa-heart" style="color:#e50914; font-size:11px; margin-right:4px;"></i>${d.name}</span>
-                <span class="donor-amount">${d.amount}</span>
+    // 2. Render sa Navbar Highlights (Top Donor & Latest Donor)
+    const highlightContainer = document.getElementById('donor-nav-highlights');
+    if (highlightContainer && DONORS_LIST && DONORS_LIST.length > 0) {
+        // Hanapin ang pinakamalaki (Top Donor)
+        const topDonor = [...DONORS_LIST].sort((a, b) => b.amountVal - a.amountVal)[0];
+        // Kunin ang pinakabago (Latest Donor - Index 0)
+        const latestDonor = DONORS_LIST[0];
+
+        highlightContainer.innerHTML = `
+            <div class="nav-donor-tag top-donor" title="Top Supporter: ${topDonor.name} (${topDonor.amount})">
+                <i class="fas fa-crown"></i> <span>Top: <strong>${topDonor.name}</strong> (${topDonor.amount})</span>
             </div>
-            <p class="donor-message">"${d.message}"</p>
-            <span class="donor-date">${d.date}</span>
-        </div>
-    `).join('');
+            <div class="nav-donor-tag latest-donor" title="Latest Supporter: ${latestDonor.name} (${latestDonor.amount})">
+                <i class="fas fa-sparkles"></i> <span>Latest: <strong>${latestDonor.name}</strong></span>
+            </div>
+        `;
+    }
 }
 
-document.addEventListener('DOMContentLoaded', renderDonorsList);
+// Function para kopyahin ang Gmail at magpakita ng dark toast sa halip na mailto popup
+function copyDonationEmail() {
+    const email = "jayjovendinawanao29@gmail.com";
+    navigator.clipboard.writeText(email).then(() => {
+        const btn = document.getElementById('copyProofEmailBtn');
+        if (btn) {
+            btn.innerHTML = `<i class="fas fa-check"></i> Email Copied: ${email}`;
+            btn.style.background = "#4CAF50";
+            setTimeout(() => {
+                btn.innerHTML = `<i class="fas fa-copy"></i> Copy Proof Email (${email})`;
+                btn.style.background = "#e50914";
+            }, 3000);
+        }
+    }).catch(err => {
+        prompt("Copy this email to send your proof:", email);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', renderDonorsAndHighlights);

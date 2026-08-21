@@ -20,35 +20,34 @@
         input:focus { border-color: #e50914; }
         .btn { width: 100%; background: #e50914; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn:hover { background: #b20710; }
-        .auth-btn { background: #4285F4; margin-bottom: 20px; }
-        .auth-btn:hover { background: #3367D6; }
         .hidden { display: none; }
-        .donor-preview { margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; }
-        .donor-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 0.85rem; }
-        .delete-btn { color: #ff5252; cursor: pointer; background: transparent; border: none; }
+        .donor-preview { margin-top: 25px; border-top: 1px solid #333; padding-top: 15px; }
+        .donor-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 0.85rem; border-left: 3px solid #e50914; }
+        .delete-btn { color: #ff5252; cursor: pointer; background: transparent; border: none; font-size: 1rem; padding: 4px 8px; }
+        .delete-btn:hover { color: #ff1744; }
     </style>
-
-    <!-- Firebase Compat SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
     <div class="admin-card">
         <h2>🎬 Movies-J Donors Manager</h2>
 
-        <!-- Login Section -->
+        <!-- PIN Entry Section -->
         <div id="authSection">
-            <p style="font-size:0.85rem; color:#bbb; text-align:center; margin-bottom:15px;">Admin access only. Sign in with your registered Gmail.</p>
-            <button class="btn auth-btn" onclick="loginWithGoogle()"><i class="fab fa-google"></i> Login with Google</button>
+            <p style="font-size:0.85rem; color:#bbb; text-align:center; margin-bottom:15px;">Admin Protected Area. Enter Master PIN to access:</p>
+            <form onsubmit="verifyPin(event)">
+                <div class="form-group">
+                    <input type="password" id="adminPinInput" placeholder="Enter Admin PIN" style="text-align:center; font-size:1.2rem; letter-spacing:4px;" required autofocus>
+                </div>
+                <button type="submit" class="btn"><i class="fas fa-lock-open"></i> Unlock Dashboard</button>
+            </form>
         </div>
 
         <!-- Admin Control Panel -->
         <div id="managerSection" class="hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <span id="userEmail" style="font-size:0.8rem; color:#81c784;"></span>
-                <a href="#" onclick="logout()" style="color:#ff5252; font-size:0.8rem; text-decoration:none;">Logout</a>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
+                <span style="font-size:0.8rem; color:#81c784;"><i class="fas fa-check-circle"></i> Authenticated Admin</span>
+                <a href="#" onclick="logoutAdmin()" style="color:#ff5252; font-size:0.8rem; text-decoration:none;"><i class="fas fa-sign-out-alt"></i> Lock</a>
             </div>
 
             <form id="addDonorForm" onsubmit="addDonor(event)">
@@ -64,104 +63,126 @@
                     <label>Message / Note</label>
                     <input type="text" id="dMessage" placeholder="e.g. Salamat idol Jay!" required>
                 </div>
-                <button type="submit" class="btn"><i class="fas fa-plus"></i> Add Verified Supporter</button>
+                <button type="submit" id="submitBtn" class="btn"><i class="fas fa-plus"></i> Add Verified Supporter</button>
             </form>
 
             <div class="donor-preview">
-                <h4 style="font-size:0.9rem; margin-bottom:10px; color:#ffd700;">Live Donors List:</h4>
+                <h4 style="font-size:0.9rem; margin-bottom:10px; color:#ffd700;"><i class="fas fa-list"></i> Live Donors List:</h4>
                 <div id="donorsListAdmin">Loading...</div>
             </div>
         </div>
     </div>
 
     <script>
-        // Ilagay dito ang kinopya mula sa Firebase Project Settings
-       const firebaseConfig = {
-    apiKey: "AIzaSyCnLKuEGAVTC3V-_lGqKYFRVuCXx5I5Feo",
-    authDomain: "movies-j-stream.firebaseapp.com",
-    databaseURL: "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "movies-j-stream",
-    storageBucket: "movies-j-stream.firebasestorage.app",
-    messagingSenderId: "1088305700283",
-    appId: "1:1088305700283:web:1b94c89927d4b88240789e",
-    measurementId: "G-LMNWJGZ9K4"
-};
-firebase.initializeApp(firebaseConfig);
+        const FIREBASE_DB_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
+        const ADMIN_PIN = "2929"; // ⬅️ Ang iyong secret admin PIN
 
-        const auth = firebase.auth();
-        const db = firebase.database();
-        const ADMIN_GMAIL = "jayjovendinawanao29@gmail.com";
-
-        auth.onAuthStateChanged(user => {
-            if (user && user.email === ADMIN_GMAIL) {
-                document.getElementById('authSection').classList.add('hidden');
-                document.getElementById('managerSection').classList.remove('hidden');
-                document.getElementById('userEmail').textContent = user.email;
-                loadDonorsForAdmin();
-            } else {
-                if (user) {
-                    alert("Access Denied: Your email is not authorized as admin.");
-                    auth.signOut();
-                }
-                document.getElementById('authSection').classList.remove('hidden');
-                document.getElementById('managerSection').classList.add('hidden');
-            }
-        });
-
-        function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(e => alert("Login Error: " + e.message));
-        }
-
-        function logout() {
-            auth.signOut();
-        }
-
-        function addDonor(e) {
+        function verifyPin(e) {
             e.preventDefault();
+            const entered = document.getElementById('adminPinInput').value;
+            if (entered === ADMIN_PIN) {
+                sessionStorage.setItem("moviesj_admin_auth", "true");
+                showAdminPanel();
+            } else {
+                alert("Incorrect Admin PIN!");
+                document.getElementById('adminPinInput').value = "";
+            }
+        }
+
+        function showAdminPanel() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('managerSection').classList.remove('hidden');
+            loadDonorsForAdmin();
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem("moviesj_admin_auth");
+            location.reload();
+        }
+
+        async function loadDonorsForAdmin() {
+            const container = document.getElementById('donorsListAdmin');
+            try {
+                const res = await fetch(`${FIREBASE_DB_URL}/donors.json`);
+                const data = await res.json();
+                
+                if (!data) {
+                    container.innerHTML = "<p style='color:#666; font-size:0.8rem; text-align:center;'>No donors in database yet.</p>";
+                    return;
+                }
+
+                const sortedKeys = Object.keys(data).sort((a, b) => (data[b].timestamp || 0) - (data[a].timestamp || 0));
+
+                container.innerHTML = sortedKeys.map(key => {
+                    const d = data[key];
+                    return `
+                        <div class="donor-row">
+                            <div>
+                                <strong>${d.name}</strong> — <span style="color:#4CAF50;">₱${d.amountVal}</span>
+                                <div style="font-size:0.75rem; color:#888;">"${d.message}" • ${d.date}</div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteDonor('${key}')" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                container.innerHTML = "<p style='color:#ff5252; font-size:0.8rem;'>Error loading list.</p>";
+            }
+        }
+
+        async function addDonor(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
+
             const name = document.getElementById('dName').value.trim();
             const amountVal = Number(document.getElementById('dAmount').value);
             const message = document.getElementById('dMessage').value.trim();
             const dateStr = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
 
-            db.ref('donors').push({
+            const payload = {
                 name: name,
                 amountVal: amountVal,
                 message: message,
                 date: dateStr,
                 timestamp: Date.now()
-            }).then(() => {
-                document.getElementById('addDonorForm').reset();
-            }).catch(e => alert("Database Error: " + e.message));
-        }
+            };
 
-        function loadDonorsForAdmin() {
-            db.ref('donors').on('value', snapshot => {
-                const data = snapshot.val();
-                const container = document.getElementById('donorsListAdmin');
-                if (!data) {
-                    container.innerHTML = "<p style='color:#666; font-size:0.8rem;'>No donors yet.</p>";
-                    return;
+            try {
+                const res = await fetch(`${FIREBASE_DB_URL}/donors.json`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    document.getElementById('addDonorForm').reset();
+                    loadDonorsForAdmin();
+                } else {
+                    alert("Failed to save to database.");
                 }
-                
-                const sortedKeys = Object.keys(data).sort((a, b) => data[b].timestamp - data[a].timestamp);
-                
-                container.innerHTML = sortedKeys.map(key => {
-                    const d = data[key];
-                    return `
-                        <div class="donor-row">
-                            <span><strong>${d.name}</strong> - ₱${d.amountVal}</span>
-                            <button class="delete-btn" onclick="deleteDonor('${key}')" title="Delete"><i class="fas fa-trash"></i></button>
-                        </div>
-                    `;
-                }).join('');
-            });
+            } catch (err) {
+                alert("Network Error: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-plus"></i> Add Verified Supporter`;
+            }
         }
 
-        function deleteDonor(key) {
-            if (confirm("Delete this supporter entry from the live site?")) {
-                db.ref(`donors/${key}`).remove();
+        async function deleteDonor(key) {
+            if (!confirm("Are you sure you want to delete this supporter?")) return;
+            try {
+                await fetch(`${FIREBASE_DB_URL}/donors/${key}.json`, { method: 'DELETE' });
+                loadDonorsForAdmin();
+            } catch (err) {
+                alert("Error deleting: " + err.message);
             }
+        }
+
+        // Auto-login kung nasa session pa
+        if (sessionStorage.getItem("moviesj_admin_auth") === "true") {
+            showAdminPanel();
         }
     </script>
 </body>

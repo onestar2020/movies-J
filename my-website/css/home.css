@@ -246,6 +246,7 @@ a {
 
 .movie-card {
   width: 180px;
+  aspect-ratio: 2 / 3; /* ⬅️ DINAGDAG NATIN ITO */
   flex-shrink: 0;
   background-color: var(--light-dark-color);
   transition: all 0.3s ease;
@@ -254,13 +255,15 @@ a {
   border-radius: 5px;
   overflow: visible;
 }
+
 .movie-card img {
   width: 100%;
-  aspect-ratio: 2 / 3;
-  object-fit: cover;
+  height: 100%; /* ⬅️ PINALITAN NATIN YUNG ASPECT-RATIO DITO NG HEIGHT */
+  object-fit: cover !important; /* ⬅️ DINAGDAGAN NG !important */
   display: block;
   border-radius: 5px;
 }
+
 .movie-card .movie-title {
   display: none;
 }
@@ -717,7 +720,10 @@ a {
   .hero-title { font-size: 2.5rem; }
   .hero-description { font-size: 1rem; }
   .main-container { padding: 0 20px; }
-  .movie-card { width: 140px; }
+ .movie-card { 
+  width: 140px; 
+  aspect-ratio: 2 / 3; 
+}
   #clear-history-btn { top: 10px; right: 50px; }
   
   .modal-body { flex-direction: column; align-items: center; text-align: center; padding-top: 60%; }

@@ -4,8 +4,7 @@
  * Security: Anti-F12, Anti-Inspect, Debugger Loop, Base64 Encoded Stream URLs
  */
 
-// ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION (TEMPORARILY DISABLED) =================
-/*
+// ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
 (function() {
   // Disable Right Click
   document.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -31,7 +30,6 @@
     }
   }, 500);
 })();
-*/
 
 // ================= 2. ENCODED SERVER CONFIGURATION =================
 const _d = (str) => atob(str);

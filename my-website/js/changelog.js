@@ -1,4 +1,4 @@
-// ✅ js/changelog.js (GLOBAL EVENT DELEGATION + AUTO REALTIME DATABASE SYNC)
+// ✅ js/changelog.js (FORCE CLICK ENABLER + DYNAMIC REALTIME DATABASE SYNC)
 
 const FIREBASE_DB_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
 
@@ -10,8 +10,7 @@ const FALLBACK_CHANGELOGS = [
         changes: [
             "Real-Time Supporters Wall: Live dynamic database sync para sa lahat ng verified supporters at donasyon via GCash/PayPal.",
             "Dynamic Navbar Badges: Awtomatikong pinapakita ang 👑 Top Supporter at ✨ Latest Supporter badges sa desktop at mobile header.",
-            "Secure Admin Manager: Pinabilis na admin dashboard para sa instant adding at removal ng supporters nang walang code editing.",
-            "Mobile UI/UX Refinement: Inayos ang responsive layout ng support modal at mobile drawer badges para fit sa lahat ng screen sizes."
+            "Secure Admin Manager: Pinabilis na admin dashboard para sa instant adding at removal ng supporters nang walang code editing."
         ]
     }
 ];
@@ -40,6 +39,9 @@ function ensureModalCreated() {
         overlay = document.createElement('div');
         overlay.id = 'changelog-modal-overlay';
         overlay.className = 'changelog-overlay';
+        // Siguraduhing nasa pinakataas ang modal
+        overlay.style.zIndex = "999999"; 
+        
         overlay.innerHTML = `
             <div class="changelog-card">
                 <div class="changelog-header">
@@ -75,17 +77,18 @@ function openChangelogModal() {
     if (dot) dot.remove();
 }
 
-// 🎯 GLOBAL EVENT DELEGATION: Kahit bagong render ang navbar ng homepage, magka-click pa rin
-document.addEventListener('click', (e) => {
-    const target = e.target.closest('#changelog-btn, .changelog-btn, [data-target="changelog"], button:has(.fa-bell), a:has(.fa-bell)');
-    const isBellDirect = e.target.classList.contains('fa-bell') || e.target.closest('.fa-bell');
+// 🎯 AGGRESSIVE GLOBAL EVENT DELEGATION: 
+// Ito ang papilit na bubutas sa kahit anong nagba-block sa click sa homepage.
+window.addEventListener('click', (e) => {
+    const target = e.target.closest('#changelog-btn, .changelog-nav-btn');
+    const isBell = e.target.classList.contains('fa-bell') && e.target.closest('button');
     
-    if (target || isBellDirect) {
+    if (target || isBell) {
         e.preventDefault();
-        e.stopPropagation();
+        e.stopImmediatePropagation(); // ⬅️ Pinipigilan ang ibang scripts na i-block ito
         openChangelogModal();
     }
-});
+}, true); // ⬅️ 'true' (UseCapture) para ito unang mag-trigger bago ang kahit anong click sa homepage.
 
 async function loadChangelogData() {
     ensureModalCreated();
@@ -115,17 +118,21 @@ async function loadChangelogData() {
 
     // Check Notification Badge
     const lastSeen = localStorage.getItem('movies_j_last_version');
-    const bellBtn = document.getElementById('changelog-btn') || 
-                    document.querySelector('.changelog-btn') || 
-                    document.querySelector('.fa-bell')?.parentElement;
+    const bellBtn = document.getElementById('changelog-btn');
 
-    if (bellBtn && lastSeen !== latestAppVersion) {
-        bellBtn.style.position = 'relative';
-        if (!document.getElementById('changelog-unread-dot')) {
-            const dot = document.createElement('span');
-            dot.id = 'changelog-unread-dot';
-            dot.style.cssText = "position:absolute; top:2px; right:2px; width:8px; height:8px; background:#e50914; border-radius:50%; border:1px solid #000; pointer-events:none;";
-            bellBtn.appendChild(dot);
+    if (bellBtn) {
+        // Force pointer events para ma-click sa home
+        bellBtn.style.pointerEvents = "auto";
+        bellBtn.style.position = "relative";
+        bellBtn.style.zIndex = "999";
+
+        if (lastSeen !== latestAppVersion) {
+            if (!document.getElementById('changelog-unread-dot')) {
+                const dot = document.createElement('span');
+                dot.id = 'changelog-unread-dot';
+                dot.style.cssText = "position:absolute; top:2px; right:2px; width:8px; height:8px; background:#e50914; border-radius:50%; border:1px solid #000; pointer-events:none;";
+                bellBtn.appendChild(dot);
+            }
         }
     }
 }

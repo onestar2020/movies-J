@@ -56,7 +56,7 @@ a {
   color: #b3b3b3;
 }
 
-/* Nav Actions & Active Users Badge */
+/* IN-UPDATE: Nav Actions & Active Users Badge */
 .nav-actions {
   display: flex;
   align-items: center;
@@ -76,7 +76,7 @@ a {
   align-items: center;
 }
 
-/* Online Users Indicator Badge */
+/* BAGO: Online Users Indicator Badge */
 #online-counter-badge,
 .active-users-counter {
   display: inline-flex !important;
@@ -209,7 +209,6 @@ a {
   overflow-x: auto;
   padding: 0 10px 20px 10px;
   scroll-behavior: smooth;
-  align-items: flex-start;
 }
 .list::-webkit-scrollbar { display: none; }
 
@@ -245,11 +244,8 @@ a {
   }
 }
 
-/* FIXED POSTER CONTAINER & IMAGE RATIO */
 .movie-card {
   width: 180px;
-  height: 270px;
-  aspect-ratio: 2 / 3;
   flex-shrink: 0;
   background-color: var(--light-dark-color);
   transition: all 0.3s ease;
@@ -260,9 +256,8 @@ a {
 }
 .movie-card img {
   width: 100%;
-  height: 100%;
   aspect-ratio: 2 / 3;
-  object-fit: cover !important;
+  object-fit: cover;
   display: block;
   border-radius: 5px;
 }
@@ -722,11 +717,7 @@ a {
   .hero-title { font-size: 2.5rem; }
   .hero-description { font-size: 1rem; }
   .main-container { padding: 0 20px; }
-  .movie-card { 
-    width: 140px; 
-    height: 210px;
-    aspect-ratio: 2 / 3;
-  }
+  .movie-card { width: 140px; }
   #clear-history-btn { top: 10px; right: 50px; }
   
   .modal-body { flex-direction: column; align-items: center; text-align: center; padding-top: 60%; }
@@ -763,7 +754,7 @@ a {
 .extra-list::-webkit-scrollbar { 
   display: none;
 }
-.extra-list .movie-card { width: 150px; height: 225px; }
+.extra-list .movie-card { width: 150px; }
 
 .extra-list-container .scroll-btn {
   position: absolute;
@@ -818,436 +809,502 @@ a {
 }
 
 .ep-card.unreleased {
-  opacity: 0.5;
-  cursor: not-allowed !important;
-  filter: grayscale(30%);
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    filter: grayscale(30%);
 }
 .ep-card.unreleased:hover {
-  border-color: #444 !important;
+    border-color: #444 !important;
 }
 
 .srv-btn.disabled-srv {
-  opacity: 0.5;
-  cursor: not-allowed;
-  border-color: #444 !important;
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #444 !important;
 }
 .srv-btn.disabled-srv:hover {
-  background: #1f1f1f !important;
-  border-color: #e50914 !important;
+    background: #1f1f1f !important;
+    border-color: #e50914 !important;
 }
 
 /* ================= CUSTOM MOVIES-J RELEASE MODAL ================= */
 .custom-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.25s ease, visibility 0.25s ease;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
 .custom-modal-overlay.show {
-  opacity: 1;
-  visibility: visible;
+    opacity: 1;
+    visibility: visible;
 }
 
 .custom-modal-card {
-  background: #141414;
-  border: 1px solid #2a2a2a;
-  border-top: 3px solid #e50914;
-  border-radius: 12px;
-  padding: 24px;
-  width: 90%;
-  max-width: 420px;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(229, 9, 20, 0.2);
-  transform: scale(0.9);
-  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-top: 3px solid #e50914;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(229, 9, 20, 0.2);
+    transform: scale(0.9);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .custom-modal-overlay.show .custom-modal-card {
-  transform: scale(1);
+    transform: scale(1);
 }
 
 .custom-modal-icon {
-  font-size: 32px;
-  margin-bottom: 12px;
-  display: inline-block;
+    font-size: 32px;
+    margin-bottom: 12px;
+    display: inline-block;
 }
 
 .custom-modal-title {
-  color: #fff;
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 8px;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
 }
 
 .custom-modal-desc {
-  color: #b3b3b3;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin-bottom: 20px;
+    color: #b3b3b3;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
 }
 
 .custom-modal-badge {
-  display: inline-block;
-  background: rgba(229, 9, 20, 0.15);
-  color: #e50914;
-  border: 1px solid rgba(229, 9, 20, 0.4);
-  font-weight: 700;
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  margin-bottom: 16px;
+    display: inline-block;
+    background: rgba(229, 9, 20, 0.15);
+    color: #e50914;
+    border: 1px solid rgba(229, 9, 20, 0.4);
+    font-weight: 700;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 16px;
 }
 
 .custom-modal-btn {
-  background: #e50914;
-  color: #fff;
-  border: none;
-  padding: 10px 24px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
-  width: 100%;
+    background: #e50914;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    width: 100%;
 }
 
 .custom-modal-btn:hover {
-  background: #b80710;
+    background: #b80710;
 }
 
 .custom-modal-btn:active {
-  transform: scale(0.98);
+    transform: scale(0.98);
 }
 
 /* ================= BRAVE BROWSER PROMO BANNER ================= */
 .brave-banner {
-  background: linear-gradient(90deg, #1b1b1b 0%, #2b1114 50%, #1b1b1b 100%);
-  border-bottom: 1px solid rgba(229, 9, 20, 0.35);
-  color: #e0e0e0;
-  font-size: 0.8rem;
-  padding: 7px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 1000;
-  text-align: center;
-  box-sizing: border-box;
+    background: linear-gradient(90deg, #1b1b1b 0%, #2b1114 50%, #1b1b1b 100%);
+    border-bottom: 1px solid rgba(229, 9, 20, 0.35);
+    color: #e0e0e0;
+    font-size: 0.8rem;
+    padding: 7px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1000;
+    text-align: center;
+    box-sizing: border-box;
 }
 
 .brave-banner-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding-right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-right: 20px;
 }
 
 .brave-banner-badge {
-  background: #ff5000;
-  color: #fff;
-  font-weight: 700;
-  font-size: 10px;
-  padding: 2px 7px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+    background: #ff5000; /* Brave signature orange */
+    color: #fff;
+    font-weight: 700;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .brave-banner-text strong {
-  color: #fff;
+    color: #fff;
 }
 
 .brave-banner-link {
-  color: #ff9800;
-  text-decoration: underline;
-  font-weight: 600;
-  margin-left: 4px;
-  transition: color 0.2s ease;
+    color: #ff9800;
+    text-decoration: underline;
+    font-weight: 600;
+    margin-left: 4px;
+    transition: color 0.2s ease;
 }
 
 .brave-banner-link:hover {
-  color: #ffa726;
+    color: #ffa726;
 }
 
 .brave-banner-close {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  color: #888;
-  font-size: 1.1rem;
-  cursor: pointer;
-  line-height: 1;
-  padding: 4px;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
 }
 
 .brave-banner-close:hover {
-  color: #fff;
+    color: #fff;
 }
 
 @media (max-width: 768px) {
-  .brave-banner {
-    font-size: 0.73rem;
-    padding: 6px 12px;
-  }
-  .brave-banner-content {
-    gap: 5px;
-    padding-right: 18px;
-  }
-  .brave-banner-badge {
-    font-size: 9px;
-    padding: 1px 5px;
-  }
+    .brave-banner {
+        font-size: 0.73rem;
+        padding: 6px 12px;
+    }
+    .brave-banner-content {
+        gap: 5px;
+        padding-right: 18px;
+    }
+    .brave-banner-badge {
+        font-size: 9px;
+        padding: 1px 5px;
+    }
 }
 
 /* ================= DONATIONS & SUPPORTERS WALL ================= */
 .proof-instruction-box {
-  background: #202020;
-  border: 1px dashed #444;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin: 20px 0;
-  text-align: center;
+    background: #202020;
+    border: 1px dashed #444;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 20px 0;
+    text-align: center;
 }
 
 .proof-instruction-box p {
-  font-size: 0.85rem;
-  color: #ccc;
-  margin: 0 0 10px;
-  line-height: 1.4;
+    font-size: 0.85rem;
+    color: #ccc;
+    margin: 0 0 10px;
+    line-height: 1.4;
 }
 
 .email-proof-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #e50914;
-  color: #fff !important;
-  text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 8px 18px;
-  border-radius: 6px;
-  transition: background 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #e50914;
+    color: #fff !important;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
 }
 
 .email-proof-btn:hover {
-  background: #b20710;
+    background: #b20710;
 }
 
 .donors-wall-section {
-  margin-top: 25px;
-  border-top: 1px solid #333;
-  padding-top: 18px;
-  text-align: left;
+    margin-top: 25px;
+    border-top: 1px solid #333;
+    padding-top: 18px;
+    text-align: left;
 }
 
 .donors-wall-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #ffd700;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffd700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .donors-wall-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
-  max-height: 220px;
-  overflow-y: auto;
-  padding-right: 4px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
 .donor-item-card {
-  background: #202020;
-  border: 1px solid #2e2e2e;
-  border-radius: 8px;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+    background: #202020;
+    border: 1px solid #2e2e2e;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .donor-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
 }
 
 .donor-name {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
 }
 
 .donor-amount {
-  background: rgba(76, 175, 80, 0.2);
-  color: #4caf50;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 4px;
-  border: 1px solid rgba(76, 175, 80, 0.4);
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid rgba(76, 175, 80, 0.4);
 }
 
 .donor-message {
-  font-size: 0.78rem;
-  color: #aaa;
-  font-style: italic;
-  margin: 4px 0;
-  line-height: 1.3;
+    font-size: 0.78rem;
+    color: #aaa;
+    font-style: italic;
+    margin: 4px 0;
+    line-height: 1.3;
 }
 
 .donor-date {
-  font-size: 0.68rem;
-  color: #666;
-  align-self: flex-end;
+    font-size: 0.68rem;
+    color: #666;
+    align-self: flex-end;
 }
 
 @media (max-width: 650px) {
-  .donors-wall-grid {
-    grid-template-columns: 1fr;
-    max-height: 200px;
-  }
+    .donors-wall-grid {
+        grid-template-columns: 1fr;
+        max-height: 200px;
+    }
 }
 
 /* ================= DONOR NAVBAR HIGHLIGHTS & MODAL STYLES ================= */
 .donor-nav-ticker {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 10px;
 }
 
 .nav-donor-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.72rem;
-  padding: 3px 9px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ccc;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    padding: 3px 9px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ccc;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s ease;
 }
 
 .nav-donor-tag strong {
-  color: #fff;
+    color: #fff;
 }
 
 .nav-donor-tag.top-donor {
-  border-color: rgba(255, 215, 0, 0.4);
-  background: rgba(255, 215, 0, 0.1);
-  color: #ffd700;
+    border-color: rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.1);
+    color: #ffd700;
 }
 
 .nav-donor-tag.latest-donor {
-  border-color: rgba(76, 175, 80, 0.4);
-  background: rgba(76, 175, 80, 0.1);
-  color: #81c784;
+    border-color: rgba(76, 175, 80, 0.4);
+    background: rgba(76, 175, 80, 0.1);
+    color: #81c784;
 }
 
 .nav-donor-tag:hover {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .email-copy-action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #e50914;
-  color: #fff;
-  border: none;
-  font-family: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 10px 18px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #e50914;
+    color: #fff;
+    border: none;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s ease;
 }
 
 .email-copy-action-btn:hover {
-  background: #b20710;
+    background: #b20710;
 }
 
 @media (max-width: 900px) {
-  #donor-nav-highlights,
-  .donor-nav-ticker {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 6px !important;
-    width: 100% !important;
-    max-width: 180px !important;
-    margin: 10px auto !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-  }
+    .donor-nav-ticker {
+        display: none; /* Itago sa mobile navbar para hindi magsiksikan */
+    }
+}
+/* Ayos para sa Mobile Navbar & Donor Badges */
+@media (max-width: 900px) {
+    .donor-nav-ticker {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin: 10px 0;
+        align-items: flex-start;
+    }
+    .nav-donor-tag {
+        font-size: 0.75rem;
+        padding: 4px 10px;
+    }
+}
 
-  .nav-donor-tag {
-    font-size: 0.68rem !important;
-    padding: 5px 8px !important;
-    border-radius: 6px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    justify-content: center !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
+/* ✅ MOBILE MENU DONOR BADGES STYLING */
+@media (max-width: 900px) {
+    /* Ginagawang horizontal at centered ang container */
+    #donor-nav-highlights,
+    .donor-nav-ticker {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 6px !important;
+        width: 100% !important;
+        margin: 12px 0 !important;
+        padding: 0 10px !important;
+        box-sizing: border-box !important;
+    }
 
-  #supportModal .modal-content,
-  .support-modal-content {
-    width: 92% !important;
-    max-width: 380px !important;
-    max-height: 88vh !important;
-    overflow-y: auto !important;
-    padding: 16px !important;
-    margin: 6vh auto !important;
-    border-radius: 12px !important;
-    box-sizing: border-box !important;
-  }
+    /* Pinaliit at ginawang compact ang pills */
+    .nav-donor-tag {
+        font-size: 0.72rem !important;
+        padding: 5px 9px !important;
+        border-radius: 20px !important;
+        white-space: nowrap !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        line-height: 1 !important;
+        border-width: 1px !important;
+    }
 
-  .gcash-card img, 
-  .qr-container img {
-    max-width: 140px !important;
-    height: auto !important;
-  }
+    .nav-donor-tag i {
+        font-size: 0.75rem !important;
+    }
 
-  #copyProofEmailBtn,
-  .copy-email-btn {
-    font-size: 0.72rem !important;
-    padding: 10px 8px !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-    line-height: 1.3 !important;
-    width: 100% !important;
-  }
+    .nav-donor-tag strong {
+        font-weight: 600 !important;
+    }
+}
+
+/* ====================================================
+   MOBILE FIX: SIDEBAR BADGES & DONATION MODAL
+==================================================== */
+@media (max-width: 900px) {
+
+    /* 1. SIDEBAR DONOR BADGES (Naka-stack pero ultra-compact & fit sa loob) */
+    #donor-nav-highlights,
+    .donor-nav-ticker {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+        width: 100% !important;
+        max-width: 180px !important;
+        margin: 10px auto !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .nav-donor-tag {
+        font-size: 0.68rem !important;
+        padding: 5px 8px !important;
+        border-radius: 6px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        justify-content: center !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 2. DONATION MODAL FIX (Fit sa screen at hindi lumalagpas ang button) */
+    #supportModal .modal-content,
+    .support-modal-content {
+        width: 92% !important;
+        max-width: 380px !important;
+        max-height: 88vh !important;
+        overflow-y: auto !important;
+        padding: 16px !important;
+        margin: 6vh auto !important;
+        border-radius: 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* GCash QR Card sizing */
+    .gcash-card img, 
+    .qr-container img {
+        max-width: 140px !important;
+        height: auto !important;
+    }
+
+    /* Copy Email Button text-wrap */
+    #copyProofEmailBtn,
+    .copy-email-btn {
+        font-size: 0.72rem !important;
+        padding: 10px 8px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        line-height: 1.3 !important;
+        width: 100% !important;
+    }
 }

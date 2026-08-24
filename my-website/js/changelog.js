@@ -1,4 +1,4 @@
-// ✅ js/changelog.js (INSTANT-CLICK FIX + DYNAMIC REALTIME DATABASE SYNC)
+// ✅ js/changelog.js (GLOBAL EVENT DELEGATION + AUTO REALTIME DATABASE SYNC)
 
 const FIREBASE_DB_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
 
@@ -15,6 +15,9 @@ const FALLBACK_CHANGELOGS = [
         ]
     }
 ];
+
+let cachedLogs = FALLBACK_CHANGELOGS;
+let latestAppVersion = "v2.6";
 
 function renderLogsHtml(logs) {
     return logs.map(log => `
@@ -44,7 +47,7 @@ function ensureModalCreated() {
                     <button class="changelog-close" id="changelog-close-btn" aria-label="Close">&times;</button>
                 </div>
                 <div class="changelog-body" id="changelog-body-content">
-                    ${renderLogsHtml(FALLBACK_CHANGELOGS)}
+                    ${renderLogsHtml(cachedLogs)}
                 </div>
             </div>
         `;
@@ -54,39 +57,39 @@ function ensureModalCreated() {
             if (e.target === overlay) overlay.classList.remove('show');
         });
 
-        document.getElementById('changelog-close-btn').onclick = () => {
-            overlay.classList.remove('show');
-        };
+        const closeBtn = document.getElementById('changelog-close-btn');
+        if (closeBtn) {
+            closeBtn.onclick = () => overlay.classList.remove('show');
+        }
     }
     return overlay;
 }
 
-async function initChangelogModule() {
+function openChangelogModal() {
     const overlay = ensureModalCreated();
+    overlay.classList.add('show');
 
-    // Hanapin ang bell button gamit ang id o class
-    const btn = document.getElementById('changelog-btn') || 
-                document.querySelector('.changelog-btn') || 
-                document.querySelector('[data-target="changelog"]') ||
-                document.querySelector('button .fa-bell')?.closest('button') ||
-                document.querySelector('a .fa-bell')?.closest('a');
+    // I-save ang version para mawala ang red badge
+    localStorage.setItem('movies_j_last_version', latestAppVersion);
+    const dot = document.getElementById('changelog-unread-dot');
+    if (dot) dot.remove();
+}
 
-    let currentVersion = "v2.6";
-
-    // 1. I-attach agad ang Click Listener para hindi ma-lock/unclickable
-    if (btn) {
-        btn.onclick = (e) => {
-            e.preventDefault();
-            overlay.classList.add('show');
-
-            // Tanggalin ang dot kapag nabuksan na
-            localStorage.setItem('movies_j_last_version', currentVersion);
-            const dot = document.getElementById('changelog-unread-dot');
-            if (dot) dot.remove();
-        };
+// 🎯 GLOBAL EVENT DELEGATION: Kahit bagong render ang navbar ng homepage, magka-click pa rin
+document.addEventListener('click', (e) => {
+    const target = e.target.closest('#changelog-btn, .changelog-btn, [data-target="changelog"], button:has(.fa-bell), a:has(.fa-bell)');
+    const isBellDirect = e.target.classList.contains('fa-bell') || e.target.closest('.fa-bell');
+    
+    if (target || isBellDirect) {
+        e.preventDefault();
+        e.stopPropagation();
+        openChangelogModal();
     }
+});
 
-    // 2. Fetch Live Updates mula sa Firebase sa background
+async function loadChangelogData() {
+    ensureModalCreated();
+
     try {
         const res = await fetch(`${FIREBASE_DB_URL}/changelogs.json`);
         const data = await res.json();
@@ -97,7 +100,9 @@ async function initChangelogModule() {
                 .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
             if (sorted.length > 0) {
-                currentVersion = sorted[0].version || "v2.6";
+                cachedLogs = sorted;
+                latestAppVersion = sorted[0].version || "v2.6";
+
                 const bodyContainer = document.getElementById('changelog-body-content');
                 if (bodyContainer) {
                     bodyContainer.innerHTML = renderLogsHtml(sorted);
@@ -105,24 +110,28 @@ async function initChangelogModule() {
             }
         }
     } catch (err) {
-        console.warn("Using fallback changelogs:", err);
+        console.warn("Changelog fetch warning:", err);
     }
 
-    // 3. Notification Dot Logic base sa nakuha sa DB
-    const lastSeenVersion = localStorage.getItem('movies_j_last_version');
-    if (btn && lastSeenVersion !== currentVersion) {
-        btn.style.position = 'relative';
+    // Check Notification Badge
+    const lastSeen = localStorage.getItem('movies_j_last_version');
+    const bellBtn = document.getElementById('changelog-btn') || 
+                    document.querySelector('.changelog-btn') || 
+                    document.querySelector('.fa-bell')?.parentElement;
+
+    if (bellBtn && lastSeen !== latestAppVersion) {
+        bellBtn.style.position = 'relative';
         if (!document.getElementById('changelog-unread-dot')) {
             const dot = document.createElement('span');
             dot.id = 'changelog-unread-dot';
-            dot.style.cssText = "position:absolute; top:2px; right:2px; width:8px; height:8px; background:#e50914; border-radius:50%; border:1px solid #000;";
-            btn.appendChild(dot);
+            dot.style.cssText = "position:absolute; top:2px; right:2px; width:8px; height:8px; background:#e50914; border-radius:50%; border:1px solid #000; pointer-events:none;";
+            bellBtn.appendChild(dot);
         }
     }
 }
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initChangelogModule);
+    document.addEventListener('DOMContentLoaded', loadChangelogData);
 } else {
-    initChangelogModule();
+    loadChangelogData();
 }

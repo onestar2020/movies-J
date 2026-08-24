@@ -1,6 +1,6 @@
-// ✅ js/changelog.js (FORCE CLICK ENABLER + DYNAMIC REALTIME DATABASE SYNC)
+// ✅ js/changelog.js (FIXED SYNTAX & REALTIME DATABASE SYNC)
 
-const FIREBASE_DB_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
+const CHANGELOG_FIREBASE_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
 
 const FALLBACK_CHANGELOGS = [
     {
@@ -39,7 +39,6 @@ function ensureModalCreated() {
         overlay = document.createElement('div');
         overlay.id = 'changelog-modal-overlay';
         overlay.className = 'changelog-overlay';
-        // Siguraduhing nasa pinakataas ang modal
         overlay.style.zIndex = "999999"; 
         
         overlay.innerHTML = `
@@ -71,30 +70,27 @@ function openChangelogModal() {
     const overlay = ensureModalCreated();
     overlay.classList.add('show');
 
-    // I-save ang version para mawala ang red badge
     localStorage.setItem('movies_j_last_version', latestAppVersion);
     const dot = document.getElementById('changelog-unread-dot');
     if (dot) dot.remove();
 }
 
-// 🎯 AGGRESSIVE GLOBAL EVENT DELEGATION: 
-// Ito ang papilit na bubutas sa kahit anong nagba-block sa click sa homepage.
 window.addEventListener('click', (e) => {
     const target = e.target.closest('#changelog-btn, .changelog-nav-btn');
     const isBell = e.target.classList.contains('fa-bell') && e.target.closest('button');
     
     if (target || isBell) {
         e.preventDefault();
-        e.stopImmediatePropagation(); // ⬅️ Pinipigilan ang ibang scripts na i-block ito
+        e.stopImmediatePropagation();
         openChangelogModal();
     }
-}, true); // ⬅️ 'true' (UseCapture) para ito unang mag-trigger bago ang kahit anong click sa homepage.
+}, true);
 
 async function loadChangelogData() {
     ensureModalCreated();
 
     try {
-        const res = await fetch(`${FIREBASE_DB_URL}/changelogs.json`);
+        const res = await fetch(`${CHANGELOG_FIREBASE_URL}/changelogs.json`);
         const data = await res.json();
         
         if (data) {
@@ -116,12 +112,10 @@ async function loadChangelogData() {
         console.warn("Changelog fetch warning:", err);
     }
 
-    // Check Notification Badge
     const lastSeen = localStorage.getItem('movies_j_last_version');
     const bellBtn = document.getElementById('changelog-btn');
 
     if (bellBtn) {
-        // Force pointer events para ma-click sa home
         bellBtn.style.pointerEvents = "auto";
         bellBtn.style.position = "relative";
         bellBtn.style.zIndex = "999";

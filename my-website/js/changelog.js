@@ -1,8 +1,7 @@
-// ✅ js/changelog.js (DYNAMIC REALTIME DATABASE SYNC + AUTO NOTIFICATION BADGE)
+// ✅ js/changelog.js (INSTANT-CLICK FIX + DYNAMIC REALTIME DATABASE SYNC)
 
 const FIREBASE_DB_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-// Fallback sakaling offline o bago pa ang database
 const FALLBACK_CHANGELOGS = [
     {
         version: "v2.6",
@@ -17,96 +16,113 @@ const FALLBACK_CHANGELOGS = [
     }
 ];
 
-async function fetchLiveChangelogs() {
-    try {
-        const res = await fetch(`${FIREBASE_DB_URL}/changelogs.json`);
-        const data = await res.json();
-        if (!data) return FALLBACK_CHANGELOGS;
-
-        // I-sort mula sa pinakabagong update
-        const sorted = Object.keys(data)
-            .map(key => ({ id: key, ...data[key] }))
-            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-        return sorted.length > 0 ? sorted : FALLBACK_CHANGELOGS;
-    } catch (e) {
-        console.warn("Changelog fetch error, using fallback:", e);
-        return FALLBACK_CHANGELOGS;
-    }
-}
-
-async function initChangelogModule() {
-    // 1. Fetch live updates
-    const logs = await fetchLiveChangelogs();
-    const latestVersion = logs[0]?.version || "v2.6";
-
-    // 2. Setup Modal Container
-    let overlay = document.getElementById('changelog-modal-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'changelog-modal-overlay';
-        overlay.className = 'changelog-overlay';
-        document.body.appendChild(overlay);
-    }
-
-    const logsHtml = logs.map(log => `
+function renderLogsHtml(logs) {
+    return logs.map(log => `
         <div class="changelog-item">
             <div class="changelog-date">
-                <span class="changelog-version">${log.version}</span>
-                <span>${log.date}</span>
+                <span class="changelog-version">${log.version || ''}</span>
+                <span>${log.date || ''}</span>
             </div>
-            <h4>${log.title}</h4>
+            <h4>${log.title || ''}</h4>
             <ul>
                 ${(log.changes || []).map(c => `<li>${c}</li>`).join('')}
             </ul>
         </div>
     `).join('');
+}
 
-    overlay.innerHTML = `
-        <div class="changelog-card">
-            <div class="changelog-header">
-                <h3>🚀 System Updates & Logs</h3>
-                <button class="changelog-close" id="changelog-close-btn" aria-label="Close">&times;</button>
+function ensureModalCreated() {
+    let overlay = document.getElementById('changelog-modal-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'changelog-modal-overlay';
+        overlay.className = 'changelog-overlay';
+        overlay.innerHTML = `
+            <div class="changelog-card">
+                <div class="changelog-header">
+                    <h3>🚀 System Updates & Logs</h3>
+                    <button class="changelog-close" id="changelog-close-btn" aria-label="Close">&times;</button>
+                </div>
+                <div class="changelog-body" id="changelog-body-content">
+                    ${renderLogsHtml(FALLBACK_CHANGELOGS)}
+                </div>
             </div>
-            <div class="changelog-body">
-                ${logsHtml}
-            </div>
-        </div>
-    `;
+        `;
+        document.body.appendChild(overlay);
 
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.remove('show');
-    });
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.classList.remove('show');
+        });
 
-    const closeBtn = document.getElementById('changelog-close-btn');
-    if (closeBtn) {
-        closeBtn.onclick = () => overlay.classList.remove('show');
+        document.getElementById('changelog-close-btn').onclick = () => {
+            overlay.classList.remove('show');
+        };
     }
+    return overlay;
+}
 
-    // 3. Notification Dot Checker (Dynamic base sa latest version sa DB)
-    const btn = document.getElementById('changelog-btn');
-    const lastSeenVersion = localStorage.getItem('movies_j_last_version');
+async function initChangelogModule() {
+    const overlay = ensureModalCreated();
 
+    // Hanapin ang bell button gamit ang id o class
+    const btn = document.getElementById('changelog-btn') || 
+                document.querySelector('.changelog-btn') || 
+                document.querySelector('[data-target="changelog"]') ||
+                document.querySelector('button .fa-bell')?.closest('button') ||
+                document.querySelector('a .fa-bell')?.closest('a');
+
+    let currentVersion = "v2.6";
+
+    // 1. I-attach agad ang Click Listener para hindi ma-lock/unclickable
     if (btn) {
-        if (lastSeenVersion !== latestVersion) {
-            btn.style.position = 'relative';
-            if (!document.getElementById('changelog-unread-dot')) {
-                const dot = document.createElement('span');
-                dot.id = 'changelog-unread-dot';
-                dot.style.cssText = "position:absolute; top:2px; right:2px; width:8px; height:8px; background:#e50914; border-radius:50%; border:1px solid #000;";
-                btn.appendChild(dot);
-            }
-        }
-
         btn.onclick = (e) => {
             e.preventDefault();
             overlay.classList.add('show');
 
-            localStorage.setItem('movies_j_last_version', latestVersion);
+            // Tanggalin ang dot kapag nabuksan na
+            localStorage.setItem('movies_j_last_version', currentVersion);
             const dot = document.getElementById('changelog-unread-dot');
             if (dot) dot.remove();
         };
     }
+
+    // 2. Fetch Live Updates mula sa Firebase sa background
+    try {
+        const res = await fetch(`${FIREBASE_DB_URL}/changelogs.json`);
+        const data = await res.json();
+        
+        if (data) {
+            const sorted = Object.keys(data)
+                .map(key => ({ id: key, ...data[key] }))
+                .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            if (sorted.length > 0) {
+                currentVersion = sorted[0].version || "v2.6";
+                const bodyContainer = document.getElementById('changelog-body-content');
+                if (bodyContainer) {
+                    bodyContainer.innerHTML = renderLogsHtml(sorted);
+                }
+            }
+        }
+    } catch (err) {
+        console.warn("Using fallback changelogs:", err);
+    }
+
+    // 3. Notification Dot Logic base sa nakuha sa DB
+    const lastSeenVersion = localStorage.getItem('movies_j_last_version');
+    if (btn && lastSeenVersion !== currentVersion) {
+        btn.style.position = 'relative';
+        if (!document.getElementById('changelog-unread-dot')) {
+            const dot = document.createElement('span');
+            dot.id = 'changelog-unread-dot';
+            dot.style.cssText = "position:absolute; top:2px; right:2px; width:8px; height:8px; background:#e50914; border-radius:50%; border:1px solid #000;";
+            btn.appendChild(dot);
+        }
+    }
 }
 
-document.addEventListener('DOMContentLoaded', initChangelogModule);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initChangelogModule);
+} else {
+    initChangelogModule();
+}

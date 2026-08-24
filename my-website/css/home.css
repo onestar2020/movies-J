@@ -246,6 +246,7 @@ a {
 
 .movie-card {
   width: 180px;
+  aspect-ratio: 2 / 3;
   flex-shrink: 0;
   background-color: var(--light-dark-color);
   transition: all 0.3s ease;
@@ -256,8 +257,8 @@ a {
 }
 .movie-card img {
   width: 100%;
-  aspect-ratio: 2 / 3;
-  object-fit: cover;
+  height: 100%;
+  object-fit: cover !important;
   display: block;
   border-radius: 5px;
 }
@@ -717,7 +718,10 @@ a {
   .hero-title { font-size: 2.5rem; }
   .hero-description { font-size: 1rem; }
   .main-container { padding: 0 20px; }
-  .movie-card { width: 140px; }
+  .movie-card { 
+    width: 140px; 
+    aspect-ratio: 2 / 3;
+  }
   #clear-history-btn { top: 10px; right: 50px; }
   
   .modal-body { flex-direction: column; align-items: center; text-align: center; padding-top: 60%; }
@@ -947,7 +951,7 @@ a {
 }
 
 .brave-banner-badge {
-    background: #ff5000; /* Brave signature orange */
+    background: #ff5000;
     color: #fff;
     font-weight: 700;
     font-size: 10px;
@@ -1190,10 +1194,9 @@ a {
 
 @media (max-width: 900px) {
     .donor-nav-ticker {
-        display: none; /* Itago sa mobile navbar para hindi magsiksikan */
+        display: none; 
     }
 }
-/* Ayos para sa Mobile Navbar & Donor Badges */
 @media (max-width: 900px) {
     .donor-nav-ticker {
         display: flex;
@@ -1208,9 +1211,7 @@ a {
     }
 }
 
-/* ✅ MOBILE MENU DONOR BADGES STYLING */
 @media (max-width: 900px) {
-    /* Ginagawang horizontal at centered ang container */
     #donor-nav-highlights,
     .donor-nav-ticker {
         display: flex !important;
@@ -1224,7 +1225,6 @@ a {
         box-sizing: border-box !important;
     }
 
-    /* Pinaliit at ginawang compact ang pills */
     .nav-donor-tag {
         font-size: 0.72rem !important;
         padding: 5px 9px !important;
@@ -1246,12 +1246,7 @@ a {
     }
 }
 
-/* ====================================================
-   MOBILE FIX: SIDEBAR BADGES & DONATION MODAL
-==================================================== */
 @media (max-width: 900px) {
-
-    /* 1. SIDEBAR DONOR BADGES (Naka-stack pero ultra-compact & fit sa loob) */
     #donor-nav-highlights,
     .donor-nav-ticker {
         display: flex !important;
@@ -1277,7 +1272,6 @@ a {
         box-sizing: border-box !important;
     }
 
-    /* 2. DONATION MODAL FIX (Fit sa screen at hindi lumalagpas ang button) */
     #supportModal .modal-content,
     .support-modal-content {
         width: 92% !important;
@@ -1290,14 +1284,12 @@ a {
         box-sizing: border-box !important;
     }
 
-    /* GCash QR Card sizing */
     .gcash-card img, 
     .qr-container img {
         max-width: 140px !important;
         height: auto !important;
     }
 
-    /* Copy Email Button text-wrap */
     #copyProofEmailBtn,
     .copy-email-btn {
         font-size: 0.72rem !important;

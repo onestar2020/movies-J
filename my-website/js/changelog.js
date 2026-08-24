@@ -1,8 +1,9 @@
-// ✅ js/changelog.js (AUTO NOTIFICATION BADGE + LOCALSTORAGE TRACKER)
+// ✅ js/changelog.js (DYNAMIC REALTIME DATABASE SYNC + AUTO NOTIFICATION BADGE)
 
-const CURRENT_APP_VERSION = "v2.6"; // ⬅️ Na-update na sa v2.6 para lumitaw ang red dot sa users
+const FIREBASE_DB_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-const SITE_CHANGELOGS = [
+// Fallback sakaling offline o bago pa ang database
+const FALLBACK_CHANGELOGS = [
     {
         version: "v2.6",
         date: "August 21, 2026",
@@ -13,91 +14,81 @@ const SITE_CHANGELOGS = [
             "Secure Admin Manager: Pinabilis na admin dashboard para sa instant adding at removal ng supporters nang walang code editing.",
             "Mobile UI/UX Refinement: Inayos ang responsive layout ng support modal at mobile drawer badges para fit sa lahat ng screen sizes."
         ]
-    },
-    {
-        version: "v2.5",
-        date: "August 21, 2026",
-        title: "Quality Transparency, Ad-Block Tip & UI Polish",
-        changes: [
-            "Smart Quality Detector: May live indicators na ang mga server buttons at metadata kung (HD) o (CAM / SD) pa ang copy.",
-            "Video Quality Notice Modal: Nagbibigay ng paalala kapag kakalabas pa lang ng movie sa sinehan para iwas kalituhan sa video quality.",
-            "Cast Scroller Optimization: Inayos ang smooth horizontal wheel/drag scrolling at tinanggal ang mga placeholder cards na walang picture.",
-            "Floating Brave Browser Tip: Dagdag na dismissable recommendation banner para sa mas malinis at ad-free streaming experience."
-        ]
-    },
-    {
-        version: "v2.4",
-        date: "August 20, 2026",
-        title: "Unreleased Media Protection & Watch Order",
-        changes: [
-            "Smart Release Countdown: May live indicators na ang mga unreleased anime, TV episodes, at movies.",
-            "Anti-Fake Stream Blocker: Pinipigilan ang 404 player errors sa mga hindi pa nailalabas na media.",
-            "Chronological Franchise Order: Nakaayos na ang MCU at movie collections ayon sa tamang sequence (#1, #2...).",
-            "Trademark Trailer Mode: Laging opisyal na trailer ang unang maglo-load bago pumili ng server."
-        ]
-    },
-    {
-        version: "v2.3",
-        date: "August 2026",
-        title: "System Performance & Live Users",
-        changes: [
-            "Mabilis na server switching at dynamic proxy integration.",
-            "Real-time online visitor counter.",
-            "Auto-scroll optimization sa mobile devices."
-        ]
     }
 ];
 
-function initChangelogModule() {
-    // 1. Setup ng Modal Container
+async function fetchLiveChangelogs() {
+    try {
+        const res = await fetch(`${FIREBASE_DB_URL}/changelogs.json`);
+        const data = await res.json();
+        if (!data) return FALLBACK_CHANGELOGS;
+
+        // I-sort mula sa pinakabagong update
+        const sorted = Object.keys(data)
+            .map(key => ({ id: key, ...data[key] }))
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        return sorted.length > 0 ? sorted : FALLBACK_CHANGELOGS;
+    } catch (e) {
+        console.warn("Changelog fetch error, using fallback:", e);
+        return FALLBACK_CHANGELOGS;
+    }
+}
+
+async function initChangelogModule() {
+    // 1. Fetch live updates
+    const logs = await fetchLiveChangelogs();
+    const latestVersion = logs[0]?.version || "v2.6";
+
+    // 2. Setup Modal Container
     let overlay = document.getElementById('changelog-modal-overlay');
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'changelog-modal-overlay';
         overlay.className = 'changelog-overlay';
-
-        const logsHtml = SITE_CHANGELOGS.map(log => `
-            <div class="changelog-item">
-                <div class="changelog-date">
-                    <span class="changelog-version">${log.version}</span>
-                    <span>${log.date}</span>
-                </div>
-                <h4>${log.title}</h4>
-                <ul>
-                    ${log.changes.map(c => `<li>${c}</li>`).join('')}
-                </ul>
-            </div>
-        `).join('');
-
-        overlay.innerHTML = `
-            <div class="changelog-card">
-                <div class="changelog-header">
-                    <h3>🚀 System Updates & Logs</h3>
-                    <button class="changelog-close" id="changelog-close-btn" aria-label="Close">&times;</button>
-                </div>
-                <div class="changelog-body">
-                    ${logsHtml}
-                </div>
-            </div>
-        `;
         document.body.appendChild(overlay);
-
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) overlay.classList.remove('show');
-        });
-
-        document.getElementById('changelog-close-btn').onclick = () => {
-            overlay.classList.remove('show');
-        };
     }
 
-    // 2. Notification Dot Checker
+    const logsHtml = logs.map(log => `
+        <div class="changelog-item">
+            <div class="changelog-date">
+                <span class="changelog-version">${log.version}</span>
+                <span>${log.date}</span>
+            </div>
+            <h4>${log.title}</h4>
+            <ul>
+                ${(log.changes || []).map(c => `<li>${c}</li>`).join('')}
+            </ul>
+        </div>
+    `).join('');
+
+    overlay.innerHTML = `
+        <div class="changelog-card">
+            <div class="changelog-header">
+                <h3>🚀 System Updates & Logs</h3>
+                <button class="changelog-close" id="changelog-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <div class="changelog-body">
+                ${logsHtml}
+            </div>
+        </div>
+    `;
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('show');
+    });
+
+    const closeBtn = document.getElementById('changelog-close-btn');
+    if (closeBtn) {
+        closeBtn.onclick = () => overlay.classList.remove('show');
+    }
+
+    // 3. Notification Dot Checker (Dynamic base sa latest version sa DB)
     const btn = document.getElementById('changelog-btn');
     const lastSeenVersion = localStorage.getItem('movies_j_last_version');
 
     if (btn) {
-        // Lagyan ng red dot kung bago ang version o hindi pa nabubuksan
-        if (lastSeenVersion !== CURRENT_APP_VERSION) {
+        if (lastSeenVersion !== latestVersion) {
             btn.style.position = 'relative';
             if (!document.getElementById('changelog-unread-dot')) {
                 const dot = document.createElement('span');
@@ -111,8 +102,7 @@ function initChangelogModule() {
             e.preventDefault();
             overlay.classList.add('show');
 
-            // Tanggalin ang dot at i-save sa browser
-            localStorage.setItem('movies_j_last_version', CURRENT_APP_VERSION);
+            localStorage.setItem('movies_j_last_version', latestVersion);
             const dot = document.getElementById('changelog-unread-dot');
             if (dot) dot.remove();
         };

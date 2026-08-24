@@ -1309,31 +1309,3 @@ a {
     }
 }
 
-/* ================= FORCE FIX FOR SQUISHED POSTERS ================= */
-.list .movie-card {
-  width: 180px !important;
-  height: 270px !important;
-  aspect-ratio: 2 / 3 !important;
-  flex-shrink: 0 !important;
-  display: block !important;
-}
-
-.list .movie-card img {
-  width: 100% !important;
-  height: 100% !important;
-  max-height: 270px !important;
-  aspect-ratio: 2 / 3 !important;
-  object-fit: cover !important;
-  display: block !important;
-  border-radius: 5px !important;
-}
-
-@media (max-width: 768px) {
-  .list .movie-card {
-    width: 140px !important;
-    height: 210px !important;
-  }
-  .list .movie-card img {
-    max-height: 210px !important;
-  }
-}

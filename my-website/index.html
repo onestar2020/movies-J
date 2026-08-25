@@ -305,7 +305,12 @@
                     <div class="modal-meta"><span id="modal-rating"></span><span id="modal-release"></span></div>
                     <p id="modal-description"></p>
                     <div class="modal-genres" id="modal-genres"></div>
-                    <div class="modal-buttons"><button class="btn btn-primary" id="modal-watch-btn"><i class="fas fa-play"></i> Watch Now</button></div>
+                    <div class="modal-buttons" style="display: flex; gap: 10px; justify-content: center; align-items: center; margin-top: 15px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" id="modal-watch-btn"><i class="fas fa-play"></i> Watch Now</button>
+                        <button class="btn btn-secondary" id="modal-watchlist-btn" style="background: #282828; border: 1px solid #444; color: #fff; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-bookmark"></i> <span id="modal-watchlist-text">Watchlist</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

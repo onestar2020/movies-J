@@ -711,6 +711,8 @@ function showDetailsModal(item) {
     const desc = modal.querySelector('#modal-description');
     const genres = modal.querySelector('#modal-genres');
     const watchBtn = modal.querySelector('#modal-watch-btn');
+    const watchlistBtn = modal.querySelector('#modal-watchlist-btn');
+    const watchlistText = modal.querySelector('#modal-watchlist-text');
 
     if (backdrop) backdrop.style.backgroundImage = item.backdrop_path ? `url(${IMG_URL_ORIGINAL}${item.backdrop_path})` : 'none';
     if (poster) poster.src = item.poster_path ? `${IMG_URL_W500}${item.poster_path}` : 'images/logo-192.png';
@@ -733,6 +735,31 @@ function showDetailsModal(item) {
     }
 
     if (watchBtn) watchBtn.onclick = () => goToMoviePage(item);
+
+    // Watchlist State & Toggle sa loob ng Modal
+    if (watchlistBtn && watchlistText) {
+        const updateModalWatchlistState = () => {
+            const list = getWatchlist();
+            const exists = list.some(w => w.id === item.id);
+            if (exists) {
+                watchlistBtn.style.background = "#e50914";
+                watchlistBtn.style.borderColor = "#e50914";
+                watchlistText.textContent = "Saved";
+            } else {
+                watchlistBtn.style.background = "#282828";
+                watchlistBtn.style.borderColor = "#444";
+                watchlistText.textContent = "Watchlist";
+            }
+        };
+
+        updateModalWatchlistState();
+
+        watchlistBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleWatchlist(item);
+            updateModalWatchlistState();
+        };
+    }
 
     modal.style.display = 'flex';
 }

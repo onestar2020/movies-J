@@ -480,12 +480,11 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
         statusBanner.style.display = 'none';
     }
 
-    // Auto Server Fallback Monitor
+    // Auto Server Fallback Monitor (45 seconds)
     clearTimeout(serverHealthTimeout);
     serverHealthTimeout = setTimeout(() => {
-        // Kapag natapos ang timer nang walang manual intervention at nagka-issue
         checkAndTriggerAutoFallback(item, season, episode);
-    }, 60000); // 60-second / 1-minute threshold
+    }, 45000); // 45-second threshold
 }
 
 function checkAndTriggerAutoFallback(item, season, episode) {

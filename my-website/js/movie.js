@@ -485,7 +485,7 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     serverHealthTimeout = setTimeout(() => {
         // Kapag natapos ang timer nang walang manual intervention at nagka-issue
         checkAndTriggerAutoFallback(item, season, episode);
-    }, 10000); // 10-second threshold
+    }, 60000); // 60-second / 1-minute threshold
 }
 
 function checkAndTriggerAutoFallback(item, season, episode) {

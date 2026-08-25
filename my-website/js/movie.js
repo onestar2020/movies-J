@@ -1,6 +1,6 @@
-// ✅ js/movie.js (FULL PROTECTED + TRADEMARK TRAILER-FIRST + UNRELEASED BLOCKER + 90-DAY CAM/HD QUALITY DETECTOR + ORGANIZED COLLECTIONS + REALTIME USERS)
+// ✅ js/movie.js (AUTO-FALLBACK ENGINE + AUTO NEXT EPISODE + TRADEMARK TRAILER-FIRST + QUALITY DETECTOR + REALTIME USERS)
 
-// ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
+// ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION (DEVELOPMENT SAFE) =================
 (function() {
     document.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -15,6 +15,7 @@
         }
     });
 
+    /* Pansamantalang naka-disable para sa smooth local debugging
     setInterval(() => {
         const startTime = performance.now();
         debugger;
@@ -22,6 +23,7 @@
             window.location.href = "about:blank";
         }
     }, 500);
+    */
 })();
 
 // ================= 2. CORE MOVIE & TV LOGIC =================
@@ -37,6 +39,11 @@ let trailerUrl = '';
 let currentItemData = null;
 let isEpisodic = (type === 'tv' || type === 'anime');
 let isMovieReleased = true;
+
+// Server Fallback State Variables
+let currentActiveServerKey = '';
+let serverHealthTimeout = null;
+let failedServers = new Set();
 
 // LocalStorage Watch History Tracker
 const storageKey = `movies_j_progress_${id}`;
@@ -201,7 +208,6 @@ function getQualityStatus(releaseDateStr) {
 
     const diffDays = Math.floor((today - relDate) / (1000 * 60 * 60 * 24));
 
-    // 0 hanggang 90 Days (~3 buwan): Kadalasan CAM/Cinema print pa ang kopya sa servers
     if (diffDays >= 0 && diffDays <= 90) {
         return {
             quality: 'CAM / SD',
@@ -211,7 +217,6 @@ function getQualityStatus(releaseDateStr) {
         };
     }
 
-    // 90+ Days: Ligtas na opisyal nang may WEB-DL/HD digital release
     return {
         quality: 'HD',
         isCamLikely: false,
@@ -316,8 +321,6 @@ async function renderCastSection(item) {
     }
 
     castBox.innerHTML = "";
-    
-    // I-filter: Ipapakita lang ang mga artistang may tunay na larawan
     const validCast = castList.filter(c => c.profile_path && c.name && c.name.trim() !== "");
 
     if (validCast.length > 0) {
@@ -404,8 +407,8 @@ function populateServerSelector(item) {
 
             const btn = document.createElement("button");
             btn.className = `srv-btn ${!isEpisodic && !isMovieReleased ? 'disabled-srv' : ''}`;
+            btn.setAttribute('data-server', key);
             
-            // Server button text na may quality indicator
             const qTag = isMovieReleased 
                 ? `<span style="font-size:10px; margin-left:4px; opacity:0.8; color:${qualityStatus.isCamLikely ? '#ffb74d' : '#81c784'};">(${qualityStatus.quality})</span>` 
                 : '';
@@ -413,7 +416,6 @@ function populateServerSelector(item) {
             btn.innerHTML = `${srv.name} ${qTag}`;
             
             btn.onclick = () => {
-                // Kung unreleased pa ang movie
                 if (!isEpisodic && !isMovieReleased) {
                     const status = getReleaseStatus(item.release_date);
                     showThemeModal(
@@ -428,7 +430,6 @@ function populateServerSelector(item) {
                     return;
                 }
 
-                // Kung CAM print pa lang
                 if (qualityStatus.isCamLikely && !sessionStorage.getItem(`cam_notified_${item.id}`)) {
                     showThemeModal(
                         "Video Quality Notice",
@@ -440,6 +441,8 @@ function populateServerSelector(item) {
 
                 document.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
+                
+                failedServers.clear(); // Reset failure tracker on user manual select
                 updatePlayer(key, item, currentSeasonNumber, currentEpisodeNumber);
             };
 
@@ -448,10 +451,12 @@ function populateServerSelector(item) {
     }
 }
 
+// ================= SMART STREAM SERVER AUTO-FALLBACK =================
 function updatePlayer(serverKey, item, season = 1, episode = 1) {
     const player = document.getElementById("movie-player");
     if (!player || typeof getEmbedUrl !== "function") return;
 
+    currentActiveServerKey = serverKey;
     currentSeasonNumber = season;
     currentEpisodeNumber = episode;
 
@@ -466,7 +471,48 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     };
     
     const typeKey = isEpisodic ? "tv" : "movie";
-    player.src = getEmbedUrl(serverKey, mediaData, typeKey, season, episode);
+    const embedUrl = getEmbedUrl(serverKey, mediaData, typeKey, season, episode);
+    player.src = embedUrl;
+
+    // Reset status banner
+    const statusBanner = document.getElementById("server-status-banner");
+    if (statusBanner && failedServers.size === 0) {
+        statusBanner.style.display = 'none';
+    }
+
+    // Auto Server Fallback Monitor
+    clearTimeout(serverHealthTimeout);
+    serverHealthTimeout = setTimeout(() => {
+        // Kapag natapos ang timer nang walang manual intervention at nagka-issue
+        checkAndTriggerAutoFallback(item, season, episode);
+    }, 10000); // 10-second threshold
+}
+
+function checkAndTriggerAutoFallback(item, season, episode) {
+    if (typeof STREAM_SERVERS === 'undefined') return;
+    const availableKeys = Object.keys(STREAM_SERVERS).filter(k => STREAM_SERVERS[k].enabled);
+    
+    failedServers.add(currentActiveServerKey);
+    const nextServerKey = availableKeys.find(k => !failedServers.has(k));
+
+    if (nextServerKey) {
+        console.warn(`[Auto-Fallback] Server "${currentActiveServerKey}" unresponsive. Switching to "${nextServerKey}"...`);
+        
+        const statusBanner = document.getElementById("server-status-banner");
+        const activeNameElem = document.getElementById("active-server-name");
+        if (statusBanner && activeNameElem) {
+            activeNameElem.textContent = `Using: ${STREAM_SERVERS[nextServerKey].name}`;
+            statusBanner.style.display = 'flex';
+        }
+
+        const targetBtn = document.querySelector(`.srv-btn[data-server="${nextServerKey}"]`);
+        if (targetBtn) {
+            document.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
+            targetBtn.classList.add("active");
+        }
+
+        updatePlayer(nextServerKey, item, season, episode);
+    }
 }
 
 // TV Seasons & Episodes Setup
@@ -562,6 +608,8 @@ async function loadEpisodes(seasonNum) {
         const status = getReleaseStatus(ep.air_date);
         const card = document.createElement("div");
         card.className = `ep-card ${ep.episode_number === targetSelectedEpNum && status.isReleased ? "active" : ""} ${!status.isReleased ? "unreleased" : ""}`;
+        card.setAttribute('data-episode', ep.episode_number);
+        
         const thumb = ep.still_path ? `https://image.tmdb.org/t/p/w185${ep.still_path}` : 'images/logo-192.png';
         
         const badgeHtml = !status.isReleased 
@@ -611,7 +659,7 @@ async function loadEpisodes(seasonNum) {
     }
 }
 
-// Next Episode Button Handler (with Custom Modal)
+// Next Episode Button Handler (with Custom Modal & Mobile Support)
 function setupNextEpisodeButton() {
     const nextBtn = document.getElementById('next-ep-btn');
     if (!nextBtn) return;

@@ -1,4 +1,4 @@
-// ✅ js/home.js (SEARCH BAR FIX + DIRECT TMDB FALLBACK + OFFICIAL FIREBASE PRESENCE)
+// ✅ js/home.js (FILTER CHIPS + CONTINUE WATCHING + WATCHLIST SYSTEM + FIREBASE PRESENCE)
 
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev';
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
@@ -31,17 +31,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     // --- 5. Homepage Specific Logic ---
     if (document.getElementById('hero-section')) {
         loadFeaturedMovie();
-        Promise.all([
-            fetchTrending('movie').then(items => displayList(items, 'movies-list')),
-            fetchTrending('tv').then(items => displayList(items, 'tvshows-list')),
-            fetchTrendingAnime().then(items => displayList(items, 'anime-list'))
-        ]).then(() => {
-            setupHomepageCarousels();
-        }).catch(error => console.error("Error loading trending lists:", error));
+        loadContinueWatching();
+        setupFilterChips();
+        setupWatchlistModal();
         
+        loadDefaultHomepageRows();
         handleWelcomeModal();
     }
 });
+
+function loadDefaultHomepageRows() {
+    Promise.all([
+        fetchTrending('movie').then(items => displayList(items, 'movies-list')),
+        fetchTrending('tv').then(items => displayList(items, 'tvshows-list')),
+        fetchTrendingAnime().then(items => displayList(items, 'anime-list'))
+    ]).then(() => {
+        setupHomepageCarousels();
+    }).catch(error => console.error("Error loading trending lists:", error));
+}
 
 function setupUniversalEventListeners() {
     // --- Navbar Scroll ---
@@ -82,7 +89,7 @@ function setupUniversalEventListeners() {
         });
     }
 
-    // --- Search Input Listener (Direct Input Hook) ---
+    // --- Search Input Listener ---
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
         searchInput.addEventListener('input', debounceSearch);
@@ -108,11 +115,11 @@ function setupUniversalEventListeners() {
         supportBtn.onclick = function(event) {
             event.preventDefault();
             supportModal.style.display = "block";
-        }
+        };
         if (closeBtnSupport) {
             closeBtnSupport.onclick = function() {
                 supportModal.style.display = "none";
-            }
+            };
         }
         window.addEventListener("click", function(event) {
             if (event.target === supportModal) {
@@ -180,6 +187,230 @@ function handleWelcomeModal() {
             localStorage.setItem('moviesJVisited', 'true');
         });
     }
+}
+
+// ================= CONTINUE WATCHING =================
+function loadContinueWatching() {
+    const continueRow = document.getElementById('continue-watching-row');
+    const continueList = document.getElementById('continue-watching-list');
+    if (!continueRow || !continueList) return;
+
+    let history = [];
+    try {
+        history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
+    } catch (e) {
+        history = [];
+    }
+
+    if (history.length === 0) {
+        continueRow.style.display = 'none';
+        return;
+    }
+
+    continueRow.style.display = 'block';
+    continueList.innerHTML = '';
+
+    history.slice(0, 10).forEach(item => {
+        if (!item || !item.id) return;
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        const posterSrc = item.poster_path ? `${IMG_URL_W500}${item.poster_path}` : 'images/logo-192.png';
+
+        card.innerHTML = `
+            <img src="${posterSrc}" alt="${item.title || 'Movie'}" loading="lazy">
+            <div class="movie-card-details">
+                <h3>${item.title || 'Untitled'}</h3>
+                <div class="card-meta">
+                    <span>${item.type === 'tv' ? 'TV Series' : 'Movie'}</span>
+                </div>
+                <div class="card-buttons">
+                    <button class="play-btn" title="Resume"><i class="fas fa-play"></i></button>
+                </div>
+            </div>`;
+
+        card.onclick = () => goToMoviePage(item);
+        continueList.appendChild(card);
+    });
+}
+
+// ================= QUICK FILTER CHIPS =================
+function setupFilterChips() {
+    const chips = document.querySelectorAll('#filter-chips .filter-chip');
+    if (!chips.length) return;
+
+    chips.forEach(chip => {
+        chip.addEventListener('click', async () => {
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+
+            const filter = chip.getAttribute('data-filter');
+            applyHomepageFilter(filter);
+        });
+    });
+}
+
+async function applyHomepageFilter(filter) {
+    const moviesRow = document.getElementById('movies-row');
+    const tvRow = document.getElementById('tvshows-row');
+    const animeRow = document.getElementById('anime-row');
+
+    if (filter === 'all') {
+        if (moviesRow) { moviesRow.style.display = 'block'; moviesRow.querySelector('h2').textContent = "Trending Movies"; }
+        if (tvRow) tvRow.style.display = 'block';
+        if (animeRow) animeRow.style.display = 'block';
+        loadDefaultHomepageRows();
+        return;
+    }
+
+    // Hide extra rows when filtered
+    if (tvRow) tvRow.style.display = 'none';
+    if (animeRow) animeRow.style.display = 'none';
+    if (moviesRow) {
+        moviesRow.style.display = 'block';
+        const titleElem = moviesRow.querySelector('h2');
+
+        if (filter === 'action') {
+            if (titleElem) titleElem.textContent = "🔥 Action Movies & Series";
+            const items = await fetchDiscover('with_genres=28');
+            displayList(items, 'movies-list');
+        } else if (filter === 'anime') {
+            if (titleElem) titleElem.textContent = "🐉 Popular Anime";
+            const items = await fetchTrendingAnime();
+            displayList(items, 'movies-list');
+        } else if (filter === 'kdrama') {
+            if (titleElem) titleElem.textContent = "💖 Korean Dramas";
+            const items = await fetchDiscover('with_original_language=ko&sort_by=popularity.desc', 'tv');
+            displayList(items, 'movies-list');
+        } else if (filter === 'top_rated') {
+            if (titleElem) titleElem.textContent = "⭐ Top Rated All Time";
+            const items = await fetchTopRated();
+            displayList(items, 'movies-list');
+        }
+        setupHomepageCarousels();
+    }
+}
+
+async function fetchDiscover(params, type = 'movie') {
+    try {
+        let res = await fetch(`${BASE_URL}/discover/${type}?${params}`);
+        if (!res.ok) res = await fetch(`https://api.themoviedb.org/3/discover/${type}?api_key=${TMDB_DIRECT_KEY}&${params}`);
+        const data = await res.json();
+        return (data.results || []).map(i => ({ ...i, media_type: type }));
+    } catch (e) {
+        return [];
+    }
+}
+
+async function fetchTopRated() {
+    try {
+        let res = await fetch(`${BASE_URL}/movie/top_rated`);
+        if (!res.ok) res = await fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=${TMDB_DIRECT_KEY}`);
+        const data = await res.json();
+        return data.results || [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// ================= WATCHLIST / FAVORITES SYSTEM =================
+function getWatchlist() {
+    try {
+        return JSON.parse(localStorage.getItem('moviesJWatchlist') || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+function toggleWatchlist(item, btnElem) {
+    let list = getWatchlist();
+    const index = list.findIndex(i => i.id === item.id);
+
+    if (index > -1) {
+        list.splice(index, 1);
+        if (btnElem) btnElem.classList.remove('bookmarked');
+    } else {
+        list.unshift({
+            id: item.id,
+            title: item.title || item.name || 'Untitled',
+            poster_path: item.poster_path || '',
+            type: item.media_type || (item.first_air_date ? 'tv' : 'movie'),
+            vote_average: item.vote_average || 0,
+            release_date: item.release_date || item.first_air_date || ''
+        });
+        if (btnElem) btnElem.classList.add('bookmarked');
+    }
+
+    localStorage.setItem('moviesJWatchlist', JSON.stringify(list));
+}
+
+function setupWatchlistModal() {
+    const watchlistBtn = document.getElementById('watchlist-btn');
+    const modal = document.getElementById('watchlist-modal');
+    const closeBtn = document.getElementById('close-watchlist-modal');
+
+    if (!watchlistBtn || !modal) return;
+
+    watchlistBtn.addEventListener('click', () => {
+        renderWatchlistItems();
+        modal.style.display = 'flex';
+        document.body.classList.add('body-no-scroll');
+    });
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.classList.remove('body-no-scroll');
+        });
+    }
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            document.body.classList.remove('body-no-scroll');
+        }
+    });
+}
+
+function renderWatchlistItems() {
+    const container = document.getElementById('watchlist-list');
+    if (!container) return;
+
+    const list = getWatchlist();
+    container.innerHTML = '';
+
+    if (list.length === 0) {
+        container.innerHTML = `<p style="color:#777; text-align:center; grid-column:1/-1; padding:30px;">Your watchlist is currently empty. Click the bookmark icon on any poster to save it here!</p>`;
+        return;
+    }
+
+    list.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'movie-card';
+        const poster = item.poster_path ? `${IMG_URL_W500}${item.poster_path}` : 'images/logo-192.png';
+
+        div.innerHTML = `
+            <img src="${poster}" alt="${item.title}" loading="lazy">
+            <div class="movie-card-details">
+                <h3>${item.title}</h3>
+                <div class="card-buttons">
+                    <button class="play-btn" title="Watch"><i class="fas fa-play"></i></button>
+                    <button class="watchlist-btn bookmarked" title="Remove"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </div>`;
+
+        const play = div.querySelector('.play-btn');
+        const remove = div.querySelector('.watchlist-btn');
+
+        if (play) play.onclick = (e) => { e.stopPropagation(); goToMoviePage(item); };
+        if (remove) remove.onclick = (e) => {
+            e.stopPropagation();
+            toggleWatchlist(item);
+            renderWatchlistItems();
+        };
+
+        div.onclick = () => goToMoviePage(item);
+        container.appendChild(div);
+    });
 }
 
 // --- FEATURED HERO SECTION ---
@@ -288,12 +519,15 @@ function displayList(items, containerId) {
     if (!container || !items) return;
     container.innerHTML = '';
 
+    const watchlist = getWatchlist();
+
     items.forEach(item => {
         if (item && item.id && item.poster_path && (item.title || item.name)) {
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
             const releaseYear = (item.release_date || item.first_air_date || 'N/A').substring(0, 4);
             const voteAvg = (item.vote_average || 0).toFixed(1);
+            const isBookmarked = watchlist.some(w => w.id === item.id);
 
             movieCard.innerHTML = `
                 <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
@@ -305,14 +539,18 @@ function displayList(items, containerId) {
                     </div>
                     <div class="card-buttons">
                         <button class="play-btn" title="Watch Now"><i class="fas fa-play"></i></button>
+                        <button class="watchlist-btn ${isBookmarked ? 'bookmarked' : ''}" title="Add to Watchlist"><i class="fas fa-bookmark"></i></button>
                         <button class="info-btn" title="More Info"><i class="fas fa-info-circle"></i></button>
                     </div>
                 </div>`;
 
             const playBtn = movieCard.querySelector('.play-btn');
             const infoBtn = movieCard.querySelector('.info-btn');
+            const markBtn = movieCard.querySelector('.watchlist-btn');
+
             if (playBtn) playBtn.onclick = (e) => { e.stopPropagation(); goToMoviePage(item); };
             if (infoBtn) infoBtn.onclick = (e) => { e.stopPropagation(); showDetailsModal(item); };
+            if (markBtn) markBtn.onclick = (e) => { e.stopPropagation(); toggleWatchlist(item, markBtn); };
             movieCard.onclick = () => showDetailsModal(item);
 
             container.appendChild(movieCard);
@@ -386,7 +624,7 @@ function closeSearchModal() {
     }
 }
 
-// --- SEARCH FUNCTIONS (EXPOSED TO WINDOW FOR INLINE ONINPUT) ---
+// --- SEARCH FUNCTIONS ---
 let searchTimeout;
 function debounceSearch() {
     clearTimeout(searchTimeout);
@@ -424,7 +662,6 @@ async function searchTMDB() {
             console.warn("Proxy search failed, using direct TMDb API...");
         }
 
-        // Direct TMDb Search Fallback
         if (results.length === 0) {
             const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_DIRECT_KEY}&query=${encodeURIComponent(query)}`);
             const data = await res.json();
@@ -515,7 +752,7 @@ if (typeof window.saveToWatchHistory === 'undefined') {
             if (history.length > 20) history = history.slice(0, 20);
             localStorage.setItem("watchHistory", JSON.stringify(history));
         } catch (e) { console.error("History save error:", e); }
-    }
+    };
 }
 
 // ================= OFFICIAL FIREBASE REALTIME PRESENCE SYSTEM =================

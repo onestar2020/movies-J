@@ -484,7 +484,7 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     clearTimeout(serverHealthTimeout);
     serverHealthTimeout = setTimeout(() => {
         checkAndTriggerAutoFallback(item, season, episode);
-    }, 45000); // 45-second threshold
+    }, //45000); // 45-second threshold
 }
 
 function checkAndTriggerAutoFallback(item, season, episode) {

@@ -452,40 +452,7 @@ function populateServerSelector(item) {
 }
 
 // ================= SMART STREAM SERVER AUTO-FALLBACK =================
-function updatePlayer(serverKey, item, season = 1, episode = 1) {
-    const player = document.getElementById("movie-player");
-    if (!player || typeof getEmbedUrl !== "function") return;
 
-    currentActiveServerKey = serverKey;
-    currentSeasonNumber = season;
-    currentEpisodeNumber = episode;
-
-    if (isEpisodic) {
-        localStorage.setItem(storageKey, JSON.stringify({ season: currentSeasonNumber, episode: currentEpisodeNumber }));
-    }
-
-    const mediaData = { 
-        id: item.id, 
-        tmdb_id: item.id, 
-        imdb_id: item.external_ids?.imdb_id || "" 
-    };
-    
-    const typeKey = isEpisodic ? "tv" : "movie";
-    const embedUrl = getEmbedUrl(serverKey, mediaData, typeKey, season, episode);
-    player.src = embedUrl;
-
-    // Reset status banner
-    const statusBanner = document.getElementById("server-status-banner");
-    if (statusBanner && failedServers.size === 0) {
-        statusBanner.style.display = 'none';
-    }
-
-    // Auto Server Fallback Monitor (45 seconds)
-    clearTimeout(serverHealthTimeout);
-    serverHealthTimeout = setTimeout(() => {
-        checkAndTriggerAutoFallback(item, season, episode);
-    }, //45000); // 45-second threshold
-}
 
 function checkAndTriggerAutoFallback(item, season, episode) {
     if (typeof STREAM_SERVERS === 'undefined') return;

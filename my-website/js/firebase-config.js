@@ -3,17 +3,18 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// I-paste dito ang credentials mula sa Firebase Console Project Settings mo
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyChLRoEGANTOJ-_-1GgKYFFYUGvA5tbFmo",
+  authDomain: "movies-j-stream.firebaseapp.com",
+  databaseURL: "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "movies-j-stream",
+  storageBucket: "movies-j-stream.firebasestorage.app",
+  messagingSenderId: "1066305700283",
+  appId: "1:1066305700283:web:1b94c85927d4b88240789e",
+  measurementId: "G-LMWNJG29K4"
 };
 
-// Initialize services
+// Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();

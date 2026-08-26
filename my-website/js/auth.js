@@ -14,18 +14,19 @@ import {
   getDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// 1. Google Login
+// Google Sign-In
 export async function loginWithGoogle() {
   try {
     const result = await signInWithPopup(auth, provider);
     await syncUserToFirestore(result.user);
     closeAuthModal();
   } catch (error) {
-    alert(error.message);
+    console.error("Google Auth Error:", error);
+    alert("Google Sign-In Error: " + error.message);
   }
 }
 
-// 2. Email/Password Register
+// Email/Password Register
 export async function registerWithEmail(email, password, username) {
   try {
     const result = await createUserWithEmailAndPassword(auth, email, password);
@@ -33,38 +34,48 @@ export async function registerWithEmail(email, password, username) {
     await syncUserToFirestore({ ...result.user, displayName: username });
     closeAuthModal();
   } catch (error) {
-    alert(error.message);
+    console.error("Register Error:", error);
+    alert("Registration Error: " + error.message);
   }
 }
 
-// 3. Email/Password Login
+// Email/Password Login
 export async function loginWithEmail(email, password) {
   try {
     const result = await signInWithEmailAndPassword(auth, email, password);
     await syncUserToFirestore(result.user);
     closeAuthModal();
   } catch (error) {
-    alert(error.message);
+    console.error("Login Error:", error);
+    alert("Login Error: " + error.message);
   }
 }
 
-// 4. Logout
+// Logout
 export async function logoutUser() {
-  await signOut(auth);
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error("Logout Error:", error);
+  }
 }
 
-// Helper: Sync User profile sa Firestore
+// Sync profile data to Firestore
 async function syncUserToFirestore(user) {
-  await setDoc(doc(db, "users", user.uid), {
-    uid: user.uid,
-    displayName: user.displayName || "User",
-    email: user.email,
-    photoURL: user.photoURL || "images/logo-192.png",
-    lastLogin: new Date().toISOString()
-  }, { merge: true });
+  try {
+    await setDoc(doc(db, "users", user.uid), {
+      uid: user.uid,
+      displayName: user.displayName || "User",
+      email: user.email,
+      photoURL: user.photoURL || "images/logo-192.png",
+      lastLogin: new Date().toISOString()
+    }, { merge: true });
+  } catch (err) {
+    console.warn("Firestore sync warning (still logged in):", err);
+  }
 }
 
-// UI & State Observer
+// State Observer
 export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   setupAuthModalHTML();
 
@@ -73,17 +84,22 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
     if (!authContainer) return;
 
     if (user) {
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      const data = userDoc.exists() ? userDoc.data() : user;
+      let userData = user;
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) userData = userDoc.data();
+      } catch (e) {
+        console.warn("Could not fetch remote user doc:", e);
+      }
 
       authContainer.innerHTML = `
         <div id="user-profile-btn" style="display:flex; align-items:center; gap:8px; cursor:pointer;" title="Click to Logout">
-          <img src="${data.photoURL || 'images/logo-192.png'}" style="width:28px; height:28px; border-radius:50%; border:2px solid #e50914;" />
-          <span style="font-size:12px; color:#fff; font-weight:600;">${(data.displayName || "User").split(" ")[0]}</span>
+          <img src="${userData.photoURL || 'images/logo-192.png'}" style="width:28px; height:28px; border-radius:50%; border:2px solid #e50914;" alt="Avatar" />
+          <span style="font-size:12px; color:#fff; font-weight:600;">${(userData.displayName || "User").split(" ")[0]}</span>
         </div>
       `;
       document.getElementById("user-profile-btn").onclick = logoutUser;
-      if (onUserLoggedIn) onUserLoggedIn(data);
+      if (onUserLoggedIn) onUserLoggedIn(userData);
     } else {
       authContainer.innerHTML = `
         <button id="nav-login-btn" style="background:#e50914; color:#fff; border:none; padding:5px 12px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">
@@ -96,7 +112,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   });
 }
 
-// Modal Setup
+// UI Modal with Eye Icon for Password View
 function setupAuthModalHTML() {
   if (document.getElementById("auth-custom-modal")) return;
 
@@ -104,23 +120,26 @@ function setupAuthModalHTML() {
   modal.id = "auth-custom-modal";
   modal.className = "modal";
   modal.innerHTML = `
-    <div class="modal-content" style="max-width: 380px; text-align: left; padding: 25px;">
+    <div class="modal-content" style="max-width: 380px; text-align: left; padding: 25px; position: relative;">
       <span class="close" id="close-auth-modal" style="position:absolute; right:15px; top:10px;">&times;</span>
       <h2 id="auth-modal-title" style="margin-bottom:15px; font-size:1.3rem; color:#fff;">Sign In</h2>
 
       <div id="auth-username-field" style="display:none; margin-bottom:10px;">
         <label style="font-size:12px; color:#aaa;">Username</label>
-        <input type="text" id="auth-username-input" style="width:100%; padding:10px; background:#222; border:1px solid #444; color:#fff; border-radius:5px;" placeholder="Your Display Name">
+        <input type="text" id="auth-username-input" style="width:100%; padding:10px; background:#222; border:1px solid #444; color:#fff; border-radius:5px; margin-top:4px;" placeholder="Your Display Name">
       </div>
 
       <div style="margin-bottom:10px;">
         <label style="font-size:12px; color:#aaa;">Email</label>
-        <input type="email" id="auth-email-input" style="width:100%; padding:10px; background:#222; border:1px solid #444; color:#fff; border-radius:5px;" placeholder="name@email.com">
+        <input type="email" id="auth-email-input" style="width:100%; padding:10px; background:#222; border:1px solid #444; color:#fff; border-radius:5px; margin-top:4px;" placeholder="name@email.com">
       </div>
 
       <div style="margin-bottom:15px;">
         <label style="font-size:12px; color:#aaa;">Password</label>
-        <input type="password" id="auth-password-input" style="width:100%; padding:10px; background:#222; border:1px solid #444; color:#fff; border-radius:5px;" placeholder="••••••••">
+        <div style="position:relative; width:100%; margin-top:4px;">
+          <input type="password" id="auth-password-input" style="width:100%; padding:10px 38px 10px 10px; background:#222; border:1px solid #444; color:#fff; border-radius:5px;" placeholder="••••••••">
+          <i class="fas fa-eye" id="togglePasswordVisibility" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#888; cursor:pointer;" title="Show/Hide Password"></i>
+        </div>
       </div>
 
       <button id="auth-submit-btn" style="width:100%; padding:10px; background:#e50914; border:none; color:#fff; font-weight:600; border-radius:5px; cursor:pointer;">Sign In</button>
@@ -138,7 +157,19 @@ function setupAuthModalHTML() {
   `;
   document.body.appendChild(modal);
 
-  // Event Listeners
+  // Eye Icon Show/Hide Password Handler
+  const pwdInput = document.getElementById("auth-password-input");
+  const pwdToggle = document.getElementById("togglePasswordVisibility");
+
+  pwdToggle.onclick = () => {
+    const isPassword = pwdInput.getAttribute("type") === "password";
+    pwdInput.setAttribute("type", isPassword ? "text" : "password");
+    pwdToggle.classList.toggle("fa-eye", !isPassword);
+    pwdToggle.classList.toggle("fa-eye-slash", isPassword);
+    pwdToggle.style.color = isPassword ? "#e50914" : "#888";
+  };
+
+  // Modal Action Listeners
   document.getElementById("close-auth-modal").onclick = closeAuthModal;
   document.getElementById("auth-google-btn").onclick = loginWithGoogle;
 

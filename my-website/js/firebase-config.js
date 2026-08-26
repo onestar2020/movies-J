@@ -4,7 +4,7 @@ import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyChLRoEGANTOJ-_-1GgKYFFYUGvA5tbFmo",
+  apiKey: "AIzaSyDGVvGPJt95ZHTp9Hm349ouyWemFktbwNY",
   authDomain: "movies-j-stream.firebaseapp.com",
   databaseURL: "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "movies-j-stream",
@@ -19,3 +19,4 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
 export const db = getFirestore(app);
+

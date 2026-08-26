@@ -191,6 +191,9 @@
                     <span id="online-count">1</span> Online
                 </div>
 
+                <!-- Auth / Profile Button Container -->
+                <div id="auth-nav-container"></div>
+
                 <!-- Changelog / System Updates Button -->
                 <button id="changelog-btn" class="changelog-nav-btn" title="What's New / Logs">
                     <i class="fas fa-bell"></i>
@@ -399,5 +402,19 @@
     <script src="js/changelog.js" defer></script>
     <script src="https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js" defer></script>
     <script type="module" src="js/home.js" defer></script> 
+
+    <!-- Firebase Auth Observer Script -->
+    <script type="module">
+        import { initAuthObserver } from "./js/auth.js";
+
+        initAuthObserver(
+            (user) => {
+                console.log("Logged in as:", user.displayName || user.email);
+            },
+            () => {
+                console.log("Guest Mode active.");
+            }
+        );
+    </script>
 </body>
 </html>

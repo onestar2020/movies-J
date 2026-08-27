@@ -4,20 +4,19 @@
  * ==============================================================================
  * 
  * TABLE OF CONTENTS:
- *  1. IMPORTS & CONFIGURATION (API Keys, URL Parameters, State Variables)
- *  2. INITIALIZATION / MAIN ENTRY POINT (DOMContentLoaded)
- *  3. METADATA & BADGES (Title, Overview, Facts Grid, Quality Detection)
- *  4. VIDEO PLAYER & SERVER SELECTOR (Manual Selection - No Auto Switch)
- *  5. TV SHOWS, SEASONS & EPISODES (Dropdown, Episode Cards, Next Button)
- *  6. CAST & RECOMMENDATIONS (Horizontal Cast, Similar Titles)
- *  7. FRANCHISE / COLLECTION SIDEBAR (Story Chronological Order)
- *  8. WATCH HISTORY SYNC (Fix para hindi maging '1812' ang TV Shows)
- *  9. REALTIME COMMENTS & DISCUSSION (Firestore Live Comments Feed)
- * 10. REALTIME ONLINE ACTIVE USERS (Firebase RTDB Presence Tracker)
- * 11. UI MODALS & NOTIFICATIONS (Theme Modals, Badges, Alert Popups)
+ *  1. IMPORTS & CONFIGURATION
+ *  2. INITIALIZATION / MAIN ENTRY POINT
+ *  3. METADATA & BADGES
+ *  4. VIDEO PLAYER & SERVER SELECTOR
+ *  5. TV SHOWS, SEASONS & EPISODES
+ *  6. CAST & RECOMMENDATIONS
+ *  7. FRANCHISE / COLLECTION SIDEBAR
+ *  8. WATCH HISTORY SYNC
+ *  9. REALTIME COMMENTS & DISCUSSION (With Custom Modal Confirmation)
+ * 10. REALTIME ONLINE ACTIVE USERS TRACKER
+ * 11. UI MODALS & NOTIFICATIONS
  * ==============================================================================
  */
-
 
 /* ==============================================================================
    SECTION 1: IMPORTS & CONFIGURATION
@@ -39,19 +38,16 @@ const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev';
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
 const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
-// Kunin ang mga parameters mula sa URL
 const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id') || '1083818';
 let type = (urlParams.get('type') || 'movie').toLowerCase();
 
-// Global State Variables
 let trailerUrl = ''; 
 let currentItemData = null;
 let isEpisodic = (type === 'tv' || type === 'anime');
 let isMovieReleased = true;
 let currentActiveServerKey = 'vidstorm';
 
-// LocalStorage Progress Tracker
 const storageKey = `movies_j_progress_${id}`;
 let savedProgress = null;
 try {
@@ -62,7 +58,6 @@ try {
 
 let currentSeasonNumber = parseInt(urlParams.get('season')) || (savedProgress ? savedProgress.season : 1);
 let currentEpisodeNumber = parseInt(urlParams.get('episode')) || (savedProgress ? savedProgress.episode : 1);
-
 
 /* ==============================================================================
    SECTION 2: INITIALIZATION / MAIN ENTRY POINT
@@ -79,7 +74,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             isMovieReleased = relStatus.isReleased;
         }
 
-        // 1. Header & Titles
         const displayTitle = item.title || item.name || item.original_title || "Now Playing";
         document.title = `${displayTitle} - Stream`;
 
@@ -89,7 +83,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const headerTitleElem = document.getElementById("page-header-title");
         if (headerTitleElem) headerTitleElem.textContent = displayTitle;
 
-        // 2. Overview / Synopsis
         const overviewElem = document.getElementById("media-overview");
         if (overviewElem) {
             overviewElem.textContent = item.overview && item.overview.trim() !== "" 
@@ -97,25 +90,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 : "No overview available.";
         }
 
-        // 3. Metadata Facts
         renderMetadata(item);
-
-        // 4. Player & Server Setup
         setupInitialPlayer(item);
         populateServerSelector(item);
-
-        // 5. Cast List
         renderCastSection(item);
-
-        // 6. Recommendations List
         renderSimilarSection(item);
 
-        // 7. Franchise Collection
         if (item.belongs_to_collection && item.belongs_to_collection.id) {
             handleCollection(item.belongs_to_collection.id);
         }
 
-        // 8. TV Episode List & Navigator
         if (isEpisodic && item.seasons) {
             const tvPanel = document.getElementById("tv-panel");
             if (tvPanel) tvPanel.style.display = "block";
@@ -123,13 +107,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             setupNextEpisodeButton();
         }
 
-        // 9. I-save sa Watch History
         syncToGlobalWatchHistory(item);
-
-        // 10. I-initialize ang Realtime Comments Section
         initCommentsSection(id, type);
 
-        // 11. Mobile Auto-Scroll
         if (window.innerWidth <= 900) {
             setTimeout(() => {
                 const targetPanel = isEpisodic ? document.getElementById("tv-panel") : document.getElementById("server-buttons");
@@ -140,7 +120,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 });
-
 
 /* ==============================================================================
    SECTION 3: METADATA & BADGES
@@ -221,7 +200,6 @@ function renderMetadata(item) {
         `;
     }
 }
-
 
 /* ==============================================================================
    SECTION 4: VIDEO PLAYER & SERVER SELECTOR (MANUAL SELECTION)
@@ -325,7 +303,6 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
 
     syncToGlobalWatchHistory(item);
 }
-
 
 /* ==============================================================================
    SECTION 5: TV SHOWS, SEASONS & EPISODES
@@ -503,7 +480,6 @@ function setupNextEpisodeButton() {
     };
 }
 
-
 /* ==============================================================================
    SECTION 6: CAST & RECOMMENDATIONS
    ============================================================================== */
@@ -574,7 +550,6 @@ async function renderSimilarSection(item) {
     }
 }
 
-
 /* ==============================================================================
    SECTION 7: FRANCHISE / COLLECTION SIDEBAR
    ============================================================================== */
@@ -638,7 +613,6 @@ async function handleCollection(collectionId) {
     }
 }
 
-
 /* ==============================================================================
    SECTION 8: WATCH HISTORY SYNC
    ============================================================================== */
@@ -659,9 +633,8 @@ function syncToGlobalWatchHistory(item) {
     }
 }
 
-
 /* ==============================================================================
-   SECTION 9: REALTIME COMMENTS & DISCUSSION
+   SECTION 9: REALTIME COMMENTS & DISCUSSION (WITH CUSTOM MODAL CONFIRMATION)
    ============================================================================== */
 function formatTimeAgo(timestamp) {
     if (!timestamp) return "Just now";
@@ -685,6 +658,98 @@ function escapeCommentHtml(str) {
     const div = document.createElement('div');
     div.innerText = str;
     return div.innerHTML;
+}
+
+// Custom Comment Delete Modal (NO BROWSER POPUP)
+function showCustomConfirmModal({ title, message, onConfirm }) {
+    let overlay = document.getElementById("custom-confirm-modal");
+    if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = "custom-confirm-modal";
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 999999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        `;
+        overlay.innerHTML = `
+            <div style="background: #181818; border: 1px solid #333; border-radius: 12px; padding: 22px; max-width: 360px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.9);">
+                <div style="width: 45px; height: 45px; background: rgba(229,9,20,0.15); border: 1px solid #e50914; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #e50914; font-size: 20px;">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <h4 id="confirm-modal-title" style="color: #fff; font-size: 1.1rem; margin-bottom: 6px; font-weight: 600;">Delete Comment</h4>
+                <p id="confirm-modal-msg" style="color: #aaa; font-size: 0.85rem; line-height: 1.4; margin-bottom: 20px;">Are you sure you want to permanently remove this comment?</p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="confirm-modal-cancel-btn" style="flex: 1; padding: 9px; background: #282828; border: 1px solid #444; color: #ccc; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">Cancel</button>
+                    <button id="confirm-modal-yes-btn" style="flex: 1; padding: 9px; background: #e50914; border: none; color: #fff; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">Delete</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    document.getElementById("confirm-modal-title").textContent = title || "Delete Comment";
+    document.getElementById("confirm-modal-msg").textContent = message || "Are you sure you want to remove this?";
+
+    const cancelBtn = document.getElementById("confirm-modal-cancel-btn");
+    const yesBtn = document.getElementById("confirm-modal-yes-btn");
+
+    overlay.style.display = "flex";
+
+    cancelBtn.onclick = () => {
+        overlay.style.display = "none";
+    };
+
+    yesBtn.onclick = () => {
+        overlay.style.display = "none";
+        if (onConfirm) onConfirm();
+    };
+}
+
+function showCommentToast(msg, isError = false) {
+    let toast = document.getElementById("comment-toast-notif");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "comment-toast-notif";
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            z-index: 99999;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        `;
+        document.body.appendChild(toast);
+    }
+
+    toast.style.background = isError ? "#3b1111" : "#1c2e1c";
+    toast.style.border = `1px solid ${isError ? "#e50914" : "#4caf50"}`;
+    toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}" style="color:${isError ? '#e50914' : '#4caf50'};"></i> ${msg}`;
+
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(-50%) translateY(0)";
+
+    clearTimeout(toast.hideTimer);
+    toast.hideTimer = setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(-50%) translateY(20px)";
+    }, 3000);
 }
 
 function initCommentsSection(mediaId, mediaType) {
@@ -763,16 +828,23 @@ function initCommentsSection(mediaId, mediaType) {
             commentsFeed.appendChild(card);
         });
 
+        // Attach Custom Modal Confirm Handler
         document.querySelectorAll(".delete-comment-btn").forEach((btn) => {
-            btn.onclick = async () => {
+            btn.onclick = () => {
                 const cId = btn.getAttribute("data-id");
-                if (confirm("Are you sure you want to delete this comment?")) {
-                    try {
-                        await deleteDoc(doc(db, `media_comments_${mediaId}`, cId));
-                    } catch (e) {
-                        console.error("Error deleting comment:", e);
+                showCustomConfirmModal({
+                    title: "Delete Comment",
+                    message: "Are you sure you want to delete this comment?",
+                    onConfirm: async () => {
+                        try {
+                            await deleteDoc(doc(db, `media_comments_${mediaId}`, cId));
+                            showCommentToast("Comment deleted successfully.");
+                        } catch (e) {
+                            console.error("Error deleting comment:", e);
+                            showCommentToast("Failed to delete comment.", true);
+                        }
                     }
-                }
+                });
             };
         });
     });
@@ -804,8 +876,10 @@ function initCommentsSection(mediaId, mediaType) {
                 });
 
                 commentInput.value = "";
+                showCommentToast("Comment posted!");
             } catch (err) {
                 console.error("Failed to post comment:", err);
+                showCommentToast("Error posting comment.", true);
             } finally {
                 postBtn.disabled = false;
                 postBtn.style.opacity = "1";
@@ -813,7 +887,6 @@ function initCommentsSection(mediaId, mediaType) {
         };
     }
 }
-
 
 /* ==============================================================================
    SECTION 10: REALTIME ONLINE ACTIVE USERS TRACKER
@@ -879,7 +952,6 @@ function initCommentsSection(mediaId, mediaType) {
         setOffline();
     });
 })();
-
 
 /* ==============================================================================
    SECTION 11: UI MODALS & NOTIFICATIONS

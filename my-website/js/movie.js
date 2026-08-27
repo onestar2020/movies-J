@@ -1,39 +1,57 @@
-// ✅ js/movie.js (MANUAL SERVER SWITCHING + WATCH HISTORY INTEGRATION + EPISODE & QUALITY SYSTEM)
+/**
+ * ==============================================================================
+ * MOVIES-J - OFFICIAL STREAMING & DETAILS ENGINE (js/movie.js)
+ * ==============================================================================
+ * 
+ * TABLE OF CONTENTS:
+ *  1. IMPORTS & CONFIGURATION (API Keys, URL Parameters, State Variables)
+ *  2. INITIALIZATION / MAIN ENTRY POINT (DOMContentLoaded)
+ *  3. METADATA & BADGES (Title, Overview, Facts Grid, Quality Detection)
+ *  4. VIDEO PLAYER & SERVER SELECTOR (Manual Selection - No Auto Switch)
+ *  5. TV SHOWS, SEASONS & EPISODES (Dropdown, Episode Cards, Next Button)
+ *  6. CAST & RECOMMENDATIONS (Horizontal Cast, Similar Titles)
+ *  7. FRANCHISE / COLLECTION SIDEBAR (Story Chronological Order)
+ *  8. WATCH HISTORY SYNC (Fix para hindi maging '1812' ang TV Shows)
+ *  9. REALTIME COMMENTS & DISCUSSION (Firestore Live Comments Feed)
+ * 10. REALTIME ONLINE ACTIVE USERS (Firebase RTDB Presence Tracker)
+ * 11. UI MODALS & NOTIFICATIONS (Theme Modals, Badges, Alert Popups)
+ * ==============================================================================
+ */
 
-// ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
-(function() {
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    document.addEventListener('keydown', (e) => {
-        if (
-            e.key === 'F12' ||
-            (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) ||
-            (e.ctrlKey && ['U', 'u', 'S', 's'].includes(e.key))
-        ) {
-            e.preventDefault();
-            return false;
-        }
-    });
-})();
+/* ==============================================================================
+   SECTION 1: IMPORTS & CONFIGURATION
+   ============================================================================== */
+import { auth, db } from "./firebase-config.js";
+import { 
+  collection, 
+  addDoc, 
+  query, 
+  orderBy, 
+  onSnapshot, 
+  deleteDoc, 
+  doc, 
+  serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ================= 2. CORE MOVIE & TV LOGIC =================
+// TMDb & Proxy Endpoints
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; 
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
 const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
+// Kunin ang mga parameters mula sa URL
 const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id') || '1083818';
 let type = (urlParams.get('type') || 'movie').toLowerCase();
 
+// Global State Variables
 let trailerUrl = ''; 
 let currentItemData = null;
 let isEpisodic = (type === 'tv' || type === 'anime');
 let isMovieReleased = true;
-
-// Server Selection Tracker
 let currentActiveServerKey = 'vidstorm';
 
-// LocalStorage Watch History Tracker
+// LocalStorage Progress Tracker
 const storageKey = `movies_j_progress_${id}`;
 let savedProgress = null;
 try {
@@ -45,6 +63,10 @@ try {
 let currentSeasonNumber = parseInt(urlParams.get('season')) || (savedProgress ? savedProgress.season : 1);
 let currentEpisodeNumber = parseInt(urlParams.get('episode')) || (savedProgress ? savedProgress.episode : 1);
 
+
+/* ==============================================================================
+   SECTION 2: INITIALIZATION / MAIN ENTRY POINT
+   ============================================================================== */
 document.addEventListener("DOMContentLoaded", async () => {
     if (!id) return;
 
@@ -52,13 +74,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (item) {
         currentItemData = item;
 
-        // Release check para sa Movies
         if (!isEpisodic) {
             const relStatus = getReleaseStatus(item.release_date);
             isMovieReleased = relStatus.isReleased;
         }
 
-        // 1. Title & Header Info
+        // 1. Header & Titles
         const displayTitle = item.title || item.name || item.original_title || "Now Playing";
         document.title = `${displayTitle} - Stream`;
 
@@ -68,7 +89,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const headerTitleElem = document.getElementById("page-header-title");
         if (headerTitleElem) headerTitleElem.textContent = displayTitle;
 
-        // 2. Overview
+        // 2. Overview / Synopsis
         const overviewElem = document.getElementById("media-overview");
         if (overviewElem) {
             overviewElem.textContent = item.overview && item.overview.trim() !== "" 
@@ -76,25 +97,25 @@ document.addEventListener("DOMContentLoaded", async () => {
                 : "No overview available.";
         }
 
-        // 3. Facts & Badges
+        // 3. Metadata Facts
         renderMetadata(item);
 
-        // 4. Player & Server Setup (Trailer First as Trademark)
+        // 4. Player & Server Setup
         setupInitialPlayer(item);
         populateServerSelector(item);
 
-        // 5. Cast Section
+        // 5. Cast List
         renderCastSection(item);
 
-        // 6. Similar / Recommendations
+        // 6. Recommendations List
         renderSimilarSection(item);
 
-        // 7. Organized Collection Sidebar
+        // 7. Franchise Collection
         if (item.belongs_to_collection && item.belongs_to_collection.id) {
             handleCollection(item.belongs_to_collection.id);
         }
 
-        // 8. TV Shows & Episodes
+        // 8. TV Episode List & Navigator
         if (isEpisodic && item.seasons) {
             const tvPanel = document.getElementById("tv-panel");
             if (tvPanel) tvPanel.style.display = "block";
@@ -102,10 +123,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             setupNextEpisodeButton();
         }
 
-        // 9. Sync sa Global Watch History
+        // 9. I-save sa Watch History
         syncToGlobalWatchHistory(item);
 
-        // Mobile Auto-Scroll
+        // 10. I-initialize ang Realtime Comments Section
+        initCommentsSection(id, type);
+
+        // 11. Mobile Auto-Scroll
         if (window.innerWidth <= 900) {
             setTimeout(() => {
                 const targetPanel = isEpisodic ? document.getElementById("tv-panel") : document.getElementById("server-buttons");
@@ -117,106 +141,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// Helper: Custom Theme Modal Notification
-function showThemeModal(title, message, badgeText = '') {
-    let overlay = document.getElementById('custom-theme-modal');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'custom-theme-modal';
-        overlay.className = 'custom-modal-overlay';
-        overlay.innerHTML = `
-            <div class="custom-modal-card">
-                <div class="custom-modal-icon">🎬</div>
-                <h3 class="custom-modal-title" id="custom-modal-title">Notice</h3>
-                <div id="custom-modal-badge-container"></div>
-                <p class="custom-modal-desc" id="custom-modal-desc"></p>
-                <button class="custom-modal-btn" id="custom-modal-close-btn">Understood</button>
-            </div>
-        `;
-        document.body.appendChild(overlay);
 
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) overlay.classList.remove('show');
-        });
-
-        document.getElementById('custom-modal-close-btn').onclick = () => {
-            overlay.classList.remove('show');
-        };
-    }
-
-    document.getElementById('custom-modal-title').textContent = title;
-    document.getElementById('custom-modal-desc').textContent = message;
-
-    const badgeContainer = document.getElementById('custom-modal-badge-container');
-    if (badgeText) {
-        badgeContainer.innerHTML = `<span class="custom-modal-badge">${badgeText}</span>`;
-    } else {
-        badgeContainer.innerHTML = '';
-    }
-
-    overlay.classList.add('show');
-}
-
-// Helper: Release Status Calculator
-function getReleaseStatus(airDateStr) {
-    if (!airDateStr) return { isReleased: true, label: '' };
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const airDate = new Date(airDateStr);
-    airDate.setHours(0, 0, 0, 0);
-
-    const diffTime = airDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    const mediumText = isEpisodic ? "Airing" : "In Theaters";
-
-    if (diffDays <= 0) {
-        return { isReleased: true, label: '' };
-    } else if (diffDays === 1) {
-        return { isReleased: false, label: isEpisodic ? 'Airing Tomorrow' : 'Releasing Tomorrow' };
-    } else if (diffDays <= 30) {
-        return { isReleased: false, label: `${mediumText} in ${diffDays} days` };
-    } else {
-        return { isReleased: false, label: `Release: ${airDateStr}` };
-    }
-}
-
-// Helper: Video Quality Detector
-function getQualityStatus(releaseDateStr) {
-    if (isEpisodic) {
-        return { quality: 'HD', isCamLikely: false, badge: 'HD 1080p' };
-    }
-    if (!releaseDateStr) {
-        return { quality: 'Auto', isCamLikely: false, badge: 'Standard' };
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const relDate = new Date(releaseDateStr);
-    relDate.setHours(0, 0, 0, 0);
-
-    const diffDays = Math.floor((today - relDate) / (1000 * 60 * 60 * 24));
-
-    if (diffDays >= 0 && diffDays <= 90) {
-        return {
-            quality: 'CAM / SD',
-            isCamLikely: true,
-            badge: 'CAM / Telesync',
-            message: 'This movie was recently released in theaters. Stream servers may currently provide a Cinema / CAM copy until the official HD digital release is out.'
-        };
-    }
-
-    return {
-        quality: 'HD',
-        isCamLikely: false,
-        badge: 'HD 1080p',
-        message: ''
-    };
-}
-
-// Fetch Details with Auto Type Correction
+/* ==============================================================================
+   SECTION 3: METADATA & BADGES
+   ============================================================================== */
 async function fetchDetails() {
     let data = null;
     try {
@@ -245,7 +173,6 @@ async function fetchDetails() {
     return data;
 }
 
-// Facts Grid & Badges
 function renderMetadata(item) {
     const runtime = item.runtime || (item.episode_run_time && item.episode_run_time[0]);
     const runtimeElem = document.getElementById("fact-runtime");
@@ -287,7 +214,7 @@ function renderMetadata(item) {
             : '';
 
         badgeBox.innerHTML = `
-            <span class="meta-badge">${(isEpisodic ? 'TV' : 'MOVIE')}</span>
+            <span class="meta-badge">${(isEpisodic ? 'TV SERIES' : 'MOVIE')}</span>
             ${statusBadge}
             ${qualityBadge}
             ${(item.genres || []).map(g => `<span class="meta-badge">${g.name}</span>`).join("")}
@@ -295,76 +222,10 @@ function renderMetadata(item) {
     }
 }
 
-// Cast Cards
-async function renderCastSection(item) {
-    const castBox = document.getElementById("cast-container");
-    if (!castBox) return;
 
-    let castList = item.credits && item.credits.cast ? item.credits.cast : [];
-    if (castList.length === 0) {
-        try {
-            const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${TMDB_DIRECT_KEY}`);
-            const data = await res.json();
-            castList = data.cast || [];
-        } catch (e) {
-            castList = [];
-        }
-    }
-
-    castBox.innerHTML = "";
-    const validCast = castList.filter(c => c.profile_path && c.name && c.name.trim() !== "");
-
-    if (validCast.length > 0) {
-        validCast.slice(0, 15).forEach(c => {
-            const pic = `https://image.tmdb.org/t/p/w185${c.profile_path}`;
-            castBox.innerHTML += `
-                <div class="cast-card">
-                    <img src="${pic}" alt="${c.name}" loading="lazy">
-                    <div class="cast-name">
-                        <h6>${c.name}</h6>
-                        <span>${c.character || ""}</span>
-                    </div>
-                </div>
-            `;
-        });
-    } else {
-        castBox.innerHTML = "<p style='color:#777; padding:10px;'>No cast info available.</p>";
-    }
-}
-
-// Recommendations
-async function renderSimilarSection(item) {
-    const recBox = document.getElementById("rec-container");
-    if (!recBox) return;
-
-    let similarList = item.similar && item.similar.results ? item.similar.results : [];
-    if (similarList.length === 0) {
-        try {
-            const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/similar?api_key=${TMDB_DIRECT_KEY}`);
-            const data = await res.json();
-            similarList = data.results || [];
-        } catch (e) {
-            similarList = [];
-        }
-    }
-
-    recBox.innerHTML = "";
-    if (similarList.length > 0) {
-        similarList.slice(0, 12).forEach(sim => {
-            const poster = sim.poster_path ? `https://image.tmdb.org/t/p/w300${sim.poster_path}` : 'images/logo-192.png';
-            recBox.innerHTML += `
-                <a class="rec-card" href="movie.html?id=${sim.id}&type=${type}">
-                    <img src="${poster}" alt="${sim.title || sim.name}" loading="lazy">
-                    <h6>${sim.title || sim.name}</h6>
-                </a>
-            `;
-        });
-    } else {
-        recBox.innerHTML = "<p style='color:#777;'>No recommendations available.</p>";
-    }
-}
-
-// Setup Player (Loads Trailer First by Default)
+/* ==============================================================================
+   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (MANUAL SELECTION)
+   ============================================================================== */
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
     if (!player) return;
@@ -381,7 +242,6 @@ function setupInitialPlayer(item) {
     trailerUrl = '';
 }
 
-// Server Buttons Setup
 function populateServerSelector(item) {
     const grid = document.getElementById("server-buttons");
     if (!grid) return;
@@ -411,7 +271,7 @@ function populateServerSelector(item) {
                     const status = getReleaseStatus(item.release_date);
                     showThemeModal(
                         "Not Yet Released",
-                        "This movie is currently unreleased in official channels. We are playing the official trailer for you in the meantime.",
+                        "This title is not yet released on official streaming servers. We are playing the official trailer in the meantime.",
                         status.label
                     );
                     if (trailerUrl) {
@@ -441,7 +301,6 @@ function populateServerSelector(item) {
     }
 }
 
-// Manual Player Update
 function updatePlayer(serverKey, item, season = 1, episode = 1) {
     const player = document.getElementById("movie-player");
     if (!player || typeof getEmbedUrl !== "function") return;
@@ -467,25 +326,10 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     syncToGlobalWatchHistory(item);
 }
 
-// Save to Watch History
-function syncToGlobalWatchHistory(item) {
-    if (!item || !item.id) return;
-    const mediaType = isEpisodic ? "tv" : "movie";
-    
-    if (typeof window.saveToWatchHistory === "function") {
-        window.saveToWatchHistory({
-            id: item.id,
-            title: item.title || item.name || "Untitled",
-            type: mediaType,
-            poster_path: item.poster_path || "",
-            backdrop_path: item.backdrop_path || "",
-            season: currentSeasonNumber,
-            episode: currentEpisodeNumber
-        });
-    }
-}
 
-// TV Seasons & Episodes Setup
+/* ==============================================================================
+   SECTION 5: TV SHOWS, SEASONS & EPISODES
+   ============================================================================== */
 function handleTVShow(item) {
     const drop = document.getElementById("season-dropdown");
     const btn = document.getElementById("season-toggle");
@@ -529,7 +373,6 @@ function handleTVShow(item) {
     loadEpisodes(currentSeasonNumber);
 }
 
-// TV Episode Loader
 async function loadEpisodes(seasonNum) {
     const list = document.getElementById("episode-list");
     if (!list) return;
@@ -629,7 +472,6 @@ async function loadEpisodes(seasonNum) {
     }
 }
 
-// Next Episode Button Handler
 function setupNextEpisodeButton() {
     const nextBtn = document.getElementById('next-ep-btn');
     if (!nextBtn) return;
@@ -661,7 +503,81 @@ function setupNextEpisodeButton() {
     };
 }
 
-// Collection Sidebar
+
+/* ==============================================================================
+   SECTION 6: CAST & RECOMMENDATIONS
+   ============================================================================== */
+async function renderCastSection(item) {
+    const castBox = document.getElementById("cast-container");
+    if (!castBox) return;
+
+    let castList = item.credits && item.credits.cast ? item.credits.cast : [];
+    if (castList.length === 0) {
+        try {
+            const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${TMDB_DIRECT_KEY}`);
+            const data = await res.json();
+            castList = data.cast || [];
+        } catch (e) {
+            castList = [];
+        }
+    }
+
+    castBox.innerHTML = "";
+    const validCast = castList.filter(c => c.profile_path && c.name && c.name.trim() !== "");
+
+    if (validCast.length > 0) {
+        validCast.slice(0, 15).forEach(c => {
+            const pic = `https://image.tmdb.org/t/p/w185${c.profile_path}`;
+            castBox.innerHTML += `
+                <div class="cast-card">
+                    <img src="${pic}" alt="${c.name}" loading="lazy">
+                    <div class="cast-name">
+                        <h6>${c.name}</h6>
+                        <span>${c.character || ""}</span>
+                    </div>
+                </div>
+            `;
+        });
+    } else {
+        castBox.innerHTML = "<p style='color:#777; padding:10px;'>No cast info available.</p>";
+    }
+}
+
+async function renderSimilarSection(item) {
+    const recBox = document.getElementById("rec-container");
+    if (!recBox) return;
+
+    let similarList = item.similar && item.similar.results ? item.similar.results : [];
+    if (similarList.length === 0) {
+        try {
+            const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/similar?api_key=${TMDB_DIRECT_KEY}`);
+            const data = await res.json();
+            similarList = data.results || [];
+        } catch (e) {
+            similarList = [];
+        }
+    }
+
+    recBox.innerHTML = "";
+    if (similarList.length > 0) {
+        similarList.slice(0, 12).forEach(sim => {
+            const poster = sim.poster_path ? `https://image.tmdb.org/t/p/w300${sim.poster_path}` : 'images/logo-192.png';
+            recBox.innerHTML += `
+                <a class="rec-card" href="movie.html?id=${sim.id}&type=${type}">
+                    <img src="${poster}" alt="${sim.title || sim.name}" loading="lazy">
+                    <h6>${sim.title || sim.name}</h6>
+                </a>
+            `;
+        });
+    } else {
+        recBox.innerHTML = "<p style='color:#777;'>No recommendations available.</p>";
+    }
+}
+
+
+/* ==============================================================================
+   SECTION 7: FRANCHISE / COLLECTION SIDEBAR
+   ============================================================================== */
 async function handleCollection(collectionId) {
     const container = document.getElementById('collection-sidebar');
     const listContainer = document.getElementById('collection-list-container');
@@ -722,7 +638,186 @@ async function handleCollection(collectionId) {
     }
 }
 
-// ================= 4. ACTIVE USERS TRACKER (FIREBASE) =================
+
+/* ==============================================================================
+   SECTION 8: WATCH HISTORY SYNC
+   ============================================================================== */
+function syncToGlobalWatchHistory(item) {
+    if (!item || !item.id) return;
+    const mediaType = isEpisodic ? "tv" : "movie";
+    
+    if (typeof window.saveToWatchHistory === "function") {
+        window.saveToWatchHistory({
+            id: item.id,
+            title: item.title || item.name || "Untitled",
+            type: mediaType,
+            poster_path: item.poster_path || "",
+            backdrop_path: item.backdrop_path || "",
+            season: currentSeasonNumber,
+            episode: currentEpisodeNumber
+        });
+    }
+}
+
+
+/* ==============================================================================
+   SECTION 9: REALTIME COMMENTS & DISCUSSION
+   ============================================================================== */
+function formatTimeAgo(timestamp) {
+    if (!timestamp) return "Just now";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const seconds = Math.floor((new Date() - date) / 1000);
+
+    let interval = Math.floor(seconds / 31536000);
+    if (interval >= 1) return interval + "y ago";
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) return interval + "mo ago";
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) return interval + "d ago";
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) return interval + "h ago";
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) return interval + "m ago";
+    return "Just now";
+}
+
+function escapeCommentHtml(str) {
+    const div = document.createElement('div');
+    div.innerText = str;
+    return div.innerHTML;
+}
+
+function initCommentsSection(mediaId, mediaType) {
+    const commentInput = document.getElementById("comment-textarea");
+    const postBtn = document.getElementById("post-comment-btn");
+    const commentsFeed = document.getElementById("comments-feed-list");
+    const countElem = document.getElementById("comments-count");
+    const userAvatar = document.getElementById("current-user-comment-avatar");
+
+    if (!commentsFeed) return;
+
+    auth.onAuthStateChanged((user) => {
+        if (user && userAvatar) {
+            userAvatar.src = user.photoURL || "images/logo-192.png";
+        } else if (userAvatar) {
+            userAvatar.src = "images/logo-192.png";
+        }
+    });
+
+    const commentsRef = collection(db, `media_comments_${mediaId}`);
+    const q = query(commentsRef, orderBy("createdAt", "desc"));
+
+    onSnapshot(q, (snapshot) => {
+        const count = snapshot.size;
+        if (countElem) countElem.textContent = count;
+
+        if (count === 0) {
+            commentsFeed.innerHTML = `
+                <div style="text-align: center; padding: 30px; color: #777; background: #181818; border-radius: 8px; border: 1px dashed #333;">
+                    <i class="far fa-comment-dots" style="font-size: 26px; margin-bottom: 8px; color: #555;"></i>
+                    <p style="margin: 0; font-size: 13px;">No comments yet. Be the first to share your thoughts!</p>
+                </div>
+            `;
+            return;
+        }
+
+        commentsFeed.innerHTML = "";
+        const currentUser = auth.currentUser;
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const commentId = docSnap.id;
+            const isOwner = currentUser && currentUser.uid === data.userId;
+
+            const card = document.createElement("div");
+            card.style.cssText = `
+                background: #181818;
+                border: 1px solid #282828;
+                border-radius: 8px;
+                padding: 14px;
+                display: flex;
+                gap: 12px;
+                position: relative;
+            `;
+
+            card.innerHTML = `
+                <img src="${data.userPhoto || 'images/logo-192.png'}" alt="Avatar" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" />
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-weight: 600; font-size: 13px; color: #fff;">${data.userName || 'User'}</span>
+                            <span style="font-size: 11px; color: #777;">${formatTimeAgo(data.createdAt)}</span>
+                        </div>
+                        ${isOwner ? `
+                            <button class="delete-comment-btn" data-id="${commentId}" style="background: transparent; border: none; color: #777; cursor: pointer; font-size: 12px;" title="Delete comment">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                    <p style="color: #ddd; font-size: 13px; line-height: 1.5; margin: 0; word-break: break-word;">
+                        ${escapeCommentHtml(data.text)}
+                    </p>
+                </div>
+            `;
+
+            commentsFeed.appendChild(card);
+        });
+
+        document.querySelectorAll(".delete-comment-btn").forEach((btn) => {
+            btn.onclick = async () => {
+                const cId = btn.getAttribute("data-id");
+                if (confirm("Are you sure you want to delete this comment?")) {
+                    try {
+                        await deleteDoc(doc(db, `media_comments_${mediaId}`, cId));
+                    } catch (e) {
+                        console.error("Error deleting comment:", e);
+                    }
+                }
+            };
+        });
+    });
+
+    if (postBtn && commentInput) {
+        postBtn.onclick = async () => {
+            const user = auth.currentUser;
+            if (!user) {
+                const navLoginBtn = document.getElementById("nav-login-btn");
+                if (navLoginBtn) navLoginBtn.click();
+                return;
+            }
+
+            const text = commentInput.value.trim();
+            if (!text) return;
+
+            postBtn.disabled = true;
+            postBtn.style.opacity = "0.5";
+
+            try {
+                await addDoc(collection(db, `media_comments_${mediaId}`), {
+                    mediaId: String(mediaId),
+                    mediaType: mediaType || "movie",
+                    userId: user.uid,
+                    userName: user.displayName || "User",
+                    userPhoto: user.photoURL || "images/logo-192.png",
+                    text: text,
+                    createdAt: serverTimestamp()
+                });
+
+                commentInput.value = "";
+            } catch (err) {
+                console.error("Failed to post comment:", err);
+            } finally {
+                postBtn.disabled = false;
+                postBtn.style.opacity = "1";
+            }
+        };
+    }
+}
+
+
+/* ==============================================================================
+   SECTION 10: REALTIME ONLINE ACTIVE USERS TRACKER
+   ============================================================================== */
 (function initActiveUsersTracker() {
     const DATABASE_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
     
@@ -784,3 +879,102 @@ async function handleCollection(collectionId) {
         setOffline();
     });
 })();
+
+
+/* ==============================================================================
+   SECTION 11: UI MODALS & NOTIFICATIONS
+   ============================================================================== */
+function showThemeModal(title, message, badgeText = '') {
+    let overlay = document.getElementById('custom-theme-modal');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'custom-theme-modal';
+        overlay.className = 'custom-modal-overlay';
+        overlay.innerHTML = `
+            <div class="custom-modal-card">
+                <div class="custom-modal-icon">🎬</div>
+                <h3 class="custom-modal-title" id="custom-modal-title">Notice</h3>
+                <div id="custom-modal-badge-container"></div>
+                <p class="custom-modal-desc" id="custom-modal-desc"></p>
+                <button class="custom-modal-btn" id="custom-modal-close-btn">Understood</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.classList.remove('show');
+        });
+
+        document.getElementById('custom-modal-close-btn').onclick = () => {
+            overlay.classList.remove('show');
+        };
+    }
+
+    document.getElementById('custom-modal-title').textContent = title;
+    document.getElementById('custom-modal-desc').textContent = message;
+
+    const badgeContainer = document.getElementById('custom-modal-badge-container');
+    if (badgeText) {
+        badgeContainer.innerHTML = `<span class="custom-modal-badge">${badgeText}</span>`;
+    } else {
+        badgeContainer.innerHTML = '';
+    }
+
+    overlay.classList.add('show');
+}
+
+function getReleaseStatus(airDateStr) {
+    if (!airDateStr) return { isReleased: true, label: '' };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const airDate = new Date(airDateStr);
+    airDate.setHours(0, 0, 0, 0);
+
+    const diffTime = airDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const mediumText = isEpisodic ? "Airing" : "In Theaters";
+
+    if (diffDays <= 0) {
+        return { isReleased: true, label: '' };
+    } else if (diffDays === 1) {
+        return { isReleased: false, label: isEpisodic ? 'Airing Tomorrow' : 'Releasing Tomorrow' };
+    } else if (diffDays <= 30) {
+        return { isReleased: false, label: `${mediumText} in ${diffDays} days` };
+    } else {
+        return { isReleased: false, label: `Release: ${airDateStr}` };
+    }
+}
+
+function getQualityStatus(releaseDateStr) {
+    if (isEpisodic) {
+        return { quality: 'HD', isCamLikely: false, badge: 'HD 1080p' };
+    }
+    if (!releaseDateStr) {
+        return { quality: 'Auto', isCamLikely: false, badge: 'Standard' };
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const relDate = new Date(releaseDateStr);
+    relDate.setHours(0, 0, 0, 0);
+
+    const diffDays = Math.floor((today - relDate) / (1000 * 60 * 60 * 24));
+
+    if (diffDays >= 0 && diffDays <= 90) {
+        return {
+            quality: 'CAM / SD',
+            isCamLikely: true,
+            badge: 'CAM / Telesync',
+            message: 'This movie was recently released in theaters. Stream servers may currently provide a Cinema / CAM copy until the official HD digital release is out.'
+        };
+    }
+
+    return {
+        quality: 'HD',
+        isCamLikely: false,
+        badge: 'HD 1080p',
+        message: ''
+    };
+}

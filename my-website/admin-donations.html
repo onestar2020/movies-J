@@ -1,41 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- ==============================================================================
-       SECTION 1: META TAGS & HEAD CONFIGURATION
-       ============================================================================== -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Movies-J - Master Admin Control Panel</title>
   <link rel="icon" href="images/logo-192.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
-  <!-- ==============================================================================
-       SECTION 2: ADMIN DASHBOARD STYLES
-       ============================================================================== -->
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     :root { --primary: #e50914; --bg: #0d0d0d; --card: #181818; --border: #282828; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); color: #fff; font-family: 'Poppins', sans-serif; padding: 20px; }
 
-    .admin-wrapper { max-width: 900px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .admin-wrapper { max-width: 950px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
     .header-bar { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; }
     .admin-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #4caf50; font-weight: 600; }
 
     /* Navigation Tabs */
-    .tab-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-    .tab-btn { padding: 10px; background: #222; border: 1px solid #333; color: #aaa; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
+    .tab-nav { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 20px; }
+    .tab-btn { padding: 10px 6px; background: #222; border: 1px solid #333; color: #aaa; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; white-space: nowrap; }
     .tab-btn:hover { background: #2a2a2a; color: #fff; }
     .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-    /* Input Forms */
+    /* Forms */
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
     .form-group input, .form-group textarea { width: 100%; padding: 10px; background: #222; border: 1px solid #333; border-radius: 6px; color: #fff; font-size: 13px; font-family: inherit; outline: none; }
     .submit-btn { width: 100%; padding: 11px; background: var(--primary); border: none; border-radius: 6px; color: #fff; font-weight: 600; cursor: pointer; margin-top: 5px; }
 
-    /* Card Item Lists */
+    /* Lists */
     .feed-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; max-height: 480px; overflow-y: auto; }
     .feed-card { background: #202020; border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .del-btn { background: rgba(229,9,20,0.15); border: 1px solid #e50914; color: #e50914; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
@@ -43,59 +37,58 @@
     .ban-btn { background: rgba(255,152,0,0.15); border: 1px solid #ff9800; color: #ff9800; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
     .ban-btn:hover { background: #ff9800; color: #fff; }
 
-    /* Auth Gate Overlay */
     #auth-gate { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0d0d0d; z-index: 99999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 15px; text-align: center; }
   </style>
 </head>
 <body>
 
-  <!-- ==============================================================================
-       SECTION 3: ADMIN AUTH GATEWAY (ONLY FOR YOUR GMAIL)
-       ============================================================================== -->
+  <!-- ================= AUTH GATEWAY ================= -->
   <div id="auth-gate">
     <i class="fas fa-shield-alt" style="font-size: 40px; color: var(--primary);"></i>
     <h3 style="color:#fff; font-size: 1.2rem;">Movies-J Admin Security Gate</h3>
-   
+    <p style="color: #777; font-size: 13px;">Checking administrative privileges for <strong style="color:#fff;">jayjovendinawanao2020@gmail.com</strong>...</p>
     <button id="admin-login-btn" style="padding: 10px 22px; background: var(--primary); border: none; border-radius: 6px; color: #fff; font-weight: 600; cursor: pointer; margin-top: 10px;">Sign in with Google Admin</button>
   </div>
 
-  <!-- ==============================================================================
-       SECTION 4: MAIN ADMIN DASHBOARD CONTAINER
-       ============================================================================== -->
+  <!-- ================= ADMIN DASHBOARD ================= -->
   <div class="admin-wrapper" id="admin-panel-ui" style="display:none;">
     
-    <!-- Top Header Bar -->
     <div class="header-bar">
       <div>
         <h2 style="font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
           <i class="fas fa-clapperboard" style="color: var(--primary);"></i> Movies-J Control Panel
         </h2>
-        <span class="admin-badge"><i class="fas fa-circle-check"></i> Authenticated: jayjovendinawanao2020@gmail.com</span>
+        <span class="admin-badge"><i class="fas fa-circle-check"></i> Admin: jayjovendinawanao2020@gmail.com</span>
       </div>
       <a href="index.html" style="color: #888; text-decoration: none; font-size: 13px;"><i class="fas fa-arrow-left"></i> Exit to Website</a>
     </div>
 
     <!-- Navigation Tabs -->
     <div class="tab-nav">
-      <button class="tab-btn active" data-tab="tab-messages"><i class="fas fa-envelope"></i> User Messages (<span id="msg-count">0</span>)</button>
-      <button class="tab-btn" data-tab="tab-users"><i class="fas fa-users"></i> Manage Users</button>
+      <button class="tab-btn active" data-tab="tab-messages"><i class="fas fa-envelope"></i> Messages (<span id="msg-count">0</span>)</button>
+      <button class="tab-btn" data-tab="tab-comments"><i class="fas fa-comments"></i> Comments (<span id="comment-count">0</span>)</button>
+      <button class="tab-btn" data-tab="tab-users"><i class="fas fa-users"></i> Users</button>
       <button class="tab-btn" data-tab="tab-donors"><i class="fas fa-heart"></i> Supporters</button>
-      <button class="tab-btn" data-tab="tab-logs"><i class="fas fa-rocket"></i> System Updates</button>
+      <button class="tab-btn" data-tab="tab-logs"><i class="fas fa-rocket"></i> Updates</button>
     </div>
 
-    <!-- ==============================================================================
-         TAB 1: USER MESSAGES & MOVIE REQUESTS
-         ============================================================================== -->
+    <!-- TAB 1: MESSAGES -->
     <div id="tab-messages" class="tab-content">
-      <h4 style="font-size: 13px; color: #aaa; margin-bottom: 10px;">User Inquiries & Requests Feed:</h4>
+      <h4 style="font-size: 13px; color: #aaa; margin-bottom: 10px;">User Inquiries & Requests:</h4>
       <div id="admin-messages-list" class="feed-list">
         <p style="color:#777; text-align:center; padding:20px;">Loading messages...</p>
       </div>
     </div>
 
-    <!-- ==============================================================================
-         TAB 2: USER MANAGEMENT (DISABLE / BAN / DELETE ACCOUNT RECORD)
-         ============================================================================== -->
+    <!-- TAB 2: MANAGE ALL COMMENTS -->
+    <div id="tab-comments" class="tab-content" style="display:none;">
+      <h4 style="font-size: 13px; color: #aaa; margin-bottom: 10px;">Live User Discussions (All Titles):</h4>
+      <div id="admin-comments-list" class="feed-list">
+        <p style="color:#777; text-align:center; padding:20px;">Loading comments...</p>
+      </div>
+    </div>
+
+    <!-- TAB 3: MANAGE USERS -->
     <div id="tab-users" class="tab-content" style="display:none;">
       <h4 style="font-size: 13px; color: #aaa; margin-bottom: 10px;">Registered Site Users:</h4>
       <div id="admin-users-list" class="feed-list">
@@ -103,9 +96,7 @@
       </div>
     </div>
 
-    <!-- ==============================================================================
-         TAB 3: SUPPORTERS & DONATIONS
-         ============================================================================== -->
+    <!-- TAB 4: SUPPORTERS -->
     <div id="tab-donors" class="tab-content" style="display:none;">
       <form id="add-donor-form" style="background:#202020; border:1px solid var(--border); padding:16px; border-radius:8px;">
         <div class="form-group">
@@ -122,22 +113,19 @@
         </div>
         <button type="submit" class="submit-btn">+ Add Supporter</button>
       </form>
-
       <div id="admin-donors-list" class="feed-list"></div>
     </div>
 
-    <!-- ==============================================================================
-         TAB 4: SYSTEM UPDATES & CHANGELOG
-         ============================================================================== -->
+    <!-- TAB 5: SYSTEM UPDATES -->
     <div id="tab-logs" class="tab-content" style="display:none;">
       <form id="add-log-form" style="background:#202020; border:1px solid var(--border); padding:16px; border-radius:8px;">
         <div class="form-group">
           <label>Update Version</label>
-          <input type="text" id="log-ver" placeholder="e.g. v2.4" required>
+          <input type="text" id="log-ver" placeholder="e.g. v2.5" required>
         </div>
         <div class="form-group">
           <label>Summary / Title</label>
-          <input type="text" id="log-title" placeholder="e.g. Added User Comments & Contact Admin" required>
+          <input type="text" id="log-title" placeholder="e.g. Added Admin Moderation Dashboard" required>
         </div>
         <div class="form-group">
           <label>Change Notes</label>
@@ -145,38 +133,29 @@
         </div>
         <button type="submit" class="submit-btn">+ Post Update Log</button>
       </form>
-
       <div id="admin-logs-list" class="feed-list"></div>
     </div>
 
   </div>
 
-  <!-- ==============================================================================
-       SECTION 5: ADMIN LOGIC & FIRESTORE REALTIME SYNC SCRIPT
-       ============================================================================== -->
+  <!-- ================= SCRIPTS ================= -->
   <script type="module">
     import { auth, provider, db } from "./js/firebase-config.js";
     import { signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { 
       collection, 
       addDoc, 
-      getDocs, 
       deleteDoc, 
       updateDoc, 
       doc, 
-      query, 
-      orderBy, 
       onSnapshot, 
       serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Dedicated Master Admin Email
     const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
-
     const authGate = document.getElementById("auth-gate");
     const adminPanel = document.getElementById("admin-panel-ui");
 
-    // Check Auth on Page Load
     onAuthStateChanged(auth, (user) => {
       if (user && user.email === DEDICATED_ADMIN_EMAIL) {
         authGate.style.display = "none";
@@ -192,7 +171,7 @@
       try {
         const res = await signInWithPopup(auth, provider);
         if (res.user.email !== DEDICATED_ADMIN_EMAIL) {
-          alert("Access Denied: You are not authorized to view the admin dashboard.");
+          alert("Access Denied: You are not authorized.");
           window.location.href = "access-denied.html";
         }
       } catch (e) {
@@ -200,12 +179,10 @@
       }
     };
 
-    // Tab Navigation Logic
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.onclick = () => {
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
         document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
-        
         btn.classList.add("active");
         const target = document.getElementById(btn.getAttribute("data-tab"));
         if (target) target.style.display = "block";
@@ -213,16 +190,17 @@
     });
 
     function initDashboardData() {
-      // 1. Listen to Messages from Users
+      // 1. Messages Listener
       const msgList = document.getElementById("admin-messages-list");
-      const msgQuery = query(collection(db, "admin_messages"), orderBy("createdAt", "desc"));
-
-      onSnapshot(msgQuery, (snap) => {
+      onSnapshot(collection(db, "admin_messages"), (snap) => {
         document.getElementById("msg-count").textContent = snap.size;
         msgList.innerHTML = snap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No messages found.</p>` : "";
 
-        snap.forEach(docSnap => {
-          const m = docSnap.data();
+        const msgs = [];
+        snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
+        msgs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        msgs.forEach(m => {
           const card = document.createElement("div");
           card.className = "feed-card";
           card.innerHTML = `
@@ -234,17 +212,53 @@
               <p style="font-size:12px; color:#aaa; margin-bottom:6px;">Email: <a href="mailto:${m.senderEmail}" style="color:#4caf50;">${m.senderEmail}</a></p>
               <p style="font-size:13px; color:#ddd; background:#181818; padding:8px; border-radius:4px; border:1px solid #333;">${m.message}</p>
             </div>
-            <button class="del-btn" data-id="${docSnap.id}" title="Delete Message"><i class="fas fa-trash-alt"></i></button>
+            <button class="del-btn" data-id="${m.id}" title="Delete Message"><i class="fas fa-trash-alt"></i></button>
           `;
           msgList.appendChild(card);
         });
 
         msgList.querySelectorAll(".del-btn").forEach(btn => {
-          btn.onclick = () => deleteDoc(doc(db, "admin_messages", btn.getAttribute("data-id")));
+          btn.onclick = () => {
+            if (confirm("Delete this message?")) deleteDoc(doc(db, "admin_messages", btn.getAttribute("data-id")));
+          };
         });
       });
 
-      // 2. Manage Users (Disable / Delete User Profile)
+      // 2. Comments Moderation Listener (ALL MOVIES & SHOWS)
+      const commList = document.getElementById("admin-comments-list");
+      onSnapshot(collection(db, "comments"), (snap) => {
+        document.getElementById("comment-count").textContent = snap.size;
+        commList.innerHTML = snap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No comments found across all titles.</p>` : "";
+
+        const comms = [];
+        snap.forEach(d => comms.push({ id: d.id, ...d.data() }));
+        comms.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        comms.forEach(c => {
+          const card = document.createElement("div");
+          card.className = "feed-card";
+          card.innerHTML = `
+            <div style="flex:1;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <img src="${c.userPhoto || 'images/logo-192.png'}" style="width:24px; height:24px; border-radius:50%;">
+                <strong style="color:#fff; font-size:13px;">${c.userName || 'User'}</strong>
+                <span style="font-size:11px; background:#333; color:#ffb74d; padding:2px 6px; border-radius:4px;">${c.mediaTitle || 'Movie #' + c.mediaId}</span>
+              </div>
+              <p style="font-size:13px; color:#ddd; background:#181818; padding:8px; border-radius:4px; border:1px solid #333; margin-top:5px;">${c.text}</p>
+            </div>
+            <button class="del-btn" data-id="${c.id}" title="Delete Comment as Admin"><i class="fas fa-trash-alt"></i> Delete</button>
+          `;
+          commList.appendChild(card);
+        });
+
+        commList.querySelectorAll(".del-btn").forEach(btn => {
+          btn.onclick = () => {
+            if (confirm("Permanently delete this user comment?")) deleteDoc(doc(db, "comments", btn.getAttribute("data-id")));
+          };
+        });
+      });
+
+      // 3. User Management
       const userList = document.getElementById("admin-users-list");
       onSnapshot(collection(db, "users"), (snap) => {
         userList.innerHTML = snap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No registered users.</p>` : "";
@@ -281,11 +295,13 @@
         });
 
         userList.querySelectorAll(".del-btn").forEach(btn => {
-          btn.onclick = () => deleteDoc(doc(db, "users", btn.getAttribute("data-id")));
+          btn.onclick = () => {
+            if (confirm("Delete this user profile record?")) deleteDoc(doc(db, "users", btn.getAttribute("data-id")));
+          };
         });
       });
 
-      // 3. Supporters / Donors Sync
+      // 4. Supporters
       const donorList = document.getElementById("admin-donors-list");
       onSnapshot(collection(db, "donors"), (snap) => {
         donorList.innerHTML = "";

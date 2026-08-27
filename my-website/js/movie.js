@@ -12,7 +12,7 @@
  *  6. CAST & RECOMMENDATIONS
  *  7. FRANCHISE / COLLECTION SIDEBAR
  *  8. WATCH HISTORY SYNC
- *  9. REALTIME COMMENTS & DISCUSSION (With Custom Modal Confirmation)
+ *  9. REALTIME COMMENTS & DISCUSSION (CENTRALIZED COLLECTION)
  * 10. REALTIME ONLINE ACTIVE USERS TRACKER
  * 11. UI MODALS & NOTIFICATIONS
  * ==============================================================================
@@ -25,15 +25,13 @@ import { auth, db } from "./firebase-config.js";
 import { 
   collection, 
   addDoc, 
-  query, 
-  orderBy, 
   onSnapshot, 
   deleteDoc, 
   doc, 
   serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// TMDb & Proxy Endpoints
+// TMDb & Cloudflare Proxy Endpoints
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; 
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
 const IMG_URL = 'https://image.tmdb.org/t/p/w500';
@@ -108,7 +106,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         syncToGlobalWatchHistory(item);
-        initCommentsSection(id, type);
+        initCommentsSection(id, type, displayTitle);
 
         if (window.innerWidth <= 900) {
             setTimeout(() => {
@@ -401,7 +399,6 @@ async function loadEpisodes(seasonNum) {
         card.setAttribute('data-episode', ep.episode_number);
         
         const thumb = ep.still_path ? `https://image.tmdb.org/t/p/w185${ep.still_path}` : 'images/logo-192.png';
-        
         const badgeHtml = !status.isReleased 
             ? `<span class="ep-badge-unreleased" style="position:absolute; top:6px; left:6px; background:#e50914; color:#fff; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; z-index:2; text-shadow:0 1px 2px rgba(0,0,0,0.8);">${status.label}</span>` 
             : '';
@@ -433,49 +430,28 @@ async function loadEpisodes(seasonNum) {
 
             const activeBtn = document.querySelector(".srv-btn.active") || document.querySelector(".srv-btn");
             if (activeBtn) activeBtn.click();
-
-            if (window.innerWidth <= 900) {
-                const target = document.getElementById("tv-panel");
-                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
         };
 
         list.appendChild(card);
     });
-
-    const activeEp = list.querySelector('.ep-card.active');
-    if (activeEp) {
-        activeEp.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
 }
 
 function setupNextEpisodeButton() {
     const nextBtn = document.getElementById('next-ep-btn');
     if (!nextBtn) return;
 
-    nextBtn.onmouseover = () => { nextBtn.style.background = "#e50914"; nextBtn.style.borderColor = "#e50914"; };
-    nextBtn.onmouseout = () => { nextBtn.style.background = "#222"; nextBtn.style.borderColor = "#444"; };
-
     nextBtn.onclick = () => {
         const currentActive = document.querySelector('.ep-card.active');
         if (currentActive && currentActive.nextElementSibling && currentActive.nextElementSibling.classList.contains('ep-card')) {
             const nextCard = currentActive.nextElementSibling;
             if (nextCard.classList.contains('unreleased')) {
-                showThemeModal(
-                    "Upcoming Episode",
-                    "The next episode is not yet available for streaming.",
-                    "Unreleased"
-                );
+                showThemeModal("Upcoming Episode", "The next episode is not yet available for streaming.", "Unreleased");
                 return;
             }
             nextCard.click();
             nextCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
         } else {
-            showThemeModal(
-                "End of Season",
-                "You have reached the end of this season! Please choose the next season from the selector.",
-                "Season Completed"
-            );
+            showThemeModal("End of Season", "You have reached the end of this season!", "Season Completed");
         }
     };
 }
@@ -487,17 +463,7 @@ async function renderCastSection(item) {
     const castBox = document.getElementById("cast-container");
     if (!castBox) return;
 
-    let castList = item.credits && item.credits.cast ? item.credits.cast : [];
-    if (castList.length === 0) {
-        try {
-            const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${TMDB_DIRECT_KEY}`);
-            const data = await res.json();
-            castList = data.cast || [];
-        } catch (e) {
-            castList = [];
-        }
-    }
-
+    let castList = item.credits?.cast || [];
     castBox.innerHTML = "";
     const validCast = castList.filter(c => c.profile_path && c.name && c.name.trim() !== "");
 
@@ -523,17 +489,7 @@ async function renderSimilarSection(item) {
     const recBox = document.getElementById("rec-container");
     if (!recBox) return;
 
-    let similarList = item.similar && item.similar.results ? item.similar.results : [];
-    if (similarList.length === 0) {
-        try {
-            const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/similar?api_key=${TMDB_DIRECT_KEY}`);
-            const data = await res.json();
-            similarList = data.results || [];
-        } catch (e) {
-            similarList = [];
-        }
-    }
-
+    let similarList = item.similar?.results || [];
     recBox.innerHTML = "";
     if (similarList.length > 0) {
         similarList.slice(0, 12).forEach(sim => {
@@ -560,8 +516,7 @@ async function handleCollection(collectionId) {
     
     try {
         let res = await fetch(`${BASE_URL}/collection/${collectionId}`);
-        let data = null;
-        if (res.ok) data = await res.json();
+        let data = res.ok ? await res.json() : null;
         
         if (!data || !data.parts) {
             res = await fetch(`https://api.themoviedb.org/3/collection/${collectionId}?api_key=${TMDB_DIRECT_KEY}`);
@@ -603,10 +558,6 @@ async function handleCollection(collectionId) {
 
                 listContainer.appendChild(card);
             });
-
-            if (listContainer.children.length === 0) {
-                container.style.display = 'none';
-            }
         }
     } catch (error) {
         console.error("Failed to load collection:", error);
@@ -634,11 +585,11 @@ function syncToGlobalWatchHistory(item) {
 }
 
 /* ==============================================================================
-   SECTION 9: REALTIME COMMENTS & DISCUSSION (WITH CUSTOM MODAL CONFIRMATION)
+   SECTION 9: REALTIME COMMENTS & DISCUSSION (CENTRALIZED & INDEX-FREE)
    ============================================================================== */
 function formatTimeAgo(timestamp) {
     if (!timestamp) return "Just now";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const date = typeof timestamp === "number" ? new Date(timestamp) : (timestamp.toDate ? timestamp.toDate() : new Date());
     const seconds = Math.floor((new Date() - date) / 1000);
 
     let interval = Math.floor(seconds / 31536000);
@@ -656,11 +607,10 @@ function formatTimeAgo(timestamp) {
 
 function escapeCommentHtml(str) {
     const div = document.createElement('div');
-    div.innerText = str;
+    div.innerText = str || "";
     return div.innerHTML;
 }
 
-// Custom Comment Delete Modal (NO BROWSER POPUP)
 function showCustomConfirmModal({ title, message, onConfirm }) {
     let overlay = document.getElementById("custom-confirm-modal");
     if (!overlay) {
@@ -669,7 +619,7 @@ function showCustomConfirmModal({ title, message, onConfirm }) {
         overlay.style.cssText = `
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             backdrop-filter: blur(5px);
             z-index: 999999;
             display: none;
@@ -701,10 +651,7 @@ function showCustomConfirmModal({ title, message, onConfirm }) {
 
     overlay.style.display = "flex";
 
-    cancelBtn.onclick = () => {
-        overlay.style.display = "none";
-    };
-
+    cancelBtn.onclick = () => { overlay.style.display = "none"; };
     yesBtn.onclick = () => {
         overlay.style.display = "none";
         if (onConfirm) onConfirm();
@@ -752,12 +699,7 @@ function showCommentToast(msg, isError = false) {
     }, 3000);
 }
 
-function initCommentsSection(mediaId, mediaType) {
-    
-const currentUser = auth.currentUser;
-const isAdmin = currentUser && currentUser.email === "jayjovendinawanao2020@gmail.com";
-const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
-
+function initCommentsSection(mediaId, mediaType, mediaTitle) {
     const commentInput = document.getElementById("comment-textarea");
     const postBtn = document.getElementById("post-comment-btn");
     const commentsFeed = document.getElementById("comments-feed-list");
@@ -774,14 +716,22 @@ const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
         }
     });
 
-    const commentsRef = collection(db, `media_comments_${mediaId}`);
-    const q = query(commentsRef, orderBy("createdAt", "desc"));
+    const commentsRef = collection(db, "comments");
 
-    onSnapshot(q, (snapshot) => {
-        const count = snapshot.size;
-        if (countElem) countElem.textContent = count;
+    onSnapshot(commentsRef, (snapshot) => {
+        const allComments = [];
+        snapshot.forEach(d => {
+            const data = d.data();
+            if (String(data.mediaId) === String(mediaId)) {
+                allComments.push({ id: d.id, ...data });
+            }
+        });
 
-        if (count === 0) {
+        allComments.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        if (countElem) countElem.textContent = allComments.length;
+
+        if (allComments.length === 0) {
             commentsFeed.innerHTML = `
                 <div style="text-align: center; padding: 30px; color: #777; background: #181818; border-radius: 8px; border: 1px dashed #333;">
                     <i class="far fa-comment-dots" style="font-size: 26px; margin-bottom: 8px; color: #555;"></i>
@@ -793,12 +743,10 @@ const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
 
         commentsFeed.innerHTML = "";
         const currentUser = auth.currentUser;
+        const isAdmin = currentUser && currentUser.email === "jayjovendinawanao2020@gmail.com";
 
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const commentId = docSnap.id;
-            const isOwner = currentUser && currentUser.uid === data.userId;
-
+        allComments.forEach((data) => {
+            const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
             const card = document.createElement("div");
             card.style.cssText = `
                 background: #181818;
@@ -816,10 +764,10 @@ const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <span style="font-weight: 600; font-size: 13px; color: #fff;">${data.userName || 'User'}</span>
-                            <span style="font-size: 11px; color: #777;">${formatTimeAgo(data.createdAt)}</span>
+                            <span style="font-size: 11px; color: #777;">${formatTimeAgo(data.timestamp || data.createdAt)}</span>
                         </div>
                         ${isOwner ? `
-                            <button class="delete-comment-btn" data-id="${commentId}" style="background: transparent; border: none; color: #777; cursor: pointer; font-size: 12px;" title="Delete comment">
+                            <button class="delete-comment-btn" data-id="${data.id}" style="background: transparent; border: none; color: #777; cursor: pointer; font-size: 12px;" title="${isAdmin ? 'Admin Delete' : 'Delete'}">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         ` : ''}
@@ -833,7 +781,6 @@ const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
             commentsFeed.appendChild(card);
         });
 
-        // Attach Custom Modal Confirm Handler
         document.querySelectorAll(".delete-comment-btn").forEach((btn) => {
             btn.onclick = () => {
                 const cId = btn.getAttribute("data-id");
@@ -842,8 +789,8 @@ const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
                     message: "Are you sure you want to delete this comment?",
                     onConfirm: async () => {
                         try {
-                            await deleteDoc(doc(db, `media_comments_${mediaId}`, cId));
-                            showCommentToast("Comment deleted successfully.");
+                            await deleteDoc(doc(db, "comments", cId));
+                            showCommentToast("Comment deleted.");
                         } catch (e) {
                             console.error("Error deleting comment:", e);
                             showCommentToast("Failed to delete comment.", true);
@@ -852,6 +799,9 @@ const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
                 });
             };
         });
+    }, (error) => {
+        console.error("Comments listener error:", error);
+        commentsFeed.innerHTML = `<p style="color:#777; text-align:center;">Failed to load comments.</p>`;
     });
 
     if (postBtn && commentInput) {
@@ -870,13 +820,15 @@ const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
             postBtn.style.opacity = "0.5";
 
             try {
-                await addDoc(collection(db, `media_comments_${mediaId}`), {
+                await addDoc(collection(db, "comments"), {
                     mediaId: String(mediaId),
+                    mediaTitle: mediaTitle || "Untitled",
                     mediaType: mediaType || "movie",
                     userId: user.uid,
                     userName: user.displayName || "User",
                     userPhoto: user.photoURL || "images/logo-192.png",
                     text: text,
+                    timestamp: Date.now(),
                     createdAt: serverTimestamp()
                 });
 

@@ -39,7 +39,6 @@ export const STREAM_SERVERS = {
   vidstorm: {
     id: "vidstorm",
     name: "Server 1",
-    quality: "HD",
     type: "iframe",
     enabled: true,
     movie: (imdbId) => `${_d('aHR0cHM6Ly92aWRzdG9ybS5ydS9tb3ZpZS8=')}${imdbId}?autoplay=true&theme=7c5cff&download=false&lang=en`,
@@ -50,7 +49,6 @@ export const STREAM_SERVERS = {
   cinesrc: {
     id: "cinesrc",
     name: "Server 2",
-    quality: "HD",
     type: "iframe",
     enabled: true,
     movie: (tmdbId) => `${_d('aHR0cHM6Ly9jaW5lc3JjLnN0L2VtYmVkL21vdmllLw==')}${tmdbId}`,
@@ -61,7 +59,6 @@ export const STREAM_SERVERS = {
   twoembed: {
     id: "twoembed",
     name: "Server 3",
-    quality: "HD",
     type: "iframe",
     enabled: true,
     movie: (tmdbId) => `${_d('aHR0cHM6Ly93d3cuMmVtYmVkLnNraW4vZW1iZWQv')}${tmdbId}`,
@@ -72,7 +69,6 @@ export const STREAM_SERVERS = {
   zxcstream: {
     id: "zxcstream",
     name: "Server 4",
-    quality: "HD",
     type: "iframe",
     enabled: true,
     movie: (tmdbId) => `${_d('aHR0cHM6Ly9wbGF5ZXIuenhjc3RyZWFtLnh5ei9wbGF5ZXIvbW92aWUv')}${tmdbId}`,
@@ -80,25 +76,12 @@ export const STREAM_SERVERS = {
   }
 };
 
-// State para sa napiling server
-let currentActiveServerKey = "vidstorm";
-
-export function getActiveServerKey() {
-  return currentActiveServerKey;
-}
-
-export function setActiveServerKey(key) {
-  if (STREAM_SERVERS[key] && STREAM_SERVERS[key].enabled) {
-    currentActiveServerKey = key;
-  }
-}
-
 // ================= 3. GET EMBED URL DISPATCHER =================
 export function getEmbedUrl(serverKey, mediaData, type = "movie", s = 1, e = 1) {
-  const server = STREAM_SERVERS[serverKey] || STREAM_SERVERS[currentActiveServerKey];
+  const server = STREAM_SERVERS[serverKey] || STREAM_SERVERS.vidstorm;
   if (!server) return "";
 
-  const isTv = (type === "tv" || mediaData.type === "tv" || mediaData.number_of_seasons || mediaData.seasons);
+  const isTv = (type === "tv" || mediaData.type === "tv" || mediaData.seasons || mediaData.number_of_seasons);
 
   if (server.id === "vidstorm") {
     const id = mediaData.imdb_id || (typeof mediaData === "string" ? mediaData : mediaData.id);
@@ -107,34 +90,4 @@ export function getEmbedUrl(serverKey, mediaData, type = "movie", s = 1, e = 1) 
 
   const id = mediaData.tmdb_id || mediaData.id || mediaData;
   return isTv ? server.tv(id, s, e) : server.movie(id);
-}
-
-// ================= 4. RENDER SERVER SELECTOR BUTTONS =================
-export function renderServerButtons(containerId, mediaData, type, season, episode, onServerSelect) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  container.innerHTML = "";
-  
-  Object.keys(STREAM_SERVERS).forEach(key => {
-    const server = STREAM_SERVERS[key];
-    if (!server.enabled) return;
-
-    const btn = document.createElement("button");
-    btn.className = `server-btn ${key === currentActiveServerKey ? "active" : ""}`;
-    btn.innerHTML = `${server.name} <span class="quality-badge">${server.quality}</span>`;
-    
-    btn.onclick = () => {
-      setActiveServerKey(key);
-      document.querySelectorAll(".server-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      
-      const newUrl = getEmbedUrl(key, mediaData, type, season, episode);
-      if (onServerSelect) {
-        onServerSelect(newUrl, key);
-      }
-    };
-    
-    container.appendChild(btn);
-  });
 }

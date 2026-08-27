@@ -397,14 +397,13 @@
         });
       });
 
-      // 3. User Management
+     // 3. User Management (Remove User)
       const userList = document.getElementById("admin-users-list");
       onSnapshot(collection(db, "users"), (snap) => {
         userList.innerHTML = snap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No registered users.</p>` : "";
 
         snap.forEach(docSnap => {
           const u = docSnap.data();
-          const isBanned = u.isBanned === true;
           const card = document.createElement("div");
           card.className = "feed-card";
           card.innerHTML = `
@@ -416,28 +415,18 @@
                   <p style="font-size:11px; color:#888;">${u.email || 'No email'}</p>
                 </div>
               </div>
-              <div style="display:flex; gap:8px;">
-                <button class="ban-btn" data-id="${docSnap.id}" data-banned="${isBanned}">
-                  ${isBanned ? '<i class="fas fa-user-check"></i> Unban' : '<i class="fas fa-user-slash"></i> Ban'}
-                </button>
-                <button class="del-btn" data-id="${docSnap.id}"><i class="fas fa-trash-alt"></i></button>
-              </div>
+              <button class="del-btn" data-id="${docSnap.id}" title="Remove User Access"><i class="fas fa-trash-alt"></i> Remove</button>
             </div>
           `;
           userList.appendChild(card);
         });
 
-        userList.querySelectorAll(".ban-btn").forEach(btn => {
-          btn.onclick = async () => {
-            const uId = btn.getAttribute("data-id");
-            const currentlyBanned = btn.getAttribute("data-banned") === "true";
-            await updateDoc(doc(db, "users", uId), { isBanned: !currentlyBanned });
-          };
-        });
-
         userList.querySelectorAll(".del-btn").forEach(btn => {
-          btn.onclick = () => {
-            if (confirm("Delete user record?")) deleteDoc(doc(db, "users", btn.getAttribute("data-id")));
+          btn.onclick = async () => {
+            if (confirm("Permanently remove this user? Their account access will be revoked immediately.")) {
+              const uId = btn.getAttribute("data-id");
+              await deleteDoc(doc(db, "users", uId));
+            }
           };
         });
       });

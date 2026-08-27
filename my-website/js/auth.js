@@ -1,4 +1,4 @@
-// js/auth.js (With 10MB High-Res Attachment Compressor & In-App Replies)
+// js/auth.js (With Realtime Banned/Deleted User Auto-Logout Enforcement)
 import { auth, provider, db } from "./firebase-config.js";
 import { 
   signInWithPopup, 
@@ -88,6 +88,16 @@ function getCleanErrorMessage(errCode) {
 export async function loginWithGoogle() {
   try {
     const result = await signInWithPopup(auth, provider);
+    const userRef = doc(db, "users", result.user.uid);
+    const snap = await getDoc(userRef);
+    
+    // Check kung banned o deleted
+    if (snap.exists() && snap.data().isBanned === true) {
+      await signOut(auth);
+      showAuthToast("Your account has been suspended by the administrator.", "error");
+      return;
+    }
+
     await syncUserToFirestore(result.user);
     closeAuthModal();
     showAuthToast(`Welcome back, ${result.user.displayName || "User"}!`, "success");
@@ -102,9 +112,10 @@ export async function registerWithEmail(email, password, username) {
   try {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(result.user, { displayName: username });
+    await syncUserToFirestore(result.user);
     await sendEmailVerification(result.user);
     await signOut(auth);
-    showAuthToast(`Verification link sent to ${email}! Check inbox/spam.`, "success");
+    showAuthToast(`Verification link sent! Please check your Inbox or Spam folder.`, "success");
     switchAuthMode("login");
   } catch (error) {
     console.error("Register Error:", error);
@@ -121,6 +132,17 @@ export async function loginWithEmail(email, password) {
       showAuthToast("Please verify your email first! Check your inbox or spam.", "error");
       return;
     }
+
+    const userRef = doc(db, "users", result.user.uid);
+    const snap = await getDoc(userRef);
+
+    // Check kung banned o deleted
+    if (snap.exists() && snap.data().isBanned === true) {
+      await signOut(auth);
+      showAuthToast("Your account has been suspended by the administrator.", "error");
+      return;
+    }
+
     await syncUserToFirestore(result.user);
     closeAuthModal();
     showAuthToast(`Welcome back, ${result.user.displayName || "User"}!`, "success");
@@ -155,11 +177,16 @@ export async function logoutUser() {
 
 async function syncUserToFirestore(user) {
   try {
-    await setDoc(doc(db, "users", user.uid), {
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
+    const existing = snap.exists() ? snap.data() : {};
+
+    await setDoc(userRef, {
       uid: user.uid,
-      displayName: user.displayName || "User",
+      displayName: user.displayName || existing.displayName || "User",
       email: user.email,
-      photoURL: user.photoURL || "images/logo-192.png",
+      photoURL: user.photoURL || existing.photoURL || "images/logo-192.png",
+      isBanned: existing.isBanned || false,
       lastLogin: new Date().toISOString()
     }, { merge: true });
   } catch (err) {
@@ -167,7 +194,6 @@ async function syncUserToFirestore(user) {
   }
 }
 
-// Client-Side Image Compressor (Handles up to 10MB)
 function compressImage(file, maxWidth = 1280, quality = 0.75) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -199,98 +225,114 @@ function compressImage(file, maxWidth = 1280, quality = 0.75) {
   });
 }
 
-// Observer + Dropdown Profile UI
+// Observer + Dropdown Profile UI + Real-time Ban Check
 export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   setupAuthModalHTML();
   setupContactAdminModalHTML();
 
   onAuthStateChanged(auth, async (user) => {
     const authContainer = document.getElementById("auth-nav-container");
-    if (!authContainer) return;
 
     if (user && (user.emailVerified || user.providerData.some(p => p.providerId === 'google.com'))) {
-      let userData = user;
-      try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) userData = userDoc.data();
-      } catch (e) {
-        console.warn("Could not fetch remote user doc:", e);
-      }
+      const userRef = doc(db, "users", user.uid);
 
-      const isAdmin = user.email === "jayjovendinawanao2020@gmail.com";
-
-      authContainer.innerHTML = `
-        <div style="position:relative; display:inline-block;">
-          <div id="user-profile-btn" style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 8px; border-radius:6px; background:#1c1c1c; border:1px solid #333;">
-            <img src="${userData.photoURL || 'images/logo-192.png'}" style="width:26px; height:26px; border-radius:50%; object-fit:cover;" alt="Avatar" />
-            <span style="font-size:12px; color:#fff; font-weight:600;">${(userData.displayName || "User").split(" ")[0]}</span>
-            <i class="fas fa-chevron-down" style="font-size:10px; color:#888;"></i>
-          </div>
-          
-          <div id="user-dropdown-menu" style="display:none; position:absolute; right:0; top:38px; background:#181818; border:1px solid #333; border-radius:8px; width:190px; z-index:99999; box-shadow:0 8px 24px rgba(0,0,0,0.9); overflow:hidden;">
-            <div style="padding:10px; border-bottom:1px solid #282828;">
-              <p style="font-size:11px; color:#aaa; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${userData.email || 'User'}</p>
-            </div>
-            
-            ${isAdmin ? `
-              <a href="admin-donations.html" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#4caf50; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; text-decoration:none; border-bottom:1px solid #282828;">
-                <i class="fas fa-gauge-high"></i> Admin Control Panel
-              </a>
-            ` : ''}
-
-            <!-- SUPPORT & INQUIRIES OPTION -->
-            <button id="menu-contact-admin-btn" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#fff; font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:1px solid #282828;">
-              <i class="fas fa-envelope-open-text" style="color:#e50914;"></i> Support & Inquiries
-            </button>
-
-            <button id="menu-logout-btn" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#e50914; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
-              <i class="fas fa-sign-out-alt"></i> Logout
-            </button>
-          </div>
-        </div>
-      `;
-
-      const profileBtn = document.getElementById("user-profile-btn");
-      const dropMenu = document.getElementById("user-dropdown-menu");
-      const logoutBtn = document.getElementById("menu-logout-btn");
-      const contactAdminBtn = document.getElementById("menu-contact-admin-btn");
-
-      profileBtn.onclick = (e) => {
-        e.stopPropagation();
-        dropMenu.style.display = dropMenu.style.display === "block" ? "none" : "block";
-      };
-
-      document.addEventListener("click", () => {
-        if (dropMenu) dropMenu.style.display = "none";
+      // Realtime listener sa status ng user (Auto Kick / Auto Logout kung Banned)
+      onSnapshot(userRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.isBanned === true) {
+            signOut(auth);
+            alert("Your account has been deactivated or banned by the administrator.");
+            window.location.reload();
+            return;
+          }
+        }
       });
 
-      if (contactAdminBtn) {
-        contactAdminBtn.onclick = (e) => {
-          e.stopPropagation();
-          dropMenu.style.display = "none";
-          openContactAdminModal(userData);
-        };
+      let userData = user;
+      try {
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists()) userData = userDoc.data();
+      } catch (e) {
+        console.warn("Could not fetch user doc:", e);
       }
 
-      logoutBtn.onclick = logoutUser;
+      if (authContainer) {
+        const isAdmin = user.email === "jayjovendinawanao2020@gmail.com";
+
+        authContainer.innerHTML = `
+          <div style="position:relative; display:inline-block;">
+            <div id="user-profile-btn" style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 8px; border-radius:6px; background:#1c1c1c; border:1px solid #333;">
+              <img src="${userData.photoURL || 'images/logo-192.png'}" style="width:26px; height:26px; border-radius:50%; object-fit:cover;" alt="Avatar" />
+              <span style="font-size:12px; color:#fff; font-weight:600;">${(userData.displayName || "User").split(" ")[0]}</span>
+              <i class="fas fa-chevron-down" style="font-size:10px; color:#888;"></i>
+            </div>
+            
+            <div id="user-dropdown-menu" style="display:none; position:absolute; right:0; top:38px; background:#181818; border:1px solid #333; border-radius:8px; width:190px; z-index:99999; box-shadow:0 8px 24px rgba(0,0,0,0.9); overflow:hidden;">
+              <div style="padding:10px; border-bottom:1px solid #282828;">
+                <p style="font-size:11px; color:#aaa; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${userData.email || 'User'}</p>
+              </div>
+              
+              ${isAdmin ? `
+                <a href="admin-donations.html" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#4caf50; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; text-decoration:none; border-bottom:1px solid #282828;">
+                  <i class="fas fa-gauge-high"></i> Admin Control Panel
+                </a>
+              ` : ''}
+
+              <button id="menu-contact-admin-btn" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#fff; font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:1px solid #282828;">
+                <i class="fas fa-envelope-open-text" style="color:#e50914;"></i> Support & Inquiries
+              </button>
+
+              <button id="menu-logout-btn" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#e50914; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </button>
+            </div>
+          </div>
+        `;
+
+        const profileBtn = document.getElementById("user-profile-btn");
+        const dropMenu = document.getElementById("user-dropdown-menu");
+        const logoutBtn = document.getElementById("menu-logout-btn");
+        const contactAdminBtn = document.getElementById("menu-contact-admin-btn");
+
+        profileBtn.onclick = (e) => {
+          e.stopPropagation();
+          dropMenu.style.display = dropMenu.style.display === "block" ? "none" : "block";
+        };
+
+        document.addEventListener("click", () => {
+          if (dropMenu) dropMenu.style.display = "none";
+        });
+
+        if (contactAdminBtn) {
+          contactAdminBtn.onclick = (e) => {
+            e.stopPropagation();
+            dropMenu.style.display = "none";
+            openContactAdminModal(userData);
+          };
+        }
+
+        logoutBtn.onclick = logoutUser;
+      }
 
       if (onUserLoggedIn) onUserLoggedIn(userData);
     } else {
-      authContainer.innerHTML = `
-        <button id="nav-login-btn" style="background:#e50914; color:#fff; border:none; padding:6px 14px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">
-          Sign In
-        </button>
-      `;
-      document.getElementById("nav-login-btn").onclick = () => {
-        switchAuthMode("login");
-        openAuthModal();
-      };
+      if (authContainer) {
+        authContainer.innerHTML = `
+          <button id="nav-login-btn" style="background:#e50914; color:#fff; border:none; padding:6px 14px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">
+            Sign In
+          </button>
+        `;
+        document.getElementById("nav-login-btn").onclick = () => {
+          switchAuthMode("login");
+          openAuthModal();
+        };
+      }
       if (onGuestMode) onGuestMode();
     }
   });
 }
 
-// ================= CONTACT ADMIN MODAL WITH 10MB ATTACHMENT =================
 function setupContactAdminModalHTML() {
   if (document.getElementById("contact-admin-modal")) return;
 
@@ -302,17 +344,16 @@ function setupContactAdminModalHTML() {
     <div style="background:#181818; border:1px solid #333; border-radius:12px; max-width:480px; width:100%; padding:22px; position:relative; box-shadow:0 10px 30px rgba(0,0,0,0.9); max-height:90vh; overflow-y:auto;">
       <span id="close-contact-modal" style="position:absolute; right:15px; top:12px; font-size:20px; color:#888; cursor:pointer;">&times;</span>
       
-      <!-- Clean Tab Switcher -->
       <div style="display:flex; gap:16px; margin-bottom:18px; border-bottom:1px solid #282828; padding-bottom:10px;">
         <button id="tab-btn-send-msg" style="background:transparent; border:none; color:#e50914; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px; border-bottom:2px solid #e50914;">New Inquiry</button>
         <button id="tab-btn-view-replies" style="background:transparent; border:none; color:#888; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px;">My Inquiries & Replies</button>
       </div>
 
-      <!-- VIEW 1: SEND MESSAGE -->
       <div id="contact-view-send">
         <div style="margin-bottom:10px;">
           <label style="font-size:11px; color:#aaa;">Category</label>
           <select id="modal-msg-category" style="width:100%; padding:9px; background:#222; border:1px solid #444; color:#fff; border-radius:6px; font-size:13px; margin-top:4px; outline:none;">
+            <option value="Donation Proof / Verification">💖 Donation Proof / Verification</option>
             <option value="Movie / Show Request">🎬 Movie / TV Show Request</option>
             <option value="Broken Server / Stream Issue">⚠️ Broken Server / Stream Issue</option>
             <option value="Account / Login Concern">🔑 Account / Login Concern</option>
@@ -322,13 +363,13 @@ function setupContactAdminModalHTML() {
 
         <div style="margin-bottom:10px;">
           <label style="font-size:11px; color:#aaa;">Your Message</label>
-          <textarea id="modal-msg-text" rows="3" style="width:100%; padding:9px; background:#222; border:1px solid #444; color:#fff; border-radius:6px; font-size:13px; margin-top:4px; resize:vertical; outline:none; font-family:inherit;" placeholder="Describe your request or concern..."></textarea>
+          <textarea id="modal-msg-text" rows="3" style="width:100%; padding:9px; background:#222; border:1px solid #444; color:#fff; border-radius:6px; font-size:13px; margin-top:4px; resize:vertical; outline:none; font-family:inherit;" placeholder="Describe your request or paste donation details..."></textarea>
         </div>
 
         <div style="margin-bottom:15px;">
           <label style="font-size:11px; color:#aaa; display:flex; justify-content:space-between;">
-            <span>Attach Screenshot (Optional)</span>
-            <span style="color:#4caf50; font-weight:600;">Max: 10MB (Auto-compressed)</span>
+            <span>Attach Screenshot (Proof / Error)</span>
+            <span style="color:#4caf50; font-weight:600;">Max: 10MB</span>
           </label>
           <input type="file" id="modal-msg-file" accept="image/*" style="width:100%; padding:6px; background:#222; border:1px dashed #444; color:#aaa; border-radius:6px; font-size:12px; margin-top:4px; cursor:pointer;" />
           <div id="image-preview-container" style="display:none; margin-top:8px;">
@@ -339,7 +380,6 @@ function setupContactAdminModalHTML() {
         <button id="modal-msg-send-btn" style="width:100%; padding:10px; background:#e50914; border:none; color:#fff; font-weight:600; border-radius:6px; cursor:pointer; font-size:13px;">Send Message</button>
       </div>
 
-      <!-- VIEW 2: VIEW REPLIES -->
       <div id="contact-view-replies" style="display:none;">
         <div id="user-replies-feed" style="display:flex; flex-direction:column; gap:10px;">
           <p style="color:#777; font-size:12px; text-align:center; padding:15px;">Loading...</p>
@@ -491,7 +531,6 @@ function openContactAdminModal(userData) {
   if (modal) modal.style.display = "flex";
 }
 
-// Modal State Manager
 let currentMode = "login";
 
 function switchAuthMode(mode) {

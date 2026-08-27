@@ -1,4 +1,6 @@
-// ✅ js/donors.js - REALTIME FIREBASE SYNC & CLIENT PROTECTION
+// ✅ js/donors.js - REALTIME FIRESTORE SYNC & CLIENT PROTECTION
+import { db } from "./firebase-config.js";
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // --- 1. ANTI-DEVTOOLS & DEBUGGER FREEZE PROTECTION ---
 (function protectClient() {
@@ -15,9 +17,6 @@
     } catch (e) {}
 })();
 
-// --- 2. CONFIGURATION & STATE ---
-const FIREBASE_DB_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
-
 // Helper para iwas XSS injection mula sa user-submitted data
 function sanitizeHTML(str) {
     if (!str) return '';
@@ -29,52 +28,57 @@ function sanitizeHTML(str) {
         .replace(/'/g, '&#039;');
 }
 
-// --- 3. DATA FETCHING ---
-async function fetchAndRenderDonors() {
-    try {
-        const response = await fetch(`${FIREBASE_DB_URL}/donors.json`);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const data = await response.json();
-        let donorsList = [];
+// --- 2. REALTIME FIRESTORE LISTENER ---
+function initRealtimeDonors() {
+    const donationsRef = collection(db, "donations");
 
-        if (data && typeof data === 'object') {
-            donorsList = Object.keys(data).map(key => ({
-                id: key,
-                ...data[key]
-            })).sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0)); // Pinakabago sa unahan
-        }
+    onSnapshot(donationsRef, (snapshot) => {
+        let donorsList = [];
+        snapshot.forEach((docSnap) => {
+            donorsList.push({
+                id: docSnap.id,
+                ...docSnap.data()
+            });
+        });
+
+        // I-sort mula pinakabago pababa
+        donorsList.sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
 
         renderDonorsUI(donorsList);
-    } catch (err) {
-        console.warn("Could not fetch donors from Firebase:", err);
-    }
+    }, (error) => {
+        console.warn("Could not fetch donations from Firestore:", error);
+    });
 }
 
-// --- 4. UI RENDERING ---
+// --- 3. UI RENDERING ---
 function renderDonorsUI(list) {
-    // 1. Render sa Loob ng Donations Modal
-    const wallContainer = document.getElementById('donors-wall-container');
+    // 1. Render sa Loob ng Donations Modal (Compatible sa kahit anong container ID/class)
+    const wallContainer = document.getElementById('donors-wall-container') || 
+                          document.getElementById('supporters-container') || 
+                          document.querySelector('.verified-supporters-grid') || 
+                          document.querySelector('.supporters-grid');
+
     if (wallContainer) {
         if (!list || list.length === 0) {
-            wallContainer.innerHTML = `<p style="color:#777; font-size:0.85rem; text-align:center; padding:10px;">Be the first verified supporter!</p>`;
+            wallContainer.innerHTML = `<p style="color:#777; font-size:0.85rem; text-align:center; padding:15px; grid-column:1/-1;">Be the first verified supporter!</p>`;
         } else {
             wallContainer.innerHTML = list.map(d => {
-                const safeName = sanitizeHTML(d.name || 'Anonymous');
-                const safeAmount = Number(d.amountVal || 0).toLocaleString();
-                const safeMessage = sanitizeHTML(d.message || 'Supporting Movies-J!');
+                const safeName = sanitizeHTML(d.name || 'Supporter');
+                const rawAmount = Number(d.amount ?? d.amountVal ?? 0);
+                const safeAmount = rawAmount.toLocaleString();
+                const safeMessage = sanitizeHTML(d.message || '');
                 const safeDate = sanitizeHTML(d.date || '');
 
                 return `
-                    <div class="donor-item-card">
-                        <div class="donor-item-header">
-                            <span class="donor-name">
+                    <div class="donor-item-card" style="background:#1e1e1e; border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:8px;">
+                        <div class="donor-item-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span class="donor-name" style="font-weight:600; color:#fff; font-size:13px;">
                                 <i class="fas fa-heart" style="color:#e50914; font-size:11px; margin-right:4px;"></i>${safeName}
                             </span>
-                            <span class="donor-amount">₱${safeAmount}</span>
+                            <span class="donor-amount" style="color:#4caf50; font-weight:bold; font-size:12px; background:rgba(76,175,80,0.15); padding:2px 8px; border-radius:4px;">₱${safeAmount}</span>
                         </div>
-                        <p class="donor-message">"${safeMessage}"</p>
-                        <span class="donor-date">${safeDate}</span>
+                        ${safeMessage ? `<p class="donor-message" style="font-size:12px; color:#bbb; margin:4px 0;">"${safeMessage}"</p>` : ''}
+                        <span class="donor-date" style="font-size:10px; color:#666; display:block; text-align:right;">${safeDate}</span>
                     </div>
                 `;
             }).join('');
@@ -83,30 +87,44 @@ function renderDonorsUI(list) {
 
     // 2. Render sa Navbar Badges (Top Donor & Latest Donor)
     const highlightContainer = document.getElementById('donor-nav-highlights');
-    if (highlightContainer && list && list.length > 0) {
+    const topBadge = document.querySelector('.top-donor') || document.querySelector('.badge-top') || document.getElementById('top-donor-badge');
+    const latestBadge = document.querySelector('.latest-donor') || document.querySelector('.badge-latest') || document.getElementById('latest-donor-badge');
+
+    if (list && list.length > 0) {
         // Pinakamalaking donasyon
-        const topDonor = [...list].sort((a, b) => (Number(b.amountVal) || 0) - (Number(a.amountVal) || 0))[0];
+        const topDonor = [...list].sort((a, b) => (Number(b.amount ?? b.amountVal ?? 0)) - (Number(a.amount ?? a.amountVal ?? 0)))[0];
         // Pinakabagong donasyon
         const latestDonor = list[0];
 
         const topName = sanitizeHTML(topDonor.name || 'Supporter');
-        const topAmount = Number(topDonor.amountVal || 0).toLocaleString();
+        const topAmount = Number(topDonor.amount ?? topDonor.amountVal ?? 0).toLocaleString();
         const latestName = sanitizeHTML(latestDonor.name || 'Supporter');
-        const latestAmount = Number(latestDonor.amountVal || 0).toLocaleString();
+        const latestAmount = Number(latestDonor.amount ?? latestDonor.amountVal ?? 0).toLocaleString();
 
-        highlightContainer.innerHTML = `
-            <div class="nav-donor-tag top-donor" onclick="document.getElementById('supportBtn')?.click()" title="Top Supporter: ${topName} (₱${topAmount})">
-                <i class="fas fa-crown"></i> <span>Top: <strong>${topName}</strong> (₱${topAmount})</span>
-            </div>
-            <div class="nav-donor-tag latest-donor" onclick="document.getElementById('supportBtn')?.click()" title="Latest Supporter: ${latestName} (₱${latestAmount})">
-                <i class="fas fa-sparkles"></i> <span>Latest: <strong>${latestName}</strong> (₱${latestAmount})</span>
-            </div>
-        `;
+        if (highlightContainer) {
+            highlightContainer.innerHTML = `
+                <div class="nav-donor-tag top-donor" onclick="document.getElementById('supportBtn')?.click()" style="cursor:pointer;" title="Top Supporter: ${topName} (₱${topAmount})">
+                    <i class="fas fa-crown" style="color:#ffd700;"></i> <span>Top: <strong>${topName}</strong> (₱${topAmount})</span>
+                </div>
+                <div class="nav-donor-tag latest-donor" onclick="document.getElementById('supportBtn')?.click()" style="cursor:pointer;" title="Latest Supporter: ${latestName} (₱${latestAmount})">
+                    <i class="fas fa-sparkles" style="color:#e50914;"></i> <span>Latest: <strong>${latestName}</strong> (₱${latestAmount})</span>
+                </div>
+            `;
+        } else {
+            if (topBadge) {
+                topBadge.innerHTML = `<i class="fas fa-crown" style="color:#ffd700;"></i> Top: <strong>${topName}</strong> (₱${topAmount})`;
+                topBadge.style.display = "inline-flex";
+            }
+            if (latestBadge) {
+                latestBadge.innerHTML = `<i class="fas fa-heart" style="color:#e50914;"></i> Latest: <strong>${latestName}</strong> (₱${latestAmount})`;
+                latestBadge.style.display = "inline-flex";
+            }
+        }
     }
 }
 
-// --- 5. UTILITY FUNCTIONS ---
-function copyDonationEmail() {
+// --- 4. UTILITY FUNCTIONS ---
+window.copyDonationEmail = function() {
     const email = "jayjovendinawanao29@gmail.com";
     
     if (navigator.clipboard && window.isSecureContext) {
@@ -118,7 +136,7 @@ function copyDonationEmail() {
     } else {
         promptFallback(email);
     }
-}
+};
 
 function updateCopyButtonState(email) {
     const btn = document.getElementById('copyProofEmailBtn');
@@ -140,5 +158,12 @@ function promptFallback(email) {
     prompt("Copy this email to send your proof:", email);
 }
 
-// --- 6. INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', fetchAndRenderDonors);
+// --- 5. INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    initRealtimeDonors();
+
+    const copyBtn = document.getElementById('copyProofEmailBtn');
+    if (copyBtn) {
+        copyBtn.onclick = window.copyDonationEmail;
+    }
+});

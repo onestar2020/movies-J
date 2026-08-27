@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- CSS Stylesheets -->
@@ -147,10 +147,6 @@
     </style>
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5209861049704399" crossorigin="anonymous"></script>
-
-    <!-- Firebase App & Realtime Database SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 
 <body>
@@ -363,7 +359,7 @@
             <!-- Send Proof Section -->
             <div class="proof-instruction-box">
                 <p><strong>Want your name & message featured below?</strong><br>Copy our email and send your donation screenshot proof along with your Display Name & Message:</p>
-                <button id="copyProofEmailBtn" class="email-copy-action-btn" onclick="copyDonationEmail()">
+                <button id="copyProofEmailBtn" class="email-copy-action-btn">
                     <i class="fas fa-copy"></i> Copy Proof Email (jayjovendinawanao29@gmail.com)
                 </button>
             </div>
@@ -395,13 +391,16 @@
         }
     </script>
 
+    <!-- Standard & Vendor Scripts -->
     <script src="js/embed.js" defer></script>
     <script src="js/servers.js" defer></script>
-    <script src="js/donors.js" defer></script>
     <script src="js/watchHistory.js" defer></script> 
-    <script src="js/changelog.js" defer></script>
     <script src="https://ssl.p.jwpcdn.com/player/v/8.36.6/jwplayer.js" defer></script>
-    <script type="module" src="js/home.js" defer></script> 
+
+    <!-- Realtime Firestore Core Module Scripts -->
+    <script type="module" src="js/donors.js"></script>
+    <script type="module" src="js/changelog.js"></script>
+    <script type="module" src="js/home.js"></script> 
 
     <!-- Firebase Auth Observer Script -->
     <script type="module">

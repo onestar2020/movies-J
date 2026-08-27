@@ -215,13 +215,14 @@ function loadContinueWatching() {
         const card = document.createElement('div');
         card.className = 'movie-card';
         const posterSrc = item.poster_path ? `${IMG_URL_W500}${item.poster_path}` : 'images/logo-192.png';
+        const isTv = (item.type === 'tv' || item.seasons || item.season || item.episode);
 
         card.innerHTML = `
             <img src="${posterSrc}" alt="${item.title || 'Movie'}" loading="lazy">
             <div class="movie-card-details">
                 <h3>${item.title || 'Untitled'}</h3>
                 <div class="card-meta">
-                    <span>${item.type === 'tv' ? 'TV Series' : 'Movie'}</span>
+                    <span>${isTv ? `TV Series ${item.season ? `(S${item.season} E${item.episode || 1})` : ''}` : 'Movie'}</span>
                 </div>
                 <div class="card-buttons">
                     <button class="play-btn" title="Resume"><i class="fas fa-play"></i></button>
@@ -587,18 +588,24 @@ function setupHomepageCarousels() {
 
 function goToMoviePage(item) {
     if (!item || !item.id) return;
-    const itemType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+    const itemType = item.type || item.media_type || (item.first_air_date || item.seasons || item.season ? 'tv' : 'movie');
     
     if (typeof saveToWatchHistory === 'function') {
         saveToWatchHistory({
             id: item.id,
             title: item.title || item.name || "Unknown Title",
             poster_path: item.poster_path || "",
-            type: itemType
+            type: itemType,
+            season: item.season || 1,
+            episode: item.episode || 1
         });
     }
     
-    window.location.href = `movie.html?id=${item.id}&type=${itemType}`;
+    let targetUrl = `movie.html?id=${item.id}&type=${itemType}`;
+    if (itemType === 'tv') {
+        targetUrl += `&season=${item.season || 1}&episode=${item.episode || 1}`;
+    }
+    window.location.href = targetUrl;
 }
 
 function openSearchModal() {
@@ -771,11 +778,12 @@ function closeDetailsModal() {
 }
 
 if (typeof window.saveToWatchHistory === 'undefined') {
-    window.saveToWatchHistory = function({ title, id, type = 'movie', poster_path = '' }) {
+    window.saveToWatchHistory = function({ title, id, type = 'movie', poster_path = '', season = 1, episode = 1 }) {
         try {
             let history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
-            history = history.filter(item => !(item.id === id && item.type === type));
-            history.unshift({ title, id, type, poster_path, timestamp: Date.now() });
+            const mediaType = (type === 'tv' || season > 1 || episode > 1) ? 'tv' : type;
+            history = history.filter(item => !(String(item.id) === String(id) && item.type === mediaType));
+            history.unshift({ title, id, type: mediaType, poster_path, season, episode, timestamp: Date.now() });
             if (history.length > 20) history = history.slice(0, 20);
             localStorage.setItem("watchHistory", JSON.stringify(history));
         } catch (e) { console.error("History save error:", e); }
@@ -787,13 +795,13 @@ function initFirebasePresence() {
     if (typeof firebase === 'undefined') return;
 
     const firebaseConfig = {
-        apiKey: "AIzaSyChLRuEGAVTO3Y-_lGqKYF9YUCVx5i5Feo",
+        apiKey: "AIzaSyDGVvGFJt95ZHTp9Hm349ouyWemFkbtwNY",
         authDomain: "movies-j-stream.firebaseapp.com",
         databaseURL: "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "movies-j-stream",
         storageBucket: "movies-j-stream.firebasestorage.app",
         messagingSenderId: "1088305700283",
-        appId: "1:1088305700283:web:1b94c89927d4b88240789e",
+        appId: "1:1088305700283:web:1b94c85927d4b88240789e",
         measurementId: "G-LMNWJGZ9K4"
     };
 

@@ -1,6 +1,6 @@
-// ✅ js/movie.js (AUTO-FALLBACK ENGINE + AUTO NEXT EPISODE + TRADEMARK TRAILER-FIRST + QUALITY DETECTOR + REALTIME USERS)
+// ✅ js/movie.js (MANUAL SERVER SWITCHING + WATCH HISTORY INTEGRATION + EPISODE & QUALITY SYSTEM)
 
-// ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION (DEVELOPMENT SAFE) =================
+// ================= 1. ANTI-DEVTOOLS & INSPECT PROTECTION =================
 (function() {
     document.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -14,16 +14,6 @@
             return false;
         }
     });
-
-    /* Pansamantalang naka-disable para sa smooth local debugging
-    setInterval(() => {
-        const startTime = performance.now();
-        debugger;
-        if (performance.now() - startTime > 100) {
-            window.location.href = "about:blank";
-        }
-    }, 500);
-    */
 })();
 
 // ================= 2. CORE MOVIE & TV LOGIC =================
@@ -40,10 +30,8 @@ let currentItemData = null;
 let isEpisodic = (type === 'tv' || type === 'anime');
 let isMovieReleased = true;
 
-// Server Fallback State Variables
-let currentActiveServerKey = '';
-let serverHealthTimeout = null;
-let failedServers = new Set();
+// Server Selection Tracker
+let currentActiveServerKey = 'vidstorm';
 
 // LocalStorage Watch History Tracker
 const storageKey = `movies_j_progress_${id}`;
@@ -95,13 +83,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         setupInitialPlayer(item);
         populateServerSelector(item);
 
-        // 5. Cast Section (Filtered - No blank cards)
+        // 5. Cast Section
         renderCastSection(item);
 
         // 6. Similar / Recommendations
         renderSimilarSection(item);
 
-        // 7. Organized Collection Sidebar (Watch Order for Franchise)
+        // 7. Organized Collection Sidebar
         if (item.belongs_to_collection && item.belongs_to_collection.id) {
             handleCollection(item.belongs_to_collection.id);
         }
@@ -113,6 +101,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             handleTVShow(item);
             setupNextEpisodeButton();
         }
+
+        // 9. Sync sa Global Watch History
+        syncToGlobalWatchHistory(item);
 
         // Mobile Auto-Scroll
         if (window.innerWidth <= 900) {
@@ -166,7 +157,7 @@ function showThemeModal(title, message, badgeText = '') {
     overlay.classList.add('show');
 }
 
-// Helper: Release Status Calculator (Smart Context for Movies & TV)
+// Helper: Release Status Calculator
 function getReleaseStatus(airDateStr) {
     if (!airDateStr) return { isReleased: true, label: '' };
 
@@ -192,7 +183,7 @@ function getReleaseStatus(airDateStr) {
     }
 }
 
-// Helper: Smart Video Quality & CAM Detector (Safe 90-Day / 3-Month Window)
+// Helper: Video Quality Detector
 function getQualityStatus(releaseDateStr) {
     if (isEpisodic) {
         return { quality: 'HD', isCamLikely: false, badge: 'HD 1080p' };
@@ -225,7 +216,7 @@ function getQualityStatus(releaseDateStr) {
     };
 }
 
-// Fetch Details
+// Fetch Details with Auto Type Correction
 async function fetchDetails() {
     let data = null;
     try {
@@ -254,7 +245,7 @@ async function fetchDetails() {
     return data;
 }
 
-// Facts Grid at Badges
+// Facts Grid & Badges
 function renderMetadata(item) {
     const runtime = item.runtime || (item.episode_run_time && item.episode_run_time[0]);
     const runtimeElem = document.getElementById("fact-runtime");
@@ -296,7 +287,7 @@ function renderMetadata(item) {
             : '';
 
         badgeBox.innerHTML = `
-            <span class="meta-badge">${type.toUpperCase()}</span>
+            <span class="meta-badge">${(isEpisodic ? 'TV' : 'MOVIE')}</span>
             ${statusBadge}
             ${qualityBadge}
             ${(item.genres || []).map(g => `<span class="meta-badge">${g.name}</span>`).join("")}
@@ -304,7 +295,7 @@ function renderMetadata(item) {
     }
 }
 
-// Cast Cards (FILTERED: Tanggal ang walang picture)
+// Cast Cards
 async function renderCastSection(item) {
     const castBox = document.getElementById("cast-container");
     if (!castBox) return;
@@ -390,7 +381,7 @@ function setupInitialPlayer(item) {
     trailerUrl = '';
 }
 
-// Server Buttons (with Quality Badge & CAM Notice)
+// Server Buttons Setup
 function populateServerSelector(item) {
     const grid = document.getElementById("server-buttons");
     if (!grid) return;
@@ -442,7 +433,6 @@ function populateServerSelector(item) {
                 document.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
                 
-                failedServers.clear(); // Reset failure tracker on user manual select
                 updatePlayer(key, item, currentSeasonNumber, currentEpisodeNumber);
             };
 
@@ -451,7 +441,7 @@ function populateServerSelector(item) {
     }
 }
 
-// ================= SMART STREAM SERVER AUTO-FALLBACK =================
+// Manual Player Update
 function updatePlayer(serverKey, item, season = 1, episode = 1) {
     const player = document.getElementById("movie-player");
     if (!player || typeof getEmbedUrl !== "function") return;
@@ -474,43 +464,24 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     const embedUrl = getEmbedUrl(serverKey, mediaData, typeKey, season, episode);
     player.src = embedUrl;
 
-    // Reset status banner
-    const statusBanner = document.getElementById("server-status-banner");
-    if (statusBanner && failedServers.size === 0) {
-        statusBanner.style.display = 'none';
-    }
-
-    // Auto Server Fallback Monitor (45 seconds)
-    clearTimeout(serverHealthTimeout);
-    serverHealthTimeout = setTimeout(() => {
-        checkAndTriggerAutoFallback(item, season, episode);
-    }, 21600000); // 45-second threshold
+    syncToGlobalWatchHistory(item);
 }
 
-function checkAndTriggerAutoFallback(item, season, episode) {
-    if (typeof STREAM_SERVERS === 'undefined') return;
-    const availableKeys = Object.keys(STREAM_SERVERS).filter(k => STREAM_SERVERS[k].enabled);
+// Save to Watch History
+function syncToGlobalWatchHistory(item) {
+    if (!item || !item.id) return;
+    const mediaType = isEpisodic ? "tv" : "movie";
     
-    failedServers.add(currentActiveServerKey);
-    const nextServerKey = availableKeys.find(k => !failedServers.has(k));
-
-    if (nextServerKey) {
-        console.warn(`[Auto-Fallback] Server "${currentActiveServerKey}" unresponsive. Switching to "${nextServerKey}"...`);
-        
-        const statusBanner = document.getElementById("server-status-banner");
-        const activeNameElem = document.getElementById("active-server-name");
-        if (statusBanner && activeNameElem) {
-            activeNameElem.textContent = `Using: ${STREAM_SERVERS[nextServerKey].name}`;
-            statusBanner.style.display = 'flex';
-        }
-
-        const targetBtn = document.querySelector(`.srv-btn[data-server="${nextServerKey}"]`);
-        if (targetBtn) {
-            document.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
-            targetBtn.classList.add("active");
-        }
-
-        updatePlayer(nextServerKey, item, season, episode);
+    if (typeof window.saveToWatchHistory === "function") {
+        window.saveToWatchHistory({
+            id: item.id,
+            title: item.title || item.name || "Untitled",
+            type: mediaType,
+            poster_path: item.poster_path || "",
+            backdrop_path: item.backdrop_path || "",
+            season: currentSeasonNumber,
+            episode: currentEpisodeNumber
+        });
     }
 }
 
@@ -558,7 +529,7 @@ function handleTVShow(item) {
     loadEpisodes(currentSeasonNumber);
 }
 
-// TV Episode Loader (with Custom Modal on Click)
+// TV Episode Loader
 async function loadEpisodes(seasonNum) {
     const list = document.getElementById("episode-list");
     if (!list) return;
@@ -658,7 +629,7 @@ async function loadEpisodes(seasonNum) {
     }
 }
 
-// Next Episode Button Handler (with Custom Modal & Mobile Support)
+// Next Episode Button Handler
 function setupNextEpisodeButton() {
     const nextBtn = document.getElementById('next-ep-btn');
     if (!nextBtn) return;
@@ -690,7 +661,7 @@ function setupNextEpisodeButton() {
     };
 }
 
-// ================= 3. ORGANIZED COLLECTION SIDEBAR (CHRONOLOGICAL STORY ORDER) =================
+// Collection Sidebar
 async function handleCollection(collectionId) {
     const container = document.getElementById('collection-sidebar');
     const listContainer = document.getElementById('collection-list-container');

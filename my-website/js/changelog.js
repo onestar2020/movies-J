@@ -33,10 +33,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const changelogBtn = document.getElementById("changelog-btn");
     let modal = document.getElementById("changelog-modal");
     
-    // Hanapin ang container sa loob ng modal kung may static HTML na
-    let feedContainer = modal ? (modal.querySelector(".changelog-feed") || modal.querySelector(".changelog-list") || modal.querySelector(".modal-content") || modal.querySelector(".changelog-body")) : null;
+    // Hanapin ang container o gumawa ng dynamic na bago
+    let feedContainer = modal ? (modal.querySelector(".changelog-feed") || modal.querySelector(".changelog-list") || modal.querySelector(".changelog-body") || modal.querySelector(".modal-content")) : null;
 
-    // Kung wala pang modal element sa index.html, gagawin ito ng kusa
     if (!modal) {
         modal = document.createElement("div");
         modal.id = "changelog-modal";
@@ -60,7 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
         feedContainer = document.getElementById("changelog-feed-container");
     } else {
-        // Kung may existing modal sa HTML pero hardcoded, hanapin ang tamang lagayan at linisin
         const existingClose = modal.querySelector(".close") || modal.querySelector(".close-btn") || modal.querySelector(".changelog-close-btn");
         if (existingClose) {
             existingClose.onclick = () => {
@@ -69,21 +67,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Modal Trigger Button
     if (changelogBtn) {
         changelogBtn.onclick = () => {
             modal.style.display = "flex";
         };
     }
 
-    // Close on outside click
     window.addEventListener("click", (e) => {
         if (e.target === modal) {
             modal.style.display = "none";
         }
     });
 
-    // Real-time listener mula sa Firestore collection "changelogs"
+    // Realtime Listener mula sa Firestore
     const changelogsRef = collection(db, "changelogs");
 
     onSnapshot(changelogsRef, (snapshot) => {
@@ -95,7 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // I-sort mula sa pinakabagong timestamp
         logs.sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
 
         renderChangelogUI(logs, feedContainer || modal.querySelector(".modal-content"));

@@ -1,4 +1,4 @@
-// js/auth.js (Modern Support & Inquiries Flow)
+// js/auth.js (With 10MB High-Res Attachment Compressor & In-App Replies)
 import { auth, provider, db } from "./firebase-config.js";
 import { 
   signInWithPopup, 
@@ -167,6 +167,38 @@ async function syncUserToFirestore(user) {
   }
 }
 
+// Client-Side Image Compressor (Handles up to 10MB)
+function compressImage(file, maxWidth = 1280, quality = 0.75) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
+        resolve(compressedBase64);
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+}
+
 // Observer + Dropdown Profile UI
 export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   setupAuthModalHTML();
@@ -258,7 +290,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   });
 }
 
-// ================= CONTACT ADMIN MODAL WITH CLEAN REPLIES =================
+// ================= CONTACT ADMIN MODAL WITH 10MB ATTACHMENT =================
 function setupContactAdminModalHTML() {
   if (document.getElementById("contact-admin-modal")) return;
 
@@ -296,11 +328,11 @@ function setupContactAdminModalHTML() {
         <div style="margin-bottom:15px;">
           <label style="font-size:11px; color:#aaa; display:flex; justify-content:space-between;">
             <span>Attach Screenshot (Optional)</span>
-            <span style="color:#666;">Max: 2MB</span>
+            <span style="color:#4caf50; font-weight:600;">Max: 10MB (Auto-compressed)</span>
           </label>
           <input type="file" id="modal-msg-file" accept="image/*" style="width:100%; padding:6px; background:#222; border:1px dashed #444; color:#aaa; border-radius:6px; font-size:12px; margin-top:4px; cursor:pointer;" />
           <div id="image-preview-container" style="display:none; margin-top:8px;">
-            <img id="image-preview" src="" style="max-height:80px; border-radius:4px; border:1px solid #333;" />
+            <img id="image-preview" src="" style="max-height:90px; border-radius:4px; border:1px solid #333;" />
           </div>
         </div>
 
@@ -337,23 +369,24 @@ function setupContactAdminModalHTML() {
     loadUserReplies();
   };
 
-  document.getElementById("modal-msg-file").addEventListener("change", function(e) {
+  document.getElementById("modal-msg-file").addEventListener("change", async function(e) {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        showAuthToast("Image file size must be below 2MB.", "error");
+      if (file.size > 10 * 1024 * 1024) {
+        showAuthToast("Image file size must be below 10MB.", "error");
         this.value = "";
         return;
       }
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        attachedBase64 = evt.target.result;
+      try {
+        attachedBase64 = await compressImage(file);
         const prevContainer = document.getElementById("image-preview-container");
         const prevImg = document.getElementById("image-preview");
         prevImg.src = attachedBase64;
         prevContainer.style.display = "block";
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.error("Compression Error:", err);
+        showAuthToast("Failed to process image.", "error");
+      }
     }
   });
 

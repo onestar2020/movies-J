@@ -4,19 +4,20 @@
  * ==============================================================================
  * 
  * TABLE OF CONTENTS:
- *  1. IMPORTS & CONFIGURATION
- *  2. INITIALIZATION / MAIN ENTRY POINT
- *  3. METADATA & BADGES
- *  4. VIDEO PLAYER & SERVER SELECTOR
- *  5. TV SHOWS, SEASONS & EPISODES
- *  6. CAST & RECOMMENDATIONS
- *  7. FRANCHISE / COLLECTION SIDEBAR
- *  8. WATCH HISTORY SYNC
- *  9. REALTIME COMMENTS & DISCUSSION (CENTRALIZED COLLECTION)
- * 10. REALTIME ONLINE ACTIVE USERS TRACKER
- * 11. UI MODALS & NOTIFICATIONS
+ *  1. IMPORTS & CONFIGURATION (API Keys, State, URL Parameters)
+ *  2. INITIALIZATION / MAIN ENTRY POINT (DOMContentLoaded)
+ *  3. METADATA & BADGES (TMDb Fetch, Quality Badges, Facts Grid)
+ *  4. VIDEO PLAYER & SERVER SELECTOR (Manual Server Selection)
+ *  5. TV SHOWS, SEASONS & EPISODES (Navigator, Episode Cards, Next Button)
+ *  6. CAST & RECOMMENDATIONS (Scroller, Similar Titles)
+ *  7. FRANCHISE / COLLECTION SIDEBAR (Chronological Watch Order)
+ *  8. WATCH HISTORY SYNC (Auto-Correction para sa TV vs Movie)
+ *  9. REALTIME COMMENTS & DISCUSSION (Clean UI + Custom Modal Delete)
+ * 10. REALTIME ONLINE ACTIVE USERS (Firebase RTDB Presence Tracker)
+ * 11. UI MODALS & NOTIFICATIONS (Theme Dialogs & Status Labels)
  * ==============================================================================
  */
+
 
 /* ==============================================================================
    SECTION 1: IMPORTS & CONFIGURATION
@@ -36,16 +37,19 @@ const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev';
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
 const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
+// URL Parameter Handling
 const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id') || '1083818';
 let type = (urlParams.get('type') || 'movie').toLowerCase();
 
+// Player & Media State
 let trailerUrl = ''; 
 let currentItemData = null;
 let isEpisodic = (type === 'tv' || type === 'anime');
 let isMovieReleased = true;
 let currentActiveServerKey = 'vidstorm';
 
+// LocalStorage Progress Tracker
 const storageKey = `movies_j_progress_${id}`;
 let savedProgress = null;
 try {
@@ -56,6 +60,7 @@ try {
 
 let currentSeasonNumber = parseInt(urlParams.get('season')) || (savedProgress ? savedProgress.season : 1);
 let currentEpisodeNumber = parseInt(urlParams.get('episode')) || (savedProgress ? savedProgress.episode : 1);
+
 
 /* ==============================================================================
    SECTION 2: INITIALIZATION / MAIN ENTRY POINT
@@ -72,6 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             isMovieReleased = relStatus.isReleased;
         }
 
+        // 1. Title & Header
         const displayTitle = item.title || item.name || item.original_title || "Now Playing";
         document.title = `${displayTitle} - Stream`;
 
@@ -81,6 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const headerTitleElem = document.getElementById("page-header-title");
         if (headerTitleElem) headerTitleElem.textContent = displayTitle;
 
+        // 2. Overview Paragraph
         const overviewElem = document.getElementById("media-overview");
         if (overviewElem) {
             overviewElem.textContent = item.overview && item.overview.trim() !== "" 
@@ -88,16 +95,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                 : "No overview available.";
         }
 
+        // 3. Metadata, Facts, Player Setup
         renderMetadata(item);
         setupInitialPlayer(item);
         populateServerSelector(item);
         renderCastSection(item);
         renderSimilarSection(item);
 
+        // 4. Franchise Sidebar
         if (item.belongs_to_collection && item.belongs_to_collection.id) {
             handleCollection(item.belongs_to_collection.id);
         }
 
+        // 5. TV Show Navigator
         if (isEpisodic && item.seasons) {
             const tvPanel = document.getElementById("tv-panel");
             if (tvPanel) tvPanel.style.display = "block";
@@ -105,9 +115,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             setupNextEpisodeButton();
         }
 
+        // 6. Watch History Sync
         syncToGlobalWatchHistory(item);
+
+        // 7. Initialize Comments Section
         initCommentsSection(id, type, displayTitle);
 
+        // 8. Mobile Auto-Scroll
         if (window.innerWidth <= 900) {
             setTimeout(() => {
                 const targetPanel = isEpisodic ? document.getElementById("tv-panel") : document.getElementById("server-buttons");
@@ -118,6 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 });
+
 
 /* ==============================================================================
    SECTION 3: METADATA & BADGES
@@ -199,8 +214,9 @@ function renderMetadata(item) {
     }
 }
 
+
 /* ==============================================================================
-   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (MANUAL SELECTION)
+   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (MANUAL ONLY)
    ============================================================================== */
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
@@ -301,6 +317,7 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
 
     syncToGlobalWatchHistory(item);
 }
+
 
 /* ==============================================================================
    SECTION 5: TV SHOWS, SEASONS & EPISODES
@@ -456,6 +473,7 @@ function setupNextEpisodeButton() {
     };
 }
 
+
 /* ==============================================================================
    SECTION 6: CAST & RECOMMENDATIONS
    ============================================================================== */
@@ -505,6 +523,7 @@ async function renderSimilarSection(item) {
         recBox.innerHTML = "<p style='color:#777;'>No recommendations available.</p>";
     }
 }
+
 
 /* ==============================================================================
    SECTION 7: FRANCHISE / COLLECTION SIDEBAR
@@ -564,6 +583,7 @@ async function handleCollection(collectionId) {
     }
 }
 
+
 /* ==============================================================================
    SECTION 8: WATCH HISTORY SYNC
    ============================================================================== */
@@ -583,6 +603,7 @@ function syncToGlobalWatchHistory(item) {
         });
     }
 }
+
 
 /* ==============================================================================
    SECTION 9: REALTIME COMMENTS & DISCUSSION (CENTRALIZED & INDEX-FREE)
@@ -845,6 +866,7 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
     }
 }
 
+
 /* ==============================================================================
    SECTION 10: REALTIME ONLINE ACTIVE USERS TRACKER
    ============================================================================== */
@@ -909,6 +931,7 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
         setOffline();
     });
 })();
+
 
 /* ==============================================================================
    SECTION 11: UI MODALS & NOTIFICATIONS

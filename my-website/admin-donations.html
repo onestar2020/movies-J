@@ -1,253 +1,321 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movies-J Admin Panel</title>
-    
-    <link rel="icon" href="images/logo-192.png" type="image/png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-        body { background: #0f0f0f; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .admin-card { background: #181818; border: 1px solid #333; border-radius: 12px; padding: 25px; width: 100%; max-width: 550px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        h2 { color: #e50914; margin-bottom: 15px; text-align: center; font-size: 1.3rem; }
-        
-        .admin-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .tab-btn { flex: 1; background: #222; border: 1px solid #444; color: #aaa; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s; }
-        .tab-btn.active { background: #e50914; color: #fff; border-color: #e50914; }
-        
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px; }
-        input, textarea { width: 100%; background: #252525; border: 1px solid #444; border-radius: 6px; padding: 10px; color: #fff; font-size: 0.85rem; outline: none; }
-        input:focus, textarea:focus { border-color: #e50914; }
-        textarea { resize: vertical; min-height: 80px; }
-        
-        .btn { width: 100%; background: #e50914; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
-        .btn:hover { background: #b20710; }
-        .hidden { display: none; }
-        
-        .list-preview { margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; max-height: 250px; overflow-y: auto; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px 12px; border-radius: 6px; margin-bottom: 8px; font-size: 0.82rem; border-left: 3px solid #e50914; }
-        .delete-btn { color: #ff5252; cursor: pointer; background: transparent; border: none; font-size: 0.95rem; padding: 4px 8px; }
-        .delete-btn:hover { color: #ff1744; }
-    </style>
+  <!-- ==============================================================================
+       SECTION 1: META TAGS & HEAD CONFIGURATION
+       ============================================================================== -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movies-J - Master Admin Control Panel</title>
+  <link rel="icon" href="images/logo-192.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- ==============================================================================
+       SECTION 2: ADMIN DASHBOARD STYLES
+       ============================================================================== -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    :root { --primary: #e50914; --bg: #0d0d0d; --card: #181818; --border: #282828; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: #fff; font-family: 'Poppins', sans-serif; padding: 20px; }
+
+    .admin-wrapper { max-width: 900px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .header-bar { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; }
+    .admin-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #4caf50; font-weight: 600; }
+
+    /* Navigation Tabs */
+    .tab-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+    .tab-btn { padding: 10px; background: #222; border: 1px solid #333; color: #aaa; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
+    .tab-btn:hover { background: #2a2a2a; color: #fff; }
+    .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* Input Forms */
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px; background: #222; border: 1px solid #333; border-radius: 6px; color: #fff; font-size: 13px; font-family: inherit; outline: none; }
+    .submit-btn { width: 100%; padding: 11px; background: var(--primary); border: none; border-radius: 6px; color: #fff; font-weight: 600; cursor: pointer; margin-top: 5px; }
+
+    /* Card Item Lists */
+    .feed-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; max-height: 480px; overflow-y: auto; }
+    .feed-card { background: #202020; border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .del-btn { background: rgba(229,9,20,0.15); border: 1px solid #e50914; color: #e50914; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
+    .del-btn:hover { background: var(--primary); color: #fff; }
+    .ban-btn { background: rgba(255,152,0,0.15); border: 1px solid #ff9800; color: #ff9800; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
+    .ban-btn:hover { background: #ff9800; color: #fff; }
+
+    /* Auth Gate Overlay */
+    #auth-gate { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0d0d0d; z-index: 99999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 15px; text-align: center; }
+  </style>
 </head>
 <body>
 
-    <div class="admin-card">
-        <h2>🎬 Movies-J Admin Dashboard</h2>
+  <!-- ==============================================================================
+       SECTION 3: ADMIN AUTH GATEWAY (ONLY FOR YOUR GMAIL)
+       ============================================================================== -->
+  <div id="auth-gate">
+    <i class="fas fa-shield-alt" style="font-size: 40px; color: var(--primary);"></i>
+    <h3 style="color:#fff; font-size: 1.2rem;">Movies-J Admin Security Gate</h3>
+    <p style="color: #777; font-size: 13px;">Checking administrative privileges for <strong style="color:#fff;">jayjovendinawanao2020@gmail.com</strong>...</p>
+    <button id="admin-login-btn" style="padding: 10px 22px; background: var(--primary); border: none; border-radius: 6px; color: #fff; font-weight: 600; cursor: pointer; margin-top: 10px;">Sign in with Google Admin</button>
+  </div>
 
-        <!-- PIN Entry Section -->
-        <div id="authSection">
-            <p style="font-size:0.85rem; color:#bbb; text-align:center; margin-bottom:15px;">Admin Protected Area. Enter Master PIN:</p>
-            <form onsubmit="verifyPin(event)">
-                <div class="form-group">
-                    <input type="password" id="adminPinInput" placeholder="Enter PIN" style="text-align:center; font-size:1.2rem; letter-spacing:4px;" required autofocus>
-                </div>
-                <button type="submit" class="btn"><i class="fas fa-lock-open"></i> Unlock Dashboard</button>
-            </form>
-        </div>
-
-        <!-- Admin Control Panel -->
-        <div id="managerSection" class="hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <span style="font-size:0.8rem; color:#81c784;"><i class="fas fa-check-circle"></i> Authenticated Admin</span>
-                <a href="#" onclick="logoutAdmin()" style="color:#ff5252; font-size:0.8rem; text-decoration:none;"><i class="fas fa-sign-out-alt"></i> Lock</a>
-            </div>
-
-            <!-- TABS -->
-            <div class="admin-tabs">
-                <button class="tab-btn active" id="tabDonorsBtn" onclick="switchTab('donors')"><i class="fas fa-heart"></i> Supporters</button>
-                <button class="tab-btn" id="tabUpdatesBtn" onclick="switchTab('updates')"><i class="fas fa-rocket"></i> System Updates</button>
-            </div>
-
-            <!-- 1. DONORS TAB -->
-            <div id="donorsTabContent">
-                <form id="addDonorForm" onsubmit="addDonor(event)">
-                    <div class="form-group">
-                        <label>Donor Display Name</label>
-                        <input type="text" id="dName" placeholder="e.g. Mark D." required>
-                    </div>
-                    <div class="form-group">
-                        <label>Amount Donated (₱)</label>
-                        <input type="number" id="dAmount" placeholder="e.g. 200" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Message / Note</label>
-                        <input type="text" id="dMessage" placeholder="e.g. Salamat idol Jay!" required>
-                    </div>
-                    <button type="submit" id="donorSubmitBtn" class="btn"><i class="fas fa-plus"></i> Add Supporter</button>
-                </form>
-
-                <div class="list-preview">
-                    <h4 style="font-size:0.85rem; margin-bottom:10px; color:#ffd700;"><i class="fas fa-list"></i> Live Donors:</h4>
-                    <div id="donorsListAdmin">Loading...</div>
-                </div>
-            </div>
-
-            <!-- 2. SYSTEM UPDATES / CHANGELOG TAB -->
-            <div id="updatesTabContent" class="hidden">
-                <form id="addUpdateForm" onsubmit="addChangelog(event)">
-                    <div style="display:flex; gap:10px;">
-                        <div class="form-group" style="flex:1;">
-                            <label>Version Tag</label>
-                            <input type="text" id="uVersion" placeholder="e.g. v2.7" required>
-                        </div>
-                        <div class="form-group" style="flex:2;">
-                            <label>Release Title</label>
-                            <input type="text" id="uTitle" placeholder="e.g. Fast Stream & UI Fixes" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Changes (Isang bullet per line / bagong linya):</label>
-                        <textarea id="uChanges" placeholder="Server Buffering Fix: Mas mabilis ang loading.&#10;Added Player Controls: May subtitle toggle na." required></textarea>
-                    </div>
-                    <button type="submit" id="updateSubmitBtn" class="btn" style="background:#2e7d32;"><i class="fas fa-paper-plane"></i> Publish Update Log</button>
-                </form>
-
-                <div class="list-preview">
-                    <h4 style="font-size:0.85rem; margin-bottom:10px; color:#64b5f6;"><i class="fas fa-history"></i> Published Updates:</h4>
-                    <div id="updatesListAdmin">Loading...</div>
-                </div>
-            </div>
-        </div>
+  <!-- ==============================================================================
+       SECTION 4: MAIN ADMIN DASHBOARD CONTAINER
+       ============================================================================== -->
+  <div class="admin-wrapper" id="admin-panel-ui" style="display:none;">
+    
+    <!-- Top Header Bar -->
+    <div class="header-bar">
+      <div>
+        <h2 style="font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-clapperboard" style="color: var(--primary);"></i> Movies-J Control Panel
+        </h2>
+        <span class="admin-badge"><i class="fas fa-circle-check"></i> Authenticated: jayjovendinawanao2020@gmail.com</span>
+      </div>
+      <a href="index.html" style="color: #888; text-decoration: none; font-size: 13px;"><i class="fas fa-arrow-left"></i> Exit to Website</a>
     </div>
 
-    <script>
-        const FIREBASE_DB_URL = "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app";
-        const ADMIN_PIN = "2929";
+    <!-- Navigation Tabs -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="tab-messages"><i class="fas fa-envelope"></i> User Messages (<span id="msg-count">0</span>)</button>
+      <button class="tab-btn" data-tab="tab-users"><i class="fas fa-users"></i> Manage Users</button>
+      <button class="tab-btn" data-tab="tab-donors"><i class="fas fa-heart"></i> Supporters</button>
+      <button class="tab-btn" data-tab="tab-logs"><i class="fas fa-rocket"></i> System Updates</button>
+    </div>
 
-        function verifyPin(e) {
-            e.preventDefault();
-            if (document.getElementById('adminPinInput').value === ADMIN_PIN) {
-                sessionStorage.setItem("moviesj_admin_auth", "true");
-                showAdminPanel();
-            } else {
-                alert("Incorrect Admin PIN!");
-                document.getElementById('adminPinInput').value = "";
-            }
+    <!-- ==============================================================================
+         TAB 1: USER MESSAGES & MOVIE REQUESTS
+         ============================================================================== -->
+    <div id="tab-messages" class="tab-content">
+      <h4 style="font-size: 13px; color: #aaa; margin-bottom: 10px;">User Inquiries & Requests Feed:</h4>
+      <div id="admin-messages-list" class="feed-list">
+        <p style="color:#777; text-align:center; padding:20px;">Loading messages...</p>
+      </div>
+    </div>
+
+    <!-- ==============================================================================
+         TAB 2: USER MANAGEMENT (DISABLE / BAN / DELETE ACCOUNT RECORD)
+         ============================================================================== -->
+    <div id="tab-users" class="tab-content" style="display:none;">
+      <h4 style="font-size: 13px; color: #aaa; margin-bottom: 10px;">Registered Site Users:</h4>
+      <div id="admin-users-list" class="feed-list">
+        <p style="color:#777; text-align:center; padding:20px;">Loading users...</p>
+      </div>
+    </div>
+
+    <!-- ==============================================================================
+         TAB 3: SUPPORTERS & DONATIONS
+         ============================================================================== -->
+    <div id="tab-donors" class="tab-content" style="display:none;">
+      <form id="add-donor-form" style="background:#202020; border:1px solid var(--border); padding:16px; border-radius:8px;">
+        <div class="form-group">
+          <label>Donor Display Name</label>
+          <input type="text" id="donor-name" placeholder="e.g. Mark D." required>
+        </div>
+        <div class="form-group">
+          <label>Amount Donated (₱)</label>
+          <input type="number" id="donor-amount" placeholder="e.g. 200" required>
+        </div>
+        <div class="form-group">
+          <label>Message / Note</label>
+          <input type="text" id="donor-msg" placeholder="e.g. Salamat idol Jay!">
+        </div>
+        <button type="submit" class="submit-btn">+ Add Supporter</button>
+      </form>
+
+      <div id="admin-donors-list" class="feed-list"></div>
+    </div>
+
+    <!-- ==============================================================================
+         TAB 4: SYSTEM UPDATES & CHANGELOG
+         ============================================================================== -->
+    <div id="tab-logs" class="tab-content" style="display:none;">
+      <form id="add-log-form" style="background:#202020; border:1px solid var(--border); padding:16px; border-radius:8px;">
+        <div class="form-group">
+          <label>Update Version</label>
+          <input type="text" id="log-ver" placeholder="e.g. v2.4" required>
+        </div>
+        <div class="form-group">
+          <label>Summary / Title</label>
+          <input type="text" id="log-title" placeholder="e.g. Added User Comments & Contact Admin" required>
+        </div>
+        <div class="form-group">
+          <label>Change Notes</label>
+          <textarea id="log-notes" rows="3" placeholder="Details about this update..." required></textarea>
+        </div>
+        <button type="submit" class="submit-btn">+ Post Update Log</button>
+      </form>
+
+      <div id="admin-logs-list" class="feed-list"></div>
+    </div>
+
+  </div>
+
+  <!-- ==============================================================================
+       SECTION 5: ADMIN LOGIC & FIRESTORE REALTIME SYNC SCRIPT
+       ============================================================================== -->
+  <script type="module">
+    import { auth, provider, db } from "./js/firebase-config.js";
+    import { signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { 
+      collection, 
+      addDoc, 
+      getDocs, 
+      deleteDoc, 
+      updateDoc, 
+      doc, 
+      query, 
+      orderBy, 
+      onSnapshot, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Dedicated Master Admin Email
+    const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
+
+    const authGate = document.getElementById("auth-gate");
+    const adminPanel = document.getElementById("admin-panel-ui");
+
+    // Check Auth on Page Load
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.email === DEDICATED_ADMIN_EMAIL) {
+        authGate.style.display = "none";
+        adminPanel.style.display = "block";
+        initDashboardData();
+      } else {
+        authGate.style.display = "flex";
+        adminPanel.style.display = "none";
+      }
+    });
+
+    document.getElementById("admin-login-btn").onclick = async () => {
+      try {
+        const res = await signInWithPopup(auth, provider);
+        if (res.user.email !== DEDICATED_ADMIN_EMAIL) {
+          alert("Access Denied: You are not authorized to view the admin dashboard.");
+          window.location.href = "access-denied.html";
         }
+      } catch (e) {
+        console.error(e);
+      }
+    };
 
-        function showAdminPanel() {
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('managerSection').classList.remove('hidden');
-            loadDonorsForAdmin();
-            loadUpdatesForAdmin();
-        }
+    // Tab Navigation Logic
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
+        
+        btn.classList.add("active");
+        const target = document.getElementById(btn.getAttribute("data-tab"));
+        if (target) target.style.display = "block";
+      };
+    });
 
-        function logoutAdmin() {
-            sessionStorage.removeItem("moviesj_admin_auth");
-            location.reload();
-        }
+    function initDashboardData() {
+      // 1. Listen to Messages from Users
+      const msgList = document.getElementById("admin-messages-list");
+      const msgQuery = query(collection(db, "admin_messages"), orderBy("createdAt", "desc"));
 
-        function switchTab(tab) {
-            if (tab === 'donors') {
-                document.getElementById('donorsTabContent').classList.remove('hidden');
-                document.getElementById('updatesTabContent').classList.add('hidden');
-                document.getElementById('tabDonorsBtn').classList.add('active');
-                document.getElementById('tabUpdatesBtn').classList.remove('active');
-            } else {
-                document.getElementById('donorsTabContent').classList.add('hidden');
-                document.getElementById('updatesTabContent').classList.remove('hidden');
-                document.getElementById('tabDonorsBtn').classList.remove('active');
-                document.getElementById('tabUpdatesBtn').classList.add('active');
-            }
-        }
+      onSnapshot(msgQuery, (snap) => {
+        document.getElementById("msg-count").textContent = snap.size;
+        msgList.innerHTML = snap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No messages found.</p>` : "";
 
-        // ================= DONORS LOGIC =================
-        async function loadDonorsForAdmin() {
-            const container = document.getElementById('donorsListAdmin');
-            try {
-                const res = await fetch(`${FIREBASE_DB_URL}/donors.json`);
-                const data = await res.json();
-                if (!data) { container.innerHTML = "<p style='color:#666; font-size:0.8rem;'>No donors yet.</p>"; return; }
+        snap.forEach(docSnap => {
+          const m = docSnap.data();
+          const card = document.createElement("div");
+          card.className = "feed-card";
+          card.innerHTML = `
+            <div style="flex:1;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <strong style="color:#fff; font-size:13px;">${m.senderName}</strong>
+                <span style="font-size:11px; color:#e50914; background:rgba(229,9,20,0.1); padding:2px 6px; border-radius:4px;">${m.category}</span>
+              </div>
+              <p style="font-size:12px; color:#aaa; margin-bottom:6px;">Email: <a href="mailto:${m.senderEmail}" style="color:#4caf50;">${m.senderEmail}</a></p>
+              <p style="font-size:13px; color:#ddd; background:#181818; padding:8px; border-radius:4px; border:1px solid #333;">${m.message}</p>
+            </div>
+            <button class="del-btn" data-id="${docSnap.id}" title="Delete Message"><i class="fas fa-trash-alt"></i></button>
+          `;
+          msgList.appendChild(card);
+        });
 
-                const sorted = Object.keys(data).sort((a, b) => (data[b].timestamp || 0) - (data[a].timestamp || 0));
-                container.innerHTML = sorted.map(key => `
-                    <div class="item-row">
-                        <div>
-                            <strong>${data[key].name}</strong> — <span style="color:#4CAF50;">₱${data[key].amountVal}</span>
-                            <div style="font-size:0.75rem; color:#888;">"${data[key].message}" • ${data[key].date}</div>
-                        </div>
-                        <button class="delete-btn" onclick="deleteItem('donors', '${key}')"><i class="fas fa-trash"></i></button>
-                    </div>
-                `).join('');
-            } catch (e) { container.innerHTML = "<p style='color:#ff5252;'>Error loading.</p>"; }
-        }
+        msgList.querySelectorAll(".del-btn").forEach(btn => {
+          btn.onclick = () => deleteDoc(doc(db, "admin_messages", btn.getAttribute("data-id")));
+        });
+      });
 
-        async function addDonor(e) {
-            e.preventDefault();
-            const btn = document.getElementById('donorSubmitBtn');
-            btn.disabled = true;
-            const payload = {
-                name: document.getElementById('dName').value.trim(),
-                amountVal: Number(document.getElementById('dAmount').value),
-                message: document.getElementById('dMessage').value.trim(),
-                date: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date()),
-                timestamp: Date.now()
-            };
-            await fetch(`${FIREBASE_DB_URL}/donors.json`, { method: 'POST', body: JSON.stringify(payload) });
-            document.getElementById('addDonorForm').reset();
-            btn.disabled = false;
-            loadDonorsForAdmin();
-        }
+      // 2. Manage Users (Disable / Delete User Profile)
+      const userList = document.getElementById("admin-users-list");
+      onSnapshot(collection(db, "users"), (snap) => {
+        userList.innerHTML = snap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No registered users.</p>` : "";
 
-        // ================= CHANGELOG / UPDATES LOGIC =================
-        async function loadUpdatesForAdmin() {
-            const container = document.getElementById('updatesListAdmin');
-            try {
-                const res = await fetch(`${FIREBASE_DB_URL}/changelogs.json`);
-                const data = await res.json();
-                if (!data) { container.innerHTML = "<p style='color:#666; font-size:0.8rem;'>No updates posted yet.</p>"; return; }
+        snap.forEach(docSnap => {
+          const u = docSnap.data();
+          const isBanned = u.isBanned === true;
+          const card = document.createElement("div");
+          card.className = "feed-card";
+          card.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="${u.photoURL || 'images/logo-192.png'}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+              <div>
+                <strong style="font-size:13px; color:#fff;">${u.displayName || 'User'}</strong>
+                <p style="font-size:11px; color:#888;">${u.email || 'No email'}</p>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="ban-btn" data-id="${docSnap.id}" data-banned="${isBanned}">
+                ${isBanned ? '<i class="fas fa-user-check"></i> Unban' : '<i class="fas fa-user-slash"></i> Ban'}
+              </button>
+              <button class="del-btn" data-id="${docSnap.id}"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          `;
+          userList.appendChild(card);
+        });
 
-                const sorted = Object.keys(data).sort((a, b) => (data[b].timestamp || 0) - (data[a].timestamp || 0));
-                container.innerHTML = sorted.map(key => `
-                    <div class="item-row" style="border-left-color:#2e7d32;">
-                        <div>
-                            <strong style="color:#64b5f6;">${data[key].version}</strong>: <strong>${data[key].title}</strong>
-                            <div style="font-size:0.75rem; color:#888;">${data[key].date} • ${data[key].changes.length} points</div>
-                        </div>
-                        <button class="delete-btn" onclick="deleteItem('changelogs', '${key}')"><i class="fas fa-trash"></i></button>
-                    </div>
-                `).join('');
-            } catch (e) { container.innerHTML = "<p style='color:#ff5252;'>Error loading.</p>"; }
-        }
+        userList.querySelectorAll(".ban-btn").forEach(btn => {
+          btn.onclick = async () => {
+            const uId = btn.getAttribute("data-id");
+            const currentlyBanned = btn.getAttribute("data-banned") === "true";
+            await updateDoc(doc(db, "users", uId), { isBanned: !currentlyBanned });
+          };
+        });
 
-        async function addChangelog(e) {
-            e.preventDefault();
-            const btn = document.getElementById('updateSubmitBtn');
-            btn.disabled = true;
+        userList.querySelectorAll(".del-btn").forEach(btn => {
+          btn.onclick = () => deleteDoc(doc(db, "users", btn.getAttribute("data-id")));
+        });
+      });
 
-            const changesText = document.getElementById('uChanges').value.trim();
-            const changesArray = changesText.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+      // 3. Supporters / Donors Sync
+      const donorList = document.getElementById("admin-donors-list");
+      onSnapshot(collection(db, "donors"), (snap) => {
+        donorList.innerHTML = "";
+        snap.forEach(d => {
+          const dat = d.data();
+          const card = document.createElement("div");
+          card.className = "feed-card";
+          card.innerHTML = `
+            <div>
+              <strong>${dat.name}</strong> — <span style="color:#4caf50; font-weight:bold;">₱${dat.amount}</span>
+              <p style="font-size:12px; color:#888;">${dat.message || ''}</p>
+            </div>
+            <button class="del-btn" data-id="${d.id}"><i class="fas fa-trash-alt"></i></button>
+          `;
+          donorList.appendChild(card);
+        });
+        donorList.querySelectorAll(".del-btn").forEach(b => b.onclick = () => deleteDoc(doc(db, "donors", b.getAttribute("data-id"))));
+      });
 
-            const payload = {
-                version: document.getElementById('uVersion').value.trim(),
-                title: document.getElementById('uTitle').value.trim(),
-                changes: changesArray,
-                date: new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date()),
-                timestamp: Date.now()
-            };
-
-            await fetch(`${FIREBASE_DB_URL}/changelogs.json`, { method: 'POST', body: JSON.stringify(payload) });
-            document.getElementById('addUpdateForm').reset();
-            btn.disabled = false;
-            loadUpdatesForAdmin();
-        }
-
-        async function deleteItem(path, key) {
-            if (!confirm(`Delete this ${path} entry?`)) return;
-            await fetch(`${FIREBASE_DB_URL}/${path}/${key}.json`, { method: 'DELETE' });
-            if (path === 'donors') loadDonorsForAdmin();
-            else loadUpdatesForAdmin();
-        }
-
-        if (sessionStorage.getItem("moviesj_admin_auth") === "true") {
-            showAdminPanel();
-        }
-    </script>
+      document.getElementById("add-donor-form").onsubmit = async (e) => {
+        e.preventDefault();
+        await addDoc(collection(db, "donors"), {
+          name: document.getElementById("donor-name").value,
+          amount: Number(document.getElementById("donor-amount").value),
+          message: document.getElementById("donor-msg").value,
+          createdAt: serverTimestamp()
+        });
+        document.getElementById("add-donor-form").reset();
+      };
+    }
+  </script>
 </body>
 </html>

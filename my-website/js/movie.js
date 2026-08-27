@@ -753,6 +753,11 @@ function showCommentToast(msg, isError = false) {
 }
 
 function initCommentsSection(mediaId, mediaType) {
+    
+const currentUser = auth.currentUser;
+const isAdmin = currentUser && currentUser.email === "jayjovendinawanao2020@gmail.com";
+const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
+
     const commentInput = document.getElementById("comment-textarea");
     const postBtn = document.getElementById("post-comment-btn");
     const commentsFeed = document.getElementById("comments-feed-list");

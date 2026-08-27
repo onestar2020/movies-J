@@ -48,10 +48,22 @@
     .ban-btn { background: rgba(255,152,0,0.15); border: 1px solid #ff9800; color: #ff9800; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
     .ban-btn:hover { background: #ff9800; color: #fff; }
 
+    /* Lightbox Modal para sa Full Image */
+    #image-lightbox-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.92); z-index: 999999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+    #image-lightbox-modal img { max-width: 90vw; max-height: 85vh; border-radius: 8px; border: 1px solid #444; box-shadow: 0 10px 40px rgba(0,0,0,0.9); object-fit: contain; }
+    #image-lightbox-close { position: absolute; top: 20px; right: 25px; font-size: 28px; color: #fff; cursor: pointer; background: rgba(255,255,255,0.1); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    #image-lightbox-close:hover { background: #e50914; }
+
     #auth-gate { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0d0d0d; z-index: 99999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 15px; text-align: center; }
   </style>
 </head>
 <body>
+
+  <!-- LIGHTBOX IMAGE VIEWER MODAL -->
+  <div id="image-lightbox-modal">
+    <span id="image-lightbox-close">&times;</span>
+    <img id="lightbox-img-element" src="" alt="Full Attachment Preview">
+  </div>
 
   <!-- AUTH GATEWAY -->
   <div id="auth-gate">
@@ -114,7 +126,7 @@
       </div>
     </div>
 
-    <!-- TAB 4: SUPPORTERS & DONATIONS -->
+    <!-- TAB 4: SUPPORTERS -->
     <div id="tab-donors" class="tab-content" style="display:none;">
       <form id="add-donor-form" style="background:#202020; border:1px solid var(--border); padding:16px; border-radius:8px; margin-bottom:15px;">
         <div class="form-group">
@@ -135,7 +147,7 @@
       <div id="admin-donors-list" class="feed-list"></div>
     </div>
 
-    <!-- TAB 5: SYSTEM UPDATES & CHANGELOG -->
+    <!-- TAB 5: SYSTEM UPDATES -->
     <div id="tab-logs" class="tab-content" style="display:none;">
       <form id="add-log-form" style="background:#202020; border:1px solid var(--border); padding:16px; border-radius:8px; margin-bottom:15px;">
         <div class="form-group">
@@ -175,6 +187,27 @@
     const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
     const authGate = document.getElementById("auth-gate");
     const adminPanel = document.getElementById("admin-panel-ui");
+
+    // Lightbox Modal Handlers
+    const lightboxModal = document.getElementById("image-lightbox-modal");
+    const lightboxImg = document.getElementById("lightbox-img-element");
+    const lightboxClose = document.getElementById("image-lightbox-close");
+
+    function openLightbox(src) {
+      if (lightboxImg && lightboxModal) {
+        lightboxImg.src = src;
+        lightboxModal.style.display = "flex";
+      }
+    }
+
+    if (lightboxClose) {
+      lightboxClose.onclick = () => { lightboxModal.style.display = "none"; };
+    }
+    if (lightboxModal) {
+      lightboxModal.onclick = (e) => {
+        if (e.target === lightboxModal) lightboxModal.style.display = "none";
+      };
+    }
 
     onAuthStateChanged(auth, (user) => {
       if (user && user.email === DEDICATED_ADMIN_EMAIL) {
@@ -249,8 +282,8 @@
               ${m.message ? `<p style="font-size:13px; color:#ddd; background:#181818; padding:8px 12px; border-radius:6px; border:1px solid #282828; margin-bottom:8px;">${m.message}</p>` : ''}
               ${m.attachment ? `
                 <div style="margin-top:6px;">
-                  <span style="font-size:11px; color:#888; display:block; margin-bottom:4px;"><i class="fas fa-image"></i> Attachment:</span>
-                  <a href="${m.attachment}" target="_blank"><img src="${m.attachment}" style="max-height:120px; max-width:220px; border-radius:6px; border:1px solid #444; object-fit:cover;" /></a>
+                  <span style="font-size:11px; color:#888; display:block; margin-bottom:4px;"><i class="fas fa-image"></i> Attachment (Click to View):</span>
+                  <img src="${m.attachment}" class="admin-zoomable-img" data-full="${m.attachment}" style="max-height:110px; max-width:200px; border-radius:6px; border:1px solid #444; object-fit:cover; cursor:pointer;" title="Click to view full image" />
                 </div>
               ` : ''}
               ${isAnswered ? `
@@ -269,6 +302,14 @@
         `;
         msgList.appendChild(card);
       });
+
+      // Event Delegation para sa Lightbox Zoom
+      msgList.onclick = (e) => {
+        const targetImg = e.target.closest(".admin-zoomable-img");
+        if (targetImg) {
+          openLightbox(targetImg.getAttribute("data-full"));
+        }
+      };
 
       msgList.querySelectorAll(".del-btn").forEach(btn => {
         btn.onclick = () => {
@@ -338,7 +379,7 @@
           card.innerHTML = `
             <div style="flex:1;">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <img src="${c.userPhoto || 'images/logo-192.png'}" style="width:24px; height:24px; border-radius:50%;">
+                <img src="${c.userPhoto || 'images/logo-192.png'}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">
                 <strong style="color:#fff; font-size:13px;">${c.userName || 'User'}</strong>
                 <span style="font-size:11px; background:#333; color:#ffb74d; padding:2px 6px; border-radius:4px;">${c.mediaTitle || 'Title'}</span>
               </div>
@@ -401,7 +442,7 @@
         });
       });
 
-      // 4. Supporters & Donations (SYNCED TO 'donations')
+      // 4. Supporters & Donations
       const donorList = document.getElementById("admin-donors-list");
       onSnapshot(collection(db, "donations"), (snap) => {
         document.getElementById("donor-count").textContent = snap.size;
@@ -452,7 +493,7 @@
         document.getElementById("add-donor-form").reset();
       };
 
-      // 5. System Updates (SYNCED TO 'changelogs')
+      // 5. System Updates
       const logList = document.getElementById("admin-logs-list");
       onSnapshot(collection(db, "changelogs"), (snap) => {
         document.getElementById("log-count").textContent = snap.size;

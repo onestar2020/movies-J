@@ -419,5 +419,35 @@
             }
         );
     </script>
+<script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sendProofBtn = document.getElementById("modalOpenContactAdminBtn");
+            if (sendProofBtn) {
+                sendProofBtn.onclick = () => {
+                    // Isara muna ang Support/Donation modal
+                    const supportModal = document.getElementById("supportModal");
+                    if (supportModal) supportModal.style.display = "none";
+
+                    // Buksan ang Message Admin modal (galing sa auth.js)
+                    const userProfileBtn = document.getElementById("user-profile-btn");
+                    const contactAdminBtn = document.getElementById("menu-contact-admin-btn");
+                    
+                    if (contactAdminBtn) {
+                        contactAdminBtn.click();
+                    } else if (userProfileBtn) {
+                        userProfileBtn.click();
+                        setTimeout(() => {
+                            document.getElementById("menu-contact-admin-btn")?.click();
+                        }, 100);
+                    } else {
+                        alert("Please sign in first to send your donation proof to the admin!");
+                        const loginBtn = document.getElementById("nav-login-btn");
+                        if (loginBtn) loginBtn.click();
+                    }
+                };
+            }
+        });
+    </script>
+
 </body>
 </html>

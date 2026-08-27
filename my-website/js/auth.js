@@ -1,4 +1,4 @@
-// js/auth.js (With Dropdown Message Admin Modal + File Attachments)
+// js/auth.js (With User Inbox & Admin Replies Tab)
 import { auth, provider, db } from "./firebase-config.js";
 import { 
   signInWithPopup, 
@@ -16,6 +16,7 @@ import {
   getDoc,
   collection,
   addDoc,
+  onSnapshot,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -207,7 +208,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
 
             <!-- MESSAGE ADMIN DROPDOWN OPTION -->
             <button id="menu-contact-admin-btn" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#fff; font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:1px solid #282828;">
-              <i class="fas fa-envelope-open-text" style="color:#e50914;"></i> Message Admin
+              <i class="fas fa-envelope-open-text" style="color:#e50914;"></i> Support & Inquiries
             </button>
 
             <button id="menu-logout-btn" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#e50914; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
@@ -257,7 +258,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   });
 }
 
-// ================= CONTACT ADMIN MODAL WITH ATTACHMENT =================
+// ================= CONTACT ADMIN MODAL WITH IN-APP REPLIES =================
 function setupContactAdminModalHTML() {
   if (document.getElementById("contact-admin-modal")) return;
 
@@ -266,47 +267,76 @@ function setupContactAdminModalHTML() {
   modal.className = "modal";
   modal.style.cssText = "position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); z-index:999999; display:none; align-items:center; justify-content:center; padding:15px;";
   modal.innerHTML = `
-    <div style="background:#181818; border:1px solid #333; border-radius:12px; max-width:440px; width:100%; padding:22px; position:relative; box-shadow:0 10px 30px rgba(0,0,0,0.9);">
+    <div style="background:#181818; border:1px solid #333; border-radius:12px; max-width:480px; width:100%; padding:22px; position:relative; box-shadow:0 10px 30px rgba(0,0,0,0.9); max-height:90vh; overflow-y:auto;">
       <span id="close-contact-modal" style="position:absolute; right:15px; top:12px; font-size:20px; color:#888; cursor:pointer;">&times;</span>
       
-      <h3 style="margin-bottom:6px; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
-        <i class="fas fa-paper-plane" style="color:#e50914;"></i> Message Admin
-      </h3>
-      <p style="color:#888; font-size:12px; margin-bottom:15px;">Send a movie request, broken server report, or screenshot.</p>
-
-      <div style="margin-bottom:10px;">
-        <label style="font-size:11px; color:#aaa;">Category</label>
-        <select id="modal-msg-category" style="width:100%; padding:9px; background:#222; border:1px solid #444; color:#fff; border-radius:6px; font-size:13px; margin-top:4px; outline:none;">
-          <option value="Movie / Show Request">🎬 Movie / TV Show Request</option>
-          <option value="Broken Server / Stream Issue">⚠️ Broken Server / Stream Issue</option>
-          <option value="Account / Login Concern">🔑 Account / Login Concern</option>
-          <option value="General Feedback">💬 General Feedback</option>
-        </select>
+      <!-- Sub-Tabs: New Message vs Admin Replies -->
+      <div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #282828; padding-bottom:10px;">
+        <button id="tab-btn-send-msg" style="background:transparent; border:none; color:#e50914; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px; border-bottom:2px solid #e50914;">New Inquiry / Request</button>
+        <button id="tab-btn-view-replies" style="background:transparent; border:none; color:#888; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px;">My Tickets & Replies</button>
       </div>
 
-      <div style="margin-bottom:10px;">
-        <label style="font-size:11px; color:#aaa;">Your Message</label>
-        <textarea id="modal-msg-text" rows="3" style="width:100%; padding:9px; background:#222; border:1px solid #444; color:#fff; border-radius:6px; font-size:13px; margin-top:4px; resize:vertical; outline:none; font-family:inherit;" placeholder="Describe your request or issue..."></textarea>
+      <!-- VIEW 1: SEND MESSAGE -->
+      <div id="contact-view-send">
+        <div style="margin-bottom:10px;">
+          <label style="font-size:11px; color:#aaa;">Category</label>
+          <select id="modal-msg-category" style="width:100%; padding:9px; background:#222; border:1px solid #444; color:#fff; border-radius:6px; font-size:13px; margin-top:4px; outline:none;">
+            <option value="Movie / Show Request">🎬 Movie / TV Show Request</option>
+            <option value="Broken Server / Stream Issue">⚠️ Broken Server / Stream Issue</option>
+            <option value="Account / Login Concern">🔑 Account / Login Concern</option>
+            <option value="General Feedback">💬 General Feedback</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <label style="font-size:11px; color:#aaa;">Your Message</label>
+          <textarea id="modal-msg-text" rows="3" style="width:100%; padding:9px; background:#222; border:1px solid #444; color:#fff; border-radius:6px; font-size:13px; margin-top:4px; resize:vertical; outline:none; font-family:inherit;" placeholder="Describe your request or issue..."></textarea>
+        </div>
+
+        <div style="margin-bottom:15px;">
+          <label style="font-size:11px; color:#aaa; display:flex; justify-content:space-between;">
+            <span>Attach Screenshot (Optional)</span>
+            <span style="color:#666;">Max: 2MB</span>
+          </label>
+          <input type="file" id="modal-msg-file" accept="image/*" style="width:100%; padding:6px; background:#222; border:1px dashed #444; color:#aaa; border-radius:6px; font-size:12px; margin-top:4px; cursor:pointer;" />
+          <div id="image-preview-container" style="display:none; margin-top:8px;">
+            <img id="image-preview" src="" style="max-height:80px; border-radius:4px; border:1px solid #333;" />
+          </div>
+        </div>
+
+        <button id="modal-msg-send-btn" style="width:100%; padding:10px; background:#e50914; border:none; color:#fff; font-weight:600; border-radius:6px; cursor:pointer; font-size:13px;">Send Message</button>
       </div>
 
-      <!-- FILE / PICTURE ATTACHMENT -->
-      <div style="margin-bottom:15px;">
-        <label style="font-size:11px; color:#aaa; display:flex; justify-content:space-between;">
-          <span>Attach Screenshot / Image (Optional)</span>
-          <span id="file-size-hint" style="color:#666;">Max: 2MB</span>
-        </label>
-        <input type="file" id="modal-msg-file" accept="image/*" style="width:100%; padding:6px; background:#222; border:1px dashed #444; color:#aaa; border-radius:6px; font-size:12px; margin-top:4px; cursor:pointer;" />
-        <div id="image-preview-container" style="display:none; margin-top:8px;">
-          <img id="image-preview" src="" style="max-height:80px; border-radius:4px; border:1px solid #333;" />
+      <!-- VIEW 2: VIEW REPLIES -->
+      <div id="contact-view-replies" style="display:none;">
+        <div id="user-replies-feed" style="display:flex; flex-direction:column; gap:10px;">
+          <p style="color:#777; font-size:12px; text-align:center; padding:15px;">Loading your tickets...</p>
         </div>
       </div>
-
-      <button id="modal-msg-send-btn" style="width:100%; padding:10px; background:#e50914; border:none; color:#fff; font-weight:600; border-radius:6px; cursor:pointer; font-size:13px;">Send Message</button>
     </div>
   `;
   document.body.appendChild(modal);
 
   let attachedBase64 = "";
+
+  // Switch between New Message and Ticket Replies
+  const tabSend = document.getElementById("tab-btn-send-msg");
+  const tabReplies = document.getElementById("tab-btn-view-replies");
+  const viewSend = document.getElementById("contact-view-send");
+  const viewReplies = document.getElementById("contact-view-replies");
+
+  tabSend.onclick = () => {
+    tabSend.style.color = "#e50914"; tabSend.style.borderBottom = "2px solid #e50914";
+    tabReplies.style.color = "#888"; tabReplies.style.borderBottom = "none";
+    viewSend.style.display = "block"; viewReplies.style.display = "none";
+  };
+
+  tabReplies.onclick = () => {
+    tabReplies.style.color = "#e50914"; tabReplies.style.borderBottom = "2px solid #e50914";
+    tabSend.style.color = "#888"; tabSend.style.borderBottom = "none";
+    viewSend.style.display = "none"; viewReplies.style.display = "block";
+    loadUserReplies();
+  };
 
   document.getElementById("modal-msg-file").addEventListener("change", function(e) {
     const file = e.target.files[0];
@@ -355,11 +385,12 @@ function setupContactAdminModalHTML() {
         category: category,
         message: text,
         attachment: attachedBase64 || null,
+        adminReply: null,
         timestamp: Date.now(),
         createdAt: serverTimestamp()
       });
 
-      showAuthToast("Message and file sent to Admin successfully!", "success");
+      showAuthToast("Message sent to Admin!", "success");
       document.getElementById("modal-msg-text").value = "";
       document.getElementById("modal-msg-file").value = "";
       document.getElementById("image-preview-container").style.display = "none";
@@ -367,12 +398,58 @@ function setupContactAdminModalHTML() {
       modal.style.display = "none";
     } catch (err) {
       console.error("Error sending admin message:", err);
-      showAuthToast("Failed to send message. Please try again.", "error");
+      showAuthToast("Failed to send message.", "error");
     } finally {
       sendBtn.disabled = false;
       sendBtn.textContent = "Send Message";
     }
   };
+}
+
+function loadUserReplies() {
+  const repliesContainer = document.getElementById("user-replies-feed");
+  const user = auth.currentUser;
+  if (!user) {
+    repliesContainer.innerHTML = `<p style="color:#777; font-size:12px; text-align:center; padding:15px;">Please sign in to view your previous ticket replies.</p>`;
+    return;
+  }
+
+  onSnapshot(collection(db, "admin_messages"), (snapshot) => {
+    const myMessages = [];
+    snapshot.forEach(d => {
+      const data = d.data();
+      if (data.userId === user.uid || data.senderEmail === user.email) {
+        myMessages.push({ id: d.id, ...data });
+      }
+    });
+
+    myMessages.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+    if (myMessages.length === 0) {
+      repliesContainer.innerHTML = `<p style="color:#777; font-size:12px; text-align:center; padding:15px;">No previous inquiries found.</p>`;
+      return;
+    }
+
+    repliesContainer.innerHTML = "";
+    myMessages.forEach(item => {
+      const card = document.createElement("div");
+      card.style.cssText = "background:#222; border:1px solid #333; border-radius:6px; padding:12px;";
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span style="font-size:11px; color:#e50914; font-weight:bold;">${item.category}</span>
+          <span style="font-size:10px; color:#777;">${item.adminReply ? '<span style="color:#4caf50;">● Replied</span>' : '<span style="color:#ff9800;">● Pending</span>'}</span>
+        </div>
+        <p style="font-size:12px; color:#ddd; margin-bottom:6px;">${item.message}</p>
+        ${item.adminReply ? `
+          <div style="background:#1a281a; border-left:3px solid #4caf50; padding:6px 10px; border-radius:4px; margin-top:6px;">
+            <strong style="color:#4caf50; font-size:11px;"><i class="fas fa-user-shield"></i> Admin Reply:</strong>
+            <p style="color:#fff; font-size:12px; margin-top:2px;">${item.adminReply}</p>
+          </div>
+        ` : ''}
+      `;
+      repliesContainer.appendChild(card);
+    });
+  });
 }
 
 function openContactAdminModal(userData) {

@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- ==============================================================================
+       SECTION 1: META TAGS & HEAD CONFIGURATION
+       ============================================================================== -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Movies-J - Master Admin Control Panel</title>
   <link rel="icon" href="images/logo-192.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
+  <!-- ==============================================================================
+       SECTION 2: ADMIN DASHBOARD STYLES
+       ============================================================================== -->
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     :root { --primary: #e50914; --bg: #0d0d0d; --card: #181818; --border: #282828; }
@@ -29,11 +35,16 @@
     .form-group input, .form-group textarea { width: 100%; padding: 10px; background: #222; border: 1px solid #333; border-radius: 6px; color: #fff; font-size: 13px; font-family: inherit; outline: none; }
     .submit-btn { width: 100%; padding: 11px; background: var(--primary); border: none; border-radius: 6px; color: #fff; font-weight: 600; cursor: pointer; margin-top: 5px; }
 
-    /* Lists */
-    .feed-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; max-height: 480px; overflow-y: auto; }
-    .feed-card { background: #202020; border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .del-btn { background: rgba(229,9,20,0.15); border: 1px solid #e50914; color: #e50914; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
+    /* Card Feed Lists */
+    .feed-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; max-height: 520px; overflow-y: auto; }
+    .feed-card { background: #202020; border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .card-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    
+    .del-btn { background: rgba(229,9,20,0.15); border: 1px solid #e50914; color: #e50914; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
     .del-btn:hover { background: var(--primary); color: #fff; }
+    .reply-btn { background: rgba(76,175,80,0.15); border: 1px solid #4caf50; color: #4caf50; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight:600; cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .reply-btn:hover { background: #4caf50; color: #fff; }
+
     .ban-btn { background: rgba(255,152,0,0.15); border: 1px solid #ff9800; color: #ff9800; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
     .ban-btn:hover { background: #ff9800; color: #fff; }
 
@@ -72,9 +83,9 @@
       <button class="tab-btn" data-tab="tab-logs"><i class="fas fa-rocket"></i> Updates</button>
     </div>
 
-    <!-- TAB 1: MESSAGES & REQUESTS -->
+    <!-- TAB 1: MESSAGES & DIRECT REPLY -->
     <div id="tab-messages" class="tab-content">
-      <h4 style="font-size: 13px; color: #aaa; margin-bottom: 10px;">User Inquiries, Reports & Attached Screenshots:</h4>
+      <h4 style="font-size: 13px; color: #aaa; margin-bottom: 10px;">User Inquiries, Reports & Reply Options:</h4>
       <div id="admin-messages-list" class="feed-list">
         <p style="color:#777; text-align:center; padding:20px;">Loading messages...</p>
       </div>
@@ -121,11 +132,11 @@
       <form id="add-log-form" style="background:#202020; border:1px solid var(--border); padding:16px; border-radius:8px;">
         <div class="form-group">
           <label>Update Version</label>
-          <input type="text" id="log-ver" placeholder="e.g. v2.5" required>
+          <input type="text" id="log-ver" placeholder="e.g. v2.6" required>
         </div>
         <div class="form-group">
           <label>Summary / Title</label>
-          <input type="text" id="log-title" placeholder="e.g. Added User Attachment Support" required>
+          <input type="text" id="log-title" placeholder="e.g. Added Admin In-App & Email Reply" required>
         </div>
         <div class="form-group">
           <label>Change Notes</label>
@@ -190,7 +201,7 @@
     });
 
     function initDashboardData() {
-      // 1. Messages Listener (With Attachment Preview)
+      // 1. Messages Listener with In-App & Email Reply
       const msgList = document.getElementById("admin-messages-list");
       onSnapshot(collection(db, "admin_messages"), (snap) => {
         document.getElementById("msg-count").textContent = snap.size;
@@ -203,31 +214,82 @@
         msgs.forEach(m => {
           const card = document.createElement("div");
           card.className = "feed-card";
+          
+          const mailSubject = encodeURIComponent(`[Movies-J Support] Regarding your inquiry: ${m.category}`);
+          const mailBody = encodeURIComponent(`Hi ${m.senderName},\n\nThank you for reaching out to Movies-J!\n\nRegarding your message:\n"${m.message || ''}"\n\n---\nAdmin Reply:\n`);
+          const mailtoUrl = `mailto:${m.senderEmail}?subject=${mailSubject}&body=${mailBody}`;
+
           card.innerHTML = `
-            <div style="flex:1;">
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <strong style="color:#fff; font-size:13px;">${m.senderName}</strong>
-                <span style="font-size:11px; color:#e50914; background:rgba(229,9,20,0.1); padding:2px 6px; border-radius:4px;">${m.category}</span>
-              </div>
-              <p style="font-size:12px; color:#aaa; margin-bottom:6px;">Email: <a href="mailto:${m.senderEmail}" style="color:#4caf50;">${m.senderEmail}</a></p>
-              ${m.message ? `<p style="font-size:13px; color:#ddd; background:#181818; padding:8px; border-radius:4px; border:1px solid #333; margin-bottom:8px;">${m.message}</p>` : ''}
-              ${m.attachment ? `
-                <div style="margin-top:6px;">
-                  <span style="font-size:11px; color:#888; display:block; margin-bottom:4px;"><i class="fas fa-image"></i> Attachment:</span>
-                  <a href="${m.attachment}" target="_blank">
-                    <img src="${m.attachment}" style="max-height:140px; max-width:260px; border-radius:6px; border:1px solid #444; object-fit:cover;" />
-                  </a>
+            <div class="card-top-row">
+              <div style="flex:1;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                  <strong style="color:#fff; font-size:13px;">${m.senderName}</strong>
+                  <span style="font-size:11px; color:#e50914; background:rgba(229,9,20,0.1); padding:2px 6px; border-radius:4px;">${m.category}</span>
                 </div>
-              ` : ''}
+                <p style="font-size:12px; color:#aaa; margin-bottom:6px;">Email: <a href="mailto:${m.senderEmail}" style="color:#4caf50;">${m.senderEmail}</a></p>
+                ${m.message ? `<p style="font-size:13px; color:#ddd; background:#181818; padding:8px; border-radius:4px; border:1px solid #333; margin-bottom:8px;">${m.message}</p>` : ''}
+                ${m.attachment ? `
+                  <div style="margin-top:6px;">
+                    <span style="font-size:11px; color:#888; display:block; margin-bottom:4px;"><i class="fas fa-image"></i> Attachment:</span>
+                    <a href="${m.attachment}" target="_blank">
+                      <img src="${m.attachment}" style="max-height:140px; max-width:260px; border-radius:6px; border:1px solid #444; object-fit:cover;" />
+                    </a>
+                  </div>
+                ` : ''}
+                
+                ${m.adminReply ? `
+                  <div style="margin-top:10px; background:#1e2d1f; border-left:3px solid #4caf50; padding:8px 12px; border-radius:4px;">
+                    <span style="font-size:11px; color:#4caf50; font-weight:bold;"><i class="fas fa-reply"></i> Your In-App Reply:</span>
+                    <p style="font-size:12px; color:#ddd; margin-top:2px;">${m.adminReply}</p>
+                  </div>
+                ` : ''}
+              </div>
+              <button class="del-btn" data-id="${m.id}" title="Delete Ticket"><i class="fas fa-trash-alt"></i></button>
             </div>
-            <button class="del-btn" data-id="${m.id}" title="Delete Message"><i class="fas fa-trash-alt"></i></button>
+
+            <!-- Reply Options Row -->
+            <div style="display:flex; align-items:center; gap:8px; border-top:1px solid #282828; padding-top:10px; margin-top:5px;">
+              <input type="text" class="inapp-reply-input" placeholder="Type in-app reply for this user..." style="flex:1; padding:7px 10px; background:#181818; border:1px solid #333; color:#fff; border-radius:4px; font-size:12px; outline:none;" value="${m.adminReply || ''}" />
+              <button class="send-inapp-reply-btn" data-id="${m.id}" style="padding:7px 12px; background:#e50914; border:none; color:#fff; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">Send In-App</button>
+              <a href="${mailtoUrl}" target="_blank" class="reply-btn" title="Open in Gmail"><i class="fas fa-envelope"></i> Reply via Gmail</a>
+            </div>
           `;
           msgList.appendChild(card);
         });
 
+        // Delete Ticket
         msgList.querySelectorAll(".del-btn").forEach(btn => {
           btn.onclick = () => {
-            if (confirm("Delete this message?")) deleteDoc(doc(db, "admin_messages", btn.getAttribute("data-id")));
+            if (confirm("Delete this message ticket?")) deleteDoc(doc(db, "admin_messages", btn.getAttribute("data-id")));
+          };
+        });
+
+        // Send In-App Reply
+        msgList.querySelectorAll(".send-inapp-reply-btn").forEach(btn => {
+          btn.onclick = async () => {
+            const cardElem = btn.closest(".feed-card");
+            const replyText = cardElem.querySelector(".inapp-reply-input").value.trim();
+            const msgId = btn.getAttribute("data-id");
+
+            if (!replyText) return alert("Please type your reply first.");
+
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+
+            try {
+              await updateDoc(doc(db, "admin_messages", msgId), {
+                adminReply: replyText,
+                repliedAt: serverTimestamp(),
+                isReadByUser: false
+              });
+              alert("In-App Reply sent to user!");
+            } catch (e) {
+              console.error(e);
+              alert("Failed to save reply.");
+            } finally {
+              btn.disabled = false;
+              btn.textContent = "Send In-App";
+            }
           };
         });
       });

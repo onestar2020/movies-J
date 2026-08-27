@@ -16,70 +16,134 @@ import {
   getDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// 1. Google Login (Auto-verified na ang Google accounts)
+// ================= CUSTOM TOAST NOTIFICATION (NO BROWSER ALERT) =================
+function showAuthToast(message, type = "error") {
+  let toast = document.getElementById("auth-toast-msg");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "auth-toast-msg";
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      z-index: 99999;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+    `;
+    document.body.appendChild(toast);
+  }
+
+  const isSuccess = type === "success";
+  toast.style.background = isSuccess ? "#1e4620" : "#3b1111";
+  toast.style.border = `1px solid ${isSuccess ? "#2e7d32" : "#d32f2f"}`;
+  toast.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}" style="color:${isSuccess ? '#4caf50' : '#e50914'}; font-size:16px;"></i> ${message}`;
+
+  toast.style.opacity = "1";
+  toast.style.transform = "translateX(-50%) translateY(0)";
+
+  clearTimeout(toast.hideTimeout);
+  toast.hideTimeout = setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(-50%) translateY(-10px)";
+  }, 4000);
+}
+
+// Translate raw Firebase errors into clean, friendly text
+function getCleanErrorMessage(errCode) {
+  switch (errCode) {
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Incorrect email or password. Please try again.";
+    case "auth/email-already-in-use":
+      return "An account with this email already exists.";
+    case "auth/invalid-email":
+      return "Please enter a valid email address.";
+    case "auth/weak-password":
+      return "Password is too weak. Please use at least 6 characters.";
+    case "auth/too-many-requests":
+      return "Too many failed attempts. Please wait a moment or reset your password.";
+    case "auth/popup-closed-by-user":
+      return "Google Sign-In was cancelled.";
+    default:
+      return "Authentication error. Please check your details and try again.";
+  }
+}
+
+// 1. Google Login
 export async function loginWithGoogle() {
   try {
     const result = await signInWithPopup(auth, provider);
     await syncUserToFirestore(result.user);
     closeAuthModal();
+    showAuthToast(`Welcome back, ${result.user.displayName || "User"}!`, "success");
   } catch (error) {
     console.error("Google Auth Error:", error);
-    alert("Google Sign-In Error: " + error.message);
+    showAuthToast(getCleanErrorMessage(error.code), "error");
   }
 }
 
-// 2. Email/Password Register (May Email Verification para i-block ang fake email)
+// 2. Email/Password Register (With Verification)
 export async function registerWithEmail(email, password, username) {
   try {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(result.user, { displayName: username });
     
-    // Send Verification Email
     await sendEmailVerification(result.user);
-    
-    // I-logout muna para hindi makapasok ang hindi verified
     await signOut(auth);
     
-    alert(`Verification link has been sent to ${email}!\nPlease check your inbox/spam and verify before logging in.`);
+    showAuthToast(`Verification link sent to ${email}! Check inbox/spam.`, "success");
     switchAuthMode("login");
   } catch (error) {
     console.error("Register Error:", error);
-    alert("Registration Error: " + error.message);
+    showAuthToast(getCleanErrorMessage(error.code), "error");
   }
 }
 
-// 3. Email/Password Login (Bina-block kung hindi pa na-click ang link sa Gmail)
+// 3. Email/Password Login
 export async function loginWithEmail(email, password) {
   try {
     const result = await signInWithEmailAndPassword(auth, email, password);
     
     if (!result.user.emailVerified) {
       await signOut(auth);
-      alert("Please verify your email address first! Check the link sent to your inbox/spam folder.");
+      showAuthToast("Please verify your email first! Check your inbox or spam.", "error");
       return;
     }
 
     await syncUserToFirestore(result.user);
     closeAuthModal();
+    showAuthToast(`Welcome back, ${result.user.displayName || "User"}!`, "success");
   } catch (error) {
     console.error("Login Error:", error);
-    alert("Login Error: " + error.message);
+    showAuthToast(getCleanErrorMessage(error.code), "error");
   }
 }
 
-// 4. Forgot Password (Magpapadala ng reset link sa email)
+// 4. Forgot Password
 export async function forgotPassword(email) {
   if (!email) {
-    alert("Please enter your email address first.");
+    showAuthToast("Please enter your email address first.", "error");
     return;
   }
   try {
     await sendPasswordResetEmail(auth, email);
-    alert(`Password reset link sent to ${email}! Check your inbox or spam.`);
+    showAuthToast(`Password reset link sent to ${email}!`, "success");
     switchAuthMode("login");
   } catch (error) {
     console.error("Password Reset Error:", error);
-    alert("Reset Error: " + error.message);
+    showAuthToast(getCleanErrorMessage(error.code), "error");
   }
 }
 
@@ -87,6 +151,7 @@ export async function forgotPassword(email) {
 export async function logoutUser() {
   try {
     await signOut(auth);
+    showAuthToast("Logged out successfully.", "success");
   } catch (error) {
     console.error("Logout Error:", error);
   }
@@ -124,7 +189,6 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         console.warn("Could not fetch remote user doc:", e);
       }
 
-      // Profile Button na may Popup Dropdown Menu (hindi na mag-back to sign in agad)
       authContainer.innerHTML = `
         <div style="position:relative; display:inline-block;">
           <div id="user-profile-btn" style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 8px; border-radius:6px; background:#1c1c1c; border:1px solid #333;">
@@ -133,7 +197,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
             <i class="fas fa-chevron-down" style="font-size:10px; color:#888;"></i>
           </div>
           
-          <div id="user-dropdown-menu" style="display:none; position:absolute; right:0; top:36px; background:#181818; border:1px solid #333; border-radius:6px; width:160px; z-index:9999; box-shadow:0 6px 16px rgba(0,0,0,0.8); overflow:hidden;">
+          <div id="user-dropdown-menu" style="display:none; position:absolute; right:0; top:36px; background:#181818; border:1px solid #333; border-radius:6px; width:170px; z-index:9999; box-shadow:0 6px 16px rgba(0,0,0,0.8); overflow:hidden;">
             <div style="padding:10px; border-bottom:1px solid #282828;">
               <p style="font-size:11px; color:#aaa; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${userData.email || 'Google User'}</p>
             </div>
@@ -144,7 +208,6 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         </div>
       `;
 
-      // Profile Dropdown Toggle Listener
       const profileBtn = document.getElementById("user-profile-btn");
       const dropMenu = document.getElementById("user-dropdown-menu");
       const logoutBtn = document.getElementById("menu-logout-btn");
@@ -176,8 +239,8 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   });
 }
 
-// Modal Setup & Form Switching
-let currentMode = "login"; // 'login', 'register', 'forgot'
+// Modal State Manager
+let currentMode = "login";
 
 function switchAuthMode(mode) {
   currentMode = mode;
@@ -209,10 +272,9 @@ function switchAuthMode(mode) {
     googleBtn.style.display = "none";
     orDivider.style.display = "none";
     toggleFooter.innerHTML = `
-      Remembered your password? <span id="link-to-login" style="color:#e50914; font-weight:600; cursor:pointer;">Back to Login</span>
+      Remember your password? <span id="link-to-login" style="color:#e50914; font-weight:600; cursor:pointer;">Back to Login</span>
     `;
   } else {
-    // login mode
     title.innerText = "Sign In";
     submitBtn.innerText = "Sign In";
     usernameField.style.display = "none";
@@ -282,7 +344,7 @@ function setupAuthModalHTML() {
   `;
   document.body.appendChild(modal);
 
-  // Eye Icon Show/Hide Password
+  // Eye Icon Password Toggle
   const pwdInput = document.getElementById("auth-password-input");
   const pwdToggle = document.getElementById("togglePasswordVisibility");
 
@@ -294,11 +356,9 @@ function setupAuthModalHTML() {
     pwdToggle.style.color = isPassword ? "#e50914" : "#888";
   };
 
-  // Close & Google Auth Actions
   document.getElementById("close-auth-modal").onclick = closeAuthModal;
   document.getElementById("auth-google-btn").onclick = loginWithGoogle;
 
-  // Submit Handler
   document.getElementById("auth-submit-btn").onclick = () => {
     const email = document.getElementById("auth-email-input").value.trim();
     const pass = document.getElementById("auth-password-input").value.trim();
@@ -307,10 +367,10 @@ function setupAuthModalHTML() {
     if (currentMode === "forgot") {
       forgotPassword(email);
     } else if (currentMode === "register") {
-      if (!email || !pass || !uname) return alert("Please fill in username, email, and password.");
+      if (!email || !pass || !uname) return showAuthToast("Please complete all fields.", "error");
       registerWithEmail(email, pass, uname);
     } else {
-      if (!email || !pass) return alert("Please enter your email and password.");
+      if (!email || !pass) return showAuthToast("Please enter your email and password.", "error");
       loginWithEmail(email, pass);
     }
   };

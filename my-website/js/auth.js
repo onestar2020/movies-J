@@ -1,4 +1,4 @@
-// js/auth.js (With Realtime Banned/Deleted User Auto-Logout Enforcement)
+// js/auth.js (With Realtime Removed User Auto-Logout Enforcement)
 import { auth, provider, db } from "./firebase-config.js";
 import { 
   signInWithPopup, 
@@ -19,6 +19,8 @@ import {
   onSnapshot,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
 
 // ================= CUSTOM TOAST NOTIFICATION =================
 function showAuthToast(message, type = "error") {
@@ -91,10 +93,10 @@ export async function loginWithGoogle() {
     const userRef = doc(db, "users", result.user.uid);
     const snap = await getDoc(userRef);
     
-    // Check kung banned o deleted
-    if (snap.exists() && snap.data().isBanned === true) {
+    // Check kung tinanggal na ang account sa Firestore ng admin
+    if (!snap.exists() && result.user.email !== DEDICATED_ADMIN_EMAIL) {
       await signOut(auth);
-      showAuthToast("Your account has been suspended by the administrator.", "error");
+      showAuthToast("This account has been removed by the administrator.", "error");
       return;
     }
 
@@ -136,10 +138,10 @@ export async function loginWithEmail(email, password) {
     const userRef = doc(db, "users", result.user.uid);
     const snap = await getDoc(userRef);
 
-    // Check kung banned o deleted
-    if (snap.exists() && snap.data().isBanned === true) {
+    // Check kung tinanggal na ang account sa Firestore ng admin
+    if (!snap.exists() && result.user.email !== DEDICATED_ADMIN_EMAIL) {
       await signOut(auth);
-      showAuthToast("Your account has been suspended by the administrator.", "error");
+      showAuthToast("This account has been removed by the administrator.", "error");
       return;
     }
 
@@ -179,16 +181,21 @@ async function syncUserToFirestore(user) {
   try {
     const userRef = doc(db, "users", user.uid);
     const snap = await getDoc(userRef);
-    const existing = snap.exists() ? snap.data() : {};
 
-    await setDoc(userRef, {
-      uid: user.uid,
-      displayName: user.displayName || existing.displayName || "User",
-      email: user.email,
-      photoURL: user.photoURL || existing.photoURL || "images/logo-192.png",
-      isBanned: existing.isBanned || false,
-      lastLogin: new Date().toISOString()
-    }, { merge: true });
+    if (!snap.exists()) {
+      await setDoc(userRef, {
+        uid: user.uid,
+        displayName: user.displayName || "User",
+        email: user.email,
+        photoURL: user.photoURL || "images/logo-192.png",
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      });
+    } else {
+      await setDoc(userRef, {
+        lastLogin: new Date().toISOString()
+      }, { merge: true });
+    }
   } catch (err) {
     console.warn("Firestore sync warning:", err);
   }
@@ -225,7 +232,7 @@ function compressImage(file, maxWidth = 1280, quality = 0.75) {
   });
 }
 
-// Observer + Dropdown Profile UI + Real-time Ban Check
+// Observer + Dropdown Profile UI + Real-time User Existence Check
 export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   setupAuthModalHTML();
   setupContactAdminModalHTML();
@@ -235,30 +242,29 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
 
     if (user && (user.emailVerified || user.providerData.some(p => p.providerId === 'google.com'))) {
       const userRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userRef);
 
-      // Realtime listener sa status ng user (Auto Kick / Auto Logout kung Banned)
+      // Kung binura sa Admin Panel (Wala na sa Firestore), kick-out agad
+      if (!userDoc.exists() && user.email !== DEDICATED_ADMIN_EMAIL) {
+        await signOut(auth);
+        alert("This account has been removed by the administrator.");
+        window.location.reload();
+        return;
+      }
+
+      // Realtime listener habang online: kapag binura sa Admin Panel, auto-logout agad
       onSnapshot(userRef, (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.isBanned === true) {
-            signOut(auth);
-            alert("Your account has been deactivated or banned by the administrator.");
-            window.location.reload();
-            return;
-          }
+        if (!docSnap.exists() && user.email !== DEDICATED_ADMIN_EMAIL) {
+          signOut(auth);
+          alert("Your account was removed by the administrator.");
+          window.location.reload();
         }
       });
 
-      let userData = user;
-      try {
-        const userDoc = await getDoc(userRef);
-        if (userDoc.exists()) userData = userDoc.data();
-      } catch (e) {
-        console.warn("Could not fetch user doc:", e);
-      }
+      let userData = userDoc.exists() ? userDoc.data() : user;
 
       if (authContainer) {
-        const isAdmin = user.email === "jayjovendinawanao2020@gmail.com";
+        const isAdmin = user.email === DEDICATED_ADMIN_EMAIL;
 
         authContainer.innerHTML = `
           <div style="position:relative; display:inline-block;">

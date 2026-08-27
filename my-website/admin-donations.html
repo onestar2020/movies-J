@@ -31,8 +31,8 @@
 
     /* Lists */
     .feed-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; max-height: 480px; overflow-y: auto; }
-    .feed-card { background: #202020; border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .del-btn { background: rgba(229,9,20,0.15); border: 1px solid #e50914; color: #e50914; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
+    .feed-card { background: #202020; border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .del-btn { background: rgba(229,9,20,0.15); border: 1px solid #e50914; color: #e50914; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
     .del-btn:hover { background: var(--primary); color: #fff; }
     .ban-btn { background: rgba(255,152,0,0.15); border: 1px solid #ff9800; color: #ff9800; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
     .ban-btn:hover { background: #ff9800; color: #fff; }
@@ -72,9 +72,9 @@
       <button class="tab-btn" data-tab="tab-logs"><i class="fas fa-rocket"></i> Updates</button>
     </div>
 
-    <!-- TAB 1: MESSAGES -->
+    <!-- TAB 1: MESSAGES & REQUESTS -->
     <div id="tab-messages" class="tab-content">
-      <h4 style="font-size: 13px; color: #aaa; margin-bottom: 10px;">User Inquiries & Requests:</h4>
+      <h4 style="font-size: 13px; color: #aaa; margin-bottom: 10px;">User Inquiries, Reports & Attached Screenshots:</h4>
       <div id="admin-messages-list" class="feed-list">
         <p style="color:#777; text-align:center; padding:20px;">Loading messages...</p>
       </div>
@@ -125,7 +125,7 @@
         </div>
         <div class="form-group">
           <label>Summary / Title</label>
-          <input type="text" id="log-title" placeholder="e.g. Added Admin Moderation Dashboard" required>
+          <input type="text" id="log-title" placeholder="e.g. Added User Attachment Support" required>
         </div>
         <div class="form-group">
           <label>Change Notes</label>
@@ -190,7 +190,7 @@
     });
 
     function initDashboardData() {
-      // 1. Messages Listener
+      // 1. Messages Listener (With Attachment Preview)
       const msgList = document.getElementById("admin-messages-list");
       onSnapshot(collection(db, "admin_messages"), (snap) => {
         document.getElementById("msg-count").textContent = snap.size;
@@ -210,7 +210,15 @@
                 <span style="font-size:11px; color:#e50914; background:rgba(229,9,20,0.1); padding:2px 6px; border-radius:4px;">${m.category}</span>
               </div>
               <p style="font-size:12px; color:#aaa; margin-bottom:6px;">Email: <a href="mailto:${m.senderEmail}" style="color:#4caf50;">${m.senderEmail}</a></p>
-              <p style="font-size:13px; color:#ddd; background:#181818; padding:8px; border-radius:4px; border:1px solid #333;">${m.message}</p>
+              ${m.message ? `<p style="font-size:13px; color:#ddd; background:#181818; padding:8px; border-radius:4px; border:1px solid #333; margin-bottom:8px;">${m.message}</p>` : ''}
+              ${m.attachment ? `
+                <div style="margin-top:6px;">
+                  <span style="font-size:11px; color:#888; display:block; margin-bottom:4px;"><i class="fas fa-image"></i> Attachment:</span>
+                  <a href="${m.attachment}" target="_blank">
+                    <img src="${m.attachment}" style="max-height:140px; max-width:260px; border-radius:6px; border:1px solid #444; object-fit:cover;" />
+                  </a>
+                </div>
+              ` : ''}
             </div>
             <button class="del-btn" data-id="${m.id}" title="Delete Message"><i class="fas fa-trash-alt"></i></button>
           `;
@@ -224,11 +232,11 @@
         });
       });
 
-      // 2. Comments Moderation Listener (ALL MOVIES & SHOWS)
+      // 2. Comments Moderation Listener
       const commList = document.getElementById("admin-comments-list");
       onSnapshot(collection(db, "comments"), (snap) => {
         document.getElementById("comment-count").textContent = snap.size;
-        commList.innerHTML = snap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No comments found across all titles.</p>` : "";
+        commList.innerHTML = snap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No comments found.</p>` : "";
 
         const comms = [];
         snap.forEach(d => comms.push({ id: d.id, ...d.data() }));
@@ -242,11 +250,11 @@
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
                 <img src="${c.userPhoto || 'images/logo-192.png'}" style="width:24px; height:24px; border-radius:50%;">
                 <strong style="color:#fff; font-size:13px;">${c.userName || 'User'}</strong>
-                <span style="font-size:11px; background:#333; color:#ffb74d; padding:2px 6px; border-radius:4px;">${c.mediaTitle || 'Movie #' + c.mediaId}</span>
+                <span style="font-size:11px; background:#333; color:#ffb74d; padding:2px 6px; border-radius:4px;">${c.mediaTitle || 'Title'}</span>
               </div>
               <p style="font-size:13px; color:#ddd; background:#181818; padding:8px; border-radius:4px; border:1px solid #333; margin-top:5px;">${c.text}</p>
             </div>
-            <button class="del-btn" data-id="${c.id}" title="Delete Comment as Admin"><i class="fas fa-trash-alt"></i> Delete</button>
+            <button class="del-btn" data-id="${c.id}" title="Delete Comment"><i class="fas fa-trash-alt"></i> Delete</button>
           `;
           commList.appendChild(card);
         });
@@ -296,7 +304,7 @@
 
         userList.querySelectorAll(".del-btn").forEach(btn => {
           btn.onclick = () => {
-            if (confirm("Delete this user profile record?")) deleteDoc(doc(db, "users", btn.getAttribute("data-id")));
+            if (confirm("Delete this user record?")) deleteDoc(doc(db, "users", btn.getAttribute("data-id")));
           };
         });
       });

@@ -1,4 +1,4 @@
-// js/auth.js (With User Inbox & Admin Replies Tab)
+// js/auth.js (Modern Support & Inquiries Flow)
 import { auth, provider, db } from "./firebase-config.js";
 import { 
   signInWithPopup, 
@@ -206,7 +206,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
               </a>
             ` : ''}
 
-            <!-- MESSAGE ADMIN DROPDOWN OPTION -->
+            <!-- SUPPORT & INQUIRIES OPTION -->
             <button id="menu-contact-admin-btn" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#fff; font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:1px solid #282828;">
               <i class="fas fa-envelope-open-text" style="color:#e50914;"></i> Support & Inquiries
             </button>
@@ -258,7 +258,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   });
 }
 
-// ================= CONTACT ADMIN MODAL WITH IN-APP REPLIES =================
+// ================= CONTACT ADMIN MODAL WITH CLEAN REPLIES =================
 function setupContactAdminModalHTML() {
   if (document.getElementById("contact-admin-modal")) return;
 
@@ -270,10 +270,10 @@ function setupContactAdminModalHTML() {
     <div style="background:#181818; border:1px solid #333; border-radius:12px; max-width:480px; width:100%; padding:22px; position:relative; box-shadow:0 10px 30px rgba(0,0,0,0.9); max-height:90vh; overflow-y:auto;">
       <span id="close-contact-modal" style="position:absolute; right:15px; top:12px; font-size:20px; color:#888; cursor:pointer;">&times;</span>
       
-      <!-- Sub-Tabs: New Message vs Admin Replies -->
-      <div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #282828; padding-bottom:10px;">
-        <button id="tab-btn-send-msg" style="background:transparent; border:none; color:#e50914; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px; border-bottom:2px solid #e50914;">New Inquiry / Request</button>
-        <button id="tab-btn-view-replies" style="background:transparent; border:none; color:#888; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px;">My Tickets & Replies</button>
+      <!-- Clean Tab Switcher -->
+      <div style="display:flex; gap:16px; margin-bottom:18px; border-bottom:1px solid #282828; padding-bottom:10px;">
+        <button id="tab-btn-send-msg" style="background:transparent; border:none; color:#e50914; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px; border-bottom:2px solid #e50914;">New Inquiry</button>
+        <button id="tab-btn-view-replies" style="background:transparent; border:none; color:#888; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px;">My Inquiries & Replies</button>
       </div>
 
       <!-- VIEW 1: SEND MESSAGE -->
@@ -290,7 +290,7 @@ function setupContactAdminModalHTML() {
 
         <div style="margin-bottom:10px;">
           <label style="font-size:11px; color:#aaa;">Your Message</label>
-          <textarea id="modal-msg-text" rows="3" style="width:100%; padding:9px; background:#222; border:1px solid #444; color:#fff; border-radius:6px; font-size:13px; margin-top:4px; resize:vertical; outline:none; font-family:inherit;" placeholder="Describe your request or issue..."></textarea>
+          <textarea id="modal-msg-text" rows="3" style="width:100%; padding:9px; background:#222; border:1px solid #444; color:#fff; border-radius:6px; font-size:13px; margin-top:4px; resize:vertical; outline:none; font-family:inherit;" placeholder="Describe your request or concern..."></textarea>
         </div>
 
         <div style="margin-bottom:15px;">
@@ -310,7 +310,7 @@ function setupContactAdminModalHTML() {
       <!-- VIEW 2: VIEW REPLIES -->
       <div id="contact-view-replies" style="display:none;">
         <div id="user-replies-feed" style="display:flex; flex-direction:column; gap:10px;">
-          <p style="color:#777; font-size:12px; text-align:center; padding:15px;">Loading your tickets...</p>
+          <p style="color:#777; font-size:12px; text-align:center; padding:15px;">Loading...</p>
         </div>
       </div>
     </div>
@@ -319,7 +319,6 @@ function setupContactAdminModalHTML() {
 
   let attachedBase64 = "";
 
-  // Switch between New Message and Ticket Replies
   const tabSend = document.getElementById("tab-btn-send-msg");
   const tabReplies = document.getElementById("tab-btn-view-replies");
   const viewSend = document.getElementById("contact-view-send");
@@ -410,7 +409,7 @@ function loadUserReplies() {
   const repliesContainer = document.getElementById("user-replies-feed");
   const user = auth.currentUser;
   if (!user) {
-    repliesContainer.innerHTML = `<p style="color:#777; font-size:12px; text-align:center; padding:15px;">Please sign in to view your previous ticket replies.</p>`;
+    repliesContainer.innerHTML = `<p style="color:#777; font-size:12px; text-align:center; padding:15px;">Please sign in to view your conversation.</p>`;
     return;
   }
 
@@ -433,16 +432,18 @@ function loadUserReplies() {
     repliesContainer.innerHTML = "";
     myMessages.forEach(item => {
       const card = document.createElement("div");
-      card.style.cssText = "background:#222; border:1px solid #333; border-radius:6px; padding:12px;";
+      card.style.cssText = "background:#222; border:1px solid #333; border-radius:8px; padding:12px;";
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
           <span style="font-size:11px; color:#e50914; font-weight:bold;">${item.category}</span>
-          <span style="font-size:10px; color:#777;">${item.adminReply ? '<span style="color:#4caf50;">● Replied</span>' : '<span style="color:#ff9800;">● Pending</span>'}</span>
+          <span style="font-size:10px; color:${item.adminReply ? '#4caf50' : '#ff9800'}; font-weight:600;">
+            ${item.adminReply ? '● Replied' : '● Pending'}
+          </span>
         </div>
         <p style="font-size:12px; color:#ddd; margin-bottom:6px;">${item.message}</p>
         ${item.adminReply ? `
-          <div style="background:#1a281a; border-left:3px solid #4caf50; padding:6px 10px; border-radius:4px; margin-top:6px;">
-            <strong style="color:#4caf50; font-size:11px;"><i class="fas fa-user-shield"></i> Admin Reply:</strong>
+          <div style="background:#19271a; border-left:3px solid #4caf50; padding:8px 12px; border-radius:4px; margin-top:6px;">
+            <strong style="color:#4caf50; font-size:11px;"><i class="fas fa-user-shield"></i> Admin:</strong>
             <p style="color:#fff; font-size:12px; margin-top:2px;">${item.adminReply}</p>
           </div>
         ` : ''}

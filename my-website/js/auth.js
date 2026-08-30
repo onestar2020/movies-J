@@ -1,4 +1,4 @@
-// js/auth.js
+// js/auth.js (With Hard Blacklist / Auto-Kick Ban System)
 import { auth, provider, db } from "./firebase-config.js";
 import { 
   signInWithPopup, 
@@ -91,10 +91,31 @@ function getCleanErrorMessage(errCode) {
   }
 }
 
+// Checker kung banned ang email sa blacklist table
+async function isEmailBanned(email) {
+  if (!email || email.toLowerCase() === DEDICATED_ADMIN_EMAIL.toLowerCase()) return false;
+  try {
+    const banRef = doc(db, "banned_users", email.toLowerCase());
+    const banSnap = await getDoc(banRef);
+    return banSnap.exists();
+  } catch (e) {
+    console.warn("Ban check warning:", e);
+    return false;
+  }
+}
+
 // 1. Google Login
 export async function loginWithGoogle() {
   try {
     const result = await signInWithPopup(auth, provider);
+    const userEmail = result.user.email || "";
+
+    if (await isEmailBanned(userEmail)) {
+      await signOut(auth);
+      showAuthToast("Your account has been banned by the administrator.", "error");
+      return;
+    }
+
     await syncUserToFirestore(result.user);
     closeAuthModal();
     showAuthToast(`Welcome, ${result.user.displayName || "User"}!`, "success");
@@ -107,6 +128,11 @@ export async function loginWithGoogle() {
 // 2. Email/Password Register
 export async function registerWithEmail(email, password, username) {
   try {
+    if (await isEmailBanned(email)) {
+      showAuthToast("This email has been banned from registering.", "error");
+      return;
+    }
+
     const result = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(result.user, { displayName: username });
     await syncUserToFirestore(result.user);
@@ -123,10 +149,21 @@ export async function registerWithEmail(email, password, username) {
 // 3. Email/Password Login
 export async function loginWithEmail(email, password) {
   try {
+    if (await isEmailBanned(email)) {
+      showAuthToast("Your account has been banned by the administrator.", "error");
+      return;
+    }
+
     const result = await signInWithEmailAndPassword(auth, email, password);
     if (!result.user.emailVerified) {
       await signOut(auth);
       showAuthToast("Please verify your email first! Check your inbox.", "error");
+      return;
+    }
+
+    if (await isEmailBanned(result.user.email)) {
+      await signOut(auth);
+      showAuthToast("Your account has been banned by the administrator.", "error");
       return;
     }
 
@@ -174,7 +211,8 @@ async function syncUserToFirestore(user) {
         email: user.email,
         photoURL: user.photoURL || "images/logo-192.png",
         createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
+        lastLogin: new Date().toISOString(),
+        isBanned: false
       });
     } else {
       await setDoc(userRef, {
@@ -219,7 +257,7 @@ function compressImage(file, maxWidth = 1280, quality = 0.75) {
   });
 }
 
-// Observer + Dropdown Profile UI + Real-time Sync
+// Observer + Realtime Banned Auto-Kick
 export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   setupAuthModalHTML();
   setupContactAdminModalHTML();
@@ -228,20 +266,29 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
     const authContainer = document.getElementById("auth-nav-container");
 
     if (user && (user.emailVerified || user.providerData.some(p => p.providerId === 'google.com'))) {
+      const userEmail = (user.email || "").toLowerCase();
+
+      // Check kung banned ang email
+      if (await isEmailBanned(userEmail)) {
+        await signOut(auth);
+        showAuthToast("Your account has been banned by the administrator.", "error");
+        return;
+      }
+
       const userRef = doc(db, "users", user.uid);
       let userDoc = await getDoc(userRef);
 
-      // Kung pumasok via Google at wala pa sa Firestore, i-sync agad bilang fresh account
       if (!userDoc.exists()) {
         await syncUserToFirestore(user);
         userDoc = await getDoc(userRef);
       }
 
-      // Realtime listener habang online: kapag pinindot ni admin ang remove, auto-logout
-      onSnapshot(userRef, (docSnap) => {
-        if (!docSnap.exists() && user.email !== DEDICATED_ADMIN_EMAIL) {
+      // Realtime listener habang online ang user (Kung i-ban ni Admin, sipa agad)
+      const banRef = doc(db, "banned_users", userEmail);
+      onSnapshot(banRef, (banSnap) => {
+        if (banSnap.exists() && userEmail !== DEDICATED_ADMIN_EMAIL.toLowerCase()) {
           signOut(auth);
-          showAuthToast("Your account session has ended.", "error");
+          showAuthToast("Your account has been suspended by the administrator.", "error");
         }
       });
 

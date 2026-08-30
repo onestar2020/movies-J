@@ -397,40 +397,73 @@
         });
       });
 
-     // 3. User Management
+   // 3. User Management (Active vs Banned with Unban Control)
       const userList = document.getElementById("admin-users-list");
-      onSnapshot(collection(db, "users"), (snap) => {
-        userList.innerHTML = snap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No registered users.</p>` : "";
+      
+      onSnapshot(collection(db, "users"), async (usersSnap) => {
+        // Kumuha ng realtime ban list
+        const bannedSnap = await getDocs(collection(db, "banned_users"));
+        const bannedEmails = new Set();
+        bannedSnap.forEach(d => bannedEmails.add(d.id.toLowerCase()));
 
-        snap.forEach(docSnap => {
+        userList.innerHTML = usersSnap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No registered users.</p>` : "";
+
+        usersSnap.forEach(docSnap => {
           const u = docSnap.data();
+          const emailKey = (u.email || "").toLowerCase();
+          const isBanned = bannedEmails.has(emailKey) || u.isBanned === true;
+
           const card = document.createElement("div");
           card.className = "feed-card";
+          card.style.cssText = `display:flex; align-items:center; justify-content:space-between; width:100%; flex-wrap:wrap; gap:10px; padding:12px; background:#1c1c1c; border-radius:8px; margin-bottom:8px; border-left:4px solid ${isBanned ? '#e50914' : '#4caf50'};`;
+          
           card.innerHTML = `
-            <div style="display:flex; align-items:center; justify-content:space-between; width:100%; flex-wrap:wrap; gap:10px;">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <img src="${u.photoURL || 'images/logo-192.png'}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
-                <div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="${u.photoURL || 'images/logo-192.png'}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px;">
                   <strong style="font-size:13px; color:#fff;">${u.displayName || 'User'}</strong>
-                  <p style="font-size:11px; color:#888;">${u.email || 'No email'}</p>
+                  <span style="font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700; background:${isBanned ? 'rgba(229,9,20,0.2)' : 'rgba(76,175,80,0.2)'}; color:${isBanned ? '#e50914' : '#4caf50'};">
+                    ${isBanned ? 'BANNED' : 'ACTIVE'}
+                  </span>
                 </div>
+                <p style="font-size:11px; color:#888; margin:0;">${u.email || 'No email'}</p>
               </div>
-              <button class="del-btn" data-id="${docSnap.id}" style="padding:6px 14px; background:#e50914; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:12px; display:flex; align-items:center; gap:6px;">
-                <i class="fas fa-trash-alt"></i> Remove
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="toggle-ban-btn" data-email="${emailKey}" data-uid="${docSnap.id}" data-banned="${isBanned}" style="padding:6px 14px; background:${isBanned ? '#2e7d32' : '#d32f2f'}; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:12px; display:flex; align-items:center; gap:6px;">
+                <i class="fas ${isBanned ? 'fa-user-check' : 'fa-ban'}"></i> ${isBanned ? 'Unban User' : 'Ban & Block'}
               </button>
             </div>
           `;
           userList.appendChild(card);
         });
 
-        userList.querySelectorAll(".del-btn").forEach(btn => {
+        // Event listener para sa Ban / Unban
+        userList.querySelectorAll(".toggle-ban-btn").forEach(btn => {
           btn.onclick = async () => {
-            const uId = btn.getAttribute("data-id");
-            if (confirm("Are you sure you want to remove this user?")) {
-              btn.disabled = true;
-              btn.textContent = "Removing...";
-              // Burahin ang user sa Firestore database
-              await deleteDoc(doc(db, "users", uId));
+            const email = btn.getAttribute("data-email");
+            const uid = btn.getAttribute("data-uid");
+            const isCurrentlyBanned = btn.getAttribute("data-banned") === "true";
+
+            if (!email) return;
+
+            btn.disabled = true;
+            btn.textContent = "Updating...";
+
+            if (isCurrentlyBanned) {
+              // UNBAN: Alisin sa banned_users table at i-activate sa users table
+              await deleteDoc(doc(db, "banned_users", email));
+              await setDoc(doc(db, "users", uid), { isBanned: false }, { merge: true });
+            } else {
+              if (confirm(`Are you sure you want to ban ${email}? They will be kicked immediately and cannot sign in again.`)) {
+                // BAN: Isulat sa banned_users table gamit ang email bilang ID
+                await setDoc(doc(db, "banned_users", email), {
+                  bannedAt: new Date().toISOString(),
+                  uid: uid
+                });
+                await setDoc(doc(db, "users", uid), { isBanned: true }, { merge: true });
+              }
             }
           };
         });

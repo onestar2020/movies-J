@@ -397,7 +397,7 @@
         });
       });
 
-     // 3. User Management (Remove User)
+     // 3. User Management
       const userList = document.getElementById("admin-users-list");
       onSnapshot(collection(db, "users"), (snap) => {
         userList.innerHTML = snap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No registered users.</p>` : "";
@@ -407,7 +407,7 @@
           const card = document.createElement("div");
           card.className = "feed-card";
           card.innerHTML = `
-            <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+            <div style="display:flex; align-items:center; justify-content:space-between; width:100%; flex-wrap:wrap; gap:10px;">
               <div style="display:flex; align-items:center; gap:10px;">
                 <img src="${u.photoURL || 'images/logo-192.png'}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
                 <div>
@@ -415,7 +415,9 @@
                   <p style="font-size:11px; color:#888;">${u.email || 'No email'}</p>
                 </div>
               </div>
-              <button class="del-btn" data-id="${docSnap.id}" title="Remove User Access"><i class="fas fa-trash-alt"></i> Remove</button>
+              <button class="del-btn" data-id="${docSnap.id}" style="padding:6px 14px; background:#e50914; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:12px; display:flex; align-items:center; gap:6px;">
+                <i class="fas fa-trash-alt"></i> Remove
+              </button>
             </div>
           `;
           userList.appendChild(card);
@@ -423,8 +425,11 @@
 
         userList.querySelectorAll(".del-btn").forEach(btn => {
           btn.onclick = async () => {
-            if (confirm("Permanently remove this user? Their account access will be revoked immediately.")) {
-              const uId = btn.getAttribute("data-id");
+            const uId = btn.getAttribute("data-id");
+            if (confirm("Are you sure you want to remove this user?")) {
+              btn.disabled = true;
+              btn.textContent = "Removing...";
+              // Burahin ang user sa Firestore database
               await deleteDoc(doc(db, "users", uId));
             }
           };

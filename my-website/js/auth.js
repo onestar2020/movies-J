@@ -1,4 +1,4 @@
-// js/auth.js (With Modern Dark-Themed Toast & Auto-Logout Enforcement)
+// js/auth.js
 import { auth, provider, db } from "./firebase-config.js";
 import { 
   signInWithPopup, 
@@ -22,7 +22,7 @@ import {
 
 const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
 
-// ================= MODERN FLOATING TOAST NOTIFICATION =================
+// ================= MODERN DARK-MODE FLOATING TOAST =================
 function showAuthToast(message, type = "error") {
   let toast = document.getElementById("auth-toast-msg");
   if (!toast) {
@@ -32,31 +32,31 @@ function showAuthToast(message, type = "error") {
       position: fixed;
       top: 25px;
       left: 50%;
-      transform: translateX(-50%) translateY(-20px);
-      padding: 14px 24px;
+      transform: translateX(-50%) translateY(-25px);
+      padding: 12px 22px;
       border-radius: 10px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       color: #fff;
-      z-index: 9999999;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+      z-index: 99999999;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
       display: flex;
       align-items: center;
-      gap: 12px;
-      transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      gap: 10px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       opacity: 0;
       pointer-events: none;
-      backdrop-filter: blur(8px);
-      font-family: 'Poppins', sans-serif;
+      backdrop-filter: blur(10px);
+      font-family: inherit;
     `;
     document.body.appendChild(toast);
   }
 
   const isSuccess = type === "success";
-  toast.style.background = isSuccess ? "rgba(30, 70, 32, 0.95)" : "rgba(45, 12, 12, 0.95)";
-  toast.style.border = `1px solid ${isSuccess ? "#4caf50" : "#e50914"}`;
+  toast.style.background = isSuccess ? "rgba(22, 54, 25, 0.95)" : "rgba(50, 15, 15, 0.95)";
+  toast.style.border = `1px solid ${isSuccess ? "#2e7d32" : "#d32f2f"}`;
   toast.innerHTML = `
-    <i class="fas ${isSuccess ? 'fa-circle-check' : 'fa-triangle-exclamation'}" style="color:${isSuccess ? '#4caf50' : '#e50914'}; font-size:18px;"></i>
+    <i class="fas ${isSuccess ? 'fa-circle-check' : 'fa-circle-exclamation'}" style="color:${isSuccess ? '#4caf50' : '#e50914'}; font-size:16px;"></i>
     <span>${message}</span>
   `;
 
@@ -95,19 +95,9 @@ function getCleanErrorMessage(errCode) {
 export async function loginWithGoogle() {
   try {
     const result = await signInWithPopup(auth, provider);
-    const userRef = doc(db, "users", result.user.uid);
-    const snap = await getDoc(userRef);
-    
-    // Kung tinanggal ng admin ang account, i-block agad
-    if (!snap.exists() && result.user.email !== DEDICATED_ADMIN_EMAIL) {
-      await signOut(auth);
-      showAuthToast("This account was removed by the administrator.", "error");
-      return;
-    }
-
     await syncUserToFirestore(result.user);
     closeAuthModal();
-    showAuthToast(`Welcome back, ${result.user.displayName || "User"}!`, "success");
+    showAuthToast(`Welcome, ${result.user.displayName || "User"}!`, "success");
   } catch (error) {
     console.error("Google Auth Error:", error);
     showAuthToast(getCleanErrorMessage(error.code), "error");
@@ -137,16 +127,6 @@ export async function loginWithEmail(email, password) {
     if (!result.user.emailVerified) {
       await signOut(auth);
       showAuthToast("Please verify your email first! Check your inbox.", "error");
-      return;
-    }
-
-    const userRef = doc(db, "users", result.user.uid);
-    const snap = await getDoc(userRef);
-
-    // Kung tinanggal ng admin ang account, i-block agad
-    if (!snap.exists() && result.user.email !== DEDICATED_ADMIN_EMAIL) {
-      await signOut(auth);
-      showAuthToast("This account was removed by the administrator.", "error");
       return;
     }
 
@@ -198,6 +178,8 @@ async function syncUserToFirestore(user) {
       });
     } else {
       await setDoc(userRef, {
+        displayName: user.displayName || snap.data().displayName || "User",
+        photoURL: user.photoURL || snap.data().photoURL || "images/logo-192.png",
         lastLogin: new Date().toISOString()
       }, { merge: true });
     }
@@ -237,7 +219,7 @@ function compressImage(file, maxWidth = 1280, quality = 0.75) {
   });
 }
 
-// Observer + Dropdown Profile UI + Real-time User Existence Check
+// Observer + Dropdown Profile UI + Real-time Sync
 export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   setupAuthModalHTML();
   setupContactAdminModalHTML();
@@ -247,20 +229,19 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
 
     if (user && (user.emailVerified || user.providerData.some(p => p.providerId === 'google.com'))) {
       const userRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userRef);
+      let userDoc = await getDoc(userRef);
 
-      // Kung tinanggal sa Admin Panel, auto-logout agad
-      if (!userDoc.exists() && user.email !== DEDICATED_ADMIN_EMAIL) {
-        await signOut(auth);
-        showAuthToast("This account was removed by the administrator.", "error");
-        return;
+      // Kung pumasok via Google at wala pa sa Firestore, i-sync agad bilang fresh account
+      if (!userDoc.exists()) {
+        await syncUserToFirestore(user);
+        userDoc = await getDoc(userRef);
       }
 
-      // Realtime listener habang naka-login: kapag binura sa Admin Panel
+      // Realtime listener habang online: kapag pinindot ni admin ang remove, auto-logout
       onSnapshot(userRef, (docSnap) => {
         if (!docSnap.exists() && user.email !== DEDICATED_ADMIN_EMAIL) {
           signOut(auth);
-          showAuthToast("Your account was removed by the administrator.", "error");
+          showAuthToast("Your account session has ended.", "error");
         }
       });
 

@@ -45,8 +45,23 @@
     .card-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
     .del-btn { background: rgba(229,9,20,0.15); border: 1px solid #e50914; color: #e50914; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
     .del-btn:hover { background: var(--primary); color: #fff; }
-    .ban-btn { background: rgba(255,152,0,0.15); border: 1px solid #ff9800; color: #ff9800; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
-    .ban-btn:hover { background: #ff9800; color: #fff; }
+
+    /* User Management Row Layout Styling */
+    .user-card-row {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      width: 100% !important;
+      padding: 12px 18px !important;
+      background: #1f1f1f !important;
+      border: 1px solid #2a2a2a !important;
+      border-radius: 8px !important;
+      margin-bottom: 8px !important;
+      box-sizing: border-box !important;
+    }
+    .user-card-row.is-banned { border-left: 4px solid #e50914 !important; }
+    .user-card-row.is-active { border-left: 4px solid #4caf50 !important; }
 
     /* Lightbox Modal */
     #image-lightbox-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.92); z-index: 999999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
@@ -398,7 +413,7 @@
         });
       });
 
-      // 3. User Management (Active vs Banned with Real-Time Toggle & Delete)
+      // 3. User Management (Strict Horizontal Row Alignment)
       const userList = document.getElementById("admin-users-list");
       onSnapshot(collection(db, "users"), (snap) => {
         userList.innerHTML = snap.size === 0 ? `<p style="color:#777; text-align:center; padding:20px;">No registered users.</p>` : "";
@@ -410,27 +425,26 @@
           const userEmail = u.email || 'No email';
 
           const card = document.createElement("div");
-          card.className = "feed-card";
-          card.style.cssText = `display:flex; align-items:center; justify-content:space-between; width:100%; flex-wrap:wrap; gap:10px; padding:12px; background:#1c1c1c; border-radius:8px; margin-bottom:8px; border-left:4px solid ${isBanned ? '#e50914' : '#4caf50'};`;
+          card.className = `user-card-row ${isBanned ? 'is-banned' : 'is-active'}`;
 
           card.innerHTML = `
-            <div style="display:flex; align-items:center; gap:10px;">
-              <img src="${u.photoURL || 'images/logo-192.png'}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
-              <div>
+            <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+              <img src="${u.photoURL || 'images/logo-192.png'}" style="width:38px; height:38px; border-radius:50%; object-fit:cover; border:1px solid #333; flex-shrink:0;">
+              <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
                 <div style="display:flex; align-items:center; gap:8px;">
-                  <strong style="font-size:13px; color:#fff;">${u.displayName || 'User'}</strong>
-                  <span style="font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700; background:${isBanned ? 'rgba(229,9,20,0.2)' : 'rgba(76,175,80,0.2)'}; color:${isBanned ? '#e50914' : '#4caf50'};">
+                  <strong style="font-size:13px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.displayName || 'User'}</strong>
+                  <span style="font-size:9px; padding:2px 6px; border-radius:4px; font-weight:700; background:${isBanned ? 'rgba(229,9,20,0.2)' : 'rgba(76,175,80,0.2)'}; color:${isBanned ? '#e50914' : '#4caf50'}; border:1px solid ${isBanned ? 'rgba(229,9,20,0.3)' : 'rgba(76,175,80,0.3)'};">
                     ${isBanned ? 'BANNED' : 'ACTIVE'}
                   </span>
                 </div>
-                <p style="font-size:11px; color:#888; margin:0;">${userEmail}</p>
+                <p style="font-size:11px; color:#888; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${userEmail}</p>
               </div>
             </div>
-            <div style="display:flex; gap:8px;">
-              <button class="toggle-ban-btn" data-id="${uId}" data-email="${userEmail}" data-banned="${isBanned}" style="padding:6px 12px; background:${isBanned ? '#2e7d32' : '#d32f2f'}; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:12px; display:flex; align-items:center; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+              <button class="toggle-ban-btn" data-id="${uId}" data-email="${userEmail}" data-banned="${isBanned}" style="padding:6px 14px; background:${isBanned ? '#2e7d32' : '#e50914'}; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:11px; display:inline-flex; align-items:center; gap:6px;">
                 <i class="fas ${isBanned ? 'fa-user-check' : 'fa-ban'}"></i> ${isBanned ? 'Unban' : 'Ban'}
               </button>
-              <button class="remove-user-btn" data-id="${uId}" data-email="${userEmail}" style="padding:6px 10px; background:#333; color:#aaa; border:1px solid #444; border-radius:6px; cursor:pointer; font-weight:600; font-size:12px;" title="Delete Record">
+              <button class="remove-user-btn" data-id="${uId}" data-email="${userEmail}" style="padding:6px 10px; background:#2a2a2a; color:#888; border:1px solid #333; border-radius:6px; cursor:pointer; font-size:11px;" title="Delete Record">
                 <i class="fas fa-trash-alt"></i>
               </button>
             </div>
@@ -438,7 +452,7 @@
           userList.appendChild(card);
         });
 
-        // Handler para sa Ban at Unban Toggle
+        // Toggle Ban / Unban
         userList.querySelectorAll(".toggle-ban-btn").forEach(btn => {
           btn.onclick = async () => {
             const uId = btn.getAttribute("data-id");
@@ -451,7 +465,7 @@
             if (isCurrentlyBanned) {
               await setDoc(doc(db, "users", uId), { isBanned: false }, { merge: true });
             } else {
-              if (confirm(`Ban account for ${email}? Automatic silang ili-logout at hindi na makakapasok ulit.`)) {
+              if (confirm(`Ban account for ${email}? Agad silang masisipa at hindi na makakapasok ulit.`)) {
                 await setDoc(doc(db, "users", uId), { isBanned: true }, { merge: true });
               } else {
                 btn.disabled = false;
@@ -461,7 +475,7 @@
           };
         });
 
-        // Handler para sa permanenteng pagbura ng document
+        // Delete Database Entry
         userList.querySelectorAll(".remove-user-btn").forEach(btn => {
           btn.onclick = async () => {
             const uId = btn.getAttribute("data-id");

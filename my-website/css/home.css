@@ -1309,3 +1309,58 @@ a {
     }
 }
 
+/* ================= MOBILE HEADER FIX ================= */
+@media (max-width: 768px) {
+  /* Siguraduhing may tamang agwat ang buong header */
+  .navbar, header, nav {
+    padding: 8px 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  /* Logo container - protektahan para hindi maipit */
+  .logo, .nav-logo, .brand {
+    flex-shrink: 0 !important;
+    z-index: 2 !important;
+  }
+
+  /* Online Counter Pill - gawing compact sa phone */
+  #online-counter, .online-badge, .online-pill {
+    padding: 3px 8px !important;
+    font-size: 11px !important;
+    flex-shrink: 0 !important;
+    margin: 0 4px !important;
+  }
+
+  /* Right-side icon container */
+  .nav-right, .nav-actions, .header-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Sa Profile Button: I-tago ang Text Name ("Jay") at arrow para bilog na avatar na lang */
+  #user-profile-btn span,
+  #user-profile-btn i.fa-chevron-down {
+    display: none !important;
+  }
+
+  #user-profile-btn {
+    padding: 3px !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  #user-profile-btn img {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  /* Bawasan ang laki at agwat ng icons sa kanan */
+  .nav-right i, .nav-actions i {
+    font-size: 14px !important;
+  }
+}

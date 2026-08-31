@@ -16,6 +16,7 @@ import {
   getDoc,
   collection,
   addDoc,
+  getDocs,
   onSnapshot,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -126,6 +127,70 @@ function getCleanErrorMessage(errCode) {
       return "Google Sign-In was cancelled.";
     default:
       return "Authentication error. Please check your details.";
+  }
+}
+
+// ================= SMART AUTO-VIP & DONOR DETECTOR =================
+async function checkUserVIPStatus(userEmail, userName, uid) {
+  try {
+    let donationsList = window.moviesJ_DonationsCache || [];
+    if (donationsList.length === 0) {
+      const snap = await getDocs(collection(db, "donations"));
+      snap.forEach(d => donationsList.push({ id: d.id, ...d.data() }));
+    }
+
+    const donorTotals = {};
+    let userDonatedAmount = 0;
+
+    const cleanUser = (userName || "").trim().toLowerCase();
+    const cleanEmail = (userEmail || "").trim().toLowerCase();
+    const cleanEmailPrefix = cleanEmail.split("@")[0].toLowerCase();
+
+    donationsList.forEach((d) => {
+      const rawDonorName = (d.name || "").trim();
+      const donorKey = rawDonorName.toLowerCase();
+      const amount = Number(d.amount ?? d.amountVal ?? 0);
+
+      if (!donorTotals[donorKey]) {
+        donorTotals[donorKey] = { total: 0, originalName: rawDonorName };
+      }
+      donorTotals[donorKey].total += amount;
+
+      const dEmail = (d.email || "").trim().toLowerCase();
+      const dUserId = (d.userId || "").trim();
+
+      // Flexible Matching: Name, Email, Username, Prefix
+      const isMatch = (
+        donorKey === cleanUser ||
+        (dEmail && dEmail === cleanEmail) ||
+        (dUserId && dUserId === uid) ||
+        donorKey === cleanEmailPrefix ||
+        cleanUser.includes(donorKey) ||
+        donorKey.includes(cleanUser)
+      );
+
+      if (isMatch) {
+        userDonatedAmount += amount;
+      }
+    });
+
+    let maxAmount = 0;
+    for (const [key, item] of Object.entries(donorTotals)) {
+      if (item.total > maxAmount) {
+        maxAmount = item.total;
+      }
+    }
+
+    const isTopDonor = (userDonatedAmount > 0 && userDonatedAmount >= maxAmount);
+
+    return {
+      isDonor: userDonatedAmount > 0,
+      isTopDonor: isTopDonor,
+      totalDonated: userDonatedAmount
+    };
+  } catch (err) {
+    console.warn("VIP check warning:", err);
+    return { isDonor: false, isTopDonor: false, totalDonated: 0 };
   }
 }
 
@@ -301,7 +366,9 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         return;
       }
 
-      // Realtime listener para kapag pinalitan ng Admin ang border/role/glow, magbago agad on-the-fly!
+      let userData = userDoc.exists() ? userDoc.data() : user;
+
+      // Realtime listener sa sariling document
       onSnapshot(userRef, (docSnap) => {
         if (!docSnap.exists()) return;
         const liveData = docSnap.data();
@@ -313,8 +380,6 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         updateUserUIEffects(liveData);
       });
 
-      let userData = userDoc.exists() ? userDoc.data() : user;
-
       if (authContainer) {
         const isAdmin = user.email === DEDICATED_ADMIN_EMAIL;
         const displayName = userData.displayName || "User";
@@ -322,10 +387,32 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         const streak = localStorage.getItem("moviesj_streak") || "1";
         const watchHistory = JSON.parse(localStorage.getItem("movies_j_watch_history") || "[]");
 
-        // Role & Badges
-        const role = isAdmin ? "admin" : (userData.role || "free");
-        const borderClass = getBorderClass(userData.avatarBorder || (role === 'top-donor' ? 'gold' : (role === 'vip' ? 'vip' : 'none')));
-        const glowClass = getGlowClass(userData.nameGlow || (role === 'top-donor' ? 'gold' : (role === 'vip' ? 'emerald' : 'none')));
+        // Auto-detect VIP o manual assignment
+        const vipInfo = await checkUserVIPStatus(user.email, displayName, user.uid);
+        
+        let finalRole = userData.role || "free";
+        if (isAdmin) {
+          finalRole = "admin";
+        } else if (finalRole === "free") {
+          if (vipInfo.isTopDonor) finalRole = "top-donor";
+          else if (vipInfo.isDonor) finalRole = "vip";
+        }
+
+        let defaultBorder = userData.avatarBorder || "none";
+        let defaultGlow = userData.nameGlow || "none";
+
+        if (defaultBorder === "none") {
+          if (finalRole === "top-donor") defaultBorder = "gold";
+          else if (finalRole === "vip") defaultBorder = "vip";
+        }
+
+        if (defaultGlow === "none") {
+          if (finalRole === "top-donor") defaultGlow = "gold";
+          else if (finalRole === "vip") defaultGlow = "emerald";
+        }
+
+        const borderClass = getBorderClass(defaultBorder);
+        const glowClass = getGlowClass(defaultGlow);
 
         authContainer.innerHTML = `
           <div style="position:relative; display:inline-block;" id="user-profile-dropdown">
@@ -353,7 +440,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                       <button id="rename-profile-btn" class="rename-icon-btn" title="Edit Display Name"><i class="fas fa-pen"></i></button>
                     </div>
                     <div id="user-rank-badge-container">
-                      ${getRankBadgeHTML(role, userData.donationTotal)}
+                      ${getRankBadgeHTML(finalRole, vipInfo.totalDonated)}
                     </div>
                   </div>
                 </div>
@@ -365,27 +452,27 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                   <button id="cancel-rename-btn" class="rename-action-btn btn-cancel" title="Cancel"><i class="fas fa-times"></i></button>
                 </div>
 
-                <!-- VIP Cosmetic Picker (Kung Top Donor o VIP) -->
-                ${(role === 'top-donor' || role === 'vip' || isAdmin) ? `
+                <!-- VIP Cosmetic Picker (Para sa VIP o Top Donor) -->
+                ${(finalRole === 'top-donor' || finalRole === 'vip' || isAdmin) ? `
                   <div class="cosmetics-toolbar">
                     <button id="toggle-cosmetics-btn" class="cosmetics-btn"><i class="fas fa-wand-magic-sparkles"></i> Customize Borders & Glow</button>
                     <div id="cosmetics-panel" class="cosmetics-panel" style="display:none;">
                       <label>Avatar Border:</label>
                       <select id="user-border-select">
-                        <option value="none" ${userData.avatarBorder === 'none' ? 'selected' : ''}>Default / Clean</option>
-                        <option value="gold" ${userData.avatarBorder === 'gold' ? 'selected' : ''}>👑 Top Gold Neon</option>
-                        <option value="vip" ${userData.avatarBorder === 'vip' ? 'selected' : ''}>⭐ Emerald Supporter</option>
-                        <option value="cyber" ${userData.avatarBorder === 'cyber' ? 'selected' : ''}>⚡ Cyberpunk Blue</option>
-                        <option value="fire" ${userData.avatarBorder === 'fire' ? 'selected' : ''}>🔥 Fire Crimson</option>
+                        <option value="none" ${defaultBorder === 'none' ? 'selected' : ''}>Default / Clean</option>
+                        <option value="gold" ${defaultBorder === 'gold' ? 'selected' : ''}>👑 Top Gold Neon</option>
+                        <option value="vip" ${defaultBorder === 'vip' ? 'selected' : ''}>⭐ Emerald Supporter</option>
+                        <option value="cyber" ${defaultBorder === 'cyber' ? 'selected' : ''}>⚡ Cyber Blue</option>
+                        <option value="fire" ${defaultBorder === 'fire' ? 'selected' : ''}>🔥 Fire Crimson</option>
                       </select>
                       
                       <label style="margin-top:6px;">Name Glow Style:</label>
                       <select id="user-glow-select">
-                        <option value="none" ${userData.nameGlow === 'none' ? 'selected' : ''}>Standard White</option>
-                        <option value="gold" ${userData.nameGlow === 'gold' ? 'selected' : ''}>✨ Shiny Gold Glow</option>
-                        <option value="emerald" ${userData.nameGlow === 'emerald' ? 'selected' : ''}>💚 Matrix Emerald Glow</option>
-                        <option value="blue" ${userData.nameGlow === 'blue' ? 'selected' : ''}>⚡ Neon Cyan Glow</option>
-                        <option value="red" ${userData.nameGlow === 'red' ? 'selected' : ''}>🔥 Crimson Ember Glow</option>
+                        <option value="none" ${defaultGlow === 'none' ? 'selected' : ''}>Standard White</option>
+                        <option value="gold" ${defaultGlow === 'gold' ? 'selected' : ''}>✨ Shiny Gold Glow</option>
+                        <option value="emerald" ${defaultGlow === 'emerald' ? 'selected' : ''}>💚 Matrix Emerald Glow</option>
+                        <option value="blue" ${defaultGlow === 'blue' ? 'selected' : ''}>⚡ Neon Cyan Glow</option>
+                        <option value="red" ${defaultGlow === 'red' ? 'selected' : ''}>🔥 Crimson Ember Glow</option>
                       </select>
                     </div>
                   </div>
@@ -587,7 +674,6 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   });
 }
 
-// Helper Class Resolvers
 function getBorderClass(border) {
   switch (border) {
     case 'gold': return 'avatar-border-gold';
@@ -655,199 +741,6 @@ function updateUserUIEffects(data) {
   if (rankContainer && data.role) {
     rankContainer.innerHTML = getRankBadgeHTML(data.role, data.donationTotal);
   }
-}
-
-function setupContactAdminModalHTML() {
-  if (document.getElementById("contact-admin-modal")) return;
-
-  const modal = document.createElement("div");
-  modal.id = "contact-admin-modal";
-  modal.className = "modal";
-  modal.style.cssText = "position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); backdrop-filter:blur(6px); z-index:999999; display:none; align-items:center; justify-content:center; padding:15px;";
-  modal.innerHTML = `
-    <div style="background:#141414; border:1px solid rgba(255,255,255,0.12); border-radius:16px; max-width:480px; width:100%; padding:22px; position:relative; box-shadow:0 16px 40px rgba(0,0,0,0.9); max-height:90vh; overflow-y:auto;">
-      <span id="close-contact-modal" style="position:absolute; right:15px; top:12px; font-size:20px; color:#888; cursor:pointer;">&times;</span>
-      
-      <div style="display:flex; gap:16px; margin-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px;">
-        <button id="tab-btn-send-msg" style="background:transparent; border:none; color:#e50914; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px; border-bottom:2px solid #e50914;">New Inquiry</button>
-        <button id="tab-btn-view-replies" style="background:transparent; border:none; color:#888; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px;">My Inquiries & Replies</button>
-      </div>
-
-      <div id="contact-view-send">
-        <div style="margin-bottom:10px;">
-          <label style="font-size:11px; color:#aaa;">Category</label>
-          <select id="modal-msg-category" style="width:100%; padding:9px; background:#1e1e1e; border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:8px; font-size:13px; margin-top:4px; outline:none;">
-            <option value="Donation Proof / Verification">💖 Donation Proof / Verification</option>
-            <option value="Movie / Show Request">🎬 Movie / TV Show Request</option>
-            <option value="Broken Server / Stream Issue">⚠️ Broken Server / Stream Issue</option>
-            <option value="Account / Login Concern">🔑 Account / Login Concern</option>
-            <option value="General Feedback">💬 General Feedback</option>
-          </select>
-        </div>
-
-        <div style="margin-bottom:10px;">
-          <label style="font-size:11px; color:#aaa;">Your Message</label>
-          <textarea id="modal-msg-text" rows="3" style="width:100%; padding:9px; background:#1e1e1e; border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:8px; font-size:13px; margin-top:4px; resize:vertical; outline:none; font-family:inherit;" placeholder="Describe your request or paste donation details..."></textarea>
-        </div>
-
-        <div style="margin-bottom:15px;">
-          <label style="font-size:11px; color:#aaa; display:flex; justify-content:space-between;">
-            <span>Attach Screenshot (Proof / Error)</span>
-            <span style="color:#4caf50; font-weight:600;">Max: 25MB</span>
-          </label>
-          <input type="file" id="modal-msg-file" accept="image/*" style="width:100%; padding:6px; background:#1e1e1e; border:1px dashed rgba(255,255,255,0.15); color:#aaa; border-radius:8px; font-size:12px; margin-top:4px; cursor:pointer;" />
-          <div id="image-preview-container" style="display:none; margin-top:8px;">
-            <img id="image-preview" src="" style="max-height:90px; border-radius:6px; border:1px solid #333;" />
-          </div>
-        </div>
-
-        <button id="modal-msg-send-btn" style="width:100%; padding:10px; background:#e50914; border:none; color:#fff; font-weight:700; border-radius:8px; cursor:pointer; font-size:13px;">Send Message</button>
-      </div>
-
-      <div id="contact-view-replies" style="display:none;">
-        <div id="user-replies-feed" style="display:flex; flex-direction:column; gap:10px;">
-          <p style="color:#777; font-size:12px; text-align:center; padding:15px;">Loading...</p>
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-
-  let attachedBase64 = "";
-
-  const tabSend = document.getElementById("tab-btn-send-msg");
-  const tabReplies = document.getElementById("tab-btn-view-replies");
-  const viewSend = document.getElementById("contact-view-send");
-  const viewReplies = document.getElementById("contact-view-replies");
-
-  tabSend.onclick = () => {
-    tabSend.style.color = "#e50914"; tabSend.style.borderBottom = "2px solid #e50914";
-    tabReplies.style.color = "#888"; tabReplies.style.borderBottom = "none";
-    viewSend.style.display = "block"; viewReplies.style.display = "none";
-  };
-
-  tabReplies.onclick = () => {
-    tabReplies.style.color = "#e50914"; tabReplies.style.borderBottom = "2px solid #e50914";
-    tabSend.style.color = "#888"; tabSend.style.borderBottom = "none";
-    viewSend.style.display = "none"; viewReplies.style.display = "block";
-    loadUserReplies();
-  };
-
-  document.getElementById("modal-msg-file").addEventListener("change", async function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 25 * 1024 * 1024) {
-        showAuthToast("Image file size must be below 25MB.", "error");
-        this.value = "";
-        return;
-      }
-      try {
-        attachedBase64 = await compressAvatar(file, 800, 0.75);
-        const prevContainer = document.getElementById("image-preview-container");
-        const prevImg = document.getElementById("image-preview");
-        prevImg.src = attachedBase64;
-        prevContainer.style.display = "block";
-      } catch (err) {
-        console.error("Compression Error:", err);
-        showAuthToast("Failed to process image.", "error");
-      }
-    }
-  });
-
-  document.getElementById("close-contact-modal").onclick = () => {
-    modal.style.display = "none";
-  };
-
-  document.getElementById("modal-msg-send-btn").onclick = async () => {
-    const text = document.getElementById("modal-msg-text").value.trim();
-    const category = document.getElementById("modal-msg-category").value;
-    const sendBtn = document.getElementById("modal-msg-send-btn");
-
-    if (!text && !attachedBase64) {
-      showAuthToast("Please enter a message or attach a picture.", "error");
-      return;
-    }
-
-    sendBtn.disabled = true;
-    sendBtn.textContent = "Sending...";
-
-    const currentUser = auth.currentUser;
-
-    try {
-      await addDoc(collection(db, "admin_messages"), {
-        senderName: currentUser ? (currentUser.displayName || "User") : "Guest User",
-        senderEmail: currentUser ? currentUser.email : "guest@user.com",
-        userId: currentUser ? currentUser.uid : "guest",
-        category: category,
-        message: text,
-        attachment: attachedBase64 || null,
-        adminReply: null,
-        timestamp: Date.now(),
-        createdAt: serverTimestamp()
-      });
-
-      showAuthToast("Message sent to Admin!", "success");
-      document.getElementById("modal-msg-text").value = "";
-      document.getElementById("modal-msg-file").value = "";
-      document.getElementById("image-preview-container").style.display = "none";
-      attachedBase64 = "";
-      modal.style.display = "none";
-    } catch (err) {
-      console.error("Error sending admin message:", err);
-      showAuthToast("Failed to send message.", "error");
-    } finally {
-      sendBtn.disabled = false;
-      sendBtn.textContent = "Send Message";
-    }
-  };
-}
-
-function loadUserReplies() {
-  const repliesContainer = document.getElementById("user-replies-feed");
-  const user = auth.currentUser;
-  if (!user) {
-    repliesContainer.innerHTML = `<p style="color:#777; font-size:12px; text-align:center; padding:15px;">Please sign in to view your conversation.</p>`;
-    return;
-  }
-
-  onSnapshot(collection(db, "admin_messages"), (snapshot) => {
-    const myMessages = [];
-    snapshot.forEach(d => {
-      const data = d.data();
-      if (data.userId === user.uid || data.senderEmail === user.email) {
-        myMessages.push({ id: d.id, ...data });
-      }
-    });
-
-    myMessages.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-    if (myMessages.length === 0) {
-      repliesContainer.innerHTML = `<p style="color:#777; font-size:12px; text-align:center; padding:15px;">No previous inquiries found.</p>`;
-      return;
-    }
-
-    repliesContainer.innerHTML = "";
-    myMessages.forEach(item => {
-      const card = document.createElement("div");
-      card.style.cssText = "background:#1e1e1e; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px;";
-      card.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-          <span style="font-size:11px; color:#e50914; font-weight:bold;">${item.category}</span>
-          <span style="font-size:10px; color:${item.adminReply ? '#4caf50' : '#ff9800'}; font-weight:600;">
-            ${item.adminReply ? '● Replied' : '● Pending'}
-          </span>
-        </div>
-        <p style="font-size:12px; color:#ddd; margin-bottom:6px;">${item.message}</p>
-        ${item.adminReply ? `
-          <div style="background:#19271a; border-left:3px solid #4caf50; padding:8px 12px; border-radius:6px; margin-top:6px;">
-            <strong style="color:#4caf50; font-size:11px;"><i class="fas fa-user-shield"></i> Admin:</strong>
-            <p style="color:#fff; font-size:12px; margin-top:2px;">${item.adminReply}</p>
-          </div>
-        ` : ''}
-      `;
-      repliesContainer.appendChild(card);
-    });
-  });
 }
 
 function openContactAdminModal(userData) {

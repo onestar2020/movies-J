@@ -1,14 +1,25 @@
 /* ============================================================
-   MOVIES-J MODERN PROFILE DROPDOWN STYLES
+   MOVIES-J MODERN DROPDOWN ENHANCEMENT
    ============================================================ */
 
-/* Modern Profile Card Menu */
-.modern-profile-card {
-    min-width: 250px !important;
+/* User Avatar sa tapat ng Name sa Navbar */
+.nav-user-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+    border: 1.5px solid #e50914;
+    background: #222;
+}
+
+/* Profile Card Box */
+.dropdown-menu {
+    min-width: 260px !important;
     background: #141414 !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
     border-radius: 12px !important;
-    padding: 14px !important;
+    padding: 12px !important;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9) !important;
 }
 
@@ -16,14 +27,14 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-bottom: 12px;
+    padding-bottom: 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .profile-avatar-wrapper {
     position: relative;
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     flex-shrink: 0;
 }
 
@@ -32,7 +43,7 @@
     height: 100%;
     border-radius: 50%;
     border: 2px solid #e50914;
-    background: #1f1f1f;
+    background: #222;
 }
 
 .profile-streak-badge {
@@ -70,11 +81,11 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    margin: 10px 0;
+    margin: 10px 0 12px 0;
 }
 
 .stat-box {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
     padding: 6px;
@@ -99,8 +110,8 @@
     background: rgba(229, 9, 20, 0.15);
     border: 1px solid #e50914;
     border-radius: 8px;
-    padding: 8px 10px;
-    margin-bottom: 8px;
+    padding: 9px 10px;
+    margin-bottom: 10px;
     text-align: center;
     cursor: pointer;
     transition: background 0.2s, transform 0.2s;

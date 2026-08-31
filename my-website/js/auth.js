@@ -22,6 +22,44 @@ import {
 
 const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
 
+// ================= RANDOM SURPRISE ME ROULETTE LOGIC =================
+window.triggerDropdownSurprise = function(e) {
+  if (e) e.stopPropagation();
+
+  const popularPicks = [
+    { id: 1022789, type: 'movie' }, // Inside Out 2
+    { id: 533535, type: 'movie' },  // Deadpool & Wolverine
+    { id: 573435, type: 'movie' },  // Bad Boys 4
+    { id: 693134, type: 'movie' },  // Dune Part Two
+    { id: 945961, type: 'movie' },  // Alien Romulus
+    { id: 823464, type: 'movie' },  // Godzilla x Kong
+    { id: 939243, type: 'tv' },     // Sonic Prime
+    { id: 94605, type: 'tv' },      // Arcane
+    { id: 1429, type: 'tv' },       // Attack on Titan
+    { id: 85937, type: 'tv' }       // Demon Slayer
+  ];
+
+  const onPageCards = document.querySelectorAll("a[href*='movie.html?id=']");
+  let targetUrl = "";
+
+  if (onPageCards.length > 0) {
+    const randomCard = onPageCards[Math.floor(Math.random() * onPageCards.length)];
+    targetUrl = randomCard.getAttribute("href");
+  } else {
+    const pick = popularPicks[Math.floor(Math.random() * popularPicks.length)];
+    targetUrl = `movie.html?id=${pick.id}&type=${pick.type}`;
+  }
+
+  const surpriseBtn = document.getElementById("dropdown-surprise-btn");
+  if (surpriseBtn) {
+    surpriseBtn.innerHTML = "<span>🎲 Naghahanap ng movie...</span>";
+  }
+
+  setTimeout(() => {
+    window.location.href = targetUrl;
+  }, 400);
+};
+
 // ================= MODERN DARK-MODE FLOATING TOAST =================
 function showAuthToast(message, type = "error") {
   let toast = document.getElementById("auth-toast-msg");
@@ -276,20 +314,48 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
 
       if (authContainer) {
         const isAdmin = user.email === DEDICATED_ADMIN_EMAIL;
+        const displayName = userData.displayName || "User";
+        const streak = localStorage.getItem("moviesj_streak") || "1";
+        const watchHistory = JSON.parse(localStorage.getItem("movies_j_watch_history") || "[]");
 
         authContainer.innerHTML = `
-          <div style="position:relative; display:inline-block;">
-            <div id="user-profile-btn" style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 8px; border-radius:6px; background:#1c1c1c; border:1px solid #333;">
-              <img src="${userData.photoURL || 'images/logo-192.png'}" style="width:26px; height:26px; border-radius:50%; object-fit:cover;" alt="Avatar" />
-              <span style="font-size:12px; color:#fff; font-weight:600;">${(userData.displayName || "User").split(" ")[0]}</span>
+          <div style="position:relative; display:inline-block;" id="user-profile-dropdown">
+            <div id="user-profile-btn" style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 10px; border-radius:20px; background:#1c1c1c; border:1px solid #333;">
+              <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${displayName}" class="nav-user-avatar" alt="Avatar" />
+              <span style="font-size:12px; color:#fff; font-weight:600;">${displayName.split(" ")[0]}</span>
               <i class="fas fa-chevron-down" style="font-size:10px; color:#888;"></i>
             </div>
             
-            <div id="user-dropdown-menu" style="display:none; position:absolute; right:0; top:38px; background:#181818; border:1px solid #333; border-radius:8px; width:190px; z-index:99999; box-shadow:0 8px 24px rgba(0,0,0,0.9); overflow:hidden;">
-              <div style="padding:10px; border-bottom:1px solid #282828;">
-                <p style="font-size:11px; color:#aaa; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${userData.email || 'User'}</p>
+            <div id="user-dropdown-menu" class="dropdown-menu" style="display:none; position:absolute; right:0; top:38px; z-index:99999;">
+              <div class="dropdown-header">
+                <div class="profile-card-header">
+                  <div class="profile-avatar-wrapper">
+                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${displayName}" class="profile-avatar-img" alt="Avatar" />
+                    <span class="profile-streak-badge">🔥 ${streak}d</span>
+                  </div>
+                  <div class="profile-user-info">
+                    <span class="user-name">${displayName.toUpperCase()}</span>
+                    <span class="user-role">${isAdmin ? 'Administrator' : 'VIP Member'}</span>
+                  </div>
+                </div>
+
+                <div class="profile-stats-grid">
+                  <div class="stat-box">
+                    <span class="stat-val">${watchHistory.length}</span>
+                    <span class="stat-lbl">Watched</span>
+                  </div>
+                  <div class="stat-box">
+                    <span class="stat-val">🔥 ${streak}d</span>
+                    <span class="stat-lbl">Daily Streak</span>
+                  </div>
+                </div>
               </div>
-              
+
+              <!-- 🎲 Surprise Me Button sa loob ng Dropdown -->
+              <div class="dropdown-surprise-item" id="dropdown-surprise-btn" onclick="triggerDropdownSurprise(event)">
+                <span>🎲 Surprise Me (Random Play)</span>
+              </div>
+
               ${isAdmin ? `
                 <a href="admin-donations.html" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#4caf50; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; text-decoration:none; border-bottom:1px solid #282828;">
                   <i class="fas fa-gauge-high"></i> Admin Control Panel

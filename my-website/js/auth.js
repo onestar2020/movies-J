@@ -73,27 +73,27 @@ function showAuthToast(message, type = "error") {
       left: 50%;
       transform: translateX(-50%) translateY(-25px);
       padding: 12px 22px;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       color: #fff;
       z-index: 99999999;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      box-shadow: 0 16px 36px rgba(0,0,0,0.85);
       display: flex;
       align-items: center;
       gap: 10px;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       opacity: 0;
       pointer-events: none;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(14px);
       font-family: inherit;
     `;
     document.body.appendChild(toast);
   }
 
   const isSuccess = type === "success";
-  toast.style.background = isSuccess ? "rgba(22, 54, 25, 0.95)" : "rgba(50, 15, 15, 0.95)";
-  toast.style.border = `1px solid ${isSuccess ? "#2e7d32" : "#d32f2f"}`;
+  toast.style.background = isSuccess ? "rgba(22, 54, 25, 0.92)" : "rgba(50, 15, 15, 0.92)";
+  toast.style.border = `1px solid ${isSuccess ? "rgba(76, 175, 80, 0.6)" : "rgba(229, 9, 20, 0.6)"}`;
   toast.innerHTML = `
     <i class="fas ${isSuccess ? 'fa-circle-check' : 'fa-circle-exclamation'}" style="color:${isSuccess ? '#4caf50' : '#e50914'}; font-size:16px;"></i>
     <span>${message}</span>
@@ -285,7 +285,7 @@ async function syncUserToFirestore(user) {
     } else {
       await setDoc(userRef, {
         displayName: user.displayName || snap.data().displayName || "User",
-        photoURL: user.photoURL || snap.data().photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.uid}`,
+        photoURL: snap.data().photoURL || user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.uid}`,
         lastLogin: new Date().toISOString()
       }, { merge: true });
     }
@@ -294,8 +294,8 @@ async function syncUserToFirestore(user) {
   }
 }
 
-// Client-side image compression up to 25MB
-function compressImage(file, maxWidth = 300, quality = 0.82) {
+// High-speed Canvas Avatar Resizer & Compressor
+function compressAvatar(file, size = 180, quality = 0.8) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -303,20 +303,17 @@ function compressImage(file, maxWidth = 300, quality = 0.82) {
       const img = new Image();
       img.src = event.target.result;
       img.onload = () => {
-        let width = img.width;
-        let height = img.height;
-
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        }
-
         const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = size;
+        canvas.height = size;
         const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
 
+        // Square cropping logic
+        const minDim = Math.min(img.width, img.height);
+        const startX = (img.width - minDim) / 2;
+        const startY = (img.height - minDim) / 2;
+
+        ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, size, size);
         const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
         resolve(compressedBase64);
       };
@@ -361,7 +358,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
       if (authContainer) {
         const isAdmin = user.email === DEDICATED_ADMIN_EMAIL;
         const displayName = userData.displayName || "User";
-        const currentAvatar = userData.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${displayName}`;
+        const currentAvatar = userData.photoURL || user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${displayName}`;
         const streak = localStorage.getItem("moviesj_streak") || "1";
         const watchHistory = JSON.parse(localStorage.getItem("movies_j_watch_history") || "[]");
 
@@ -385,10 +382,10 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
             <div id="user-profile-btn" class="nav-profile-pill">
               <img src="${currentAvatar}" class="nav-user-avatar ${roleGlow}" alt="Avatar" id="nav-avatar-img" />
               <span class="nav-user-name">${displayName.split(" ")[0]}</span>
-              <i class="fas fa-chevron-down" style="font-size:10px; color:#888;"></i>
+              <i class="fas fa-chevron-down nav-dropdown-icon"></i>
             </div>
             
-            <div id="user-dropdown-menu" class="dropdown-menu" style="display:none; position:absolute; right:0; top:42px; z-index:99999;">
+            <div id="user-dropdown-menu" class="dropdown-menu" style="display:none; position:absolute; right:0; top:46px; z-index:99999;">
               <div class="dropdown-header">
                 <div class="profile-card-header">
                   <div class="profile-avatar-wrapper">
@@ -409,11 +406,11 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                   </div>
                 </div>
 
-                <!-- Modern Inline Rename Input Box -->
+                <!-- Modern Transparent Inline Rename Box -->
                 <div id="rename-box" class="rename-box" style="display:none;">
-                  <input type="text" id="rename-input" value="${displayName}" maxlength="20" placeholder="New Display Name" autocomplete="off" />
-                  <button id="save-rename-btn" class="rename-save-btn" title="Save Name"><i class="fas fa-check"></i></button>
-                  <button id="cancel-rename-btn" class="rename-cancel-btn" title="Cancel"><i class="fas fa-times"></i></button>
+                  <input type="text" id="rename-input" value="${displayName}" maxlength="22" placeholder="New Display Name" autocomplete="off" />
+                  <button id="save-rename-btn" class="rename-action-btn btn-save" title="Save"><i class="fas fa-check"></i></button>
+                  <button id="cancel-rename-btn" class="rename-action-btn btn-cancel" title="Cancel"><i class="fas fa-times"></i></button>
                 </div>
 
                 <div class="profile-stats-grid">
@@ -457,18 +454,15 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         const logoutBtn = document.getElementById("menu-logout-btn");
         const contactAdminBtn = document.getElementById("menu-contact-admin-btn");
 
-        // Buksan/Isara ang dropdown
         profileBtn.onclick = (e) => {
           e.stopPropagation();
           dropMenu.style.display = dropMenu.style.display === "block" ? "none" : "block";
         };
 
-        // Huwag isara ang dropdown kapag nagki-click sa loob nito
         dropMenu.onclick = (e) => {
           e.stopPropagation();
         };
 
-        // Isara lang kapag nag-click sa labas ng dropdown container
         document.addEventListener("click", (e) => {
           const profileWrapper = document.getElementById("user-profile-dropdown");
           if (profileWrapper && !profileWrapper.contains(e.target)) {
@@ -489,7 +483,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           logoutUser();
         };
 
-        // Rename Handlers na may stopPropagation para hindi mag-close
+        // Rename Handlers
         const renameBtn = document.getElementById("rename-profile-btn");
         const renameBox = document.getElementById("rename-box");
         const saveRenameBtn = document.getElementById("save-rename-btn");
@@ -527,10 +521,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
 
             saveRenameBtn.disabled = true;
             try {
-              // I-update sa Firebase Auth profile
               await updateProfile(auth.currentUser, { displayName: newName });
-              
-              // I-update sa Firestore users collection gamit ang UID
               await setDoc(doc(db, "users", auth.currentUser.uid), { displayName: newName }, { merge: true });
 
               document.getElementById("user-display-name-label").innerText = newName.toUpperCase();
@@ -546,7 +537,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           };
         }
 
-        // Change Avatar Handler (hanggang 25MB)
+        // Change Avatar Handler (Direct to Firestore Data URL)
         const avatarInput = document.getElementById("change-avatar-input");
         if (avatarInput) {
           avatarInput.onchange = async (e) => {
@@ -555,15 +546,17 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
             if (!file) return;
 
             if (file.size > 25 * 1024 * 1024) {
-              return showAuthToast("Image file must be under 25MB.", "error");
+              return showAuthToast("Image must be under 25MB.", "error");
             }
 
             try {
-              showAuthToast("Compressing & saving avatar...", "success");
-              const base64Img = await compressImage(file, 260, 0.85);
+              showAuthToast("Compressing & updating avatar...", "success");
+              const base64Img = await compressAvatar(file, 180, 0.82);
 
-              await updateProfile(auth.currentUser, { photoURL: base64Img });
-              await setDoc(doc(db, "users", auth.currentUser.uid), { photoURL: base64Img }, { merge: true });
+              // I-save sa Firestore users collection
+              await setDoc(doc(db, "users", auth.currentUser.uid), { 
+                photoURL: base64Img 
+              }, { merge: true });
 
               document.getElementById("nav-avatar-img").src = base64Img;
               document.getElementById("dropdown-avatar-preview").src = base64Img;
@@ -580,7 +573,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
     } else {
       if (authContainer) {
         authContainer.innerHTML = `
-          <button id="nav-login-btn" style="background:#e50914; color:#fff; border:none; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer;">
+          <button id="nav-login-btn" style="background:#e50914; color:#fff; border:none; padding:7px 16px; border-radius:24px; font-size:12px; font-weight:700; cursor:pointer;">
             Sign In
           </button>
         `;
@@ -600,12 +593,12 @@ function setupContactAdminModalHTML() {
   const modal = document.createElement("div");
   modal.id = "contact-admin-modal";
   modal.className = "modal";
-  modal.style.cssText = "position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); z-index:999999; display:none; align-items:center; justify-content:center; padding:15px;";
+  modal.style.cssText = "position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); backdrop-filter:blur(6px); z-index:999999; display:none; align-items:center; justify-content:center; padding:15px;";
   modal.innerHTML = `
-    <div style="background:#181818; border:1px solid #333; border-radius:12px; max-width:480px; width:100%; padding:22px; position:relative; box-shadow:0 10px 30px rgba(0,0,0,0.9); max-height:90vh; overflow-y:auto;">
+    <div style="background:#141414; border:1px solid rgba(255,255,255,0.12); border-radius:16px; max-width:480px; width:100%; padding:22px; position:relative; box-shadow:0 16px 40px rgba(0,0,0,0.9); max-height:90vh; overflow-y:auto;">
       <span id="close-contact-modal" style="position:absolute; right:15px; top:12px; font-size:20px; color:#888; cursor:pointer;">&times;</span>
       
-      <div style="display:flex; gap:16px; margin-bottom:18px; border-bottom:1px solid #282828; padding-bottom:10px;">
+      <div style="display:flex; gap:16px; margin-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px;">
         <button id="tab-btn-send-msg" style="background:transparent; border:none; color:#e50914; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px; border-bottom:2px solid #e50914;">New Inquiry</button>
         <button id="tab-btn-view-replies" style="background:transparent; border:none; color:#888; font-weight:bold; font-size:13px; cursor:pointer; padding-bottom:4px;">My Inquiries & Replies</button>
       </div>
@@ -613,7 +606,7 @@ function setupContactAdminModalHTML() {
       <div id="contact-view-send">
         <div style="margin-bottom:10px;">
           <label style="font-size:11px; color:#aaa;">Category</label>
-          <select id="modal-msg-category" style="width:100%; padding:9px; background:#222; border:1px solid #444; color:#fff; border-radius:6px; font-size:13px; margin-top:4px; outline:none;">
+          <select id="modal-msg-category" style="width:100%; padding:9px; background:#1e1e1e; border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:8px; font-size:13px; margin-top:4px; outline:none;">
             <option value="Donation Proof / Verification">💖 Donation Proof / Verification</option>
             <option value="Movie / Show Request">🎬 Movie / TV Show Request</option>
             <option value="Broken Server / Stream Issue">⚠️ Broken Server / Stream Issue</option>
@@ -624,7 +617,7 @@ function setupContactAdminModalHTML() {
 
         <div style="margin-bottom:10px;">
           <label style="font-size:11px; color:#aaa;">Your Message</label>
-          <textarea id="modal-msg-text" rows="3" style="width:100%; padding:9px; background:#222; border:1px solid #444; color:#fff; border-radius:6px; font-size:13px; margin-top:4px; resize:vertical; outline:none; font-family:inherit;" placeholder="Describe your request or paste donation details..."></textarea>
+          <textarea id="modal-msg-text" rows="3" style="width:100%; padding:9px; background:#1e1e1e; border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:8px; font-size:13px; margin-top:4px; resize:vertical; outline:none; font-family:inherit;" placeholder="Describe your request or paste donation details..."></textarea>
         </div>
 
         <div style="margin-bottom:15px;">
@@ -632,13 +625,13 @@ function setupContactAdminModalHTML() {
             <span>Attach Screenshot (Proof / Error)</span>
             <span style="color:#4caf50; font-weight:600;">Max: 25MB</span>
           </label>
-          <input type="file" id="modal-msg-file" accept="image/*" style="width:100%; padding:6px; background:#222; border:1px dashed #444; color:#aaa; border-radius:6px; font-size:12px; margin-top:4px; cursor:pointer;" />
+          <input type="file" id="modal-msg-file" accept="image/*" style="width:100%; padding:6px; background:#1e1e1e; border:1px dashed rgba(255,255,255,0.15); color:#aaa; border-radius:8px; font-size:12px; margin-top:4px; cursor:pointer;" />
           <div id="image-preview-container" style="display:none; margin-top:8px;">
-            <img id="image-preview" src="" style="max-height:90px; border-radius:4px; border:1px solid #333;" />
+            <img id="image-preview" src="" style="max-height:90px; border-radius:6px; border:1px solid #333;" />
           </div>
         </div>
 
-        <button id="modal-msg-send-btn" style="width:100%; padding:10px; background:#e50914; border:none; color:#fff; font-weight:600; border-radius:6px; cursor:pointer; font-size:13px;">Send Message</button>
+        <button id="modal-msg-send-btn" style="width:100%; padding:10px; background:#e50914; border:none; color:#fff; font-weight:700; border-radius:8px; cursor:pointer; font-size:13px;">Send Message</button>
       </div>
 
       <div id="contact-view-replies" style="display:none;">
@@ -679,7 +672,7 @@ function setupContactAdminModalHTML() {
         return;
       }
       try {
-        attachedBase64 = await compressImage(file, 1280, 0.75);
+        attachedBase64 = await compressAvatar(file, 800, 0.75);
         const prevContainer = document.getElementById("image-preview-container");
         const prevImg = document.getElementById("image-preview");
         prevImg.src = attachedBase64;
@@ -766,7 +759,7 @@ function loadUserReplies() {
     repliesContainer.innerHTML = "";
     myMessages.forEach(item => {
       const card = document.createElement("div");
-      card.style.cssText = "background:#222; border:1px solid #333; border-radius:8px; padding:12px;";
+      card.style.cssText = "background:#1e1e1e; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px;";
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
           <span style="font-size:11px; color:#e50914; font-weight:bold;">${item.category}</span>
@@ -776,7 +769,7 @@ function loadUserReplies() {
         </div>
         <p style="font-size:12px; color:#ddd; margin-bottom:6px;">${item.message}</p>
         ${item.adminReply ? `
-          <div style="background:#19271a; border-left:3px solid #4caf50; padding:8px 12px; border-radius:4px; margin-top:6px;">
+          <div style="background:#19271a; border-left:3px solid #4caf50; padding:8px 12px; border-radius:6px; margin-top:6px;">
             <strong style="color:#4caf50; font-size:11px;"><i class="fas fa-user-shield"></i> Admin:</strong>
             <p style="color:#fff; font-size:12px; margin-top:2px;">${item.adminReply}</p>
           </div>

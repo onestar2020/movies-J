@@ -1,284 +1,358 @@
 /* ============================================================
-   MOVIES-J MODERN DROPDOWN ENHANCEMENT & VIP BADGES
+   MOVIES-J ULTRA-MODERN DROPDOWN CARD STYLES
    ============================================================ */
 
-/* Navbar Pill */
+/* Navbar Profile Pill */
 .nav-profile-pill {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    padding: 3px 12px 3px 4px;
-    border-radius: 24px;
-    background: #141414;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 14px 4px 4px;
+  border-radius: 30px;
+  background: rgba(22, 22, 22, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.25s ease;
 }
 
 .nav-profile-pill:hover {
-    background: #1c1c1c;
-    border-color: rgba(255, 255, 255, 0.25);
+  background: #252525;
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .nav-user-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    object-fit: cover;
-    background: #222;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #111;
 }
 
 .nav-user-name {
-    font-size: 13px;
-    color: #fff;
-    font-weight: 600;
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
-/* Glow Effects */
+/* Avatar Glows */
 .avatar-glow-gold {
-    border: 2px solid #ffd700 !important;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5) !important;
+  border: 2px solid #ffd700 !important;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.6) !important;
 }
 
 .avatar-glow-vip {
-    border: 2px solid #00e676 !important;
-    box-shadow: 0 0 10px rgba(0, 230, 118, 0.4) !important;
+  border: 2px solid #00e676 !important;
+  box-shadow: 0 0 12px rgba(0, 230, 118, 0.5) !important;
 }
 
-/* Dropdown Card */
+/* Main Dropdown Card */
 .dropdown-menu {
-    min-width: 280px !important;
-    background: #141414 !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    border-radius: 14px !important;
-    padding: 14px !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.95) !important;
+  min-width: 290px !important;
+  background: #121212 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95) !important;
+  backdrop-filter: blur(12px);
 }
 
 .profile-card-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .profile-avatar-wrapper {
-    position: relative;
-    width: 50px;
-    height: 50px;
-    flex-shrink: 0;
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
 }
 
 .profile-avatar-img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 2px solid #333;
-    background: #222;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid #2a2a2a;
+  background: #181818;
+  object-fit: cover;
 }
 
 .avatar-edit-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 14px;
-    opacity: 0;
-    cursor: pointer;
-    transition: opacity 0.2s;
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 15px;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
 }
 
 .profile-avatar-wrapper:hover .avatar-edit-overlay {
-    opacity: 1;
+  opacity: 1;
 }
 
 .profile-streak-badge {
-    position: absolute;
-    bottom: -3px;
-    right: -3px;
-    background: #ff9800;
-    color: #000;
-    font-size: 9px;
-    font-weight: 900;
-    padding: 1px 5px;
-    border-radius: 8px;
-    border: 1px solid #111;
-    z-index: 2;
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: #000;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid #111;
+  z-index: 2;
 }
 
 .profile-user-info {
-    flex-grow: 1;
-    min-width: 0;
+  flex-grow: 1;
+  min-width: 0;
 }
 
 .profile-name-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .profile-user-info .user-name {
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rename-icon-btn {
-    background: transparent;
-    border: none;
-    color: #888;
-    cursor: pointer;
-    font-size: 11px;
-    padding: 2px 4px;
-    border-radius: 4px;
-    transition: color 0.2s;
+  background: rgba(255, 255, 255, 0.07);
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 11px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .rename-icon-btn:hover {
-    color: #fff;
+  background: #e50914;
+  color: #fff;
 }
 
-/* User Roles */
+/* User Role Badges */
 .user-role {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 4px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 4px;
-    text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  text-transform: uppercase;
 }
 
 .role-free {
-    color: #aaa;
-    background: rgba(255, 255, 255, 0.08);
+  color: #999;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .role-vip {
-    color: #00e676;
-    background: rgba(0, 230, 118, 0.15);
-    border: 1px solid rgba(0, 230, 118, 0.3);
+  color: #00e676;
+  background: rgba(0, 230, 118, 0.15);
+  border: 1px solid rgba(0, 230, 118, 0.35);
 }
 
 .role-top-donor {
-    color: #ffd700;
-    background: rgba(255, 215, 0, 0.15);
-    border: 1px solid rgba(255, 215, 0, 0.35);
-    animation: goldShine 2s infinite alternate;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.18);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  animation: goldPulse 2s infinite alternate;
 }
 
 .role-admin {
-    color: #ff5252;
-    background: rgba(255, 82, 82, 0.15);
-    border: 1px solid rgba(255, 82, 82, 0.3);
+  color: #ff5252;
+  background: rgba(255, 82, 82, 0.18);
+  border: 1px solid rgba(255, 82, 82, 0.35);
 }
 
-@keyframes goldShine {
-    from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); }
-    to { box-shadow: 0 0 12px rgba(255, 215, 0, 0.5); }
+@keyframes goldPulse {
+  from { box-shadow: 0 0 6px rgba(255, 215, 0, 0.3); }
+  to { box-shadow: 0 0 16px rgba(255, 215, 0, 0.7); }
 }
 
-/* Inline Rename Box */
+/* Modern Rename Box */
 .rename-box {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  background: #181818;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .rename-box input {
-    flex: 1;
-    background: #222;
-    border: 1px solid #444;
-    color: #fff;
-    padding: 6px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    outline: none;
+  flex: 1;
+  background: #202020;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
 }
 
 .rename-box input:focus {
-    border-color: #e50914;
+  border-color: #e50914;
 }
 
 .rename-save-btn {
-    background: #4caf50;
-    border: none;
-    color: #fff;
-    padding: 6px 10px;
-    border-radius: 6px;
-    cursor: pointer;
+  background: #2e7d32;
+  border: none;
+  color: #fff;
+  padding: 7px 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.rename-save-btn:hover {
+  background: #388e3c;
 }
 
 .rename-cancel-btn {
-    background: #333;
-    border: none;
-    color: #ccc;
-    padding: 6px 10px;
-    border-radius: 6px;
-    cursor: pointer;
+  background: #333;
+  border: none;
+  color: #aaa;
+  padding: 7px 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
 }
 
-/* Stats Grid */
+.rename-cancel-btn:hover {
+  background: #444;
+  color: #fff;
+}
+
+/* Stats Box */
 .profile-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin: 12px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 14px 0;
 }
 
 .stat-box {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
-    padding: 7px;
-    text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 8px;
+  text-align: center;
 }
 
 .stat-box .stat-val {
-    font-size: 14px;
-    font-weight: 800;
-    color: #fff;
-    display: block;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  display: block;
 }
 
 .stat-box .stat-lbl {
-    font-size: 9px;
-    color: #888;
-    text-transform: uppercase;
+  font-size: 9px;
+  color: #777;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
 }
 
-/* Surprise Button */
+/* Surprise Roulette Button */
 .dropdown-surprise-item {
-    background: rgba(229, 9, 20, 0.15);
-    border: 1px solid #e50914;
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
+  background: rgba(229, 9, 20, 0.15);
+  border: 1px solid rgba(229, 9, 20, 0.8);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .dropdown-surprise-item:hover {
-    background: #e50914;
-    transform: translateY(-1px);
+  background: #e50914;
+  transform: translateY(-1px);
 }
 
 .dropdown-surprise-item span {
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Actions Menu List */
+.dropdown-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-action-btn {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.profile-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.profile-action-btn.admin-link {
+  color: #4caf50;
+}
+
+.profile-action-btn.admin-link:hover {
+  background: rgba(76, 175, 80, 0.15);
+}
+
+.logout-action-btn {
+  color: #e50914 !important;
+  margin-top: 4px;
+}
+
+.logout-action-btn:hover {
+  background: rgba(229, 9, 20, 0.15) !important;
 }

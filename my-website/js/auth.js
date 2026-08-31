@@ -294,7 +294,8 @@ async function syncUserToFirestore(user) {
   }
 }
 
-function compressImage(file, maxWidth = 1280, quality = 0.75) {
+// Client-side image compression up to 25MB
+function compressImage(file, maxWidth = 300, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -364,7 +365,6 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         const streak = localStorage.getItem("moviesj_streak") || "1";
         const watchHistory = JSON.parse(localStorage.getItem("movies_j_watch_history") || "[]");
 
-        // Alamin kung VIP Supporter o Top Donor
         const vipInfo = await checkUserVIPStatus(user.email, displayName);
 
         let rankBadgeHTML = `<span class="user-role role-free">Free Member</span>`;
@@ -394,7 +394,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                   <div class="profile-avatar-wrapper">
                     <img src="${currentAvatar}" class="profile-avatar-img ${roleGlow}" alt="Avatar" id="dropdown-avatar-preview" />
                     <span class="profile-streak-badge">🔥 ${streak}d</span>
-                    <label for="change-avatar-input" class="avatar-edit-overlay" title="Change Avatar">
+                    <label for="change-avatar-input" class="avatar-edit-overlay" title="Change Profile Picture">
                       <i class="fas fa-camera"></i>
                     </label>
                     <input type="file" id="change-avatar-input" accept="image/*" style="display:none;" />
@@ -403,17 +403,17 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                   <div class="profile-user-info">
                     <div class="profile-name-row">
                       <span class="user-name" id="user-display-name-label">${displayName.toUpperCase()}</span>
-                      <button id="rename-profile-btn" class="rename-icon-btn" title="Rename Name"><i class="fas fa-pen"></i></button>
+                      <button id="rename-profile-btn" class="rename-icon-btn" title="Edit Display Name"><i class="fas fa-pen"></i></button>
                     </div>
                     ${rankBadgeHTML}
                   </div>
                 </div>
 
-                <!-- Hidden Inline Rename Field -->
+                <!-- Modern Inline Rename Input Box -->
                 <div id="rename-box" class="rename-box" style="display:none;">
-                  <input type="text" id="rename-input" value="${displayName}" maxlength="20" placeholder="New Display Name" />
-                  <button id="save-rename-btn" class="rename-save-btn"><i class="fas fa-check"></i></button>
-                  <button id="cancel-rename-btn" class="rename-cancel-btn"><i class="fas fa-times"></i></button>
+                  <input type="text" id="rename-input" value="${displayName}" maxlength="20" placeholder="New Display Name" autocomplete="off" />
+                  <button id="save-rename-btn" class="rename-save-btn" title="Save Name"><i class="fas fa-check"></i></button>
+                  <button id="cancel-rename-btn" class="rename-cancel-btn" title="Cancel"><i class="fas fa-times"></i></button>
                 </div>
 
                 <div class="profile-stats-grid">
@@ -433,19 +433,21 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                 <span>🎲 Surprise Me (Random Play)</span>
               </div>
 
-              ${isAdmin ? `
-                <a href="admin-donations.html" class="dropdown-item" style="color:#4caf50; font-weight:600; border-bottom:1px solid #282828;">
-                  <i class="fas fa-gauge-high"></i> Admin Control Panel
-                </a>
-              ` : ''}
+              <div class="dropdown-actions-list">
+                ${isAdmin ? `
+                  <a href="admin-donations.html" class="profile-action-btn admin-link">
+                    <i class="fas fa-gauge-high"></i> <span>Admin Control Panel</span>
+                  </a>
+                ` : ''}
 
-              <button id="menu-contact-admin-btn" class="dropdown-item" style="border-bottom:1px solid #282828;">
-                <i class="fas fa-envelope-open-text" style="color:#e50914;"></i> Support & Inquiries
-              </button>
+                <button id="menu-contact-admin-btn" class="profile-action-btn">
+                  <i class="fas fa-envelope-open-text" style="color:#e50914;"></i> <span>Support & Inquiries</span>
+                </button>
 
-              <button id="menu-logout-btn" class="dropdown-item logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Logout
-              </button>
+                <button id="menu-logout-btn" class="profile-action-btn logout-action-btn">
+                  <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </button>
+              </div>
             </div>
           </div>
         `;
@@ -455,13 +457,23 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         const logoutBtn = document.getElementById("menu-logout-btn");
         const contactAdminBtn = document.getElementById("menu-contact-admin-btn");
 
+        // Buksan/Isara ang dropdown
         profileBtn.onclick = (e) => {
           e.stopPropagation();
           dropMenu.style.display = dropMenu.style.display === "block" ? "none" : "block";
         };
 
-        document.addEventListener("click", () => {
-          if (dropMenu) dropMenu.style.display = "none";
+        // Huwag isara ang dropdown kapag nagki-click sa loob nito
+        dropMenu.onclick = (e) => {
+          e.stopPropagation();
+        };
+
+        // Isara lang kapag nag-click sa labas ng dropdown container
+        document.addEventListener("click", (e) => {
+          const profileWrapper = document.getElementById("user-profile-dropdown");
+          if (profileWrapper && !profileWrapper.contains(e.target)) {
+            if (dropMenu) dropMenu.style.display = "none";
+          }
         });
 
         if (contactAdminBtn) {
@@ -472,18 +484,23 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           };
         }
 
-        logoutBtn.onclick = logoutUser;
+        logoutBtn.onclick = (e) => {
+          e.stopPropagation();
+          logoutUser();
+        };
 
-        // Rename Handlers
+        // Rename Handlers na may stopPropagation para hindi mag-close
         const renameBtn = document.getElementById("rename-profile-btn");
         const renameBox = document.getElementById("rename-box");
         const saveRenameBtn = document.getElementById("save-rename-btn");
         const cancelRenameBtn = document.getElementById("cancel-rename-btn");
+        const renameInput = document.getElementById("rename-input");
 
         if (renameBtn) {
           renameBtn.onclick = (e) => {
             e.stopPropagation();
             renameBox.style.display = "flex";
+            renameInput.focus();
           };
         }
 
@@ -494,22 +511,34 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           };
         }
 
+        if (renameInput) {
+          renameInput.onclick = (e) => e.stopPropagation();
+          renameInput.onkeydown = (e) => {
+            if (e.key === "Enter") saveRenameBtn.click();
+            if (e.key === "Escape") cancelRenameBtn.click();
+          };
+        }
+
         if (saveRenameBtn) {
           saveRenameBtn.onclick = async (e) => {
             e.stopPropagation();
-            const newName = document.getElementById("rename-input").value.trim();
+            const newName = renameInput.value.trim();
             if (!newName) return showAuthToast("Please enter a valid name.", "error");
 
             saveRenameBtn.disabled = true;
             try {
+              // I-update sa Firebase Auth profile
               await updateProfile(auth.currentUser, { displayName: newName });
+              
+              // I-update sa Firestore users collection gamit ang UID
               await setDoc(doc(db, "users", auth.currentUser.uid), { displayName: newName }, { merge: true });
+
               document.getElementById("user-display-name-label").innerText = newName.toUpperCase();
               document.querySelector(".nav-user-name").innerText = newName.split(" ")[0];
               renameBox.style.display = "none";
               showAuthToast("Display name updated!", "success");
             } catch (err) {
-              console.error(err);
+              console.error("Rename Error:", err);
               showAuthToast("Failed to rename user.", "error");
             } finally {
               saveRenameBtn.disabled = false;
@@ -517,7 +546,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           };
         }
 
-        // Change Avatar Handler
+        // Change Avatar Handler (hanggang 25MB)
         const avatarInput = document.getElementById("change-avatar-input");
         if (avatarInput) {
           avatarInput.onchange = async (e) => {
@@ -525,22 +554,22 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
             const file = e.target.files[0];
             if (!file) return;
 
-            if (file.size > 5 * 1024 * 1024) {
-              return showAuthToast("Image must be under 5MB.", "error");
+            if (file.size > 25 * 1024 * 1024) {
+              return showAuthToast("Image file must be under 25MB.", "error");
             }
 
             try {
-              showAuthToast("Compressing & updating avatar...", "success");
-              const base64Img = await compressImage(file, 250, 0.85);
+              showAuthToast("Compressing & saving avatar...", "success");
+              const base64Img = await compressImage(file, 260, 0.85);
 
               await updateProfile(auth.currentUser, { photoURL: base64Img });
               await setDoc(doc(db, "users", auth.currentUser.uid), { photoURL: base64Img }, { merge: true });
 
               document.getElementById("nav-avatar-img").src = base64Img;
               document.getElementById("dropdown-avatar-preview").src = base64Img;
-              showAuthToast("Profile photo updated!", "success");
+              showAuthToast("Profile picture updated!", "success");
             } catch (err) {
-              console.error(err);
+              console.error("Avatar Upload Error:", err);
               showAuthToast("Failed to upload avatar.", "error");
             }
           };
@@ -601,7 +630,7 @@ function setupContactAdminModalHTML() {
         <div style="margin-bottom:15px;">
           <label style="font-size:11px; color:#aaa; display:flex; justify-content:space-between;">
             <span>Attach Screenshot (Proof / Error)</span>
-            <span style="color:#4caf50; font-weight:600;">Max: 10MB</span>
+            <span style="color:#4caf50; font-weight:600;">Max: 25MB</span>
           </label>
           <input type="file" id="modal-msg-file" accept="image/*" style="width:100%; padding:6px; background:#222; border:1px dashed #444; color:#aaa; border-radius:6px; font-size:12px; margin-top:4px; cursor:pointer;" />
           <div id="image-preview-container" style="display:none; margin-top:8px;">
@@ -644,13 +673,13 @@ function setupContactAdminModalHTML() {
   document.getElementById("modal-msg-file").addEventListener("change", async function(e) {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        showAuthToast("Image file size must be below 10MB.", "error");
+      if (file.size > 25 * 1024 * 1024) {
+        showAuthToast("Image file size must be below 25MB.", "error");
         this.value = "";
         return;
       }
       try {
-        attachedBase64 = await compressImage(file);
+        attachedBase64 = await compressImage(file, 1280, 0.75);
         const prevContainer = document.getElementById("image-preview-container");
         const prevImg = document.getElementById("image-preview");
         prevImg.src = attachedBase64;

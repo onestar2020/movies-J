@@ -130,48 +130,66 @@ function getCleanErrorMessage(errCode) {
   }
 }
 
-// ================= DONATION VIP CHECKER =================
-async function checkUserVIPStatus(userEmail, userName) {
+// ================= DONATION VIP & RANK CHECKER =================
+async function checkUserVIPStatus(userEmail, userName, uid) {
   try {
     const donorsSnap = await getDocs(collection(db, "donors"));
     const donorTotals = {};
-    let currentTotal = 0;
+    let userDonatedAmount = 0;
+
+    const cleanUser = (userName || "").trim().toLowerCase();
+    const cleanEmail = (userEmail || "").trim().toLowerCase();
+    const cleanEmailPrefix = cleanEmail.split("@")[0];
 
     donorsSnap.forEach((docSnap) => {
       const d = docSnap.data();
-      const donorName = (d.name || "").trim().toLowerCase();
+      const rawDonorName = (d.name || "").trim();
+      const donorKey = rawDonorName.toLowerCase();
       const amount = Number(d.amount) || 0;
 
-      if (!donorTotals[donorName]) donorTotals[donorName] = 0;
-      donorTotals[donorName] += amount;
+      if (!donorTotals[donorKey]) {
+        donorTotals[donorKey] = { total: 0, originalName: rawDonorName };
+      }
+      donorTotals[donorKey].total += amount;
 
-      const userClean = (userName || "").trim().toLowerCase();
-      const emailClean = (userEmail || "").trim().toLowerCase();
+      // Tumutugma sa Name, Email, Email Prefix, o UserId
+      const dEmail = (d.email || "").trim().toLowerCase();
+      const dUserId = (d.userId || "").trim();
 
-      if (donorName === userClean || (d.email && d.email.toLowerCase() === emailClean)) {
-        currentTotal += amount;
+      const isMatch = (
+        donorKey === cleanUser ||
+        (dEmail && dEmail === cleanEmail) ||
+        (dUserId && dUserId === uid) ||
+        donorKey === cleanEmailPrefix
+      );
+
+      if (isMatch) {
+        userDonatedAmount += amount;
       }
     });
 
-    let topDonorName = "";
+    // Hanapin ang Top 1 Donor
+    let topDonorKey = "";
     let maxAmount = 0;
-    for (const [name, total] of Object.entries(donorTotals)) {
-      if (total > maxAmount) {
-        maxAmount = total;
-        topDonorName = name;
+    for (const [key, item] of Object.entries(donorTotals)) {
+      if (item.total > maxAmount) {
+        maxAmount = item.total;
+        topDonorKey = key;
       }
     }
 
-    const cleanUser = (userName || "").trim().toLowerCase();
-    const isTopDonor = cleanUser === topDonorName && maxAmount > 0;
+    const isTopDonor = (
+      userDonatedAmount > 0 &&
+      userDonatedAmount >= maxAmount
+    );
 
     return {
-      isDonor: currentTotal > 0,
+      isDonor: userDonatedAmount > 0,
       isTopDonor: isTopDonor,
-      totalDonated: currentTotal
+      totalDonated: userDonatedAmount
     };
   } catch (err) {
-    console.warn("VIP Status Check error:", err);
+    console.warn("VIP Check error:", err);
     return { isDonor: false, isTopDonor: false, totalDonated: 0 };
   }
 }
@@ -308,7 +326,6 @@ function compressAvatar(file, size = 180, quality = 0.8) {
         canvas.height = size;
         const ctx = canvas.getContext("2d");
 
-        // Square cropping logic
         const minDim = Math.min(img.width, img.height);
         const startX = (img.width - minDim) / 2;
         const startY = (img.height - minDim) / 2;
@@ -362,7 +379,8 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         const streak = localStorage.getItem("moviesj_streak") || "1";
         const watchHistory = JSON.parse(localStorage.getItem("movies_j_watch_history") || "[]");
 
-        const vipInfo = await checkUserVIPStatus(user.email, displayName);
+        // Tukuyin ang Donor at VIP status
+        const vipInfo = await checkUserVIPStatus(user.email, displayName, user.uid);
 
         let rankBadgeHTML = `<span class="user-role role-free">Free Member</span>`;
         let roleGlow = "";
@@ -537,7 +555,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           };
         }
 
-        // Change Avatar Handler (Direct to Firestore Data URL)
+        // Change Avatar Handler
         const avatarInput = document.getElementById("change-avatar-input");
         if (avatarInput) {
           avatarInput.onchange = async (e) => {
@@ -553,7 +571,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
               showAuthToast("Compressing & updating avatar...", "success");
               const base64Img = await compressAvatar(file, 180, 0.82);
 
-              // I-save sa Firestore users collection
+              // Diretsong i-save sa Firestore record ng user
               await setDoc(doc(db, "users", auth.currentUser.uid), { 
                 photoURL: base64Img 
               }, { merge: true });

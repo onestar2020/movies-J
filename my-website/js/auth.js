@@ -16,7 +16,6 @@ import {
   getDoc,
   collection,
   addDoc,
-  getDocs,
   onSnapshot,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -61,7 +60,7 @@ window.triggerDropdownSurprise = function(e) {
   }, 400);
 };
 
-// ================= MODERN DARK-MODE FLOATING TOAST =================
+// ================= FLOATING TOAST =================
 function showAuthToast(message, type = "error") {
   let toast = document.getElementById("auth-toast-msg");
   if (!toast) {
@@ -122,75 +121,11 @@ function getCleanErrorMessage(errCode) {
     case "auth/weak-password":
       return "Password is too weak. Please use at least 6 characters.";
     case "auth/too-many-requests":
-      return "Too many failed attempts. Please wait a moment or reset your password.";
+      return "Too many failed attempts. Please wait a moment.";
     case "auth/popup-closed-by-user":
       return "Google Sign-In was cancelled.";
     default:
-      return "Authentication error. Please check your details and try again.";
-  }
-}
-
-// ================= DONATION VIP & RANK CHECKER =================
-async function checkUserVIPStatus(userEmail, userName, uid) {
-  try {
-    const donorsSnap = await getDocs(collection(db, "donors"));
-    const donorTotals = {};
-    let userDonatedAmount = 0;
-
-    const cleanUser = (userName || "").trim().toLowerCase();
-    const cleanEmail = (userEmail || "").trim().toLowerCase();
-    const cleanEmailPrefix = cleanEmail.split("@")[0];
-
-    donorsSnap.forEach((docSnap) => {
-      const d = docSnap.data();
-      const rawDonorName = (d.name || "").trim();
-      const donorKey = rawDonorName.toLowerCase();
-      const amount = Number(d.amount) || 0;
-
-      if (!donorTotals[donorKey]) {
-        donorTotals[donorKey] = { total: 0, originalName: rawDonorName };
-      }
-      donorTotals[donorKey].total += amount;
-
-      // Tumutugma sa Name, Email, Email Prefix, o UserId
-      const dEmail = (d.email || "").trim().toLowerCase();
-      const dUserId = (d.userId || "").trim();
-
-      const isMatch = (
-        donorKey === cleanUser ||
-        (dEmail && dEmail === cleanEmail) ||
-        (dUserId && dUserId === uid) ||
-        donorKey === cleanEmailPrefix
-      );
-
-      if (isMatch) {
-        userDonatedAmount += amount;
-      }
-    });
-
-    // Hanapin ang Top 1 Donor
-    let topDonorKey = "";
-    let maxAmount = 0;
-    for (const [key, item] of Object.entries(donorTotals)) {
-      if (item.total > maxAmount) {
-        maxAmount = item.total;
-        topDonorKey = key;
-      }
-    }
-
-    const isTopDonor = (
-      userDonatedAmount > 0 &&
-      userDonatedAmount >= maxAmount
-    );
-
-    return {
-      isDonor: userDonatedAmount > 0,
-      isTopDonor: isTopDonor,
-      totalDonated: userDonatedAmount
-    };
-  } catch (err) {
-    console.warn("VIP Check error:", err);
-    return { isDonor: false, isTopDonor: false, totalDonated: 0 };
+      return "Authentication error. Please check your details.";
   }
 }
 
@@ -298,7 +233,10 @@ async function syncUserToFirestore(user) {
         photoURL: user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.uid}`,
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
-        isBanned: false
+        isBanned: false,
+        role: "free",
+        avatarBorder: "none",
+        nameGlow: "none"
       });
     } else {
       await setDoc(userRef, {
@@ -340,7 +278,7 @@ function compressAvatar(file, size = 180, quality = 0.8) {
   });
 }
 
-// Observer + Realtime Banned Auto-Kick
+// Observer + Realtime Profile Rendering
 export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   setupAuthModalHTML();
   setupContactAdminModalHTML();
@@ -363,11 +301,16 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         return;
       }
 
+      // Realtime listener para kapag pinalitan ng Admin ang border/role/glow, magbago agad on-the-fly!
       onSnapshot(userRef, (docSnap) => {
-        if (docSnap.exists() && docSnap.data().isBanned === true && user.email !== DEDICATED_ADMIN_EMAIL) {
+        if (!docSnap.exists()) return;
+        const liveData = docSnap.data();
+        if (liveData.isBanned === true && user.email !== DEDICATED_ADMIN_EMAIL) {
           signOut(auth);
           showAuthToast("Your account has been banned by the administrator.", "error");
+          return;
         }
+        updateUserUIEffects(liveData);
       });
 
       let userData = userDoc.exists() ? userDoc.data() : user;
@@ -379,27 +322,16 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         const streak = localStorage.getItem("moviesj_streak") || "1";
         const watchHistory = JSON.parse(localStorage.getItem("movies_j_watch_history") || "[]");
 
-        // Tukuyin ang Donor at VIP status
-        const vipInfo = await checkUserVIPStatus(user.email, displayName, user.uid);
-
-        let rankBadgeHTML = `<span class="user-role role-free">Free Member</span>`;
-        let roleGlow = "";
-
-        if (isAdmin) {
-          rankBadgeHTML = `<span class="user-role role-admin"><i class="fas fa-shield-alt"></i> Admin</span>`;
-        } else if (vipInfo.isTopDonor) {
-          rankBadgeHTML = `<span class="user-role role-top-donor"><i class="fas fa-crown"></i> TOP DONOR (₱${vipInfo.totalDonated})</span>`;
-          roleGlow = "avatar-glow-gold";
-        } else if (vipInfo.isDonor) {
-          rankBadgeHTML = `<span class="user-role role-vip"><i class="fas fa-star"></i> VIP SUPPORTER (₱${vipInfo.totalDonated})</span>`;
-          roleGlow = "avatar-glow-vip";
-        }
+        // Role & Badges
+        const role = isAdmin ? "admin" : (userData.role || "free");
+        const borderClass = getBorderClass(userData.avatarBorder || (role === 'top-donor' ? 'gold' : (role === 'vip' ? 'vip' : 'none')));
+        const glowClass = getGlowClass(userData.nameGlow || (role === 'top-donor' ? 'gold' : (role === 'vip' ? 'emerald' : 'none')));
 
         authContainer.innerHTML = `
           <div style="position:relative; display:inline-block;" id="user-profile-dropdown">
             <div id="user-profile-btn" class="nav-profile-pill">
-              <img src="${currentAvatar}" class="nav-user-avatar ${roleGlow}" alt="Avatar" id="nav-avatar-img" />
-              <span class="nav-user-name">${displayName.split(" ")[0]}</span>
+              <img src="${currentAvatar}" class="nav-user-avatar ${borderClass}" alt="Avatar" id="nav-avatar-img" />
+              <span class="nav-user-name ${glowClass}" id="nav-user-name-label">${displayName.split(" ")[0]}</span>
               <i class="fas fa-chevron-down nav-dropdown-icon"></i>
             </div>
             
@@ -407,7 +339,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
               <div class="dropdown-header">
                 <div class="profile-card-header">
                   <div class="profile-avatar-wrapper">
-                    <img src="${currentAvatar}" class="profile-avatar-img ${roleGlow}" alt="Avatar" id="dropdown-avatar-preview" />
+                    <img src="${currentAvatar}" class="profile-avatar-img ${borderClass}" alt="Avatar" id="dropdown-avatar-preview" />
                     <span class="profile-streak-badge">🔥 ${streak}d</span>
                     <label for="change-avatar-input" class="avatar-edit-overlay" title="Change Profile Picture">
                       <i class="fas fa-camera"></i>
@@ -417,10 +349,12 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
 
                   <div class="profile-user-info">
                     <div class="profile-name-row">
-                      <span class="user-name" id="user-display-name-label">${displayName.toUpperCase()}</span>
+                      <span class="user-name ${glowClass}" id="user-display-name-label">${displayName.toUpperCase()}</span>
                       <button id="rename-profile-btn" class="rename-icon-btn" title="Edit Display Name"><i class="fas fa-pen"></i></button>
                     </div>
-                    ${rankBadgeHTML}
+                    <div id="user-rank-badge-container">
+                      ${getRankBadgeHTML(role, userData.donationTotal)}
+                    </div>
                   </div>
                 </div>
 
@@ -430,6 +364,32 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                   <button id="save-rename-btn" class="rename-action-btn btn-save" title="Save"><i class="fas fa-check"></i></button>
                   <button id="cancel-rename-btn" class="rename-action-btn btn-cancel" title="Cancel"><i class="fas fa-times"></i></button>
                 </div>
+
+                <!-- VIP Cosmetic Picker (Kung Top Donor o VIP) -->
+                ${(role === 'top-donor' || role === 'vip' || isAdmin) ? `
+                  <div class="cosmetics-toolbar">
+                    <button id="toggle-cosmetics-btn" class="cosmetics-btn"><i class="fas fa-wand-magic-sparkles"></i> Customize Borders & Glow</button>
+                    <div id="cosmetics-panel" class="cosmetics-panel" style="display:none;">
+                      <label>Avatar Border:</label>
+                      <select id="user-border-select">
+                        <option value="none" ${userData.avatarBorder === 'none' ? 'selected' : ''}>Default / Clean</option>
+                        <option value="gold" ${userData.avatarBorder === 'gold' ? 'selected' : ''}>👑 Top Gold Neon</option>
+                        <option value="vip" ${userData.avatarBorder === 'vip' ? 'selected' : ''}>⭐ Emerald Supporter</option>
+                        <option value="cyber" ${userData.avatarBorder === 'cyber' ? 'selected' : ''}>⚡ Cyberpunk Blue</option>
+                        <option value="fire" ${userData.avatarBorder === 'fire' ? 'selected' : ''}>🔥 Fire Crimson</option>
+                      </select>
+                      
+                      <label style="margin-top:6px;">Name Glow Style:</label>
+                      <select id="user-glow-select">
+                        <option value="none" ${userData.nameGlow === 'none' ? 'selected' : ''}>Standard White</option>
+                        <option value="gold" ${userData.nameGlow === 'gold' ? 'selected' : ''}>✨ Shiny Gold Glow</option>
+                        <option value="emerald" ${userData.nameGlow === 'emerald' ? 'selected' : ''}>💚 Matrix Emerald Glow</option>
+                        <option value="blue" ${userData.nameGlow === 'blue' ? 'selected' : ''}>⚡ Neon Cyan Glow</option>
+                        <option value="red" ${userData.nameGlow === 'red' ? 'selected' : ''}>🔥 Crimson Ember Glow</option>
+                      </select>
+                    </div>
+                  </div>
+                ` : ''}
 
                 <div class="profile-stats-grid">
                   <div class="stat-box">
@@ -477,9 +437,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           dropMenu.style.display = dropMenu.style.display === "block" ? "none" : "block";
         };
 
-        dropMenu.onclick = (e) => {
-          e.stopPropagation();
-        };
+        dropMenu.onclick = (e) => e.stopPropagation();
 
         document.addEventListener("click", (e) => {
           const profileWrapper = document.getElementById("user-profile-dropdown");
@@ -500,6 +458,33 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           e.stopPropagation();
           logoutUser();
         };
+
+        // Cosmetics toggle & save
+        const toggleCosmeticsBtn = document.getElementById("toggle-cosmetics-btn");
+        const cosmeticsPanel = document.getElementById("cosmetics-panel");
+        const borderSelect = document.getElementById("user-border-select");
+        const glowSelect = document.getElementById("user-glow-select");
+
+        if (toggleCosmeticsBtn) {
+          toggleCosmeticsBtn.onclick = (e) => {
+            e.stopPropagation();
+            cosmeticsPanel.style.display = cosmeticsPanel.style.display === "block" ? "none" : "block";
+          };
+        }
+
+        if (borderSelect && glowSelect) {
+          const handleEffectSave = async () => {
+            const newBorder = borderSelect.value;
+            const newGlow = glowSelect.value;
+            await setDoc(doc(db, "users", auth.currentUser.uid), {
+              avatarBorder: newBorder,
+              nameGlow: newGlow
+            }, { merge: true });
+            showAuthToast("Effects updated!", "success");
+          };
+          borderSelect.onchange = handleEffectSave;
+          glowSelect.onchange = handleEffectSave;
+        }
 
         // Rename Handlers
         const renameBtn = document.getElementById("rename-profile-btn");
@@ -543,7 +528,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
               await setDoc(doc(db, "users", auth.currentUser.uid), { displayName: newName }, { merge: true });
 
               document.getElementById("user-display-name-label").innerText = newName.toUpperCase();
-              document.querySelector(".nav-user-name").innerText = newName.split(" ")[0];
+              document.getElementById("nav-user-name-label").innerText = newName.split(" ")[0];
               renameBox.style.display = "none";
               showAuthToast("Display name updated!", "success");
             } catch (err) {
@@ -571,10 +556,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
               showAuthToast("Compressing & updating avatar...", "success");
               const base64Img = await compressAvatar(file, 180, 0.82);
 
-              // Diretsong i-save sa Firestore record ng user
-              await setDoc(doc(db, "users", auth.currentUser.uid), { 
-                photoURL: base64Img 
-              }, { merge: true });
+              await setDoc(doc(db, "users", auth.currentUser.uid), { photoURL: base64Img }, { merge: true });
 
               document.getElementById("nav-avatar-img").src = base64Img;
               document.getElementById("dropdown-avatar-preview").src = base64Img;
@@ -603,6 +585,76 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
       if (onGuestMode) onGuestMode();
     }
   });
+}
+
+// Helper Class Resolvers
+function getBorderClass(border) {
+  switch (border) {
+    case 'gold': return 'avatar-border-gold';
+    case 'vip': return 'avatar-border-vip';
+    case 'cyber': return 'avatar-border-cyber';
+    case 'fire': return 'avatar-border-fire';
+    default: return '';
+  }
+}
+
+function getGlowClass(glow) {
+  switch (glow) {
+    case 'gold': return 'name-glow-gold';
+    case 'emerald': return 'name-glow-emerald';
+    case 'blue': return 'name-glow-blue';
+    case 'red': return 'name-glow-red';
+    default: return '';
+  }
+}
+
+function getRankBadgeHTML(role, totalDonated = 0) {
+  const donationText = totalDonated > 0 ? ` (₱${totalDonated})` : '';
+  switch (role) {
+    case 'admin':
+      return `<span class="user-role role-admin"><i class="fas fa-shield-alt"></i> Admin</span>`;
+    case 'top-donor':
+      return `<span class="user-role role-top-donor"><i class="fas fa-crown"></i> TOP DONOR${donationText}</span>`;
+    case 'vip':
+      return `<span class="user-role role-vip"><i class="fas fa-star"></i> VIP SUPPORTER${donationText}</span>`;
+    default:
+      return `<span class="user-role role-free">Free Member</span>`;
+  }
+}
+
+function updateUserUIEffects(data) {
+  const navAvatar = document.getElementById("nav-avatar-img");
+  const dropAvatar = document.getElementById("dropdown-avatar-preview");
+  const navName = document.getElementById("nav-user-name-label");
+  const dropName = document.getElementById("user-display-name-label");
+  const rankContainer = document.getElementById("user-rank-badge-container");
+
+  const borderClass = getBorderClass(data.avatarBorder);
+  const glowClass = getGlowClass(data.nameGlow);
+
+  ['avatar-border-gold', 'avatar-border-vip', 'avatar-border-cyber', 'avatar-border-fire'].forEach(c => {
+    if (navAvatar) navAvatar.classList.remove(c);
+    if (dropAvatar) dropAvatar.classList.remove(c);
+  });
+
+  ['name-glow-gold', 'name-glow-emerald', 'name-glow-blue', 'name-glow-red'].forEach(c => {
+    if (navName) navName.classList.remove(c);
+    if (dropName) dropName.classList.remove(c);
+  });
+
+  if (borderClass) {
+    if (navAvatar) navAvatar.classList.add(borderClass);
+    if (dropAvatar) dropAvatar.classList.add(borderClass);
+  }
+
+  if (glowClass) {
+    if (navName) navName.classList.add(glowClass);
+    if (dropName) dropName.classList.add(glowClass);
+  }
+
+  if (rankContainer && data.role) {
+    rankContainer.innerHTML = getRankBadgeHTML(data.role, data.donationTotal);
+  }
 }
 
 function setupContactAdminModalHTML() {

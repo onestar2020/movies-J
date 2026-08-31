@@ -1,8 +1,8 @@
 /* ============================================================
-   MOVIES-J GLASSMORPHISM TRANSPARENT NAV & DROPDOWN
+   MOVIES-J GLASSMORPHISM, NEON BORDERS & GLOW FONTS
    ============================================================ */
 
-/* 1. Transparent Navbar Profile Pill (Gaya sa 2nd picture) */
+/* 1. Transparent Navbar Profile Pill */
 .nav-profile-pill {
   display: inline-flex;
   align-items: center;
@@ -30,7 +30,7 @@
   border-radius: 50%;
   object-fit: cover;
   background: #111;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
 }
 
 .nav-user-name {
@@ -38,6 +38,7 @@
   color: #fff;
   font-weight: 700;
   letter-spacing: 0.3px;
+  transition: all 0.3s ease;
 }
 
 .nav-dropdown-icon {
@@ -46,25 +47,64 @@
   transition: transform 0.2s;
 }
 
-.nav-profile-pill:hover .nav-dropdown-icon {
-  color: #fff;
-}
-
-/* Glow Effects */
-.avatar-glow-gold {
+/* ================= AVATAR BORDERS ================= */
+.avatar-border-gold {
   border: 2px solid #ffd700 !important;
-  box-shadow: 0 0 14px rgba(255, 215, 0, 0.7) !important;
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.8), inset 0 0 8px rgba(255, 215, 0, 0.4) !important;
+  animation: goldFramePulse 2s infinite alternate;
 }
 
-.avatar-glow-vip {
+.avatar-border-vip {
   border: 2px solid #00e676 !important;
-  box-shadow: 0 0 14px rgba(0, 230, 118, 0.6) !important;
+  box-shadow: 0 0 14px rgba(0, 230, 118, 0.75), inset 0 0 8px rgba(0, 230, 118, 0.35) !important;
+  animation: emeraldFramePulse 2s infinite alternate;
+}
+
+.avatar-border-cyber {
+  border: 2px solid #00e5ff !important;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.8), inset 0 0 8px rgba(0, 229, 255, 0.4) !important;
+}
+
+.avatar-border-fire {
+  border: 2px solid #ff3d00 !important;
+  box-shadow: 0 0 14px rgba(255, 61, 0, 0.8), inset 0 0 8px rgba(255, 61, 0, 0.4) !important;
+}
+
+@keyframes goldFramePulse {
+  from { box-shadow: 0 0 8px rgba(255, 215, 0, 0.4); }
+  to { box-shadow: 0 0 18px rgba(255, 215, 0, 0.9); }
+}
+
+@keyframes emeraldFramePulse {
+  from { box-shadow: 0 0 8px rgba(0, 230, 118, 0.4); }
+  to { box-shadow: 0 0 18px rgba(0, 230, 118, 0.85); }
+}
+
+/* ================= NAME GLOW EFFECTS ================= */
+.name-glow-gold {
+  color: #ffd700 !important;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.8), 0 0 16px rgba(255, 215, 0, 0.5) !important;
+}
+
+.name-glow-emerald {
+  color: #00e676 !important;
+  text-shadow: 0 0 8px rgba(0, 230, 118, 0.8), 0 0 16px rgba(0, 230, 118, 0.5) !important;
+}
+
+.name-glow-blue {
+  color: #00e5ff !important;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.8), 0 0 16px rgba(0, 229, 255, 0.5) !important;
+}
+
+.name-glow-red {
+  color: #ff3d00 !important;
+  text-shadow: 0 0 8px rgba(255, 61, 0, 0.8), 0 0 16px rgba(255, 61, 0, 0.5) !important;
 }
 
 /* 2. Glassmorphism Dropdown Card */
 .dropdown-menu {
   min-width: 300px !important;
-  background: rgba(14, 14, 14, 0.75) !important;
+  background: rgba(14, 14, 14, 0.85) !important;
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   border-radius: 18px !important;
   padding: 16px !important;
@@ -92,9 +132,9 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.15);
   background: #181818;
   object-fit: cover;
+  transition: all 0.3s ease;
 }
 
 .avatar-edit-overlay {
@@ -201,7 +241,7 @@
   color: #ffd700;
   background: rgba(255, 215, 0, 0.18);
   border: 1px solid rgba(255, 215, 0, 0.5);
-  animation: goldPulse 2s infinite alternate;
+  animation: goldFramePulse 2s infinite alternate;
 }
 
 .role-admin {
@@ -210,9 +250,59 @@
   border: 1px solid rgba(255, 82, 82, 0.4);
 }
 
-@keyframes goldPulse {
-  from { box-shadow: 0 0 6px rgba(255, 215, 0, 0.2); }
-  to { box-shadow: 0 0 16px rgba(255, 215, 0, 0.7); }
+/* Cosmetics Toolbar */
+.cosmetics-toolbar {
+  margin-top: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 10px;
+}
+
+.cosmetics-btn {
+  width: 100%;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+  padding: 7px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.cosmetics-btn:hover {
+  background: rgba(255, 215, 0, 0.2);
+}
+
+.cosmetics-panel {
+  margin-top: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cosmetics-panel label {
+  font-size: 10px;
+  color: #aaa;
+  display: block;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.cosmetics-panel select {
+  width: 100%;
+  background: #1e1e1e;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 5px;
+  font-size: 11px;
+  outline: none;
 }
 
 /* Modern Rename Box */
@@ -264,10 +354,6 @@
 .rename-action-btn.btn-cancel {
   background: rgba(255, 255, 255, 0.1);
   color: #ccc;
-}
-
-.rename-action-btn:hover {
-  opacity: 0.85;
 }
 
 /* Stats Box */
@@ -326,7 +412,7 @@
   font-weight: 700;
 }
 
-/* Actions Menu List - Malinis at Modern */
+/* Actions Menu List */
 .dropdown-actions-list {
   display: flex;
   flex-direction: column;
@@ -366,10 +452,10 @@
   background: rgba(76, 175, 80, 0.15);
 }
 
-.profile-action-btn.logout-action-btn {
+.logout-action-btn {
   color: #e50914;
 }
 
-.profile-action-btn.logout-action-btn:hover {
+.logout-action-btn:hover {
   background: rgba(229, 9, 20, 0.14);
 }

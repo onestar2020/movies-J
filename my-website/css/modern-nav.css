@@ -1,71 +1,15 @@
 /* ============================================================
-   MOVIES-J MODERN NAVBAR & PROFILE UPGRADES
+   MOVIES-J MODERN PROFILE DROPDOWN STYLES
    ============================================================ */
 
-/* 1. Frosted Glass Effect sa Top Bar */
-.navbar, header, .nav-container {
-    backdrop-filter: blur(16px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-    background: rgba(15, 15, 15, 0.75) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-    transition: all 0.3s ease;
-}
-
-/* 2. Download APK Pill Button */
-.apk-download-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: linear-gradient(135deg, rgba(229, 9, 20, 0.2), rgba(255, 59, 48, 0.3));
-    border: 1px solid #e50914;
-    color: #fff !important;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.apk-download-pill:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(229, 9, 20, 0.4);
-    color: #fff;
-}
-
-/* 3. Surprise Me (Dice Button) */
-.surprise-btn {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-.surprise-btn:hover {
-    background: #e50914;
-    border-color: #e50914;
-    box-shadow: 0 0 12px rgba(229, 9, 20, 0.5);
-    transform: scale(1.03);
-}
-
-/* 4. Modern Profile Dropdown Card */
+/* Modern Profile Card Menu */
 .modern-profile-card {
-    min-width: 260px;
-    background: rgba(18, 18, 18, 0.95) !important;
-    backdrop-filter: blur(20px);
+    min-width: 250px !important;
+    background: #141414 !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    border-radius: 14px !important;
-    padding: 16px !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8) !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9) !important;
 }
 
 .profile-card-header {
@@ -78,8 +22,9 @@
 
 .profile-avatar-wrapper {
     position: relative;
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
 }
 
 .profile-avatar-img {
@@ -87,31 +32,31 @@
     height: 100%;
     border-radius: 50%;
     border: 2px solid #e50914;
-    object-fit: cover;
+    background: #1f1f1f;
 }
 
 .profile-streak-badge {
     position: absolute;
-    bottom: -4px;
-    right: -4px;
+    bottom: -3px;
+    right: -3px;
     background: #ff9800;
     color: #000;
     font-size: 9px;
-    font-weight: 900;
+    font-weight: 800;
     padding: 1px 4px;
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid #111;
 }
 
 .profile-user-info .user-name {
     color: #fff;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     display: block;
 }
 
 .profile-user-info .user-role {
-    font-size: 11px;
+    font-size: 10px;
     color: #00e676;
     background: rgba(0, 230, 118, 0.1);
     padding: 2px 6px;
@@ -120,31 +65,55 @@
     margin-top: 3px;
 }
 
-/* 5. User Quick Stats Grid */
+/* User Quick Stats */
 .profile-stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    margin: 12px 0;
+    margin: 10px 0;
 }
 
 .stat-box {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    padding: 8px;
+    padding: 6px;
     text-align: center;
 }
 
 .stat-box .stat-val {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 800;
     color: #fff;
     display: block;
 }
 
 .stat-box .stat-lbl {
-    font-size: 10px;
+    font-size: 9px;
     color: #888;
     text-transform: uppercase;
+}
+
+/* Surprise Me Button sa loob ng Dropdown */
+.dropdown-surprise-item {
+    background: rgba(229, 9, 20, 0.15);
+    border: 1px solid #e50914;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.dropdown-surprise-item:hover {
+    background: #e50914;
+    transform: translateY(-1px);
+}
+
+.dropdown-surprise-item span {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: block;
 }

@@ -16,6 +16,7 @@ import {
   getDoc,
   collection,
   addDoc,
+  getDocs,
   onSnapshot,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -27,16 +28,16 @@ window.triggerDropdownSurprise = function(e) {
   if (e) e.stopPropagation();
 
   const popularPicks = [
-    { id: 1022789, type: 'movie' }, // Inside Out 2
-    { id: 533535, type: 'movie' },  // Deadpool & Wolverine
-    { id: 573435, type: 'movie' },  // Bad Boys 4
-    { id: 693134, type: 'movie' },  // Dune Part Two
-    { id: 945961, type: 'movie' },  // Alien Romulus
-    { id: 823464, type: 'movie' },  // Godzilla x Kong
-    { id: 939243, type: 'tv' },     // Sonic Prime
-    { id: 94605, type: 'tv' },      // Arcane
-    { id: 1429, type: 'tv' },       // Attack on Titan
-    { id: 85937, type: 'tv' }       // Demon Slayer
+    { id: 1022789, type: 'movie' },
+    { id: 533535, type: 'movie' },
+    { id: 573435, type: 'movie' },
+    { id: 693134, type: 'movie' },
+    { id: 945961, type: 'movie' },
+    { id: 823464, type: 'movie' },
+    { id: 939243, type: 'tv' },
+    { id: 94605, type: 'tv' },
+    { id: 1429, type: 'tv' },
+    { id: 85937, type: 'tv' }
   ];
 
   const onPageCards = document.querySelectorAll("a[href*='movie.html?id=']");
@@ -126,6 +127,52 @@ function getCleanErrorMessage(errCode) {
       return "Google Sign-In was cancelled.";
     default:
       return "Authentication error. Please check your details and try again.";
+  }
+}
+
+// ================= DONATION VIP CHECKER =================
+async function checkUserVIPStatus(userEmail, userName) {
+  try {
+    const donorsSnap = await getDocs(collection(db, "donors"));
+    const donorTotals = {};
+    let currentTotal = 0;
+
+    donorsSnap.forEach((docSnap) => {
+      const d = docSnap.data();
+      const donorName = (d.name || "").trim().toLowerCase();
+      const amount = Number(d.amount) || 0;
+
+      if (!donorTotals[donorName]) donorTotals[donorName] = 0;
+      donorTotals[donorName] += amount;
+
+      const userClean = (userName || "").trim().toLowerCase();
+      const emailClean = (userEmail || "").trim().toLowerCase();
+
+      if (donorName === userClean || (d.email && d.email.toLowerCase() === emailClean)) {
+        currentTotal += amount;
+      }
+    });
+
+    let topDonorName = "";
+    let maxAmount = 0;
+    for (const [name, total] of Object.entries(donorTotals)) {
+      if (total > maxAmount) {
+        maxAmount = total;
+        topDonorName = name;
+      }
+    }
+
+    const cleanUser = (userName || "").trim().toLowerCase();
+    const isTopDonor = cleanUser === topDonorName && maxAmount > 0;
+
+    return {
+      isDonor: currentTotal > 0,
+      isTopDonor: isTopDonor,
+      totalDonated: currentTotal
+    };
+  } catch (err) {
+    console.warn("VIP Status Check error:", err);
+    return { isDonor: false, isTopDonor: false, totalDonated: 0 };
   }
 }
 
@@ -230,7 +277,7 @@ async function syncUserToFirestore(user) {
         uid: user.uid,
         displayName: user.displayName || "User",
         email: user.email,
-        photoURL: user.photoURL || "images/logo-192.png",
+        photoURL: user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.uid}`,
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         isBanned: false
@@ -238,7 +285,7 @@ async function syncUserToFirestore(user) {
     } else {
       await setDoc(userRef, {
         displayName: user.displayName || snap.data().displayName || "User",
-        photoURL: user.photoURL || snap.data().photoURL || "images/logo-192.png",
+        photoURL: user.photoURL || snap.data().photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.uid}`,
         lastLogin: new Date().toISOString()
       }, { merge: true });
     }
@@ -295,14 +342,12 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         userDoc = await getDoc(userRef);
       }
 
-      // Check kung banned agad sa pagpasok
       if (userDoc.exists() && userDoc.data().isBanned === true && user.email !== DEDICATED_ADMIN_EMAIL) {
         await signOut(auth);
         showAuthToast("Your account has been banned by the administrator.", "error");
         return;
       }
 
-      // Realtime listener habang online ang user: kapag pinindot ni Admin ang Ban, sipa agad
       onSnapshot(userRef, (docSnap) => {
         if (docSnap.exists() && docSnap.data().isBanned === true && user.email !== DEDICATED_ADMIN_EMAIL) {
           signOut(auth);
@@ -315,28 +360,60 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
       if (authContainer) {
         const isAdmin = user.email === DEDICATED_ADMIN_EMAIL;
         const displayName = userData.displayName || "User";
+        const currentAvatar = userData.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${displayName}`;
         const streak = localStorage.getItem("moviesj_streak") || "1";
         const watchHistory = JSON.parse(localStorage.getItem("movies_j_watch_history") || "[]");
 
+        // Alamin kung VIP Supporter o Top Donor
+        const vipInfo = await checkUserVIPStatus(user.email, displayName);
+
+        let rankBadgeHTML = `<span class="user-role role-free">Free Member</span>`;
+        let roleGlow = "";
+
+        if (isAdmin) {
+          rankBadgeHTML = `<span class="user-role role-admin"><i class="fas fa-shield-alt"></i> Admin</span>`;
+        } else if (vipInfo.isTopDonor) {
+          rankBadgeHTML = `<span class="user-role role-top-donor"><i class="fas fa-crown"></i> TOP DONOR (₱${vipInfo.totalDonated})</span>`;
+          roleGlow = "avatar-glow-gold";
+        } else if (vipInfo.isDonor) {
+          rankBadgeHTML = `<span class="user-role role-vip"><i class="fas fa-star"></i> VIP SUPPORTER (₱${vipInfo.totalDonated})</span>`;
+          roleGlow = "avatar-glow-vip";
+        }
+
         authContainer.innerHTML = `
           <div style="position:relative; display:inline-block;" id="user-profile-dropdown">
-            <div id="user-profile-btn" style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 10px; border-radius:20px; background:#1c1c1c; border:1px solid #333;">
-              <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${displayName}" class="nav-user-avatar" alt="Avatar" />
-              <span style="font-size:12px; color:#fff; font-weight:600;">${displayName.split(" ")[0]}</span>
+            <div id="user-profile-btn" class="nav-profile-pill">
+              <img src="${currentAvatar}" class="nav-user-avatar ${roleGlow}" alt="Avatar" id="nav-avatar-img" />
+              <span class="nav-user-name">${displayName.split(" ")[0]}</span>
               <i class="fas fa-chevron-down" style="font-size:10px; color:#888;"></i>
             </div>
             
-            <div id="user-dropdown-menu" class="dropdown-menu" style="display:none; position:absolute; right:0; top:38px; z-index:99999;">
+            <div id="user-dropdown-menu" class="dropdown-menu" style="display:none; position:absolute; right:0; top:42px; z-index:99999;">
               <div class="dropdown-header">
                 <div class="profile-card-header">
                   <div class="profile-avatar-wrapper">
-                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${displayName}" class="profile-avatar-img" alt="Avatar" />
+                    <img src="${currentAvatar}" class="profile-avatar-img ${roleGlow}" alt="Avatar" id="dropdown-avatar-preview" />
                     <span class="profile-streak-badge">🔥 ${streak}d</span>
+                    <label for="change-avatar-input" class="avatar-edit-overlay" title="Change Avatar">
+                      <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="change-avatar-input" accept="image/*" style="display:none;" />
                   </div>
+
                   <div class="profile-user-info">
-                    <span class="user-name">${displayName.toUpperCase()}</span>
-                    <span class="user-role">${isAdmin ? 'Administrator' : 'VIP Member'}</span>
+                    <div class="profile-name-row">
+                      <span class="user-name" id="user-display-name-label">${displayName.toUpperCase()}</span>
+                      <button id="rename-profile-btn" class="rename-icon-btn" title="Rename Name"><i class="fas fa-pen"></i></button>
+                    </div>
+                    ${rankBadgeHTML}
                   </div>
+                </div>
+
+                <!-- Hidden Inline Rename Field -->
+                <div id="rename-box" class="rename-box" style="display:none;">
+                  <input type="text" id="rename-input" value="${displayName}" maxlength="20" placeholder="New Display Name" />
+                  <button id="save-rename-btn" class="rename-save-btn"><i class="fas fa-check"></i></button>
+                  <button id="cancel-rename-btn" class="rename-cancel-btn"><i class="fas fa-times"></i></button>
                 </div>
 
                 <div class="profile-stats-grid">
@@ -351,22 +428,22 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                 </div>
               </div>
 
-              <!-- 🎲 Surprise Me Button sa loob ng Dropdown -->
+              <!-- 🎲 Surprise Me Button -->
               <div class="dropdown-surprise-item" id="dropdown-surprise-btn" onclick="triggerDropdownSurprise(event)">
                 <span>🎲 Surprise Me (Random Play)</span>
               </div>
 
               ${isAdmin ? `
-                <a href="admin-donations.html" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#4caf50; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; text-decoration:none; border-bottom:1px solid #282828;">
+                <a href="admin-donations.html" class="dropdown-item" style="color:#4caf50; font-weight:600; border-bottom:1px solid #282828;">
                   <i class="fas fa-gauge-high"></i> Admin Control Panel
                 </a>
               ` : ''}
 
-              <button id="menu-contact-admin-btn" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#fff; font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:1px solid #282828;">
+              <button id="menu-contact-admin-btn" class="dropdown-item" style="border-bottom:1px solid #282828;">
                 <i class="fas fa-envelope-open-text" style="color:#e50914;"></i> Support & Inquiries
               </button>
 
-              <button id="menu-logout-btn" style="width:100%; text-align:left; padding:10px 12px; background:transparent; border:none; color:#e50914; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+              <button id="menu-logout-btn" class="dropdown-item logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Logout
               </button>
             </div>
@@ -396,13 +473,85 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         }
 
         logoutBtn.onclick = logoutUser;
+
+        // Rename Handlers
+        const renameBtn = document.getElementById("rename-profile-btn");
+        const renameBox = document.getElementById("rename-box");
+        const saveRenameBtn = document.getElementById("save-rename-btn");
+        const cancelRenameBtn = document.getElementById("cancel-rename-btn");
+
+        if (renameBtn) {
+          renameBtn.onclick = (e) => {
+            e.stopPropagation();
+            renameBox.style.display = "flex";
+          };
+        }
+
+        if (cancelRenameBtn) {
+          cancelRenameBtn.onclick = (e) => {
+            e.stopPropagation();
+            renameBox.style.display = "none";
+          };
+        }
+
+        if (saveRenameBtn) {
+          saveRenameBtn.onclick = async (e) => {
+            e.stopPropagation();
+            const newName = document.getElementById("rename-input").value.trim();
+            if (!newName) return showAuthToast("Please enter a valid name.", "error");
+
+            saveRenameBtn.disabled = true;
+            try {
+              await updateProfile(auth.currentUser, { displayName: newName });
+              await setDoc(doc(db, "users", auth.currentUser.uid), { displayName: newName }, { merge: true });
+              document.getElementById("user-display-name-label").innerText = newName.toUpperCase();
+              document.querySelector(".nav-user-name").innerText = newName.split(" ")[0];
+              renameBox.style.display = "none";
+              showAuthToast("Display name updated!", "success");
+            } catch (err) {
+              console.error(err);
+              showAuthToast("Failed to rename user.", "error");
+            } finally {
+              saveRenameBtn.disabled = false;
+            }
+          };
+        }
+
+        // Change Avatar Handler
+        const avatarInput = document.getElementById("change-avatar-input");
+        if (avatarInput) {
+          avatarInput.onchange = async (e) => {
+            e.stopPropagation();
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+              return showAuthToast("Image must be under 5MB.", "error");
+            }
+
+            try {
+              showAuthToast("Compressing & updating avatar...", "success");
+              const base64Img = await compressImage(file, 250, 0.85);
+
+              await updateProfile(auth.currentUser, { photoURL: base64Img });
+              await setDoc(doc(db, "users", auth.currentUser.uid), { photoURL: base64Img }, { merge: true });
+
+              document.getElementById("nav-avatar-img").src = base64Img;
+              document.getElementById("dropdown-avatar-preview").src = base64Img;
+              showAuthToast("Profile photo updated!", "success");
+            } catch (err) {
+              console.error(err);
+              showAuthToast("Failed to upload avatar.", "error");
+            }
+          };
+        }
       }
 
       if (onUserLoggedIn) onUserLoggedIn(userData);
     } else {
       if (authContainer) {
         authContainer.innerHTML = `
-          <button id="nav-login-btn" style="background:#e50914; color:#fff; border:none; padding:6px 14px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">
+          <button id="nav-login-btn" style="background:#e50914; color:#fff; border:none; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer;">
             Sign In
           </button>
         `;

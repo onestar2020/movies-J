@@ -1,40 +1,72 @@
 /* ============================================================
-   MOVIES-J MODERN DROPDOWN ENHANCEMENT
+   MOVIES-J MODERN DROPDOWN ENHANCEMENT & VIP BADGES
    ============================================================ */
 
-/* User Avatar sa tapat ng Name sa Navbar */
+/* Navbar Pill */
+.nav-profile-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 3px 12px 3px 4px;
+    border-radius: 24px;
+    background: #141414;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.25s ease;
+}
+
+.nav-profile-pill:hover {
+    background: #1c1c1c;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
 .nav-user-avatar {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    margin-right: 6px;
-    vertical-align: middle;
-    border: 1.5px solid #e50914;
+    object-fit: cover;
     background: #222;
 }
 
-/* Profile Card Box */
+.nav-user-name {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Glow Effects */
+.avatar-glow-gold {
+    border: 2px solid #ffd700 !important;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5) !important;
+}
+
+.avatar-glow-vip {
+    border: 2px solid #00e676 !important;
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.4) !important;
+}
+
+/* Dropdown Card */
 .dropdown-menu {
-    min-width: 260px !important;
+    min-width: 280px !important;
     background: #141414 !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    border-radius: 12px !important;
-    padding: 12px !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9) !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.95) !important;
 }
 
 .profile-card-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .profile-avatar-wrapper {
     position: relative;
-    width: 44px;
-    height: 44px;
+    width: 50px;
+    height: 50px;
     flex-shrink: 0;
 }
 
@@ -42,8 +74,28 @@
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 2px solid #e50914;
+    border: 2px solid #333;
     background: #222;
+    object-fit: cover;
+}
+
+.avatar-edit-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.profile-avatar-wrapper:hover .avatar-edit-overlay {
+    opacity: 1;
 }
 
 .profile-streak-badge {
@@ -53,47 +105,150 @@
     background: #ff9800;
     color: #000;
     font-size: 9px;
-    font-weight: 800;
-    padding: 1px 4px;
-    border-radius: 6px;
+    font-weight: 900;
+    padding: 1px 5px;
+    border-radius: 8px;
     border: 1px solid #111;
+    z-index: 2;
+}
+
+.profile-user-info {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.profile-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .profile-user-info .user-name {
     color: #fff;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
-    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.profile-user-info .user-role {
-    font-size: 10px;
-    color: #00e676;
-    background: rgba(0, 230, 118, 0.1);
-    padding: 2px 6px;
+.rename-icon-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 2px 4px;
     border-radius: 4px;
-    display: inline-block;
-    margin-top: 3px;
+    transition: color 0.2s;
 }
 
-/* User Quick Stats */
+.rename-icon-btn:hover {
+    color: #fff;
+}
+
+/* User Roles */
+.user-role {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    text-transform: uppercase;
+}
+
+.role-free {
+    color: #aaa;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.role-vip {
+    color: #00e676;
+    background: rgba(0, 230, 118, 0.15);
+    border: 1px solid rgba(0, 230, 118, 0.3);
+}
+
+.role-top-donor {
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.15);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    animation: goldShine 2s infinite alternate;
+}
+
+.role-admin {
+    color: #ff5252;
+    background: rgba(255, 82, 82, 0.15);
+    border: 1px solid rgba(255, 82, 82, 0.3);
+}
+
+@keyframes goldShine {
+    from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); }
+    to { box-shadow: 0 0 12px rgba(255, 215, 0, 0.5); }
+}
+
+/* Inline Rename Box */
+.rename-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rename-box input {
+    flex: 1;
+    background: #222;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    outline: none;
+}
+
+.rename-box input:focus {
+    border-color: #e50914;
+}
+
+.rename-save-btn {
+    background: #4caf50;
+    border: none;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.rename-cancel-btn {
+    background: #333;
+    border: none;
+    color: #ccc;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Stats Grid */
 .profile-stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    margin: 10px 0 12px 0;
+    margin: 12px 0;
 }
 
 .stat-box {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    padding: 6px;
+    padding: 7px;
     text-align: center;
 }
 
 .stat-box .stat-val {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 800;
     color: #fff;
     display: block;
@@ -105,13 +260,13 @@
     text-transform: uppercase;
 }
 
-/* Surprise Me Button sa loob ng Dropdown */
+/* Surprise Button */
 .dropdown-surprise-item {
     background: rgba(229, 9, 20, 0.15);
     border: 1px solid #e50914;
     border-radius: 8px;
-    padding: 9px 10px;
-    margin-bottom: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
     text-align: center;
     cursor: pointer;
     transition: background 0.2s, transform 0.2s;
@@ -126,5 +281,4 @@
     color: #fff;
     font-size: 12px;
     font-weight: 700;
-    display: block;
 }

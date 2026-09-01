@@ -365,7 +365,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         const isDonor = userRole !== "free" || isAdmin;
 
         authContainer.innerHTML = `
-          <div style="position:relative; display:inline-block;" id="user-profile-dropdown">
+          <div style="position:relative; display:inline-block; margin-left: 8px;" id="user-profile-dropdown">
             <div id="user-profile-btn" class="nav-profile-pill">
               <img src="${currentAvatar}" class="nav-user-avatar ${borderClass}" alt="Avatar" id="nav-avatar-img" />
               <span class="nav-user-name ${glowClass}" id="nav-user-name-label">${displayName.split(" ")[0]}</span>
@@ -610,7 +610,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
     } else {
       if (authContainer) {
         authContainer.innerHTML = `
-          <button id="nav-login-btn" style="background:#e50914; color:#fff; border:none; padding:7px 16px; border-radius:24px; font-size:12px; font-weight:700; cursor:pointer;">
+          <button id="nav-login-btn" style="background:#e50914; color:#fff; border:none; padding:7px 16px; border-radius:24px; font-size:12px; font-weight:700; cursor:pointer; margin-left:10px;">
             Sign In
           </button>
         `;

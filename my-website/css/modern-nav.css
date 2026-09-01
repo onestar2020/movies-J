@@ -2,6 +2,12 @@
    MOVIES-J GLASSMORPHISM, REWARD TIERS & GLOW EFFECTS
    ============================================================ */
 
+#auth-nav-container {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-left: 8px !important;
+}
+
 .nav-profile-pill {
   display: inline-flex;
   align-items: center;
@@ -136,7 +142,7 @@
 /* ================= MOBILE VIEW RESPONSIVE FIX ================= */
 @media (max-width: 768px) {
   .nav-user-name {
-    display: none !important; /* Itago ang text name sa mobile pill para kasya lahat ng icons */
+    display: none !important;
   }
 
   .nav-profile-pill {

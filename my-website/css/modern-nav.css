@@ -1,8 +1,7 @@
 /* ============================================================
-   MOVIES-J GLASSMORPHISM, NEON BORDERS & GLOW FONTS
+   MOVIES-J GLASSMORPHISM, REWARD TIERS & GLOW EFFECTS
    ============================================================ */
 
-/* 1. Transparent Navbar Profile Pill */
 .nav-profile-pill {
   display: inline-flex;
   align-items: center;
@@ -48,16 +47,9 @@
 }
 
 /* ================= AVATAR BORDERS ================= */
-.avatar-border-gold {
-  border: 2px solid #ffd700 !important;
-  box-shadow: 0 0 14px rgba(255, 215, 0, 0.8), inset 0 0 8px rgba(255, 215, 0, 0.4) !important;
-  animation: goldFramePulse 2s infinite alternate;
-}
-
 .avatar-border-vip {
   border: 2px solid #00e676 !important;
   box-shadow: 0 0 14px rgba(0, 230, 118, 0.75), inset 0 0 8px rgba(0, 230, 118, 0.35) !important;
-  animation: emeraldFramePulse 2s infinite alternate;
 }
 
 .avatar-border-cyber {
@@ -70,22 +62,31 @@
   box-shadow: 0 0 14px rgba(255, 61, 0, 0.8), inset 0 0 8px rgba(255, 61, 0, 0.4) !important;
 }
 
-@keyframes goldFramePulse {
-  from { box-shadow: 0 0 8px rgba(255, 215, 0, 0.4); }
-  to { box-shadow: 0 0 18px rgba(255, 215, 0, 0.9); }
+.avatar-border-gold {
+  border: 2px solid #ffd700 !important;
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.85), inset 0 0 8px rgba(255, 215, 0, 0.4) !important;
+  animation: goldPulse 2s infinite alternate;
 }
 
-@keyframes emeraldFramePulse {
-  from { box-shadow: 0 0 8px rgba(0, 230, 118, 0.4); }
-  to { box-shadow: 0 0 18px rgba(0, 230, 118, 0.85); }
+.avatar-border-amethyst {
+  border: 2px solid #d500f9 !important;
+  box-shadow: 0 0 16px rgba(213, 0, 249, 0.85), inset 0 0 8px rgba(213, 0, 249, 0.4) !important;
+}
+
+.avatar-border-rainbow {
+  border: 2px solid transparent !important;
+  background-image: linear-gradient(#181818, #181818), linear-gradient(135deg, #ff0055, #00e5ff, #ffd700, #00e676) !important;
+  background-origin: border-box !important;
+  background-clip: content-box, border-box !important;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.7) !important;
+}
+
+@keyframes goldPulse {
+  from { box-shadow: 0 0 8px rgba(255, 215, 0, 0.4); }
+  to { box-shadow: 0 0 20px rgba(255, 215, 0, 0.95); }
 }
 
 /* ================= NAME GLOW EFFECTS ================= */
-.name-glow-gold {
-  color: #ffd700 !important;
-  text-shadow: 0 0 8px rgba(255, 215, 0, 0.8), 0 0 16px rgba(255, 215, 0, 0.5) !important;
-}
-
 .name-glow-emerald {
   color: #00e676 !important;
   text-shadow: 0 0 8px rgba(0, 230, 118, 0.8), 0 0 16px rgba(0, 230, 118, 0.5) !important;
@@ -101,9 +102,27 @@
   text-shadow: 0 0 8px rgba(255, 61, 0, 0.8), 0 0 16px rgba(255, 61, 0, 0.5) !important;
 }
 
-/* 2. Glassmorphism Dropdown Card */
+.name-glow-gold {
+  color: #ffd700 !important;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.8), 0 0 18px rgba(255, 215, 0, 0.6) !important;
+}
+
+.name-glow-purple {
+  color: #e040fb !important;
+  text-shadow: 0 0 8px rgba(224, 64, 251, 0.8), 0 0 18px rgba(224, 64, 251, 0.5) !important;
+}
+
+.name-glow-rgb {
+  background: linear-gradient(135deg, #ff1744, #ffea00, #00e5ff, #d500f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6));
+  font-weight: 800;
+}
+
+/* ================= DROPDOWN CARD ================= */
 .dropdown-menu {
-  min-width: 300px !important;
+  min-width: 310px !important;
   background: rgba(14, 14, 14, 0.85) !important;
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   border-radius: 18px !important;
@@ -241,7 +260,12 @@
   color: #ffd700;
   background: rgba(255, 215, 0, 0.18);
   border: 1px solid rgba(255, 215, 0, 0.5);
-  animation: goldFramePulse 2s infinite alternate;
+}
+
+.role-legendary {
+  color: #ff0055;
+  background: rgba(255, 0, 85, 0.18);
+  border: 1px solid rgba(255, 0, 85, 0.5);
 }
 
 .role-admin {
@@ -305,7 +329,6 @@
   outline: none;
 }
 
-/* Modern Rename Box */
 .rename-box {
   display: flex;
   align-items: center;
@@ -346,17 +369,9 @@
   transition: opacity 0.2s;
 }
 
-.rename-action-btn.btn-save {
-  background: #2e7d32;
-  color: #fff;
-}
+.rename-action-btn.btn-save { background: #2e7d32; color: #fff; }
+.rename-action-btn.btn-cancel { background: rgba(255, 255, 255, 0.1); color: #ccc; }
 
-.rename-action-btn.btn-cancel {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ccc;
-}
-
-/* Stats Box */
 .profile-stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -388,7 +403,6 @@
   margin-top: 2px;
 }
 
-/* Surprise Roulette Button */
 .dropdown-surprise-item {
   background: rgba(229, 9, 20, 0.16);
   border: 1px solid rgba(229, 9, 20, 0.7);
@@ -412,7 +426,6 @@
   font-weight: 700;
 }
 
-/* Actions Menu List */
 .dropdown-actions-list {
   display: flex;
   flex-direction: column;
@@ -444,18 +457,7 @@
   border-color: rgba(255, 255, 255, 0.16);
 }
 
-.profile-action-btn.admin-link {
-  color: #4caf50;
-}
-
-.profile-action-btn.admin-link:hover {
-  background: rgba(76, 175, 80, 0.15);
-}
-
-.logout-action-btn {
-  color: #e50914;
-}
-
-.logout-action-btn:hover {
-  background: rgba(229, 9, 20, 0.14);
-}
+.profile-action-btn.admin-link { color: #4caf50; }
+.profile-action-btn.admin-link:hover { background: rgba(76, 175, 80, 0.15); }
+.logout-action-btn { color: #e50914; }
+.logout-action-btn:hover { background: rgba(229, 9, 20, 0.14); }

@@ -3,120 +3,125 @@ import { auth, db } from "./firebase-config.js";
 import { 
   collection, 
   addDoc, 
-  query, 
-  orderBy, 
-  onSnapshot, 
-  deleteDoc, 
+  getDocs, 
   doc, 
-  serverTimestamp 
+  getDoc,
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  serverTimestamp,
+  onSnapshot 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Utility: Relative time formatter (e.g. "5 mins ago")
-function timeAgo(timestamp) {
-  if (!timestamp) return "Just now";
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-  const seconds = Math.floor((new Date() - date) / 1000);
+const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
 
-  let interval = Math.floor(seconds / 31536000);
-  if (interval >= 1) return interval + "y ago";
-  interval = Math.floor(seconds / 2592000);
-  if (interval >= 1) return interval + "mo ago";
-  interval = Math.floor(seconds / 86400);
-  if (interval >= 1) return interval + "d ago";
-  interval = Math.floor(seconds / 3600);
-  if (interval >= 1) return interval + "h ago";
-  interval = Math.floor(seconds / 60);
-  if (interval >= 1) return interval + "m ago";
-  return "Just now";
+const BORDER_CLASSES = {
+  emerald: "avatar-border-vip",
+  cyber: "avatar-border-cyber",
+  fire: "avatar-border-fire",
+  gold: "avatar-border-gold",
+  amethyst: "avatar-border-amethyst",
+  rainbow: "avatar-border-rainbow"
+};
+
+const GLOW_CLASSES = {
+  emerald: "name-glow-emerald",
+  blue: "name-glow-blue",
+  red: "name-glow-red",
+  gold: "name-glow-gold",
+  purple: "name-glow-purple",
+  rgb: "name-glow-rgb"
+};
+
+function getRoleBadge(role) {
+  switch (role) {
+    case "admin":
+      return `<span class="user-role role-admin" style="font-size:9px; padding:2px 6px; margin-left:5px;"><i class="fas fa-shield-alt"></i> Admin</span>`;
+    case "legendary":
+      return `<span class="user-role role-legendary" style="font-size:9px; padding:2px 6px; margin-left:5px;"><i class="fas fa-gem"></i> LEGENDARY</span>`;
+    case "top-donor":
+      return `<span class="user-role role-top-donor" style="font-size:9px; padding:2px 6px; margin-left:5px;"><i class="fas fa-crown"></i> TOP DONOR</span>`;
+    case "vip":
+      return `<span class="user-role role-vip" style="font-size:9px; padding:2px 6px; margin-left:5px;"><i class="fas fa-star"></i> VIP</span>`;
+    default:
+      return "";
+  }
 }
 
-export function initCommentsSystem(mediaId, mediaType) {
-  if (!mediaId) return;
+function timeAgo(date) {
+  if (!date) return "Just now";
+  const seconds = Math.floor((new Date() - date) / 1000);
+  if (seconds < 60) return "Just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
 
-  const commentInput = document.getElementById("comment-textarea");
-  const postBtn = document.getElementById("post-comment-btn");
-  const commentsFeed = document.getElementById("comments-feed-list");
-  const countElem = document.getElementById("comments-count");
-  const userAvatar = document.getElementById("current-user-comment-avatar");
+export function initMovieComments(mediaId, mediaTitle, mediaType = "movie") {
+  const commentInput = document.getElementById("comment-input") || document.getElementById("comment-text");
+  const postBtn = document.getElementById("post-comment-btn") || document.getElementById("submit-comment");
+  const commentsContainer = document.getElementById("comments-list-container") || document.getElementById("commentsList");
 
-  // Sync current logged in user avatar in input box
-  auth.onAuthStateChanged((user) => {
-    if (user && userAvatar) {
-      userAvatar.src = user.photoURL || "images/logo-192.png";
-    } else if (userAvatar) {
-      userAvatar.src = "images/logo-192.png";
-    }
-  });
+  if (!commentsContainer) return;
 
-  // 1. Realtime Listen to Comments for this Movie/Show
-  const commentsRef = collection(db, `media_comments_${mediaId}`);
-  const q = query(commentsRef, orderBy("createdAt", "desc"));
+  const commentsRef = collection(db, "comments");
+  const q = query(commentsRef, where("mediaId", "==", String(mediaId)));
 
-  onSnapshot(q, (snapshot) => {
-    if (!commentsFeed) return;
+  onSnapshot(q, async (snapshot) => {
+    let comments = [];
+    snapshot.forEach((docSnap) => {
+      comments.push({ id: docSnap.id, ...docSnap.data() });
+    });
 
-    const count = snapshot.size;
-    if (countElem) countElem.textContent = count;
+    comments.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-    if (count === 0) {
-      commentsFeed.innerHTML = `
-        <div style="text-align: center; padding: 30px; color: #777; background: #141414; border-radius: 8px; border: 1px dashed #333;">
-          <i class="far fa-comment-dots" style="font-size: 28px; margin-bottom: 8px; color: #555;"></i>
-          <p style="margin: 0; font-size: 13px;">No comments yet. Be the first to share your thoughts!</p>
-        </div>
-      `;
+    if (comments.length === 0) {
+      commentsContainer.innerHTML = `<p style="color:#777; font-size:13px; text-align:center; padding:20px;">No reviews yet. Be the first to leave a comment!</p>`;
       return;
     }
 
-    commentsFeed.innerHTML = "";
-    const currentUser = auth.currentUser;
+    commentsContainer.innerHTML = comments.map(c => {
+      const isOwner = auth.currentUser && (auth.currentUser.uid === c.userId || auth.currentUser.email === DEDICATED_ADMIN_EMAIL);
+      const postDate = c.createdAt ? new Date(c.createdAt.seconds * 1000) : (c.timestamp ? new Date(c.timestamp) : null);
+      
+      const borderClass = BORDER_CLASSES[c.avatarBorder] || "";
+      const glowClass = GLOW_CLASSES[c.nameGlow] || "";
+      const roleBadge = getRoleBadge(c.role);
 
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const commentId = docSnap.id;
-      const isOwner = currentUser && currentUser.uid === data.userId;
-
-      const commentCard = document.createElement("div");
-      commentCard.style.cssText = `
-        background: #181818;
-        border: 1px solid #282828;
-        border-radius: 8px;
-        padding: 14px;
-        display: flex;
-        gap: 12px;
-        position: relative;
-      `;
-
-      commentCard.innerHTML = `
-        <img src="${data.userPhoto || 'images/logo-192.png'}" alt="Avatar" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" />
-        <div style="flex: 1;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-weight: 600; font-size: 13px; color: #fff;">${data.userName || 'User'}</span>
-              <span style="font-size: 11px; color: #777;">${timeAgo(data.createdAt)}</span>
+      return `
+        <div class="comment-card" style="background:#181818; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px; margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="${c.userPhoto || 'images/logo-192.png'}" class="${borderClass}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; background:#111;" alt="Avatar" />
+              <div>
+                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
+                  <strong class="${glowClass}" style="font-size:13px; font-weight:700;">${c.userName || 'User'}</strong>
+                  ${roleBadge}
+                  <span style="font-size:10px; color:#777; margin-left:4px;">${timeAgo(postDate)}</span>
+                </div>
+              </div>
             </div>
             ${isOwner ? `
-              <button class="delete-comment-btn" data-id="${commentId}" style="background: transparent; border: none; color: #777; cursor: pointer; font-size: 12px;" title="Delete comment">
-                <i class="fas fa-trash-alt"></i>
+              <button class="delete-comment-btn" data-id="${c.id}" style="background:transparent; border:none; color:#666; cursor:pointer; font-size:12px; padding:4px;" title="Delete Comment">
+                <i class="fas fa-trash"></i>
               </button>
             ` : ''}
           </div>
-          <p style="color: #ddd; font-size: 13px; line-height: 1.5; margin: 0; word-break: break-word;">
-            ${escapeHtml(data.text)}
-          </p>
+          <p style="color:#ddd; font-size:13px; margin-top:8px; line-height:1.4; word-break:break-word;">${escapeHTML(c.text)}</p>
         </div>
       `;
+    }).join("");
 
-      commentsFeed.appendChild(commentCard);
-    });
-
-    // Attach Delete Listeners
-    document.querySelectorAll(".delete-comment-btn").forEach((btn) => {
+    commentsContainer.querySelectorAll(".delete-comment-btn").forEach(btn => {
       btn.onclick = async () => {
-        const cId = btn.getAttribute("data-id");
-        if (confirm("Do you want to delete this comment?")) {
+        const cId = btn.dataset.id;
+        if (confirm("Delete this comment?")) {
           try {
-            await deleteDoc(doc(db, `media_comments_${mediaId}`, cId));
+            await deleteDoc(doc(db, "comments", cId));
           } catch (e) {
             console.error("Error deleting comment:", e);
           }
@@ -125,14 +130,12 @@ export function initCommentsSystem(mediaId, mediaType) {
     });
   });
 
-  // 2. Post Comment Handler
   if (postBtn && commentInput) {
     postBtn.onclick = async () => {
       const user = auth.currentUser;
       if (!user) {
-        // Buksan ang Sign In modal kapag hindi naka-login
-        const navLoginBtn = document.getElementById("nav-login-btn");
-        if (navLoginBtn) navLoginBtn.click();
+        alert("Please sign in first to post a review or comment.");
+        document.getElementById("nav-login-btn")?.click();
         return;
       }
 
@@ -140,33 +143,58 @@ export function initCommentsSystem(mediaId, mediaType) {
       if (!text) return;
 
       postBtn.disabled = true;
-      postBtn.style.opacity = "0.5";
+      postBtn.textContent = "Posting...";
 
       try {
-        await addDoc(collection(db, `media_comments_${mediaId}`), {
+        let userRole = "free";
+        let avatarBorder = "none";
+        let nameGlow = "none";
+        let userPhoto = user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.displayName || user.uid}`;
+
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const uData = userDoc.data();
+          userRole = user.email === DEDICATED_ADMIN_EMAIL ? "admin" : (uData.role || "free");
+          avatarBorder = uData.avatarBorder || "none";
+          nameGlow = uData.nameGlow || "none";
+          userPhoto = uData.photoURL || userPhoto;
+        }
+
+        await addDoc(collection(db, "comments"), {
           mediaId: String(mediaId),
-          mediaType: mediaType || "movie",
+          mediaTitle: mediaTitle || "Untitled",
+          mediaType: mediaType,
           userId: user.uid,
           userName: user.displayName || "User",
-          userPhoto: user.photoURL || "images/logo-192.png",
+          userEmail: user.email || "",
+          userPhoto: userPhoto,
+          role: userRole,
+          avatarBorder: avatarBorder,
+          nameGlow: nameGlow,
           text: text,
+          timestamp: Date.now(),
           createdAt: serverTimestamp()
         });
 
         commentInput.value = "";
       } catch (err) {
-        console.error("Failed to post comment:", err);
+        console.error("Comment post error:", err);
+        alert("Failed to post comment.");
       } finally {
         postBtn.disabled = false;
-        postBtn.style.opacity = "1";
+        postBtn.innerHTML = `<i class="fas fa-paper-plane"></i> Post Comment`;
       }
     };
   }
 }
 
-// Security: Prevent XSS script injection in comments
-function escapeHtml(string) {
-  const div = document.createElement("div");
-  div.innerText = string;
-  return div.innerHTML;
+function escapeHTML(str) {
+  if (!str) return "";
+  return String(str).replace(/[&<>'"]/g, tag => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[tag] || tag));
 }

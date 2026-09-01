@@ -372,7 +372,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
               <i class="fas fa-chevron-down nav-dropdown-icon"></i>
             </div>
             
-            <div id="user-dropdown-menu" class="dropdown-menu" style="display:none; position:absolute; right:0; top:46px; z-index:99999;">
+            <div id="user-dropdown-menu" class="dropdown-menu" style="display:none; position:absolute; top:46px; z-index:99999;">
               <div class="dropdown-header">
                 <div class="profile-card-header">
                   <div class="profile-avatar-wrapper">

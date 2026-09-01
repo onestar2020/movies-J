@@ -120,16 +120,48 @@
   font-weight: 800;
 }
 
-/* ================= DROPDOWN CARD ================= */
+/* ================= DROPDOWN CARD (DESKTOP) ================= */
 .dropdown-menu {
   min-width: 310px !important;
-  background: rgba(14, 14, 14, 0.85) !important;
+  width: 310px !important;
+  background: rgba(14, 14, 14, 0.92) !important;
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   border-radius: 18px !important;
   padding: 16px !important;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: blur(20px) saturate(190%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+}
+
+/* ================= MOBILE VIEW RESPONSIVE FIX ================= */
+@media (max-width: 768px) {
+  .nav-user-name {
+    display: none !important; /* Itago ang text name sa mobile pill para kasya lahat ng icons */
+  }
+
+  .nav-profile-pill {
+    padding: 3px !important;
+    gap: 0 !important;
+  }
+
+  .nav-dropdown-icon {
+    display: none !important;
+  }
+
+  .dropdown-menu {
+    position: fixed !important;
+    top: 65px !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: 92vw !important;
+    max-width: 340px !important;
+    min-width: auto !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+    z-index: 9999999 !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95), 0 0 0 100vw rgba(0,0,0,0.6) !important;
+  }
 }
 
 .profile-card-header {

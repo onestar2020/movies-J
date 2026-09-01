@@ -16,7 +16,6 @@ import {
   getDoc,
   collection,
   addDoc,
-  getDocs,
   onSnapshot,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -25,10 +24,10 @@ const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
 
 // ================= REWARD TIERS & COSMETIC DEFINITIONS =================
 const RANK_TIERS = {
-  FREE: { id: "free", label: "Free Member", badgeClass: "role-free", icon: "", min: 0 },
-  VIP: { id: "vip", label: "VIP SUPPORTER", badgeClass: "role-vip", icon: "fa-star", min: 1 },
-  TOP_DONOR: { id: "top-donor", label: "TOP DONOR", badgeClass: "role-top-donor", icon: "fa-crown", min: 1000 },
-  LEGENDARY: { id: "legendary", label: "LEGENDARY BACKER", badgeClass: "role-legendary", icon: "fa-gem", min: 2500 }
+  free: { label: "Free Member", badgeClass: "role-free", icon: "" },
+  vip: { label: "VIP SUPPORTER", badgeClass: "role-vip", icon: "fa-star" },
+  "top-donor": { label: "TOP DONOR", badgeClass: "role-top-donor", icon: "fa-crown" },
+  legendary: { label: "LEGENDARY BACKER", badgeClass: "role-legendary", icon: "fa-gem" }
 };
 
 const AVATAR_BORDERS = [
@@ -51,16 +50,9 @@ const NAME_GLOWS = [
   { id: "rgb", label: "🌈 Rainbow Aurora", class: "name-glow-rgb", tier: "legendary" }
 ];
 
-function calculateUserTier(totalDonated = 0, isTopDonor = false) {
-  if (totalDonated >= RANK_TIERS.LEGENDARY.min) return RANK_TIERS.LEGENDARY;
-  if (isTopDonor || totalDonated >= RANK_TIERS.TOP_DONOR.min) return RANK_TIERS.TOP_DONOR;
-  if (totalDonated >= RANK_TIERS.VIP.min) return RANK_TIERS.VIP;
-  return RANK_TIERS.FREE;
-}
-
-function isCosmeticUnlocked(itemTierId, userTierId) {
-  const weights = { "free": 0, "vip": 1, "top-donor": 2, "legendary": 3 };
-  return (weights[userTierId] || 0) >= (weights[itemTierId] || 0);
+function isCosmeticUnlocked(itemTierId, userRoleId) {
+  const weights = { "free": 0, "vip": 1, "top-donor": 2, "legendary": 3, "admin": 4 };
+  return (weights[userRoleId] || 0) >= (weights[itemTierId] || 0);
 }
 
 // ================= RANDOM SURPRISE ME ROULETTE LOGIC =================
@@ -170,69 +162,6 @@ function getCleanErrorMessage(errCode) {
   }
 }
 
-// ================= SMART AUTO-VIP & DONOR DETECTOR =================
-async function checkUserVIPStatus(userEmail, userName, uid) {
-  try {
-    let donationsList = window.moviesJ_DonationsCache || [];
-    if (donationsList.length === 0) {
-      const snap = await getDocs(collection(db, "donations"));
-      snap.forEach(d => donationsList.push({ id: d.id, ...d.data() }));
-    }
-
-    const donorTotals = {};
-    let userDonatedAmount = 0;
-
-    const cleanUser = (userName || "").trim().toLowerCase();
-    const cleanEmail = (userEmail || "").trim().toLowerCase();
-    const cleanEmailPrefix = cleanEmail.split("@")[0].toLowerCase();
-
-    donationsList.forEach((d) => {
-      const rawDonorName = (d.name || "").trim();
-      const donorKey = rawDonorName.toLowerCase();
-      const amount = Number(d.amount ?? d.amountVal ?? 0);
-
-      if (!donorTotals[donorKey]) {
-        donorTotals[donorKey] = 0;
-      }
-      donorTotals[donorKey] += amount;
-
-      const dEmail = (d.email || "").trim().toLowerCase();
-      const dUserId = (d.userId || "").trim();
-
-      const isMatch = (
-        donorKey === cleanUser ||
-        (dEmail && dEmail === cleanEmail) ||
-        (dUserId && dUserId === uid) ||
-        donorKey === cleanEmailPrefix ||
-        cleanUser.includes(donorKey) ||
-        donorKey.includes(cleanUser)
-      );
-
-      if (isMatch) {
-        userDonatedAmount += amount;
-      }
-    });
-
-    let maxAmount = 0;
-    for (const val of Object.values(donorTotals)) {
-      if (val > maxAmount) {
-        maxAmount = val;
-      }
-    }
-
-    const isTopDonor = (userDonatedAmount > 0 && userDonatedAmount >= maxAmount);
-
-    return {
-      isDonor: userDonatedAmount > 0,
-      isTopDonor: isTopDonor,
-      totalDonated: userDonatedAmount
-    };
-  } catch (err) {
-    console.warn("VIP check warning:", err);
-    return { isDonor: false, isTopDonor: false, totalDonated: 0 };
-  }
-}
-
 // 1. Google Login
 export async function loginWithGoogle() {
   try {
@@ -338,6 +267,7 @@ async function syncUserToFirestore(user) {
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         isBanned: false,
+        role: "free",
         avatarBorder: "none",
         nameGlow: "none"
       });
@@ -353,7 +283,6 @@ async function syncUserToFirestore(user) {
   }
 }
 
-// High-speed Canvas Avatar Resizer & Compressor
 function compressAvatar(file, size = 180, quality = 0.8) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -407,13 +336,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
       let userData = userDoc.exists() ? userDoc.data() : user;
       const isAdmin = user.email === DEDICATED_ADMIN_EMAIL;
 
-      // Realtime VIP calculation based on live donations
-      const vipInfo = await checkUserVIPStatus(user.email, userData.displayName, user.uid);
-      const userTier = isAdmin 
-        ? { id: "admin", label: "Admin", badgeClass: "role-admin", icon: "fa-shield-alt" } 
-        : calculateUserTier(vipInfo.totalDonated, vipInfo.isTopDonor);
-
-      // Realtime listener sa user document
+      // Realtime listener sa sariling user document
       onSnapshot(userRef, (docSnap) => {
         if (!docSnap.exists()) return;
         const liveData = docSnap.data();
@@ -422,7 +345,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           showAuthToast("Your account has been banned by the administrator.", "error");
           return;
         }
-        updateUserUIEffects(liveData, userTier, vipInfo.totalDonated);
+        updateUserUIEffects(liveData, isAdmin);
       });
 
       if (authContainer) {
@@ -431,10 +354,15 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         const streak = localStorage.getItem("moviesj_streak") || "1";
         const watchHistory = JSON.parse(localStorage.getItem("movies_j_watch_history") || "[]");
 
+        const userRole = isAdmin ? "admin" : (userData.role || "free");
+        const activeTier = isAdmin 
+          ? { label: "Admin", badgeClass: "role-admin", icon: "fa-shield-alt" } 
+          : (RANK_TIERS[userRole] || RANK_TIERS.free);
+
         let borderClass = (AVATAR_BORDERS.find(b => b.id === userData.avatarBorder) || {}).class || "";
         let glowClass = (NAME_GLOWS.find(g => g.id === userData.nameGlow) || {}).class || "";
 
-        const isDonor = userTier.id !== "free" || isAdmin;
+        const isDonor = userRole !== "free" || isAdmin;
 
         authContainer.innerHTML = `
           <div style="position:relative; display:inline-block;" id="user-profile-dropdown">
@@ -462,8 +390,8 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                       <button id="rename-profile-btn" class="rename-icon-btn" title="Edit Display Name"><i class="fas fa-pen"></i></button>
                     </div>
                     <div id="user-rank-badge-container">
-                      <span class="user-role ${userTier.badgeClass}">
-                        ${userTier.icon ? `<i class="fas ${userTier.icon}"></i> ` : ''}${userTier.label}${vipInfo.totalDonated > 0 ? ` (₱${vipInfo.totalDonated})` : ''}
+                      <span class="user-role ${activeTier.badgeClass}">
+                        ${activeTier.icon ? `<i class="fas ${activeTier.icon}"></i> ` : ''}${activeTier.label}
                       </span>
                     </div>
                   </div>
@@ -476,7 +404,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                   <button id="cancel-rename-btn" class="rename-action-btn btn-cancel" title="Cancel"><i class="fas fa-times"></i></button>
                 </div>
 
-                <!-- VIP Cosmetic Picker (Lilitaw lang kapag nakapag-donate na) -->
+                <!-- VIP Cosmetic Picker (Lilitaw LANG kung ginawang VIP/Donor ng Admin) -->
                 ${isDonor ? `
                   <div class="cosmetics-toolbar">
                     <button id="toggle-cosmetics-btn" class="cosmetics-btn"><i class="fas fa-wand-magic-sparkles"></i> Customize Borders & Glow</button>
@@ -484,7 +412,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                       <label>Avatar Border:</label>
                       <select id="user-border-select">
                         ${AVATAR_BORDERS.map(b => {
-                          const unlocked = isCosmeticUnlocked(b.tier, userTier.id) || isAdmin;
+                          const unlocked = isCosmeticUnlocked(b.tier, userRole);
                           return `<option value="${b.id}" ${userData.avatarBorder === b.id ? 'selected' : ''} ${!unlocked ? 'disabled' : ''}>${b.label} ${!unlocked ? '🔒' : ''}</option>`;
                         }).join('')}
                       </select>
@@ -492,7 +420,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                       <label style="margin-top:6px;">Name Glow Style:</label>
                       <select id="user-glow-select">
                         ${NAME_GLOWS.map(g => {
-                          const unlocked = isCosmeticUnlocked(g.tier, userTier.id) || isAdmin;
+                          const unlocked = isCosmeticUnlocked(g.tier, userRole);
                           return `<option value="${g.id}" ${userData.nameGlow === g.id ? 'selected' : ''} ${!unlocked ? 'disabled' : ''}>${g.label} ${!unlocked ? '🔒' : ''}</option>`;
                         }).join('')}
                       </select>
@@ -696,7 +624,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   });
 }
 
-function updateUserUIEffects(data, userTier, totalDonated = 0) {
+function updateUserUIEffects(data, isAdmin = false) {
   const navAvatar = document.getElementById("nav-avatar-img");
   const dropAvatar = document.getElementById("dropdown-avatar-preview");
   const navName = document.getElementById("nav-user-name-label");
@@ -730,10 +658,15 @@ function updateUserUIEffects(data, userTier, totalDonated = 0) {
     if (dropName) dropName.classList.add(glowClass);
   }
 
-  if (rankContainer && userTier) {
+  const role = isAdmin ? "admin" : (data.role || "free");
+  const activeTier = isAdmin 
+    ? { label: "Admin", badgeClass: "role-admin", icon: "fa-shield-alt" }
+    : (RANK_TIERS[role] || RANK_TIERS.free);
+
+  if (rankContainer) {
     rankContainer.innerHTML = `
-      <span class="user-role ${userTier.badgeClass}">
-        ${userTier.icon ? `<i class="fas ${userTier.icon}"></i> ` : ''}${userTier.label}${totalDonated > 0 ? ` (₱${totalDonated})` : ''}
+      <span class="user-role ${activeTier.badgeClass}">
+        ${activeTier.icon ? `<i class="fas ${activeTier.icon}"></i> ` : ''}${activeTier.label}
       </span>
     `;
   }

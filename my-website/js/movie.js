@@ -12,7 +12,7 @@
  *  6. CAST & RECOMMENDATIONS (Scroller, Similar Titles)
  *  7. FRANCHISE / COLLECTION SIDEBAR (Chronological Watch Order)
  *  8. WATCH HISTORY SYNC (Auto-Correction para sa TV vs Movie)
- *  9. REALTIME COMMENTS & DISCUSSION (Clean UI + Custom Modal Delete)
+ *  9. REALTIME COMMENTS & DISCUSSION (Clean UI + Custom Modal Delete + VIP Styles)
  * 10. REALTIME ONLINE ACTIVE USERS (Firebase RTDB Presence Tracker)
  * 11. UI MODALS & NOTIFICATIONS (Theme Dialogs & Status Labels)
  * ==============================================================================
@@ -29,8 +29,45 @@ import {
   onSnapshot, 
   deleteDoc, 
   doc, 
+  getDoc,
   serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
+
+// Class definitions para sa live cosmetics sa comments
+const BORDER_CLASSES = {
+  emerald: "avatar-border-vip",
+  cyber: "avatar-border-cyber",
+  fire: "avatar-border-fire",
+  gold: "avatar-border-gold",
+  amethyst: "avatar-border-amethyst",
+  rainbow: "avatar-border-rainbow"
+};
+
+const GLOW_CLASSES = {
+  emerald: "name-glow-emerald",
+  blue: "name-glow-blue",
+  red: "name-glow-red",
+  gold: "name-glow-gold",
+  purple: "name-glow-purple",
+  rgb: "name-glow-rgb"
+};
+
+function getCommentRoleBadge(role) {
+  switch (role) {
+    case "admin":
+      return `<span class="user-role role-admin" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-shield-alt"></i> Admin</span>`;
+    case "legendary":
+      return `<span class="user-role role-legendary" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-gem"></i> LEGENDARY</span>`;
+    case "top-donor":
+      return `<span class="user-role role-top-donor" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-crown"></i> TOP DONOR</span>`;
+    case "vip":
+      return `<span class="user-role role-vip" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-star"></i> VIP</span>`;
+    default:
+      return "";
+  }
+}
 
 // TMDb & Cloudflare Proxy Endpoints
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; 
@@ -606,7 +643,7 @@ function syncToGlobalWatchHistory(item) {
 
 
 /* ==============================================================================
-   SECTION 9: REALTIME COMMENTS & DISCUSSION (CENTRALIZED & INDEX-FREE)
+   SECTION 9: REALTIME COMMENTS & DISCUSSION (CENTRALIZED & WITH VIP EFFECTS)
    ============================================================================== */
 function formatTimeAgo(timestamp) {
     if (!timestamp) return "Just now";
@@ -764,10 +801,14 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
 
         commentsFeed.innerHTML = "";
         const currentUser = auth.currentUser;
-        const isAdmin = currentUser && currentUser.email === "jayjovendinawanao2020@gmail.com";
+        const isAdmin = currentUser && currentUser.email === DEDICATED_ADMIN_EMAIL;
 
         allComments.forEach((data) => {
             const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
+            const borderClass = BORDER_CLASSES[data.avatarBorder] || "";
+            const glowClass = GLOW_CLASSES[data.nameGlow] || "";
+            const roleBadge = getCommentRoleBadge(data.role);
+
             const card = document.createElement("div");
             card.style.cssText = `
                 background: #181818;
@@ -780,12 +821,13 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
             `;
 
             card.innerHTML = `
-                <img src="${data.userPhoto || 'images/logo-192.png'}" alt="Avatar" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" />
+                <img src="${data.userPhoto || 'images/logo-192.png'}" class="${borderClass}" alt="Avatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: #111;" />
                 <div style="flex: 1;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-weight: 600; font-size: 13px; color: #fff;">${data.userName || 'User'}</span>
-                            <span style="font-size: 11px; color: #777;">${formatTimeAgo(data.timestamp || data.createdAt)}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                            <span class="${glowClass}" style="font-weight: 700; font-size: 13px; color: #fff;">${data.userName || 'User'}</span>
+                            ${roleBadge}
+                            <span style="font-size: 11px; color: #777; margin-left: 2px;">${formatTimeAgo(data.timestamp || data.createdAt)}</span>
                         </div>
                         ${isOwner ? `
                             <button class="delete-comment-btn" data-id="${data.id}" style="background: transparent; border: none; color: #777; cursor: pointer; font-size: 12px;" title="${isAdmin ? 'Admin Delete' : 'Delete'}">
@@ -841,13 +883,31 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
             postBtn.style.opacity = "0.5";
 
             try {
+                let userRole = "free";
+                let avatarBorder = "none";
+                let nameGlow = "none";
+                let userPhoto = user.photoURL || "images/logo-192.png";
+
+                // Kukunin ang latest customizations mula sa Firestore account ng user
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const uData = userDoc.data();
+                    userRole = user.email === DEDICATED_ADMIN_EMAIL ? "admin" : (uData.role || "free");
+                    avatarBorder = uData.avatarBorder || "none";
+                    nameGlow = uData.nameGlow || "none";
+                    userPhoto = uData.photoURL || userPhoto;
+                }
+
                 await addDoc(collection(db, "comments"), {
                     mediaId: String(mediaId),
                     mediaTitle: mediaTitle || "Untitled",
                     mediaType: mediaType || "movie",
                     userId: user.uid,
                     userName: user.displayName || "User",
-                    userPhoto: user.photoURL || "images/logo-192.png",
+                    userPhoto: userPhoto,
+                    role: userRole,
+                    avatarBorder: avatarBorder,
+                    nameGlow: nameGlow,
                     text: text,
                     timestamp: Date.now(),
                     createdAt: serverTimestamp()

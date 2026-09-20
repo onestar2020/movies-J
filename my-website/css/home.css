@@ -1450,3 +1450,41 @@ a {
 @media (max-width: 768px) {
     .scroll-btn { display: none !important; } /* Hide sa mobile para malinis */
 }
+/* ==========================================================================
+   🛠️ FINAL UI FIXES: GAPS, MOBILE ZOOM, & TEXT POSITIONING
+   ========================================================================== */
+
+/* 1. PC & MOBILE GAP FIX (Hihilahin pataas ang listahan para pumatong sa dark gradient) */
+.main-container {
+    margin-top: -150px !important; /* Hilahing pataas ang buong content sa Desktop */
+    padding-top: 0 !important;
+    position: relative;
+    z-index: 10;
+}
+
+/* 2. MOBILE SPECIFIC FIXES */
+@media (max-width: 768px) {
+    #hero-section {
+        height: 60vh !important; 
+        min-height: 450px !important;
+    }
+    
+    /* Iwas "Sobrang Zoom In" sa mobile - i-focus sa itaas/mukha ng characters */
+    #hero-section::before {
+        background-position: top center !important; 
+    }
+    
+    /* Ibalik sa kaliwa ang text para hindi putol at ibaba nang kaunti */
+    .hero-content {
+        left: 20px !important; 
+        transform: none !important;
+        text-align: left !important;
+        bottom: 70px !important; 
+        width: calc(100% - 40px) !important;
+    }
+
+    /* Hilahin din pataas ang listahan sa Mobile para mawala ang malaking black gap */
+    .main-container {
+        margin-top: -80px !important; 
+    }
+}

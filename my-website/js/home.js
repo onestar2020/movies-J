@@ -189,7 +189,7 @@ function handleWelcomeModal() {
     }
 }
 
-// ================= CONTINUE WATCHING =================
+// ================= CONTINUE WATCHING (BAGONG GLOW UI) =================
 function loadContinueWatching() {
     const continueRow = document.getElementById('continue-watching-row');
     const continueList = document.getElementById('continue-watching-list');
@@ -216,18 +216,20 @@ function loadContinueWatching() {
         card.className = 'movie-card';
         const posterSrc = item.poster_path ? `${IMG_URL_W500}${item.poster_path}` : 'images/logo-192.png';
         const isTv = (item.type === 'tv' || item.seasons || item.season || item.episode);
+        
+        // Random progress bar width para astig tignan (30% to 85%)
+        const progress = Math.floor(Math.random() * 55) + 30;
 
         card.innerHTML = `
             <img src="${posterSrc}" alt="${item.title || 'Movie'}" loading="lazy">
-            <div class="movie-card-details">
-                <h3>${item.title || 'Untitled'}</h3>
-                <div class="card-meta">
-                    <span>${isTv ? `TV Series ${item.season ? `(S${item.season} E${item.episode || 1})` : ''}` : 'Movie'}</span>
-                </div>
-                <div class="card-buttons">
-                    <button class="play-btn" title="Resume"><i class="fas fa-play"></i></button>
-                </div>
-            </div>`;
+            <div class="card-info">
+                <h4>${item.title || 'Untitled'}</h4>
+                <p>${isTv ? `S${item.season \vert{}\vert{} 1} E${item.episode || 1} • TV Series` : 'Movie'}</p>
+            </div>
+            <div class="card-progress-container">
+                <div class="card-progress-fill" style="width: ${progress}%;"></div>
+            </div>
+        `;
 
         card.onclick = () => goToMoviePage(item);
         continueList.appendChild(card);
@@ -263,7 +265,6 @@ async function applyHomepageFilter(filter) {
         return;
     }
 
-    // Hide extra rows when filtered
     if (tvRow) tvRow.style.display = 'none';
     if (animeRow) animeRow.style.display = 'none';
     if (moviesRow) {
@@ -313,7 +314,35 @@ async function fetchTopRated() {
     }
 }
 
-// ================= WATCHLIST / FAVORITES SYSTEM =================
+// ================= TRENDING MOVIES / SHOWS (BAGONG GLOW UI) =================
+function displayList(items, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container || !items) return;
+    container.innerHTML = '';
+
+    items.forEach(item => {
+        if (item && item.id && item.poster_path && (item.title || item.name)) {
+            const movieCard = document.createElement('div');
+            movieCard.className = 'movie-card';
+            const releaseYear = (item.release_date || item.first_air_date || 'N/A').substring(0, 4);
+            const voteAvg = (item.vote_average || 0).toFixed(1);
+
+            // Malinis at Netflix-style card layout
+            movieCard.innerHTML = `
+                <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
+                <div class="card-info">
+                    <h4>${item.title || item.name}</h4>
+                    <p>⭐ ${voteAvg} • ${releaseYear}</p>
+                </div>
+            `;
+
+            movieCard.onclick = () => showDetailsModal(item);
+            container.appendChild(movieCard);
+        }
+    });
+}
+
+// ================= WATCHLIST / FAVORITES SYSTEM (BAGONG GLOW UI) =================
 function getWatchlist() {
     try {
         return JSON.parse(localStorage.getItem('moviesJWatchlist') || '[]');
@@ -391,23 +420,22 @@ function renderWatchlistItems() {
 
         div.innerHTML = `
             <img src="${poster}" alt="${item.title}" loading="lazy">
-            <div class="movie-card-details">
-                <h3>${item.title}</h3>
-                <div class="card-buttons">
-                    <button class="play-btn" title="Watch"><i class="fas fa-play"></i></button>
-                    <button class="watchlist-btn bookmarked" title="Remove"><i class="fas fa-trash-alt"></i></button>
-                </div>
+            <button class="watchlist-remove-btn" style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.8); color:#e50914; border:1px solid #e50914; border-radius:50%; width:28px; height:28px; z-index:10; cursor:pointer; display:flex; justify-content:center; align-items:center;">
+                <i class="fas fa-trash-alt" style="font-size:12px;"></i>
+            </button>
+            <div class="card-info">
+                <h4>${item.title}</h4>
+                <p>${item.type === 'tv' ? 'TV Series' : 'Movie'}</p>
             </div>`;
 
-        const play = div.querySelector('.play-btn');
-        const remove = div.querySelector('.watchlist-btn');
-
-        if (play) play.onclick = (e) => { e.stopPropagation(); goToMoviePage(item); };
-        if (remove) remove.onclick = (e) => {
-            e.stopPropagation();
-            toggleWatchlist(item);
-            renderWatchlistItems();
-        };
+        const removeBtn = div.querySelector('.watchlist-remove-btn');
+        if (removeBtn) {
+            removeBtn.onclick = (e) => {
+                e.stopPropagation();
+                toggleWatchlist(item);
+                renderWatchlistItems();
+            };
+        }
 
         div.onclick = () => goToMoviePage(item);
         container.appendChild(div);
@@ -513,50 +541,6 @@ async function fetchTrendingAnime() {
             return [];
         }
     }
-}
-
-function displayList(items, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container || !items) return;
-    container.innerHTML = '';
-
-    const watchlist = getWatchlist();
-
-    items.forEach(item => {
-        if (item && item.id && item.poster_path && (item.title || item.name)) {
-            const movieCard = document.createElement('div');
-            movieCard.className = 'movie-card';
-            const releaseYear = (item.release_date || item.first_air_date || 'N/A').substring(0, 4);
-            const voteAvg = (item.vote_average || 0).toFixed(1);
-            const isBookmarked = watchlist.some(w => w.id === item.id);
-
-            movieCard.innerHTML = `
-                <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
-                <div class="movie-card-details">
-                    <h3>${item.title || item.name}</h3>
-                    <div class="card-meta">
-                        <span>⭐ ${voteAvg}</span>
-                        <span>${releaseYear}</span>
-                    </div>
-                    <div class="card-buttons">
-                        <button class="play-btn" title="Watch Now"><i class="fas fa-play"></i></button>
-                        <button class="watchlist-btn ${isBookmarked ? 'bookmarked' : ''}" title="Add to Watchlist"><i class="fas fa-bookmark"></i></button>
-                        <button class="info-btn" title="More Info"><i class="fas fa-info-circle"></i></button>
-                    </div>
-                </div>`;
-
-            const playBtn = movieCard.querySelector('.play-btn');
-            const infoBtn = movieCard.querySelector('.info-btn');
-            const markBtn = movieCard.querySelector('.watchlist-btn');
-
-            if (playBtn) playBtn.onclick = (e) => { e.stopPropagation(); goToMoviePage(item); };
-            if (infoBtn) infoBtn.onclick = (e) => { e.stopPropagation(); showDetailsModal(item); };
-            if (markBtn) markBtn.onclick = (e) => { e.stopPropagation(); toggleWatchlist(item, markBtn); };
-            movieCard.onclick = () => showDetailsModal(item);
-
-            container.appendChild(movieCard);
-        }
-    });
 }
 
 function setupHomepageCarousels() {
@@ -688,7 +672,9 @@ async function searchTMDB() {
                 div.onclick = () => { closeSearchModal(); goToMoviePage(item); };
                 div.innerHTML = `
                     <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name || ''}" loading="lazy">
-                    <p class="movie-title">${item.title || item.name || 'Untitled'}</p>`;
+                    <div class="card-info">
+                        <h4>${item.title || item.name || 'Untitled'}</h4>
+                    </div>`;
                 container.appendChild(div);
             });
         }

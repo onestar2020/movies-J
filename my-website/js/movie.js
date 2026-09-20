@@ -253,81 +253,10 @@ function renderMetadata(item) {
 }
 
 /* ==============================================================================
-   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (MANUAL & SMART HD DETECTION)
+   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN, NO CAM NOTICES, TV-SAFE)
    ============================================================================== */
-// CasaOS Live Quality Checker Endpoint
-const QUALITY_CHECKER_API = "https://gourmet-structural-axis-pair.trycloudflare.com";
 
-async function applyLiveCasaOSQuality(tmdbId) {
-    if (!tmdbId || isEpisodic) return;
-
-    try {
-        const res = await fetch(`${QUALITY_CHECKER_API}/api/check-quality/${tmdbId}`);
-        if (!res.ok) return;
-        const data = await res.json();
-
-        console.log("CasaOS Quality Result:", data);
-
-        // 1. I-update ang Badge sa header/overview (Gawing berdeng HD 1080p)
-        if (data.overallQuality === 'HD') {
-            const badgeBox = document.getElementById("media-badges");
-            if (badgeBox) {
-                const allBadges = badgeBox.querySelectorAll(".meta-badge");
-                allBadges.forEach(b => {
-                    if (b.textContent.includes("CAM") || b.textContent.includes("Telesync")) {
-                        b.textContent = "HD 1080p";
-                        b.style.background = "#4CAF50";
-                    }
-                });
-            }
-        }
-
-        // 2. I-update ang mga Server Buttons na may visual styling (Glow & Star)
-        const grid = document.getElementById("server-buttons");
-        let firstHdButton = null;
-        let firstHdServerKey = null;
-
-        if (grid && data.servers) {
-            const buttons = grid.querySelectorAll(".srv-btn");
-            data.servers.forEach((srv, index) => {
-                const btn = buttons[index];
-                if (btn) {
-                    const isHD = srv.quality === 'HD';
-                    const qColor = isHD ? '#4CAF50' : '#ff9800';
-                    const baseName = btn.textContent.split('(')[0].replace('✨', '').trim();
-                    
-                    const hdTag = isHD ? '✨ ' : '';
-                    btn.innerHTML = `${hdTag}${baseName} <span style="font-size:10px; margin-left:4px; font-weight:bold; color:${qColor};">(${srv.quality})</span>`;
-
-                    // Kapag HD, lagyan ng berdeng highlight border
-                    if (isHD) {
-                        btn.style.borderColor = 'rgba(76, 175, 80, 0.5)';
-                        if (!firstHdButton) {
-                            firstHdButton = btn;
-                            firstHdServerKey = btn.getAttribute('data-server');
-                        }
-                    }
-                }
-            });
-        }
-
-        // 3. Smart Default: Kung CAM pa ang default pero may HD na pala (hal. Server 2),
-        // ilipat ang initial stream sa unang HD server nang hindi pinipilit ang buong UI.
-        if (firstHdButton && data.overallQuality === 'HD') {
-            const currentActive = grid.querySelector('.srv-btn.active');
-            if (currentActive && currentActive.textContent.includes('CAM')) {
-                grid.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
-                firstHdButton.classList.add("active");
-
-                if (firstHdServerKey && currentItemData) {
-                    updatePlayer(firstHdServerKey, currentItemData, currentSeasonNumber, currentEpisodeNumber);
-                }
-            }
-        }
-    } catch (e) {
-        console.warn("Quality checker hindi naabot, gagamitin ang standard estimation:", e);
-    }
-}
+// Tinanggal na ang QUALITY_CHECKER_API at applyLiveCasaOSQuality para malinis at hindi tumawag sa external checker.
 
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
@@ -351,11 +280,21 @@ function populateServerSelector(item) {
 
     grid.innerHTML = "";
 
+    // Tanggalin ang CAM/Telesync o HD badge sa ilalim ng movie title
+    const badgeBox = document.getElementById("media-badges");
+    if (badgeBox) {
+        const badges = badgeBox.querySelectorAll(".meta-badge");
+        badges.forEach(b => {
+            if (b.textContent.includes("CAM") || b.textContent.includes("Telesync") || b.textContent.includes("HD")) {
+                b.remove();
+            }
+        });
+    }
+
     if (typeof STREAM_SERVERS !== "undefined") {
         const serverKeys = Object.keys(STREAM_SERVERS);
-        const qualityStatus = getQualityStatus(item.release_date || item.first_air_date);
 
-        serverKeys.forEach((key) => {
+        serverKeys.forEach((key, index) => {
             const srv = STREAM_SERVERS[key];
             if (!srv.enabled) return;
 
@@ -363,11 +302,13 @@ function populateServerSelector(item) {
             btn.className = `srv-btn ${!isEpisodic && !isMovieReleased ? 'disabled-srv' : ''}`;
             btn.setAttribute('data-server', key);
             
-            const qTag = isMovieReleased 
-                ? `<span style="font-size:10px; margin-left:4px; opacity:0.8; color:${qualityStatus.isCamLikely ? '#ffb74d' : '#81c784'};">(${qualityStatus.quality})</span>` 
-                : '';
-            
-            btn.innerHTML = `${srv.name} ${qTag}`;
+            // Malinis na pangalan lang ng server (walang (CAM) o (HD) tags)
+            btn.textContent = srv.name;
+
+            // Gawing active ang unang server sa simula
+            if (index === 0) {
+                btn.classList.add("active");
+            }
             
             btn.onclick = () => {
                 if (!isEpisodic && !isMovieReleased) {
@@ -384,16 +325,7 @@ function populateServerSelector(item) {
                     return;
                 }
 
-                // HAKBANG A FIX: Huwag magpakita ng CAM warning kapag HD na ang badge sa screen
-                const isHDVerified = document.getElementById("media-badges")?.textContent.includes("HD");
-                if (!isHDVerified && qualityStatus.isCamLikely && !sessionStorage.getItem(`cam_notified_${item.id}`)) {
-                    showThemeModal(
-                        "Video Quality Notice",
-                        qualityStatus.message,
-                        qualityStatus.badge
-                    );
-                    sessionStorage.setItem(`cam_notified_${item.id}`, 'true');
-                }
+                // TINANGGAL NA ANG CAM WARNING MODAL DITO
 
                 document.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
@@ -403,6 +335,13 @@ function populateServerSelector(item) {
 
             grid.appendChild(btn);
         });
+
+        // IMPORTANTENG PAGBABAGO: I-render ang TV Show Seasons at Episodes pagkatapos ng servers
+        if (isEpisodic && typeof renderSeasonEpisodes === 'function') {
+            renderSeasonEpisodes(item);
+        } else if (isEpisodic && typeof populateEpisodes === 'function') {
+            populateEpisodes(item);
+        }
     }
 }
 
@@ -428,9 +367,10 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     const embedUrl = getEmbedUrl(serverKey, mediaData, typeKey, season, episode);
     player.src = embedUrl;
 
-    syncToGlobalWatchHistory(item);
+    if (typeof syncToGlobalWatchHistory === 'function') {
+        syncToGlobalWatchHistory(item);
+    }
 }
-
 /* ==============================================================================
    SECTION 5: TV SHOWS, SEASONS & EPISODES
    ============================================================================== */

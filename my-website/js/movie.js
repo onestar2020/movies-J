@@ -146,31 +146,44 @@ async function fetchDetails() {
         console.warn("Proxy fetch failed, switching to direct TMDb API:", e);
     }
 
-    if (!data || data.status_code === 34) {
+    if (!data || data.status_code === 34 || data.success === false) {
         try {
             let tmdbRes = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
             data = await tmdbRes.json();
 
-            if (data.status_code === 34 && type === 'movie') {
+            // AUTO-CORRECT: Kung hinanap as Movie pero wala, baka TV Show
+            if ((data.status_code === 34 || data.success === false) && type === 'movie') {
                 type = 'tv';
                 isEpisodic = true;
                 tmdbRes = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
+                data = await tmdbRes.json();
+            } 
+            // AUTO-CORRECT (FIX PARA SA CONTINUE WATCHING BUG): Kung hinanap as TV pero wala, baka Movie
+            else if ((data.status_code === 34 || data.success === false) && type === 'tv') {
+                type = 'movie';
+                isEpisodic = false;
+                tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
                 data = await tmdbRes.json();
             }
         } catch (err) {
             console.error("Direct TMDb Fetch Error:", err);
         }
     }
+
     return data;
 }
 
 function renderMetadata(item) {
     const runtime = item.runtime || (item.episode_run_time && item.episode_run_time[0]);
     const runtimeElem = document.getElementById("fact-runtime");
-    if (runtimeElem) runtimeElem.textContent = runtime ? `${runtime} min` : (item.status || "N/A");
+    if (runtimeElem) {
+        runtimeElem.textContent = runtime ? `${runtime} min` : (item.status || "N/A");
+    }
 
     const releaseElem = document.getElementById("fact-release");
-    if (releaseElem) releaseElem.textContent = item.release_date || item.first_air_date || "N/A";
+    if (releaseElem) {
+        releaseElem.textContent = item.release_date || item.first_air_date || "N/A";
+    }
 
     const ratingElem = document.getElementById("fact-rating");
     if (ratingElem) {
@@ -182,19 +195,19 @@ function renderMetadata(item) {
     const countryElem = document.getElementById("fact-country");
     if (countryElem) {
         const country = (item.production_countries && item.production_countries[0]?.name) ||
-                        (item.origin_country && item.origin_country[0]) || "Global";
+                        (item.origin_country && item.origin_country[0]) || 
+                        "Global";
         countryElem.textContent = country;
     }
 
     const badgeBox = document.getElementById("media-badges");
     if (badgeBox) {
         const relStatus = !isEpisodic ? getReleaseStatus(item.release_date) : { isReleased: true };
-        
+
         const statusBadge = !relStatus.isReleased 
             ? `<span class="meta-badge" style="background:#e50914; color:#fff; font-weight:bold;">${relStatus.label}</span>` 
             : `<span class="meta-badge">${item.status || "Released"}</span>`;
 
-        // INALIS ANG QUALITY BADGE (CAM / HD) PARA MALINIS
         badgeBox.innerHTML = `
             <span class="meta-badge">${(isEpisodic ? 'TV SERIES' : 'MOVIE')}</span>
             ${statusBadge}
@@ -202,7 +215,6 @@ function renderMetadata(item) {
         `;
     }
 }
-
 /* ==============================================================================
    SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN - WALANG HD/CAM)
    ============================================================================== */

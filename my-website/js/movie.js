@@ -204,8 +204,16 @@ function renderMetadata(item) {
 }
 
 /* ==============================================================================
-   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN - NO CAM/HD TAGS)
+   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN - WALANG HD/CAM)
    ============================================================================== */
+// CasaOS Live Quality Checker Endpoint
+const QUALITY_CHECKER_API = "https://gourmet-structural-axis-pair.trycloudflare.com";
+
+async function applyLiveCasaOSQuality(tmdbId) {
+    // Tinanggal na ang CasaOS checker para hindi na mangialam sa HD o CAM tags
+    return;
+}
+
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
     if (!player) return;
@@ -218,6 +226,7 @@ function setupInitialPlayer(item) {
             return;
         }
     }
+
     trailerUrl = '';
 }
 
@@ -227,10 +236,22 @@ function populateServerSelector(item) {
 
     grid.innerHTML = "";
 
+    // Tanggalin ang CAM/Telesync o HD badge sa ilalim ng movie title na galing sa Section 3
+    const badgeBox = document.getElementById("media-badges");
+    if (badgeBox) {
+        const badges = badgeBox.querySelectorAll(".meta-badge");
+        badges.forEach(b => {
+            if (b.textContent.includes("CAM") || b.textContent.includes("Telesync") || b.textContent.includes("HD")) {
+                b.remove();
+            }
+        });
+    }
+
     if (typeof STREAM_SERVERS !== "undefined") {
         const serverKeys = Object.keys(STREAM_SERVERS);
+        const qualityStatus = getQualityStatus(item.release_date || item.first_air_date);
 
-        serverKeys.forEach((key, index) => {
+        serverKeys.forEach((key) => {
             const srv = STREAM_SERVERS[key];
             if (!srv.enabled) return;
 
@@ -238,13 +259,8 @@ function populateServerSelector(item) {
             btn.className = `srv-btn ${!isEpisodic && !isMovieReleased ? 'disabled-srv' : ''}`;
             btn.setAttribute('data-server', key);
             
-            // MALINIS NA SERVER NAME LANG, WALANG (CAM) O (HD)
-            btn.textContent = srv.name;
-            
-            // Default select ang Server 1
-            if (index === 0) {
-                btn.classList.add("active");
-            }
+            // Malinis na pangalan lang. Tinanggal ang qTag (HD/CAM)
+            btn.innerHTML = `${srv.name}`;
             
             btn.onclick = () => {
                 if (!isEpisodic && !isMovieReleased) {
@@ -261,7 +277,7 @@ function populateServerSelector(item) {
                     return;
                 }
 
-                // INALIS ANG CAM QUALITY MODAL NOTICE DITO
+                // Tinanggal ang CAM popup warning dito.
 
                 document.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
@@ -298,7 +314,6 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
 
     syncToGlobalWatchHistory(item);
 }
-
 
 /* ==============================================================================
    SECTION 5: TV SHOWS, SEASONS & EPISODES
@@ -587,7 +602,7 @@ function syncToGlobalWatchHistory(item) {
 
 
 /* ==============================================================================
-   SECTION 9: REALTIME COMMENTS & DISCUSSION
+   SECTION 9: REALTIME COMMENTS & DISCUSSION (CENTRALIZED & WITH VIP EFFECTS)
    ============================================================================== */
 function formatTimeAgo(timestamp) {
     if (!timestamp) return "Just now";
@@ -1002,4 +1017,11 @@ function getReleaseStatus(airDateStr) {
     }
 }
 
-// INALIS ANG getQualityStatus() DAHIL TINANGGAL NA ANG QUALITY TAGS/MODALS
+function getQualityStatus(releaseDateStr) {
+    return {
+        quality: '',
+        isCamLikely: false,
+        badge: '',
+        message: ''
+    };
+}

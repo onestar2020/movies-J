@@ -78,102 +78,89 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const item = await fetchDetails();
     
-    // Auto-correct type if URL parameter was wrong
-    const actualType = (item && item.first_air_date) ? 'tv' : 'movie';
-    if (actualType !== type) {
-        const newUrl = new URL(window.location);
-        newUrl.searchParams.set('type', actualType);
-        window.history.replaceState({}, '', newUrl);
-        type = actualType;
-        isEpisodic = (type === 'tv');
+    // KUNG NAG-REDIRECT SA FETCHDETAILS, HUMINTO NA DITO PARA HINDI MAG-ERROR ANG PAGE
+    if (!item) return;
+
+    currentItemData = item;
+
+    if (!isEpisodic) {
+        const relStatus = getReleaseStatus(item.release_date);
+        isMovieReleased = relStatus.isReleased;
     }
 
-    if (item) {
-        currentItemData = item;
+    const displayTitle = item.title || item.name || item.original_title || "Now Playing";
+    document.title = `${displayTitle} - Stream`;
 
-        if (!isEpisodic) {
-            const relStatus = getReleaseStatus(item.release_date);
-            isMovieReleased = relStatus.isReleased;
-        }
+    const titleElem = document.getElementById("media-title");
+    if (titleElem) titleElem.textContent = displayTitle;
 
-        const displayTitle = item.title || item.name || item.original_title || "Now Playing";
-        document.title = `${displayTitle} - Stream`;
+    const headerTitleElem = document.getElementById("page-header-title");
+    if (headerTitleElem) headerTitleElem.textContent = displayTitle;
 
-        const titleElem = document.getElementById("media-title");
-        if (titleElem) titleElem.textContent = displayTitle;
+    const overviewElem = document.getElementById("media-overview");
+    if (overviewElem) {
+        overviewElem.textContent = item.overview && item.overview.trim() !== "" 
+            ? item.overview 
+            : "No overview available.";
+    }
 
-        const headerTitleElem = document.getElementById("page-header-title");
-        if (headerTitleElem) headerTitleElem.textContent = displayTitle;
+    renderMetadata(item);
+    setupInitialPlayer(item);
+    populateServerSelector(item);
+    renderCastSection(item);
+    renderSimilarSection(item);
 
-        const overviewElem = document.getElementById("media-overview");
-        if (overviewElem) {
-            overviewElem.textContent = item.overview && item.overview.trim() !== "" 
-                ? item.overview 
-                : "No overview available.";
-        }
+    if (item.belongs_to_collection && item.belongs_to_collection.id) {
+        handleCollection(item.belongs_to_collection.id);
+    }
 
-        renderMetadata(item);
-        setupInitialPlayer(item);
-        populateServerSelector(item);
-        renderCastSection(item);
-        renderSimilarSection(item);
+    if (isEpisodic && item.seasons) {
+        const tvPanel = document.getElementById("tv-panel");
+        if (tvPanel) tvPanel.style.display = "block";
+        handleTVShow(item);
+        setupNextEpisodeButton();
+    }
 
-        if (item.belongs_to_collection && item.belongs_to_collection.id) {
-            handleCollection(item.belongs_to_collection.id);
-        }
+    syncToGlobalWatchHistory(item);
+    initCommentsSection(id, type, displayTitle);
 
-        if (isEpisodic && item.seasons) {
-            const tvPanel = document.getElementById("tv-panel");
-            if (tvPanel) tvPanel.style.display = "block";
-            handleTVShow(item);
-            setupNextEpisodeButton();
-        }
-
-        syncToGlobalWatchHistory(item);
-        initCommentsSection(id, type, displayTitle);
-
-        if (window.innerWidth <= 900) {
-            setTimeout(() => {
-                const targetPanel = isEpisodic ? document.getElementById("tv-panel") : document.getElementById("server-buttons");
-                if (targetPanel) {
-                    targetPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, 800);
-        }
+    if (window.innerWidth <= 900) {
+        setTimeout(() => {
+            const targetPanel = isEpisodic ? document.getElementById("tv-panel") : document.getElementById("server-buttons");
+            if (targetPanel) {
+                targetPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 800);
     }
 });
 
 
 /* ==============================================================================
-   SECTION 3: METADATA & BADGES
+   SECTION 3: METADATA, BADGES, AND AUTO-CORRECT
    ============================================================================== */
-async function fetchDetails() {
-    let data = null;
+async function tryFetch(targetType, targetId) {
     try {
-        const res = await fetch(`${BASE_URL}/${type}/${id}?append_to_response=external_ids,credits,similar,videos`);
-        if (res.ok) data = await res.json();
-    } catch (e) {
-        console.warn("Proxy fetch failed, switching to direct TMDb API:", e);
-    }
+        let res = await fetch(`${BASE_URL}/${targetType}/${targetId}?append_to_response=external_ids,credits,similar,videos`);
+        if (res.ok) return await res.json();
+    } catch(e) {}
+    try {
+        let res = await fetch(`https://api.themoviedb.org/3/${targetType}/${targetId}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
+        return await res.json();
+    } catch(e) { return null; }
+}
 
+async function fetchDetails() {
+    let data = await tryFetch(type, id);
+
+    // AUTO-CORRECT (Heto ang permanenteng solusyon sa Continue Watching Error)
     if (!data || data.status_code === 34 || data.success === false) {
-        try {
-            let tmdbRes = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
-            data = await tmdbRes.json();
-
-            if ((data.status_code === 34 || data.success === false) && type === 'movie') {
-                type = 'tv';
-                isEpisodic = true;
-                tmdbRes = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
-                data = await tmdbRes.json();
-            } else if ((data.status_code === 34 || data.success === false) && type === 'tv') {
-                type = 'movie';
-                isEpisodic = false;
-                tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
-                data = await tmdbRes.json();
-            }
-        } catch (err) {
-            console.error("Direct TMDb Fetch Error:", err);
+        const correctType = (type === 'movie') ? 'tv' : 'movie';
+        let fallbackData = await tryFetch(correctType, id);
+        
+        if (fallbackData && fallbackData.id && fallbackData.status_code !== 34) {
+            // KAPAG NAKITA NIYA NA MALING TYPE ANG LINK, I-REREDIRECT NIYA ANG USER SA MALINIS NA URL!
+            window.location.replace(`movie.html?id=${id}&type=${correctType}`);
+            return null; // Stop execution
         }
     }
     return data;
@@ -218,7 +205,7 @@ function renderMetadata(item) {
 }
 
 /* ==============================================================================
-   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN - WALANG HD/CAM)
+   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN - WALANG CAM/HD)
    ============================================================================== */
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
@@ -266,7 +253,6 @@ function populateServerSelector(item) {
             
             if (index === 0) {
                 btn.classList.add("active");
-                // Auto-load first server
                 updatePlayer(key, item, currentSeasonNumber, currentEpisodeNumber);
             }
             
@@ -593,7 +579,8 @@ async function handleCollection(collectionId) {
 function syncToGlobalWatchHistory(item) {
     if (!item || !item.id) return;
     
-    const actualType = (item.name && item.first_air_date) ? "tv" : "movie";
+    // Solid check para hindi na magkamali sa pag-save sa localStorage
+    const actualType = (item.first_air_date !== undefined || item.number_of_seasons !== undefined) ? "tv" : "movie";
     
     if (typeof window.saveToWatchHistory === "function") {
         window.saveToWatchHistory({
@@ -602,8 +589,8 @@ function syncToGlobalWatchHistory(item) {
             type: actualType,
             poster_path: item.poster_path || "",
             backdrop_path: item.backdrop_path || "",
-            season: isEpisodic ? currentSeasonNumber : 1,
-            episode: isEpisodic ? currentEpisodeNumber : 1
+            season: (actualType === 'tv') ? currentSeasonNumber : null,
+            episode: (actualType === 'tv') ? currentEpisodeNumber : null
         });
     }
 }

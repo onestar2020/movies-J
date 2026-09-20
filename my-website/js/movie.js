@@ -77,6 +77,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!id) return;
 
     const item = await fetchDetails();
+    
+    // Auto-correct redirection kung sakaling baliktad ang type sa URL (Continue Watching Fix)
+    const actualType = (item && item.first_air_date) ? 'tv' : 'movie';
+    if (actualType !== type) {
+        // I-update ang URL nang hindi nagre-refresh ng buong page
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.set('type', actualType);
+        window.history.replaceState({}, '', newUrl);
+        type = actualType;
+        isEpisodic = (type === 'tv');
+    }
+
     if (item) {
         currentItemData = item;
 
@@ -104,7 +116,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         renderMetadata(item);
         setupInitialPlayer(item);
         populateServerSelector(item);
-        // INALIS ANG CASAOS API CALL PARA SA QUALITY
         renderCastSection(item);
         renderSimilarSection(item);
 
@@ -151,15 +162,12 @@ async function fetchDetails() {
             let tmdbRes = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
             data = await tmdbRes.json();
 
-            // AUTO-CORRECT: Kung hinanap as Movie pero wala, baka TV Show
             if ((data.status_code === 34 || data.success === false) && type === 'movie') {
                 type = 'tv';
                 isEpisodic = true;
                 tmdbRes = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
                 data = await tmdbRes.json();
-            } 
-            // AUTO-CORRECT (FIX PARA SA CONTINUE WATCHING BUG): Kung hinanap as TV pero wala, baka Movie
-            else if ((data.status_code === 34 || data.success === false) && type === 'tv') {
+            } else if ((data.status_code === 34 || data.success === false) && type === 'tv') {
                 type = 'movie';
                 isEpisodic = false;
                 tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
@@ -169,21 +177,16 @@ async function fetchDetails() {
             console.error("Direct TMDb Fetch Error:", err);
         }
     }
-
     return data;
 }
 
 function renderMetadata(item) {
     const runtime = item.runtime || (item.episode_run_time && item.episode_run_time[0]);
     const runtimeElem = document.getElementById("fact-runtime");
-    if (runtimeElem) {
-        runtimeElem.textContent = runtime ? `${runtime} min` : (item.status || "N/A");
-    }
+    if (runtimeElem) runtimeElem.textContent = runtime ? `${runtime} min` : (item.status || "N/A");
 
     const releaseElem = document.getElementById("fact-release");
-    if (releaseElem) {
-        releaseElem.textContent = item.release_date || item.first_air_date || "N/A";
-    }
+    if (releaseElem) releaseElem.textContent = item.release_date || item.first_air_date || "N/A";
 
     const ratingElem = document.getElementById("fact-rating");
     if (ratingElem) {
@@ -195,15 +198,14 @@ function renderMetadata(item) {
     const countryElem = document.getElementById("fact-country");
     if (countryElem) {
         const country = (item.production_countries && item.production_countries[0]?.name) ||
-                        (item.origin_country && item.origin_country[0]) || 
-                        "Global";
+                        (item.origin_country && item.origin_country[0]) || "Global";
         countryElem.textContent = country;
     }
 
     const badgeBox = document.getElementById("media-badges");
     if (badgeBox) {
         const relStatus = !isEpisodic ? getReleaseStatus(item.release_date) : { isReleased: true };
-
+        
         const statusBadge = !relStatus.isReleased 
             ? `<span class="meta-badge" style="background:#e50914; color:#fff; font-weight:bold;">${relStatus.label}</span>` 
             : `<span class="meta-badge">${item.status || "Released"}</span>`;
@@ -215,17 +217,10 @@ function renderMetadata(item) {
         `;
     }
 }
+
 /* ==============================================================================
-   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN - WALANG HD/CAM)
+   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN - NO CAM/HD TAGS)
    ============================================================================== */
-// CasaOS Live Quality Checker Endpoint
-const QUALITY_CHECKER_API = "https://gourmet-structural-axis-pair.trycloudflare.com";
-
-async function applyLiveCasaOSQuality(tmdbId) {
-    // Tinanggal na ang CasaOS checker para hindi na mangialam sa HD o CAM tags
-    return;
-}
-
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
     if (!player) return;
@@ -238,7 +233,6 @@ function setupInitialPlayer(item) {
             return;
         }
     }
-
     trailerUrl = '';
 }
 
@@ -248,22 +242,10 @@ function populateServerSelector(item) {
 
     grid.innerHTML = "";
 
-    // Tanggalin ang CAM/Telesync o HD badge sa ilalim ng movie title na galing sa Section 3
-    const badgeBox = document.getElementById("media-badges");
-    if (badgeBox) {
-        const badges = badgeBox.querySelectorAll(".meta-badge");
-        badges.forEach(b => {
-            if (b.textContent.includes("CAM") || b.textContent.includes("Telesync") || b.textContent.includes("HD")) {
-                b.remove();
-            }
-        });
-    }
-
     if (typeof STREAM_SERVERS !== "undefined") {
         const serverKeys = Object.keys(STREAM_SERVERS);
-        const qualityStatus = getQualityStatus(item.release_date || item.first_air_date);
 
-        serverKeys.forEach((key) => {
+        serverKeys.forEach((key, index) => {
             const srv = STREAM_SERVERS[key];
             if (!srv.enabled) return;
 
@@ -271,8 +253,13 @@ function populateServerSelector(item) {
             btn.className = `srv-btn ${!isEpisodic && !isMovieReleased ? 'disabled-srv' : ''}`;
             btn.setAttribute('data-server', key);
             
-            // Malinis na pangalan lang. Tinanggal ang qTag (HD/CAM)
-            btn.innerHTML = `${srv.name}`;
+            // Malinis na server name lang.
+            btn.textContent = srv.name;
+            
+            // Default select ang unang server
+            if (index === 0) {
+                btn.classList.add("active");
+            }
             
             btn.onclick = () => {
                 if (!isEpisodic && !isMovieReleased) {
@@ -288,8 +275,6 @@ function populateServerSelector(item) {
                     }
                     return;
                 }
-
-                // Tinanggal ang CAM popup warning dito.
 
                 document.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
@@ -326,6 +311,7 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
 
     syncToGlobalWatchHistory(item);
 }
+
 
 /* ==============================================================================
    SECTION 5: TV SHOWS, SEASONS & EPISODES
@@ -597,24 +583,26 @@ async function handleCollection(collectionId) {
    ============================================================================== */
 function syncToGlobalWatchHistory(item) {
     if (!item || !item.id) return;
-    const mediaType = isEpisodic ? "tv" : "movie";
+    
+    // Auto-correct para tama ang ma-save sa localStorage
+    const actualType = (item.name && item.first_air_date) ? "tv" : "movie";
     
     if (typeof window.saveToWatchHistory === "function") {
         window.saveToWatchHistory({
             id: item.id,
             title: item.title || item.name || "Untitled",
-            type: mediaType,
+            type: actualType,
             poster_path: item.poster_path || "",
             backdrop_path: item.backdrop_path || "",
-            season: currentSeasonNumber,
-            episode: currentEpisodeNumber
+            season: isEpisodic ? currentSeasonNumber : 1,
+            episode: isEpisodic ? currentEpisodeNumber : 1
         });
     }
 }
 
 
 /* ==============================================================================
-   SECTION 9: REALTIME COMMENTS & DISCUSSION (CENTRALIZED & WITH VIP EFFECTS)
+   SECTION 9: REALTIME COMMENTS & DISCUSSION
    ============================================================================== */
 function formatTimeAgo(timestamp) {
     if (!timestamp) return "Just now";
@@ -1027,13 +1015,4 @@ function getReleaseStatus(airDateStr) {
     } else {
         return { isReleased: false, label: `Release: ${airDateStr}` };
     }
-}
-
-function getQualityStatus(releaseDateStr) {
-    return {
-        quality: '',
-        isCamLikely: false,
-        badge: '',
-        message: ''
-    };
 }

@@ -69,6 +69,8 @@ try { savedProgress = JSON.parse(localStorage.getItem(storageKey)); } catch (e) 
 let currentSeasonNumber = parseInt(urlParams.get('season')) || (savedProgress ? savedProgress.season : 1);
 let currentEpisodeNumber = parseInt(urlParams.get('episode')) || (savedProgress ? savedProgress.episode : 1);
 
+if (isNaN(currentSeasonNumber)) currentSeasonNumber = 1;
+if (isNaN(currentEpisodeNumber)) currentEpisodeNumber = 1;
 
 /* ==============================================================================
    SECTION 2: INITIALIZATION / MAIN ENTRY POINT
@@ -77,9 +79,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!id) return;
 
     const item = await fetchDetails();
-    
-    // KUNG NAG-REDIRECT SA FETCHDETAILS, HUMINTO NA DITO PARA HINDI MAG-ERROR ANG PAGE
-    if (!item) return;
+    if (!item) return; // Huminto kung nag-auto-redirect sa fetchDetails()
 
     currentItemData = item;
 
@@ -106,19 +106,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     renderMetadata(item);
     setupInitialPlayer(item);
+
+    // KINUKUMPIRMA MUNA ANG TAMANG SEASON/EPISODE BAGO I-RENDER ANG MGA SERVER
+    if (isEpisodic && item.seasons) {
+        const tvPanel = document.getElementById("tv-panel");
+        if (tvPanel) tvPanel.style.display = "block";
+        await handleTVShow(item); 
+        setupNextEpisodeButton();
+    }
+
+    // NGAYONG 100% VALID NA ANG EPISODE NUMBER, TSAKA TAYO MAGPO-POPULATE NG SERVER
     populateServerSelector(item);
     renderCastSection(item);
     renderSimilarSection(item);
 
     if (item.belongs_to_collection && item.belongs_to_collection.id) {
         handleCollection(item.belongs_to_collection.id);
-    }
-
-    if (isEpisodic && item.seasons) {
-        const tvPanel = document.getElementById("tv-panel");
-        if (tvPanel) tvPanel.style.display = "block";
-        handleTVShow(item);
-        setupNextEpisodeButton();
     }
 
     syncToGlobalWatchHistory(item);
@@ -145,22 +148,33 @@ async function tryFetch(targetType, targetId) {
     } catch(e) {}
     try {
         let res = await fetch(`https://api.themoviedb.org/3/${targetType}/${targetId}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
-        return await res.json();
-    } catch(e) { return null; }
+        if (res.ok) return await res.json();
+    } catch(e) {}
+    return null;
 }
 
 async function fetchDetails() {
     let data = await tryFetch(type, id);
 
-    // AUTO-CORRECT (Heto ang permanenteng solusyon sa Continue Watching Error)
+    // 100% AUTO-CORRECT: Kung 404 ang lumabas, kusa niyang aayusin ang link at magre-refresh
     if (!data || data.status_code === 34 || data.success === false) {
         const correctType = (type === 'movie') ? 'tv' : 'movie';
         let fallbackData = await tryFetch(correctType, id);
         
         if (fallbackData && fallbackData.id && fallbackData.status_code !== 34) {
-            // KAPAG NAKITA NIYA NA MALING TYPE ANG LINK, I-REREDIRECT NIYA ANG USER SA MALINIS NA URL!
-            window.location.replace(`movie.html?id=${id}&type=${correctType}`);
-            return null; // Stop execution
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('type', correctType);
+            
+            if (correctType === 'tv') {
+                if (!newUrl.searchParams.has('season')) newUrl.searchParams.set('season', currentSeasonNumber);
+                if (!newUrl.searchParams.has('episode')) newUrl.searchParams.set('episode', currentEpisodeNumber);
+            } else {
+                newUrl.searchParams.delete('season');
+                newUrl.searchParams.delete('episode');
+            }
+            
+            window.location.replace(newUrl.toString());
+            return null; // Stop execution habang nagre-refresh
         }
     }
     return data;
@@ -311,7 +325,7 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
 /* ==============================================================================
    SECTION 5: TV SHOWS, SEASONS & EPISODES
    ============================================================================== */
-function handleTVShow(item) {
+async function handleTVShow(item) {
     const drop = document.getElementById("season-dropdown");
     const btn = document.getElementById("season-toggle");
     const currentLabel = document.getElementById("season-current-label");
@@ -332,12 +346,17 @@ function handleTVShow(item) {
     validSeasons.forEach(s => {
         const b = document.createElement("button");
         b.textContent = s.name || `Season ${s.season_number}`;
-        b.onclick = () => {
+        b.onclick = async () => {
             currentSeasonNumber = s.season_number;
             currentEpisodeNumber = 1;
             if (currentLabel) currentLabel.textContent = b.textContent;
             drop.style.display = "none";
-            loadEpisodes(currentSeasonNumber);
+            
+            await loadEpisodes(currentSeasonNumber);
+            
+            // Auto-play unamg episode paglipat ng season
+            const activeServerBtn = document.querySelector(".srv-btn.active") || document.querySelector(".srv-btn");
+            if (activeServerBtn) activeServerBtn.click();
         };
         drop.appendChild(b);
     });
@@ -351,7 +370,7 @@ function handleTVShow(item) {
         if (drop.style.display === "block") drop.style.display = "none";
     });
 
-    loadEpisodes(currentSeasonNumber);
+    await loadEpisodes(currentSeasonNumber);
 }
 
 async function loadEpisodes(seasonNum) {
@@ -393,8 +412,12 @@ async function loadEpisodes(seasonNum) {
     let targetSelectedEpNum = currentEpisodeNumber;
     const currentTargetEp = episodes.find(e => e.episode_number === targetSelectedEpNum);
     
-    if (currentTargetEp && !getReleaseStatus(currentTargetEp.air_date).isReleased) {
-        targetSelectedEpNum = lastReleasedEpNum || 1;
+    // Auto-correct episode kung hindi exist o unreleased
+    if (!currentTargetEp && episodes.length > 0) {
+        targetSelectedEpNum = episodes[0].episode_number;
+        currentEpisodeNumber = targetSelectedEpNum;
+    } else if (currentTargetEp && !getReleaseStatus(currentTargetEp.air_date).isReleased) {
+        targetSelectedEpNum = lastReleasedEpNum || episodes[0].episode_number;
         currentEpisodeNumber = targetSelectedEpNum;
     }
 
@@ -579,7 +602,7 @@ async function handleCollection(collectionId) {
 function syncToGlobalWatchHistory(item) {
     if (!item || !item.id) return;
     
-    // Solid check para hindi na magkamali sa pag-save sa localStorage
+    // Accurate type checking para sa history sync
     const actualType = (item.first_air_date !== undefined || item.number_of_seasons !== undefined) ? "tv" : "movie";
     
     if (typeof window.saveToWatchHistory === "function") {

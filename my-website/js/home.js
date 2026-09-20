@@ -190,6 +190,7 @@ function handleWelcomeModal() {
 }
 
 // ================= CONTINUE WATCHING (BAGONG GLOW UI) =================
+// ================= CONTINUE WATCHING (BAGONG GLOW UI - SYNTAX ERROR FIXED) =================
 function loadContinueWatching() {
     const continueRow = document.getElementById('continue-watching-row');
     const continueList = document.getElementById('continue-watching-list');
@@ -217,14 +218,21 @@ function loadContinueWatching() {
         const posterSrc = item.poster_path ? `${IMG_URL_W500}${item.poster_path}` : 'images/logo-192.png';
         const isTv = (item.type === 'tv' || item.seasons || item.season || item.episode);
         
-        // Random progress bar width para astig tignan (30% to 85%)
         const progress = Math.floor(Math.random() * 55) + 30;
+
+        // SAFE LOGIC: Inalis ang nested backticks para iwas Syntax Error
+        let typeLabel = 'Movie';
+        if (isTv) {
+            let s = item.season || 1;
+            let e = item.episode || 1;
+            typeLabel = 'S' + s + ' E' + e + ' • TV Series';
+        }
 
         card.innerHTML = `
             <img src="${posterSrc}" alt="${item.title || 'Movie'}" loading="lazy">
             <div class="card-info">
                 <h4>${item.title || 'Untitled'}</h4>
-                <p>${isTv ? `S${item.season \vert{}\vert{} 1} E${item.episode || 1} • TV Series` : 'Movie'}</p>
+                <p>${typeLabel}</p>
             </div>
             <div class="card-progress-container">
                 <div class="card-progress-fill" style="width: ${progress}%;"></div>

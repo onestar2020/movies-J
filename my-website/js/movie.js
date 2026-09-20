@@ -136,6 +136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         renderMetadata(item);
         setupInitialPlayer(item);
         populateServerSelector(item);
+        applyLiveCasaOSQuality(item.id);
         renderCastSection(item);
         renderSimilarSection(item);
 
@@ -255,6 +256,68 @@ function renderMetadata(item) {
 /* ==============================================================================
    SECTION 4: VIDEO PLAYER & SERVER SELECTOR (MANUAL ONLY)
    ============================================================================== */
+// CasaOS Live Quality Checker Endpoint
+const QUALITY_CHECKER_API = "https://gourmet-structural-axis-pair.trycloudflare.com";
+
+async function applyLiveCasaOSQuality(tmdbId) {
+    if (!tmdbId || isEpisodic) return;
+
+    try {
+        const res = await fetch(`${QUALITY_CHECKER_API}/api/check-quality/${tmdbId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        console.log("CasaOS Quality Result:", data);
+
+        // 1. Kung HD na, i-update agad ang Badges sa header
+        if (data.overallQuality === 'HD') {
+            const badgeBox = document.getElementById("media-badges");
+            if (badgeBox) {
+                // Palitan ang kulay kahel na CAM badge ng berdeng HD badge
+                const allBadges = badgeBox.querySelectorAll(".meta-badge");
+                allBadges.forEach(b => {
+                    if (b.textContent.includes("CAM") || b.textContent.includes("Telesync")) {
+                        b.textContent = "HD 1080p";
+                        b.style.background = "#4CAF50";
+                    }
+                });
+            }
+        }
+
+        // 2. I-update ang text at kulay ng Server Buttons
+        const grid = document.getElementById("server-buttons");
+        if (grid && data.servers) {
+            const buttons = grid.querySelectorAll(".srv-btn");
+            data.servers.forEach((srv, index) => {
+                const btn = buttons[index];
+                if (btn) {
+                  const isHD = srv.quality === 'HD';
+                const qColor = isHD ? '#81c784' : '#ffb74d';
+                
+                // Kukunin ang base name tulad ng "Server 1" nang walang lumang (CAM) tag
+                const baseName = btn.textContent.split('(')[0].trim();
+                btn.innerHTML = `${baseName} <span style="font-size:10px; margin-left:4px; opacity:0.8; color:${qColor};">(${srv.quality})</span>`;
+                }
+            });
+        }
+
+        // 3. Auto-switch sa HD Server kung HD na pala pero CAM pa ang default Server 1
+        if (data.recommendedServer && data.recommendedServer !== 1 && data.overallQuality === 'HD') {
+            const buttons = document.querySelectorAll(".srv-btn");
+            const targetBtn = buttons[data.recommendedServer - 1];
+            if (targetBtn && !targetBtn.classList.contains("active")) {
+                console.log(`Auto-switching to Server ${data.recommendedServer} (HD Detected)!`);
+                targetBtn.click();
+            }
+        }
+    } catch (e) {
+        console.warn("Quality checker hindi naabot, gagamitin ang standard estimation:", e);
+    }
+}
+
+
+
+
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
     if (!player) return;

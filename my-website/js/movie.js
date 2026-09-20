@@ -60,17 +60,20 @@ let trailerUrl = '';
 let currentItemData = null;
 let isEpisodic = (type === 'tv' || type === 'anime');
 let isMovieReleased = true;
-let currentActiveServerKey = 'vidstorm';
 
+// === MEMORY SAVER: Kunin ang totoong progress ===
 const storageKey = `movies_j_progress_${id}`;
 let savedProgress = null;
 try { savedProgress = JSON.parse(localStorage.getItem(storageKey)); } catch (e) { savedProgress = null; }
 
-let currentSeasonNumber = parseInt(urlParams.get('season')) || (savedProgress ? savedProgress.season : 1);
-let currentEpisodeNumber = parseInt(urlParams.get('episode')) || (savedProgress ? savedProgress.episode : 1);
+// Priority: Ang huling tinigilan (savedProgress) kaysa sa URL
+let currentSeasonNumber = (savedProgress && savedProgress.season) ? savedProgress.season : (parseInt(urlParams.get('season')) || 1);
+let currentEpisodeNumber = (savedProgress && savedProgress.episode) ? savedProgress.episode : (parseInt(urlParams.get('episode')) || 1);
+let currentActiveServerKey = (savedProgress && savedProgress.server) ? savedProgress.server : null;
 
 if (isNaN(currentSeasonNumber)) currentSeasonNumber = 1;
 if (isNaN(currentEpisodeNumber)) currentEpisodeNumber = 1;
+
 
 /* ==============================================================================
    SECTION 2: INITIALIZATION / MAIN ENTRY POINT
@@ -79,7 +82,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!id) return;
 
     const item = await fetchDetails();
-    if (!item) return; // Huminto kung nag-auto-redirect sa fetchDetails()
+    if (!item) return;
+
+    // Auto-correct redirection kung baliktad ang type
+    const actualType = (item.first_air_date !== undefined || item.number_of_seasons !== undefined) ? 'tv' : 'movie';
+    if (actualType !== type) {
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.set('type', actualType);
+        window.history.replaceState({}, '', newUrl);
+        type = actualType;
+        isEpisodic = (type === 'tv');
+    }
 
     currentItemData = item;
 
@@ -107,7 +120,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderMetadata(item);
     setupInitialPlayer(item);
 
-    // KINUKUMPIRMA MUNA ANG TAMANG SEASON/EPISODE BAGO I-RENDER ANG MGA SERVER
     if (isEpisodic && item.seasons) {
         const tvPanel = document.getElementById("tv-panel");
         if (tvPanel) tvPanel.style.display = "block";
@@ -115,7 +127,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         setupNextEpisodeButton();
     }
 
-    // NGAYONG 100% VALID NA ANG EPISODE NUMBER, TSAKA TAYO MAGPO-POPULATE NG SERVER
     populateServerSelector(item);
     renderCastSection(item);
     renderSimilarSection(item);
@@ -156,7 +167,6 @@ async function tryFetch(targetType, targetId) {
 async function fetchDetails() {
     let data = await tryFetch(type, id);
 
-    // 100% AUTO-CORRECT: Kung 404 ang lumabas, kusa niyang aayusin ang link at magre-refresh
     if (!data || data.status_code === 34 || data.success === false) {
         const correctType = (type === 'movie') ? 'tv' : 'movie';
         let fallbackData = await tryFetch(correctType, id);
@@ -174,7 +184,7 @@ async function fetchDetails() {
             }
             
             window.location.replace(newUrl.toString());
-            return null; // Stop execution habang nagre-refresh
+            return null; 
         }
     }
     return data;
@@ -219,7 +229,7 @@ function renderMetadata(item) {
 }
 
 /* ==============================================================================
-   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN - WALANG CAM/HD)
+   SECTION 4: VIDEO PLAYER & SERVER SELECTOR 
    ============================================================================== */
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
@@ -254,6 +264,7 @@ function populateServerSelector(item) {
 
     if (typeof STREAM_SERVERS !== "undefined") {
         const serverKeys = Object.keys(STREAM_SERVERS);
+        let hasActive = false;
 
         serverKeys.forEach((key, index) => {
             const srv = STREAM_SERVERS[key];
@@ -262,11 +273,14 @@ function populateServerSelector(item) {
             const btn = document.createElement("button");
             btn.className = `srv-btn ${!isEpisodic && !isMovieReleased ? 'disabled-srv' : ''}`;
             btn.setAttribute('data-server', key);
-            
             btn.textContent = srv.name;
             
-            if (index === 0) {
+            // Check kung ito yung huling server na ginamit ng viewer
+            const isTargetServer = currentActiveServerKey ? (key === currentActiveServerKey) : (index === 0);
+            
+            if (isTargetServer) {
                 btn.classList.add("active");
+                hasActive = true;
                 updatePlayer(key, item, currentSeasonNumber, currentEpisodeNumber);
             }
             
@@ -293,6 +307,11 @@ function populateServerSelector(item) {
 
             grid.appendChild(btn);
         });
+
+        // Kung nawala sa options yung dating server niya, piliting i-click ang una
+        if (!hasActive && grid.firstChild) {
+            grid.firstChild.click();
+        }
     }
 }
 
@@ -304,9 +323,20 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     currentSeasonNumber = season;
     currentEpisodeNumber = episode;
 
+    // I-save ng buo (Pati Server!) para ma-alala ng Continue Watching
+    localStorage.setItem(storageKey, JSON.stringify({ 
+        season: currentSeasonNumber, 
+        episode: currentEpisodeNumber,
+        server: currentActiveServerKey 
+    }));
+
+    // I-update ang URL bar sa itaas para malinis
+    const newUrl = new URL(window.location.href);
     if (isEpisodic) {
-        localStorage.setItem(storageKey, JSON.stringify({ season: currentSeasonNumber, episode: currentEpisodeNumber }));
+        newUrl.searchParams.set('season', currentSeasonNumber);
+        newUrl.searchParams.set('episode', currentEpisodeNumber);
     }
+    window.history.replaceState({}, '', newUrl.toString());
 
     const mediaData = { 
         id: item.id, 
@@ -348,13 +378,12 @@ async function handleTVShow(item) {
         b.textContent = s.name || `Season ${s.season_number}`;
         b.onclick = async () => {
             currentSeasonNumber = s.season_number;
-            currentEpisodeNumber = 1;
+            currentEpisodeNumber = 1; 
             if (currentLabel) currentLabel.textContent = b.textContent;
             drop.style.display = "none";
             
             await loadEpisodes(currentSeasonNumber);
             
-            // Auto-play unamg episode paglipat ng season
             const activeServerBtn = document.querySelector(".srv-btn.active") || document.querySelector(".srv-btn");
             if (activeServerBtn) activeServerBtn.click();
         };
@@ -412,7 +441,6 @@ async function loadEpisodes(seasonNum) {
     let targetSelectedEpNum = currentEpisodeNumber;
     const currentTargetEp = episodes.find(e => e.episode_number === targetSelectedEpNum);
     
-    // Auto-correct episode kung hindi exist o unreleased
     if (!currentTargetEp && episodes.length > 0) {
         targetSelectedEpNum = episodes[0].episode_number;
         currentEpisodeNumber = targetSelectedEpNum;
@@ -602,7 +630,6 @@ async function handleCollection(collectionId) {
 function syncToGlobalWatchHistory(item) {
     if (!item || !item.id) return;
     
-    // Accurate type checking para sa history sync
     const actualType = (item.first_air_date !== undefined || item.number_of_seasons !== undefined) ? "tv" : "movie";
     
     if (typeof window.saveToWatchHistory === "function") {

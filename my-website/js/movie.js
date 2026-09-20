@@ -252,9 +252,8 @@ function renderMetadata(item) {
     }
 }
 
-
 /* ==============================================================================
-   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (MANUAL ONLY)
+   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (MANUAL & SMART HD DETECTION)
    ============================================================================== */
 // CasaOS Live Quality Checker Endpoint
 const QUALITY_CHECKER_API = "https://gourmet-structural-axis-pair.trycloudflare.com";
@@ -269,11 +268,10 @@ async function applyLiveCasaOSQuality(tmdbId) {
 
         console.log("CasaOS Quality Result:", data);
 
-        // 1. Kung HD na, i-update agad ang Badges sa header
+        // 1. I-update ang Badge sa header/overview (Gawing berdeng HD 1080p)
         if (data.overallQuality === 'HD') {
             const badgeBox = document.getElementById("media-badges");
             if (badgeBox) {
-                // Palitan ang kulay kahel na CAM badge ng berdeng HD badge
                 const allBadges = badgeBox.querySelectorAll(".meta-badge");
                 allBadges.forEach(b => {
                     if (b.textContent.includes("CAM") || b.textContent.includes("Telesync")) {
@@ -284,31 +282,52 @@ async function applyLiveCasaOSQuality(tmdbId) {
             }
         }
 
-        // 2. I-update ang text at kulay ng Server Buttons
+        // 2. I-update ang mga Server Buttons na may visual styling (Glow & Star)
         const grid = document.getElementById("server-buttons");
+        let firstHdButton = null;
+        let firstHdServerKey = null;
+
         if (grid && data.servers) {
             const buttons = grid.querySelectorAll(".srv-btn");
             data.servers.forEach((srv, index) => {
                 const btn = buttons[index];
                 if (btn) {
-                  const isHD = srv.quality === 'HD';
-                const qColor = isHD ? '#81c784' : '#ffb74d';
-                
-                // Kukunin ang base name tulad ng "Server 1" nang walang lumang (CAM) tag
-                const baseName = btn.textContent.split('(')[0].trim();
-                btn.innerHTML = `${baseName} <span style="font-size:10px; margin-left:4px; opacity:0.8; color:${qColor};">(${srv.quality})</span>`;
+                    const isHD = srv.quality === 'HD';
+                    const qColor = isHD ? '#4CAF50' : '#ff9800';
+                    const baseName = btn.textContent.split('(')[0].replace('✨', '').trim();
+                    
+                    const hdTag = isHD ? '✨ ' : '';
+                    btn.innerHTML = `${hdTag}${baseName} <span style="font-size:10px; margin-left:4px; font-weight:bold; color:${qColor};">(${srv.quality})</span>`;
+
+                    // Kapag HD, bigyan ng bahagyang berdeng border para kapansin-pansin
+                    if (isHD) {
+                        btn.style.borderColor = 'rgba(76, 175, 80, 0.5)';
+                        if (!firstHdButton) {
+                            firstHdButton = btn;
+                            firstHdServerKey = btn.getAttribute('data-server');
+                        }
+                    }
                 }
             });
         }
 
-      
+        // 3. Smart Default: Kung CAM pa ang Server 1 pero may nakitang HD server,
+        // ilipat ang default stream sa HD nang hindi pinipilit ang buong UI flow.
+        if (firstHdButton && data.overallQuality === 'HD') {
+            const currentActive = grid.querySelector('.srv-btn.active');
+            if (currentActive && currentActive.textContent.includes('CAM')) {
+                grid.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
+                firstHdButton.classList.add("active");
+
+                if (firstHdServerKey && currentItemData) {
+                    updatePlayer(firstHdServerKey, currentItemData, currentSeasonNumber, currentEpisodeNumber);
+                }
+            }
+        }
     } catch (e) {
         console.warn("Quality checker hindi naabot, gagamitin ang standard estimation:", e);
     }
 }
-
-
-
 
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");

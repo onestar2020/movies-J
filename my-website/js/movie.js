@@ -299,7 +299,7 @@ async function applyLiveCasaOSQuality(tmdbId) {
                     const hdTag = isHD ? '✨ ' : '';
                     btn.innerHTML = `${hdTag}${baseName} <span style="font-size:10px; margin-left:4px; font-weight:bold; color:${qColor};">(${srv.quality})</span>`;
 
-                    // Kapag HD, bigyan ng bahagyang berdeng border para kapansin-pansin
+                    // Kapag HD, lagyan ng berdeng highlight border
                     if (isHD) {
                         btn.style.borderColor = 'rgba(76, 175, 80, 0.5)';
                         if (!firstHdButton) {
@@ -311,8 +311,8 @@ async function applyLiveCasaOSQuality(tmdbId) {
             });
         }
 
-        // 3. Smart Default: Kung CAM pa ang Server 1 pero may nakitang HD server,
-        // ilipat ang default stream sa HD nang hindi pinipilit ang buong UI flow.
+        // 3. Smart Default: Kung CAM pa ang default pero may HD na pala (hal. Server 2),
+        // ilipat ang initial stream sa unang HD server nang hindi pinipilit ang buong UI.
         if (firstHdButton && data.overallQuality === 'HD') {
             const currentActive = grid.querySelector('.srv-btn.active');
             if (currentActive && currentActive.textContent.includes('CAM')) {
@@ -384,7 +384,9 @@ function populateServerSelector(item) {
                     return;
                 }
 
-                if (qualityStatus.isCamLikely && !sessionStorage.getItem(`cam_notified_${item.id}`)) {
+                // HAKBANG A FIX: Huwag magpakita ng CAM warning kapag HD na ang badge sa screen
+                const isHDVerified = document.getElementById("media-badges")?.textContent.includes("HD");
+                if (!isHDVerified && qualityStatus.isCamLikely && !sessionStorage.getItem(`cam_notified_${item.id}`)) {
                     showThemeModal(
                         "Video Quality Notice",
                         qualityStatus.message,
@@ -428,7 +430,6 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
 
     syncToGlobalWatchHistory(item);
 }
-
 
 /* ==============================================================================
    SECTION 5: TV SHOWS, SEASONS & EPISODES

@@ -1364,3 +1364,89 @@ a {
     font-size: 14px !important;
   }
 }
+/* ==========================================================================
+   🎬 PREMIUM UI OVERRIDES: HERO BANNER & CAROUSEL (DO NOT DELETE EXISTING)
+   ========================================================================== */
+
+/* --- Dynamic Hero Banner (Ken Burns & Vignette) --- */
+#hero-section {
+    overflow: hidden !important; 
+    transition: background-image 1s ease-in-out;
+}
+
+@keyframes kenBurns {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1); }
+}
+
+#hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: inherit; 
+    background-size: cover;
+    background-position: center;
+    animation: kenBurns 20s infinite alternate linear;
+    z-index: 1;
+}
+
+/* Dark Vignette Overlay */
+#hero-section::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%);
+    z-index: 2;
+}
+
+.hero-content {
+    z-index: 3 !important; /* Siguraduhing nasa ibabaw ng gradient */
+}
+
+@media (max-width: 768px) {
+    #hero-section::after {
+        background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.1) 100%);
+    }
+    .hero-content {
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        text-align: center !important;
+        bottom: 10% !important;
+        width: 90% !important;
+    }
+    #hero-title { font-size: 2rem !important; }
+    #hero-description { font-size: 0.9rem !important; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+}
+
+/* --- Glassmorphism Scroll Arrows --- */
+.list-container { position: relative; }
+
+.scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(20, 20, 20, 0.5) !important; 
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    color: white !important;
+    font-size: 1.5rem !important;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s, transform 0.2s, opacity 0.3s !important;
+    opacity: 0; 
+}
+
+.list-container:hover .scroll-btn { opacity: 1; }
+.scroll-btn:hover { background: rgba(229, 9, 20, 0.8) !important; transform: translateY(-50%) scale(1.1); }
+.scroll-btn.left { left: 5px; }
+.scroll-btn.right { right: 5px; }
+
+@media (max-width: 768px) {
+    .scroll-btn { display: none !important; } /* Hide sa mobile para malinis */
+}

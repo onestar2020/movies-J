@@ -499,3 +499,14 @@
 .profile-action-btn.admin-link:hover { background: rgba(76, 175, 80, 0.15); }
 .logout-action-btn { color: #e50914; }
 .logout-action-btn:hover { background: rgba(229, 9, 20, 0.14); }
+
+/* ==========================================================================
+   🎬 PREMIUM UI OVERRIDES: GLASSMORPHISM NAVBAR
+   ========================================================================== */
+.navbar.scrolled {
+    background: rgba(20, 20, 20, 0.75) !important; /* Semi-transparent */
+    backdrop-filter: blur(12px) !important; /* Apple/iOS blur effect */
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6) !important;
+}

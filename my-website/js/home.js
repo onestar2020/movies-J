@@ -1,4 +1,4 @@
-// ✅ js/home.js (FILTER CHIPS + CONTINUE WATCHING + WATCHLIST SYSTEM + FIREBASE PRESENCE)
+// ✅ js/home.js (FILTER CHIPS + CONTINUE WATCHING + WATCHLIST SYSTEM + FIREBASE PRESENCE + PREMIUM UI)
 
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev';
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
@@ -41,10 +41,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function loadDefaultHomepageRows() {
+    // Ipapakita ang Ranking Numbers (Top 10) sa Movies at TV Shows
     Promise.all([
-        fetchTrending('movie').then(items => displayList(items, 'movies-list')),
-        fetchTrending('tv').then(items => displayList(items, 'tvshows-list')),
-        fetchTrendingAnime().then(items => displayList(items, 'anime-list'))
+        fetchTrending('movie').then(items => displayList(items, 'movies-list', true)), 
+        fetchTrending('tv').then(items => displayList(items, 'tvshows-list', true)),
+        fetchTrendingAnime().then(items => displayList(items, 'anime-list', false))
     ]).then(() => {
         setupHomepageCarousels();
     }).catch(error => console.error("Error loading trending lists:", error));
@@ -189,8 +190,7 @@ function handleWelcomeModal() {
     }
 }
 
-// ================= CONTINUE WATCHING (BAGONG GLOW UI) =================
-// ================= CONTINUE WATCHING (BAGONG GLOW UI - SYNTAX ERROR FIXED) =================
+// ================= CONTINUE WATCHING (BAGONG GLOW UI + REMOVE BTN) =================
 function loadContinueWatching() {
     const continueRow = document.getElementById('continue-watching-row');
     const continueList = document.getElementById('continue-watching-list');
@@ -214,13 +214,15 @@ function loadContinueWatching() {
     history.slice(0, 10).forEach(item => {
         if (!item || !item.id) return;
         const card = document.createElement('div');
-        card.className = 'movie-card';
+        
+        // Skeleton loading start state
+        card.className = 'movie-card loading'; 
+        
         const posterSrc = item.poster_path ? `${IMG_URL_W500}${item.poster_path}` : 'images/logo-192.png';
         const isTv = (item.type === 'tv' || item.seasons || item.season || item.episode);
         
         const progress = Math.floor(Math.random() * 55) + 30;
 
-        // SAFE LOGIC: Inalis ang nested backticks para iwas Syntax Error
         let typeLabel = 'Movie';
         if (isTv) {
             let s = item.season || 1;
@@ -228,8 +230,12 @@ function loadContinueWatching() {
             typeLabel = 'S' + s + ' E' + e + ' • TV Series';
         }
 
+        // Added Remove Button ('X')
         card.innerHTML = `
-            <img src="${posterSrc}" alt="${item.title || 'Movie'}" loading="lazy">
+            <img src="${posterSrc}" alt="${item.title || 'Movie'}" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
+            <button class="remove-btn" title="Remove from history">
+                <i class="fas fa-times"></i>
+            </button>
             <div class="card-info">
                 <h4>${item.title || 'Untitled'}</h4>
                 <p>${typeLabel}</p>
@@ -238,6 +244,15 @@ function loadContinueWatching() {
                 <div class="card-progress-fill" style="width: ${progress}%;"></div>
             </div>
         `;
+
+        // Logic for Remove Button
+        const removeBtn = card.querySelector('.remove-btn');
+        removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            history = history.filter(h => h.id !== item.id);
+            localStorage.setItem("watchHistory", JSON.stringify(history));
+            loadContinueWatching(); // I-refresh ang listahan
+        };
 
         card.onclick = () => goToMoviePage(item);
         continueList.appendChild(card);
@@ -282,19 +297,19 @@ async function applyHomepageFilter(filter) {
         if (filter === 'action') {
             if (titleElem) titleElem.textContent = "🔥 Action Movies & Series";
             const items = await fetchDiscover('with_genres=28');
-            displayList(items, 'movies-list');
+            displayList(items, 'movies-list', false);
         } else if (filter === 'anime') {
             if (titleElem) titleElem.textContent = "🐉 Popular Anime";
             const items = await fetchTrendingAnime();
-            displayList(items, 'movies-list');
+            displayList(items, 'movies-list', false);
         } else if (filter === 'kdrama') {
             if (titleElem) titleElem.textContent = "💖 Korean Dramas";
             const items = await fetchDiscover('with_original_language=ko&sort_by=popularity.desc', 'tv');
-            displayList(items, 'movies-list');
+            displayList(items, 'movies-list', false);
         } else if (filter === 'top_rated') {
             if (titleElem) titleElem.textContent = "⭐ Top Rated All Time";
             const items = await fetchTopRated();
-            displayList(items, 'movies-list');
+            displayList(items, 'movies-list', false);
         }
         setupHomepageCarousels();
     }
@@ -322,22 +337,28 @@ async function fetchTopRated() {
     }
 }
 
-// ================= TRENDING MOVIES / SHOWS (BAGONG GLOW UI) =================
-function displayList(items, containerId) {
+// ================= TRENDING MOVIES / SHOWS (BAGONG GLOW UI + TOP 10) =================
+function displayList(items, containerId, showRanking = false) {
     const container = document.getElementById(containerId);
     if (!container || !items) return;
     container.innerHTML = '';
 
-    items.forEach(item => {
+    items.forEach((item, index) => {
         if (item && item.id && item.poster_path && (item.title || item.name)) {
             const movieCard = document.createElement('div');
-            movieCard.className = 'movie-card';
+            movieCard.className = 'movie-card loading'; // Skeleton Start
             const releaseYear = (item.release_date || item.first_air_date || 'N/A').substring(0, 4);
             const voteAvg = (item.vote_average || 0).toFixed(1);
 
-            // Malinis at Netflix-style card layout
+            // Logic para sa Top 10 Numbers
+            let rankingHtml = '';
+            if (showRanking && index < 10) {
+                rankingHtml = `<span class="ranking-number">${index + 1}</span>`;
+            }
+
             movieCard.innerHTML = `
-                <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
+                ${rankingHtml}
+                <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
                 <div class="card-info">
                     <h4>${item.title || item.name}</h4>
                     <p>⭐ ${voteAvg} • ${releaseYear}</p>
@@ -423,12 +444,12 @@ function renderWatchlistItems() {
 
     list.forEach(item => {
         const div = document.createElement('div');
-        div.className = 'movie-card';
+        div.className = 'movie-card loading';
         const poster = item.poster_path ? `${IMG_URL_W500}${item.poster_path}` : 'images/logo-192.png';
 
         div.innerHTML = `
-            <img src="${poster}" alt="${item.title}" loading="lazy">
-            <button class="watchlist-remove-btn" style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.8); color:#e50914; border:1px solid #e50914; border-radius:50%; width:28px; height:28px; z-index:10; cursor:pointer; display:flex; justify-content:center; align-items:center;">
+            <img src="${poster}" alt="${item.title}" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
+            <button class="remove-btn" title="Remove from Watchlist">
                 <i class="fas fa-trash-alt" style="font-size:12px;"></i>
             </button>
             <div class="card-info">
@@ -436,7 +457,7 @@ function renderWatchlistItems() {
                 <p>${item.type === 'tv' ? 'TV Series' : 'Movie'}</p>
             </div>`;
 
-        const removeBtn = div.querySelector('.watchlist-remove-btn');
+        const removeBtn = div.querySelector('.remove-btn');
         if (removeBtn) {
             removeBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -503,7 +524,12 @@ function updateHeroSection() {
     const item = featuredItems[currentFeaturedIndex];
 
     if (item && item.backdrop_path) {
-        heroSection.style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
+        // Trigger Ken Burns Effect
+        heroSection.style.backgroundImage = 'none';
+        setTimeout(() => {
+            heroSection.style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
+        }, 50);
+
         heroTitle.textContent = item.title || item.name || "Untitled";
         heroDesc.textContent = item.overview || "";
         watchBtn.onclick = () => goToMoviePage(item);
@@ -676,10 +702,10 @@ async function searchTMDB() {
         } else {
             filtered.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'movie-card search-result-card';
+                div.className = 'movie-card search-result-card loading';
                 div.onclick = () => { closeSearchModal(); goToMoviePage(item); };
                 div.innerHTML = `
-                    <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name || ''}" loading="lazy">
+                    <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name || ''}" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
                     <div class="card-info">
                         <h4>${item.title || item.name || 'Untitled'}</h4>
                     </div>`;

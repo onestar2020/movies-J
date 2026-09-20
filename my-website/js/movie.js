@@ -301,15 +301,7 @@ async function applyLiveCasaOSQuality(tmdbId) {
             });
         }
 
-        // 3. Auto-switch sa HD Server kung HD na pala pero CAM pa ang default Server 1
-        if (data.recommendedServer && data.recommendedServer !== 1 && data.overallQuality === 'HD') {
-            const buttons = document.querySelectorAll(".srv-btn");
-            const targetBtn = buttons[data.recommendedServer - 1];
-            if (targetBtn && !targetBtn.classList.contains("active")) {
-                console.log(`Auto-switching to Server ${data.recommendedServer} (HD Detected)!`);
-                targetBtn.click();
-            }
-        }
+      
     } catch (e) {
         console.warn("Quality checker hindi naabot, gagamitin ang standard estimation:", e);
     }

@@ -2,22 +2,7 @@
  * ==============================================================================
  * MOVIES-J - OFFICIAL STREAMING & DETAILS ENGINE (js/movie.js)
  * ==============================================================================
- * 
- * TABLE OF CONTENTS:
- *  1. IMPORTS & CONFIGURATION (API Keys, State, URL Parameters)
- *  2. INITIALIZATION / MAIN ENTRY POINT (DOMContentLoaded)
- *  3. METADATA & BADGES (TMDb Fetch, Quality Badges, Facts Grid)
- *  4. VIDEO PLAYER & SERVER SELECTOR (Manual Server Selection)
- *  5. TV SHOWS, SEASONS & EPISODES (Navigator, Episode Cards, Next Button)
- *  6. CAST & RECOMMENDATIONS (Scroller, Similar Titles)
- *  7. FRANCHISE / COLLECTION SIDEBAR (Chronological Watch Order)
- *  8. WATCH HISTORY SYNC (Auto-Correction para sa TV vs Movie)
- *  9. REALTIME COMMENTS & DISCUSSION (Clean UI + Custom Modal Delete + VIP Styles)
- * 10. REALTIME ONLINE ACTIVE USERS (Firebase RTDB Presence Tracker)
- * 11. UI MODALS & NOTIFICATIONS (Theme Dialogs & Status Labels)
- * ==============================================================================
  */
-
 
 /* ==============================================================================
    SECTION 1: IMPORTS & CONFIGURATION
@@ -35,7 +20,6 @@ import {
 
 const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
 
-// Class definitions para sa live cosmetics sa comments
 const BORDER_CLASSES = {
   emerald: "avatar-border-vip",
   cyber: "avatar-border-cyber",
@@ -56,44 +40,31 @@ const GLOW_CLASSES = {
 
 function getCommentRoleBadge(role) {
   switch (role) {
-    case "admin":
-      return `<span class="user-role role-admin" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-shield-alt"></i> Admin</span>`;
-    case "legendary":
-      return `<span class="user-role role-legendary" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-gem"></i> LEGENDARY</span>`;
-    case "top-donor":
-      return `<span class="user-role role-top-donor" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-crown"></i> TOP DONOR</span>`;
-    case "vip":
-      return `<span class="user-role role-vip" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-star"></i> VIP</span>`;
-    default:
-      return "";
+    case "admin": return `<span class="user-role role-admin" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-shield-alt"></i> Admin</span>`;
+    case "legendary": return `<span class="user-role role-legendary" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-gem"></i> LEGENDARY</span>`;
+    case "top-donor": return `<span class="user-role role-top-donor" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-crown"></i> TOP DONOR</span>`;
+    case "vip": return `<span class="user-role role-vip" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-star"></i> VIP</span>`;
+    default: return "";
   }
 }
 
-// TMDb & Cloudflare Proxy Endpoints
 const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev'; 
 const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
 const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
-// URL Parameter Handling
 const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id') || '1083818';
 let type = (urlParams.get('type') || 'movie').toLowerCase();
 
-// Player & Media State
 let trailerUrl = ''; 
 let currentItemData = null;
 let isEpisodic = (type === 'tv' || type === 'anime');
 let isMovieReleased = true;
 let currentActiveServerKey = 'vidstorm';
 
-// LocalStorage Progress Tracker
 const storageKey = `movies_j_progress_${id}`;
 let savedProgress = null;
-try {
-    savedProgress = JSON.parse(localStorage.getItem(storageKey));
-} catch (e) {
-    savedProgress = null;
-}
+try { savedProgress = JSON.parse(localStorage.getItem(storageKey)); } catch (e) { savedProgress = null; }
 
 let currentSeasonNumber = parseInt(urlParams.get('season')) || (savedProgress ? savedProgress.season : 1);
 let currentEpisodeNumber = parseInt(urlParams.get('episode')) || (savedProgress ? savedProgress.episode : 1);
@@ -114,7 +85,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             isMovieReleased = relStatus.isReleased;
         }
 
-        // 1. Title & Header
         const displayTitle = item.title || item.name || item.original_title || "Now Playing";
         document.title = `${displayTitle} - Stream`;
 
@@ -124,7 +94,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const headerTitleElem = document.getElementById("page-header-title");
         if (headerTitleElem) headerTitleElem.textContent = displayTitle;
 
-        // 2. Overview Paragraph
         const overviewElem = document.getElementById("media-overview");
         if (overviewElem) {
             overviewElem.textContent = item.overview && item.overview.trim() !== "" 
@@ -132,20 +101,17 @@ document.addEventListener("DOMContentLoaded", async () => {
                 : "No overview available.";
         }
 
-        // 3. Metadata, Facts, Player Setup
         renderMetadata(item);
         setupInitialPlayer(item);
         populateServerSelector(item);
-        applyLiveCasaOSQuality(item.id);
+        // INALIS ANG CASAOS API CALL PARA SA QUALITY
         renderCastSection(item);
         renderSimilarSection(item);
 
-        // 4. Franchise Sidebar
         if (item.belongs_to_collection && item.belongs_to_collection.id) {
             handleCollection(item.belongs_to_collection.id);
         }
 
-        // 5. TV Show Navigator
         if (isEpisodic && item.seasons) {
             const tvPanel = document.getElementById("tv-panel");
             if (tvPanel) tvPanel.style.display = "block";
@@ -153,13 +119,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             setupNextEpisodeButton();
         }
 
-        // 6. Watch History Sync
         syncToGlobalWatchHistory(item);
-
-        // 7. Initialize Comments Section
         initCommentsSection(id, type, displayTitle);
 
-        // 8. Mobile Auto-Scroll
         if (window.innerWidth <= 900) {
             setTimeout(() => {
                 const targetPanel = isEpisodic ? document.getElementById("tv-panel") : document.getElementById("server-buttons");
@@ -199,21 +161,16 @@ async function fetchDetails() {
             console.error("Direct TMDb Fetch Error:", err);
         }
     }
-
     return data;
 }
 
 function renderMetadata(item) {
     const runtime = item.runtime || (item.episode_run_time && item.episode_run_time[0]);
     const runtimeElem = document.getElementById("fact-runtime");
-    if (runtimeElem) {
-        runtimeElem.textContent = runtime ? `${runtime} min` : (item.status || "N/A");
-    }
+    if (runtimeElem) runtimeElem.textContent = runtime ? `${runtime} min` : (item.status || "N/A");
 
     const releaseElem = document.getElementById("fact-release");
-    if (releaseElem) {
-        releaseElem.textContent = item.release_date || item.first_air_date || "N/A";
-    }
+    if (releaseElem) releaseElem.textContent = item.release_date || item.first_air_date || "N/A";
 
     const ratingElem = document.getElementById("fact-rating");
     if (ratingElem) {
@@ -225,110 +182,30 @@ function renderMetadata(item) {
     const countryElem = document.getElementById("fact-country");
     if (countryElem) {
         const country = (item.production_countries && item.production_countries[0]?.name) ||
-                        (item.origin_country && item.origin_country[0]) || 
-                        "Global";
+                        (item.origin_country && item.origin_country[0]) || "Global";
         countryElem.textContent = country;
     }
 
     const badgeBox = document.getElementById("media-badges");
     if (badgeBox) {
         const relStatus = !isEpisodic ? getReleaseStatus(item.release_date) : { isReleased: true };
-        const qualityStatus = getQualityStatus(item.release_date || item.first_air_date);
-
+        
         const statusBadge = !relStatus.isReleased 
             ? `<span class="meta-badge" style="background:#e50914; color:#fff; font-weight:bold;">${relStatus.label}</span>` 
             : `<span class="meta-badge">${item.status || "Released"}</span>`;
 
-        const qualityBadge = relStatus.isReleased
-            ? `<span class="meta-badge" style="background:${qualityStatus.isCamLikely ? '#ff9800' : '#4CAF50'}; color:#fff; font-weight:bold;">${qualityStatus.badge}</span>`
-            : '';
-
+        // INALIS ANG QUALITY BADGE (CAM / HD) PARA MALINIS
         badgeBox.innerHTML = `
             <span class="meta-badge">${(isEpisodic ? 'TV SERIES' : 'MOVIE')}</span>
             ${statusBadge}
-            ${qualityBadge}
             ${(item.genres || []).map(g => `<span class="meta-badge">${g.name}</span>`).join("")}
         `;
     }
 }
 
 /* ==============================================================================
-   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (MANUAL & SMART HD DETECTION)
+   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN - NO CAM/HD TAGS)
    ============================================================================== */
-// CasaOS Live Quality Checker Endpoint
-const QUALITY_CHECKER_API = "https://gourmet-structural-axis-pair.trycloudflare.com";
-
-async function applyLiveCasaOSQuality(tmdbId) {
-    if (!tmdbId || isEpisodic) return;
-
-    try {
-        const res = await fetch(`${QUALITY_CHECKER_API}/api/check-quality/${tmdbId}`);
-        if (!res.ok) return;
-        const data = await res.json();
-
-        console.log("CasaOS Quality Result:", data);
-
-        // 1. I-update ang Badge sa header/overview (Gawing berdeng HD 1080p)
-        if (data.overallQuality === 'HD') {
-            const badgeBox = document.getElementById("media-badges");
-            if (badgeBox) {
-                const allBadges = badgeBox.querySelectorAll(".meta-badge");
-                allBadges.forEach(b => {
-                    if (b.textContent.includes("CAM") || b.textContent.includes("Telesync")) {
-                        b.textContent = "HD 1080p";
-                        b.style.background = "#4CAF50";
-                    }
-                });
-            }
-        }
-
-        // 2. I-update ang mga Server Buttons na may visual styling (Glow & Star)
-        const grid = document.getElementById("server-buttons");
-        let firstHdButton = null;
-        let firstHdServerKey = null;
-
-        if (grid && data.servers) {
-            const buttons = grid.querySelectorAll(".srv-btn");
-            data.servers.forEach((srv, index) => {
-                const btn = buttons[index];
-                if (btn) {
-                    const isHD = srv.quality === 'HD';
-                    const qColor = isHD ? '#4CAF50' : '#ff9800';
-                    const baseName = btn.textContent.split('(')[0].replace('✨', '').trim();
-                    
-                    const hdTag = isHD ? '✨ ' : '';
-                    btn.innerHTML = `${hdTag}${baseName} <span style="font-size:10px; margin-left:4px; font-weight:bold; color:${qColor};">(${srv.quality})</span>`;
-
-                    // Kapag HD, lagyan ng berdeng highlight border
-                    if (isHD) {
-                        btn.style.borderColor = 'rgba(76, 175, 80, 0.5)';
-                        if (!firstHdButton) {
-                            firstHdButton = btn;
-                            firstHdServerKey = btn.getAttribute('data-server');
-                        }
-                    }
-                }
-            });
-        }
-
-        // 3. Smart Default: Kung CAM pa ang default pero may HD na pala (hal. Server 2),
-        // ilipat ang initial stream sa unang HD server nang hindi pinipilit ang buong UI.
-        if (firstHdButton && data.overallQuality === 'HD') {
-            const currentActive = grid.querySelector('.srv-btn.active');
-            if (currentActive && currentActive.textContent.includes('CAM')) {
-                grid.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
-                firstHdButton.classList.add("active");
-
-                if (firstHdServerKey && currentItemData) {
-                    updatePlayer(firstHdServerKey, currentItemData, currentSeasonNumber, currentEpisodeNumber);
-                }
-            }
-        }
-    } catch (e) {
-        console.warn("Quality checker hindi naabot, gagamitin ang standard estimation:", e);
-    }
-}
-
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
     if (!player) return;
@@ -341,7 +218,6 @@ function setupInitialPlayer(item) {
             return;
         }
     }
-
     trailerUrl = '';
 }
 
@@ -353,9 +229,8 @@ function populateServerSelector(item) {
 
     if (typeof STREAM_SERVERS !== "undefined") {
         const serverKeys = Object.keys(STREAM_SERVERS);
-        const qualityStatus = getQualityStatus(item.release_date || item.first_air_date);
 
-        serverKeys.forEach((key) => {
+        serverKeys.forEach((key, index) => {
             const srv = STREAM_SERVERS[key];
             if (!srv.enabled) return;
 
@@ -363,11 +238,13 @@ function populateServerSelector(item) {
             btn.className = `srv-btn ${!isEpisodic && !isMovieReleased ? 'disabled-srv' : ''}`;
             btn.setAttribute('data-server', key);
             
-            const qTag = isMovieReleased 
-                ? `<span style="font-size:10px; margin-left:4px; opacity:0.8; color:${qualityStatus.isCamLikely ? '#ffb74d' : '#81c784'};">(${qualityStatus.quality})</span>` 
-                : '';
+            // MALINIS NA SERVER NAME LANG, WALANG (CAM) O (HD)
+            btn.textContent = srv.name;
             
-            btn.innerHTML = `${srv.name} ${qTag}`;
+            // Default select ang Server 1
+            if (index === 0) {
+                btn.classList.add("active");
+            }
             
             btn.onclick = () => {
                 if (!isEpisodic && !isMovieReleased) {
@@ -384,16 +261,7 @@ function populateServerSelector(item) {
                     return;
                 }
 
-                // HAKBANG A FIX: Huwag magpakita ng CAM warning kapag HD na ang badge sa screen
-                const isHDVerified = document.getElementById("media-badges")?.textContent.includes("HD");
-                if (!isHDVerified && qualityStatus.isCamLikely && !sessionStorage.getItem(`cam_notified_${item.id}`)) {
-                    showThemeModal(
-                        "Video Quality Notice",
-                        qualityStatus.message,
-                        qualityStatus.badge
-                    );
-                    sessionStorage.setItem(`cam_notified_${item.id}`, 'true');
-                }
+                // INALIS ANG CAM QUALITY MODAL NOTICE DITO
 
                 document.querySelectorAll(".srv-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
@@ -430,6 +298,7 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
 
     syncToGlobalWatchHistory(item);
 }
+
 
 /* ==============================================================================
    SECTION 5: TV SHOWS, SEASONS & EPISODES
@@ -718,7 +587,7 @@ function syncToGlobalWatchHistory(item) {
 
 
 /* ==============================================================================
-   SECTION 9: REALTIME COMMENTS & DISCUSSION (CENTRALIZED & WITH VIP EFFECTS)
+   SECTION 9: REALTIME COMMENTS & DISCUSSION
    ============================================================================== */
 function formatTimeAgo(timestamp) {
     if (!timestamp) return "Just now";
@@ -963,7 +832,6 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
                 let nameGlow = "none";
                 let userPhoto = user.photoURL || "images/logo-192.png";
 
-                // Kukunin ang latest customizations mula sa Firestore account ng user
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 if (userDoc.exists()) {
                     const uData = userDoc.data();
@@ -1134,34 +1002,4 @@ function getReleaseStatus(airDateStr) {
     }
 }
 
-function getQualityStatus(releaseDateStr) {
-    if (isEpisodic) {
-        return { quality: 'HD', isCamLikely: false, badge: 'HD 1080p' };
-    }
-    if (!releaseDateStr) {
-        return { quality: 'Auto', isCamLikely: false, badge: 'Standard' };
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const relDate = new Date(releaseDateStr);
-    relDate.setHours(0, 0, 0, 0);
-
-    const diffDays = Math.floor((today - relDate) / (1000 * 60 * 60 * 24));
-
-    if (diffDays >= 0 && diffDays <= 90) {
-        return {
-            quality: 'CAM / SD',
-            isCamLikely: true,
-            badge: 'CAM / Telesync',
-            message: 'This movie was recently released in theaters. Stream servers may currently provide a Cinema / CAM copy until the official HD digital release is out.'
-        };
-    }
-
-    return {
-        quality: 'HD',
-        isCamLikely: false,
-        badge: 'HD 1080p',
-        message: ''
-    };
-}
+// INALIS ANG getQualityStatus() DAHIL TINANGGAL NA ANG QUALITY TAGS/MODALS

@@ -78,10 +78,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const item = await fetchDetails();
     
-    // Auto-correct redirection kung sakaling baliktad ang type sa URL (Continue Watching Fix)
+    // Auto-correct type if URL parameter was wrong
     const actualType = (item && item.first_air_date) ? 'tv' : 'movie';
     if (actualType !== type) {
-        // I-update ang URL nang hindi nagre-refresh ng buong page
         const newUrl = new URL(window.location);
         newUrl.searchParams.set('type', actualType);
         window.history.replaceState({}, '', newUrl);
@@ -219,7 +218,7 @@ function renderMetadata(item) {
 }
 
 /* ==============================================================================
-   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN - NO CAM/HD TAGS)
+   SECTION 4: VIDEO PLAYER & SERVER SELECTOR (CLEAN - WALANG HD/CAM)
    ============================================================================== */
 function setupInitialPlayer(item) {
     const player = document.getElementById("movie-player");
@@ -242,6 +241,16 @@ function populateServerSelector(item) {
 
     grid.innerHTML = "";
 
+    const badgeBox = document.getElementById("media-badges");
+    if (badgeBox) {
+        const badges = badgeBox.querySelectorAll(".meta-badge");
+        badges.forEach(b => {
+            if (b.textContent.includes("CAM") || b.textContent.includes("Telesync") || b.textContent.includes("HD")) {
+                b.remove();
+            }
+        });
+    }
+
     if (typeof STREAM_SERVERS !== "undefined") {
         const serverKeys = Object.keys(STREAM_SERVERS);
 
@@ -253,12 +262,12 @@ function populateServerSelector(item) {
             btn.className = `srv-btn ${!isEpisodic && !isMovieReleased ? 'disabled-srv' : ''}`;
             btn.setAttribute('data-server', key);
             
-            // Malinis na server name lang.
             btn.textContent = srv.name;
             
-            // Default select ang unang server
             if (index === 0) {
                 btn.classList.add("active");
+                // Auto-load first server
+                updatePlayer(key, item, currentSeasonNumber, currentEpisodeNumber);
             }
             
             btn.onclick = () => {
@@ -584,7 +593,6 @@ async function handleCollection(collectionId) {
 function syncToGlobalWatchHistory(item) {
     if (!item || !item.id) return;
     
-    // Auto-correct para tama ang ma-save sa localStorage
     const actualType = (item.name && item.first_air_date) ? "tv" : "movie";
     
     if (typeof window.saveToWatchHistory === "function") {

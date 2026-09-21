@@ -173,58 +173,56 @@
 }
 
 /* ==========================================================================
-   📱 FINAL MOBILE OPTIMIZATION PATCH (NETFLIX-STYLE MOBILE VIEW)
+   🚀 MODERN FULL-SCREEN MOBILE MENU OVERLAY
    ========================================================================== */
 
 @media (max-width: 768px) {
-    /* 1. Paliitin ang Cards para kasya ang 3-3.5 sa screen */
-    .movie-card {
-        width: 105px !important;
-    }
-
-    /* 2. Paliitin ang text at spacing sa loob ng card para hindi putol */
-    .card-info { padding: 8px 6px !important; }
-    .card-info h4 { font-size: 11px !important; text-shadow: 0 1px 3px rgba(0,0,0,0.9) !important; }
-    .card-info p { font-size: 9px !important; }
-
-    /* 3. Ayusin ang Top 10 Ranking Numbers na masyadong malaki */
-    .ranking-number {
-        font-size: 45px !important;
-        top: -5px !important;
-        left: -2px !important;
-        -webkit-text-stroke: 1px #fff !important;
-        letter-spacing: -2px !important;
-    }
-
-    /* 4. Ayusin ang spacing ng horizontal scroll rows para dikit-dikit */
-    .movie-row-container {
-        gap: 8px !important;
-        padding: 5px 15px 20px 15px !important;
-    }
-
-    /* 5. Ayusin ang Grid sa Browse Page para 3 columns imbes na 2 malaki */
-    #browse-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
-        gap: 10px !important;
-        padding: 10px !important;
-    }
-
-    /* 6. Ayusin ang Hero Buttons (Watch Now & More Info) para pantay at hindi bulky */
-    .hero-buttons {
+    /* 1. Gawing Full-Screen at Modern ang Menu Background */
+    .nav-links {
+        position: fixed !important;
+        top: 0 !important;
+        right: -100% !important; /* Nakatago sa kanan by default */
+        left: auto !important;
+        width: 100vw !important; /* Sakop ang buong lapad ng screen */
+        height: 100vh !important; /* Sakop ang buong taas */
+        background: rgba(15, 15, 15, 0.95) !important; /* Dark solid overlay */
+        backdrop-filter: blur(15px) !important; /* Apple-style blur effect */
+        -webkit-backdrop-filter: blur(15px) !important;
         display: flex !important;
-        gap: 10px !important;
-        width: 100% !important;
+        flex-direction: column !important;
         justify-content: center !important;
-    }
-    .hero-buttons button {
-        flex: 1 !important;
+        align-items: center !important;
+        transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important; /* Smooth slide-in */
+        z-index: 9998 !important;
+        padding: 0 !important;
         margin: 0 !important;
-        padding: 10px !important;
-        font-size: 0.85rem !important;
     }
 
-    /* I-adjust ang Hero Section text margin para mas malinis */
-    .hero-content {
-        bottom: 50px !important;
+    /* Papasok ang menu kapag na-click */
+    .nav-links.active {
+        right: 0 !important; 
+    }
+
+    /* 2. Palihiin at I-center ang mga Menu Links */
+    .nav-links a {
+        font-size: 1.5rem !important; /* Mas malaki para madaling i-tap */
+        margin: 15px 0 !important;
+        font-weight: 600 !important;
+        letter-spacing: 2px !important;
+        color: #fff !important;
+        text-align: center !important;
+    }
+
+    /* 3. Ihiwalay ang Hamburger/Close Button para hindi mag-overlap */
+    .hamburger-menu {
+        position: fixed !important;
+        top: 20px !important;
+        right: 20px !important;
+        z-index: 9999 !important; /* Laging nasa pinaka-ibabaw */
+    }
+
+    /* 4. Ilagay sa ilalim ang ibang header items kapag bukas ang menu */
+    .nav-actions, .nav-right, .logo, .online-badge, #online-counter {
+        z-index: 9990 !important;
     }
 }

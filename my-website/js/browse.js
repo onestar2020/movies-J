@@ -1,5 +1,4 @@
-// ✅ js/browse.js (BROWSE PAGE WITH SKELETON LOADING & INFINITE SCROLL)
-// Inalis natin ang BASE_URL at TMDB keys dito dahil kumukuha na siya sa home.js para iwas error!
+// ✅ js/browse.js (BROWSE PAGE WITH SKELETON LOADING & FIXED LOAD MORE BUTTON)
 
 let currentPage = 1;
 let currentType = 'movie';
@@ -7,7 +6,6 @@ let currentGenre = '';
 let isLoading = false;
 let currentSort = 'popularity.desc';
 
-// Pinalitan ang pangalan para hindi mag-clash sa genreMap ng home.js
 const browseGenresMap = {
     "movie": {
         28:"Action", 12:"Adventure", 16:"Animation", 35:"Comedy", 80:"Crime", 99:"Documentary", 18:"Drama", 10751:"Family", 14:"Fantasy", 36:"History", 27:"Horror", 10402:"Music", 9648:"Mystery", 10749:"Romance", 878:"Sci-Fi", 10770:"TV Movie", 53:"Thriller", 10752:"War", 37:"Western"
@@ -16,6 +14,8 @@ const browseGenresMap = {
         10759: "Action & Adv", 16: "Animation", 35: "Comedy", 80: "Crime", 99: "Documentary", 18: "Drama", 10751: "Family", 10762: "Kids", 9648: "Mystery", 10763: "News", 10764: "Reality", 10765: "Sci-Fi & Fantasy", 10766: "Soap", 10767: "Talk", 10768: "War & Politics", 37: "Western"
     }
 };
+
+const fullGenreMap = { ...browseGenresMap.movie, ...browseGenresMap.tv };
 
 document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -28,6 +28,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     populateGenreFilter();
     setupInfiniteScroll();
+
+    // Ikonekta sa existing HTML Load More button
+    const loadMoreBtn = document.getElementById("load-more-btn");
+    if (loadMoreBtn) {
+        loadMoreBtn.onclick = () => {
+            if (currentType === 'anime') fetchAnime();
+            else fetchBrowseContent();
+        };
+    }
 
     if (currentType === 'anime') {
         fetchAnime();
@@ -136,7 +145,7 @@ function displayGridItems(items) {
         const voteAvg = (item.vote_average || 0).toFixed(1);
 
         const card = document.createElement("div");
-        card.className = "movie-card loading"; // Start with loading skeleton
+        card.className = "movie-card loading"; 
 
         card.innerHTML = `
             <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
@@ -146,7 +155,6 @@ function displayGridItems(items) {
             </div>
         `;
 
-        // Ginagamit natin yung showDetailsModal function galing sa home.js
         card.onclick = () => {
             if (typeof showDetailsModal === 'function') {
                 showDetailsModal(item);
@@ -157,29 +165,12 @@ function displayGridItems(items) {
 }
 
 function showLoading(show) {
-    let loader = document.getElementById("browse-loader");
-    if (!loader && show) {
-        loader = document.createElement("div");
-        loader.id = "browse-loader";
-        loader.innerHTML = `<button id="load-more-btn" style="padding:10px 20px; background:#e50914; color:#fff; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Load More</button>`;
-        loader.style.textAlign = "center";
-        loader.style.padding = "20px";
-        loader.style.width = "100%";
-        document.querySelector(".browse-container").appendChild(loader);
-
-        document.getElementById("load-more-btn").onclick = () => {
-            if (currentType === 'anime') fetchAnime();
-            else fetchBrowseContent();
-        };
-    }
-    
-    if (loader) {
-        loader.style.display = show ? "block" : "block";
-        const btn = loader.querySelector('button');
-        if (btn) {
-            btn.textContent = show ? "Loading..." : "Load More";
-            btn.disabled = show;
-        }
+    const btn = document.getElementById("load-more-btn");
+    if (btn) {
+        btn.textContent = show ? "Loading..." : "Load More";
+        btn.disabled = show;
+        btn.style.opacity = show ? "0.6" : "1";
+        btn.style.cursor = show ? "wait" : "pointer";
     }
 }
 

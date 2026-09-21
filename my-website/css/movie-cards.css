@@ -114,3 +114,60 @@
 .movie-card:hover .remove-btn { opacity: 1; }
 .remove-btn:hover { background: #e50914; border-color: #e50914; }
 @media (max-width: 768px) { .remove-btn { opacity: 1; width: 24px; height: 24px; } .remove-btn i { font-size: 10px; } }
+
+/* ==========================================================================
+   📱 FINAL MOBILE OPTIMIZATION PATCH (NETFLIX-STYLE MOBILE VIEW)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    /* 1. Paliitin ang Cards para kasya ang 3-3.5 sa screen */
+    .movie-card {
+        width: 105px !important;
+    }
+    
+    /* 2. Paliitin ang text at spacing sa loob ng card para hindi putol */
+    .card-info { padding: 8px 6px !important; }
+    .card-info h4 { font-size: 11px !important; text-shadow: 0 1px 3px rgba(0,0,0,0.9) !important; }
+    .card-info p { font-size: 9px !important; }
+
+    /* 3. Ayusin ang Top 10 Ranking Numbers na masyadong malaki */
+    .ranking-number {
+        font-size: 45px !important;
+        top: -5px !important;
+        left: -2px !important;
+        -webkit-text-stroke: 1px #fff !important;
+        letter-spacing: -2px !important;
+    }
+
+    /* 4. Ayusin ang spacing ng horizontal scroll rows para dikit-dikit */
+    .movie-row-container {
+        gap: 8px !important;
+        padding: 5px 15px 20px 15px !important;
+    }
+
+    /* 5. Ayusin ang Grid sa Browse Page para 3 columns imbes na 2 malaki */
+    #browse-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+        gap: 10px !important;
+        padding: 10px !important;
+    }
+
+    /* 6. Ayusin ang Hero Buttons (Watch Now & More Info) para pantay at hindi bulky */
+    .hero-buttons {
+        display: flex !important;
+        gap: 10px !important;
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    .hero-buttons button {
+        flex: 1 !important;
+        margin: 0 !important;
+        padding: 10px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    /* I-adjust ang Hero Section text margin para mas malinis */
+    .hero-content {
+        bottom: 50px !important;
+    }
+}

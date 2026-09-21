@@ -1617,3 +1617,44 @@ a {
         pointer-events: none !important;
     }
 }
+/* ==========================================================================
+   📱 MOBILE UI FIXES: BROWSE HEADER & HAMBURGER MENU
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    /* --- FIX 1: Browse Header (Siksikang Title at Dropdown) --- */
+    .browse-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        padding-top: 10px !important;
+    }
+
+    #genre-filter {
+        width: 100% !important; /* Para sakop ang buong width ng screen */
+        max-width: 100% !important;
+        padding: 12px 15px !important; /* Mas malaking pindutan */
+        font-size: 1rem !important;
+        background-color: #222 !important; /* Darker background para sa dropdown */
+    }
+
+    /* --- FIX 2: Mobile Menu (Pangit na cut-off at overlapping icons) --- */
+    .nav-links.active {
+        width: 100% !important; /* Gawing full-screen para malinis ang background */
+        background: rgba(15, 15, 15, 0.98) !important; /* Solid dark blur */
+        justify-content: center !important; /* I-gitna ang mga links */
+        align-items: center !important;
+        text-align: center !important;
+        z-index: 1000 !important;
+    }
+
+    /* Siguraduhing laging nasa ibabaw ang 'X' (close) button */
+    .hamburger-menu {
+        z-index: 1005 !important;
+    }
+
+    /* Itago ang Search/History icons sa ilalim ng menu para hindi magulo */
+    .nav-actions {
+        z-index: 999 !important;
+    }
+}

@@ -1,9 +1,5 @@
 // ✅ js/browse.js (BROWSE PAGE WITH SKELETON LOADING & INFINITE SCROLL)
-
-const BASE_URL = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev';
-const TMDB_DIRECT_KEY = '1e86095039d9eb32cbcf1aa445b23d92';
-const IMG_URL_W500 = 'https://image.tmdb.org/t/p/w500';
-const IMG_URL_ORIGINAL = 'https://image.tmdb.org/t/p/original';
+// Inalis natin ang BASE_URL at TMDB keys dito dahil kumukuha na siya sa home.js para iwas error!
 
 let currentPage = 1;
 let currentType = 'movie';
@@ -11,7 +7,8 @@ let currentGenre = '';
 let isLoading = false;
 let currentSort = 'popularity.desc';
 
-const genreMap = {
+// Pinalitan ang pangalan para hindi mag-clash sa genreMap ng home.js
+const browseGenresMap = {
     "movie": {
         28:"Action", 12:"Adventure", 16:"Animation", 35:"Comedy", 80:"Crime", 99:"Documentary", 18:"Drama", 10751:"Family", 14:"Fantasy", 36:"History", 27:"Horror", 10402:"Music", 9648:"Mystery", 10749:"Romance", 878:"Sci-Fi", 10770:"TV Movie", 53:"Thriller", 10752:"War", 37:"Western"
     },
@@ -19,8 +16,6 @@ const genreMap = {
         10759: "Action & Adv", 16: "Animation", 35: "Comedy", 80: "Crime", 99: "Documentary", 18: "Drama", 10751: "Family", 10762: "Kids", 9648: "Mystery", 10763: "News", 10764: "Reality", 10765: "Sci-Fi & Fantasy", 10766: "Soap", 10767: "Talk", 10768: "War & Politics", 37: "Western"
     }
 };
-
-const fullGenreMap = { ...genreMap.movie, ...genreMap.tv };
 
 document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -59,7 +54,7 @@ function populateGenreFilter() {
     const filter = document.getElementById("genre-filter");
     if (!filter || currentType === 'anime') return;
     
-    const targetMap = genreMap[currentType] || genreMap.movie;
+    const targetMap = browseGenresMap[currentType] || browseGenresMap.movie;
     filter.innerHTML = `<option value="">All Genres</option>`;
     for (let id in targetMap) {
         filter.innerHTML += `<option value="${id}">${targetMap[id]}</option>`;
@@ -151,7 +146,12 @@ function displayGridItems(items) {
             </div>
         `;
 
-        card.onclick = () => showDetailsModal(item);
+        // Ginagamit natin yung showDetailsModal function galing sa home.js
+        card.onclick = () => {
+            if (typeof showDetailsModal === 'function') {
+                showDetailsModal(item);
+            }
+        };
         grid.appendChild(card);
     });
 }
@@ -174,7 +174,7 @@ function showLoading(show) {
     }
     
     if (loader) {
-        loader.style.display = show ? "block" : "block"; // Always show button at bottom for manual load
+        loader.style.display = show ? "block" : "block";
         const btn = loader.querySelector('button');
         if (btn) {
             btn.textContent = show ? "Loading..." : "Load More";
@@ -188,109 +188,6 @@ function setupInfiniteScroll() {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !isLoading) {
             if (currentType === 'anime') fetchAnime();
             else fetchBrowseContent();
-        }
-    });
-}
-
-// ---------------------------------------------------------
-// RE-USE DETAILS MODAL FROM HOME.JS (Minimal duplication)
-// ---------------------------------------------------------
-function showDetailsModal(item) {
-    const modal = document.getElementById('details-modal');
-    if (!modal || !item) return;
-
-    document.body.classList.add('body-no-scroll');
-
-    const backdrop = modal.querySelector('.modal-backdrop');
-    const poster = modal.querySelector('#modal-poster');
-    const title = modal.querySelector('#modal-title');
-    const rating = modal.querySelector('#modal-rating');
-    const release = modal.querySelector('#modal-release');
-    const desc = modal.querySelector('#modal-description');
-    const genres = modal.querySelector('#modal-genres');
-    const watchBtn = modal.querySelector('#modal-watch-btn');
-    const watchlistBtn = modal.querySelector('#modal-watchlist-btn');
-    const watchlistText = modal.querySelector('#modal-watchlist-text');
-
-    if (backdrop) backdrop.style.backgroundImage = item.backdrop_path ? `url(${IMG_URL_ORIGINAL}${item.backdrop_path})` : 'none';
-    if (poster) poster.src = item.poster_path ? `${IMG_URL_W500}${item.poster_path}` : 'images/logo-192.png';
-    if (title) title.textContent = item.title || item.name || 'N/A';
-    if (rating) rating.textContent = item.vote_average ? `⭐ ${item.vote_average.toFixed(1)}` : 'N/A';
-    if (release) release.textContent = (item.release_date || item.first_air_date || 'N/A').substring(0, 4);
-    if (desc) desc.textContent = item.overview || 'No description.';
-    
-    if (genres) {
-        genres.innerHTML = '';
-        const genreIds = item.genre_ids || [];
-        genreIds.slice(0, 4).forEach(gid => {
-            if (fullGenreMap[gid]) {
-                const tag = document.createElement('span');
-                tag.className = 'genre-tag';
-                tag.textContent = fullGenreMap[gid];
-                genres.appendChild(tag);
-            }
-        });
-    }
-
-    if (watchBtn) watchBtn.onclick = () => {
-        const itemType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-        let targetUrl = `movie.html?id=${item.id}&type=${itemType}`;
-        if (itemType === 'tv') targetUrl += `&season=1&episode=1`;
-        window.location.href = targetUrl;
-    };
-
-    if (watchlistBtn && watchlistText) {
-        const updateModalWatchlistState = () => {
-            let list = [];
-            try { list = JSON.parse(localStorage.getItem('moviesJWatchlist') || '[]'); } catch (e) {}
-            const exists = list.some(w => w.id === item.id);
-            if (exists) {
-                watchlistBtn.style.background = "#e50914";
-                watchlistBtn.style.borderColor = "#e50914";
-                watchlistText.textContent = "Saved";
-            } else {
-                watchlistBtn.style.background = "#282828";
-                watchlistBtn.style.borderColor = "#444";
-                watchlistText.textContent = "Watchlist";
-            }
-        };
-        updateModalWatchlistState();
-        
-        watchlistBtn.onclick = (e) => {
-            e.stopPropagation();
-            let list = [];
-            try { list = JSON.parse(localStorage.getItem('moviesJWatchlist') || '[]'); } catch (err) {}
-            const index = list.findIndex(i => i.id === item.id);
-            if (index > -1) {
-                list.splice(index, 1);
-            } else {
-                list.unshift({
-                    id: item.id,
-                    title: item.title || item.name || 'Untitled',
-                    poster_path: item.poster_path || '',
-                    type: item.media_type || (item.first_air_date ? 'tv' : 'movie'),
-                    vote_average: item.vote_average || 0,
-                    release_date: item.release_date || item.first_air_date || ''
-                });
-            }
-            localStorage.setItem('moviesJWatchlist', JSON.stringify(list));
-            updateModalWatchlistState();
-        };
-    }
-    modal.style.display = 'flex';
-}
-
-const detailsModal = document.getElementById('details-modal');
-if (detailsModal) {
-    const closeDetailsBtn = document.getElementById('close-details-modal');
-    if (closeDetailsBtn) closeDetailsBtn.onclick = () => {
-        detailsModal.style.display = 'none';
-        document.body.classList.remove('body-no-scroll');
-    };
-    detailsModal.addEventListener('click', (event) => {
-        if (event.target === detailsModal) {
-            detailsModal.style.display = 'none';
-            document.body.classList.remove('body-no-scroll');
         }
     });
 }

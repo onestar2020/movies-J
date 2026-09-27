@@ -1,0 +1,249 @@
+/* ============================================================
+   MOVIES-J PREMIUM — DESIGN TOKENS & BASE (css/theme.css)
+   Modern glassmorphic dark cinema theme
+   ============================================================ */
+
+:root {
+  /* Surfaces */
+  --bg: #07080c;
+  --bg-2: #0b0d14;
+  --card: #12141d;
+  --card-2: #171a26;
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.13);
+
+  /* Text */
+  --text: #f4f5f9;
+  --muted: #9aa1b5;
+
+  /* Brand */
+  --primary: #e50914;
+  --primary-color: #e50914; /* legacy alias */
+  --brand-2: #ff6a3d;
+  --grad-brand: linear-gradient(135deg, #e50914 0%, #ff6a3d 100%);
+  --gold: #ffb938;
+  --green: #2ee6a8;
+  --blue: #4da3ff;
+
+  /* Legacy aliases used by old inline styles */
+  --card-bg: #12141d;
+  --text-muted: #9aa1b5;
+  --radius: 14px;
+
+  /* Effects */
+  --shadow-1: 0 6px 24px rgba(0, 0, 0, 0.45);
+  --shadow-2: 0 18px 50px rgba(0, 0, 0, 0.65);
+  --glow-brand: 0 10px 34px rgba(229, 9, 20, 0.35);
+  --glass: rgba(18, 20, 29, 0.72);
+  --glass-strong: rgba(10, 12, 18, 0.88);
+  --nav-h: 66px;
+
+  /* Typography */
+  --font-display: 'Outfit', 'Poppins', sans-serif;
+  --font-body: 'Poppins', sans-serif;
+}
+
+/* ---------- Reset & Base ---------- */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text);
+  background:
+    radial-gradient(1100px 550px at 85% -10%, rgba(229, 9, 20, 0.09), transparent 60%),
+    radial-gradient(900px 500px at -10% 15%, rgba(77, 163, 255, 0.06), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 1.55;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  user-select: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background: rgba(229, 9, 20, 0.55);
+  color: #fff;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(229, 9, 20, 0.7);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(229, 9, 20, 0.8);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---------- Shared helpers ---------- */
+.body-no-scroll {
+  overflow: hidden !important;
+}
+
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--line);
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--card-2);
+}
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.07),
+    transparent
+  );
+  animation: mj-shimmer 1.4s infinite;
+}
+
+@keyframes mj-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes mj-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mj-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 230, 168, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(46, 230, 168, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 230, 168, 0);
+  }
+}
+
+/* ---------- Scroll progress bar ---------- */
+.mj-scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--grad-brand);
+  box-shadow: 0 0 12px rgba(229, 9, 20, 0.7);
+  z-index: 100000;
+  border-radius: 0 99px 99px 0;
+  transition: width 0.08s linear;
+  pointer-events: none;
+}
+
+/* ---------- Back to top ---------- */
+.mj-backtop {
+  position: fixed;
+  right: 18px;
+  bottom: 96px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  color: var(--text);
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9500;
+  opacity: 0;
+  transform: translateY(14px);
+  pointer-events: none;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-1);
+}
+.mj-backtop.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.mj-backtop:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: var(--glow-brand);
+}
+@media (min-width: 901px) {
+  .mj-backtop {
+    bottom: 26px;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

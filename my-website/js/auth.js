@@ -610,8 +610,8 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
     } else {
       if (authContainer) {
         authContainer.innerHTML = `
-          <button id="nav-login-btn" style="background:#e50914; color:#fff; border:none; padding:7px 16px; border-radius:24px; font-size:12px; font-weight:700; cursor:pointer; margin-left:10px;">
-            Sign In
+          <button id="nav-login-btn" style="background:linear-gradient(135deg,#e50914,#b0060f); color:#fff; border:none; padding:9px 20px; border-radius:24px; font-size:13px; font-weight:700; cursor:pointer; margin-left:10px; white-space:nowrap; display:inline-flex; align-items:center; gap:7px; box-shadow:0 4px 14px rgba(229,9,20,.35); transition:transform .18s ease, box-shadow .18s ease;">
+            <i class="fas fa-right-to-bracket"></i> Sign In
           </button>
         `;
         document.getElementById("nav-login-btn").onclick = () => {

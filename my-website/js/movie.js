@@ -327,6 +327,10 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     const player = document.getElementById("movie-player");
     if (!player || typeof getEmbedUrl !== "function") return;
 
+    // Anti-inspect: iwas referrer leak + secured iframe permissions
+    player.setAttribute("referrerpolicy", "no-referrer");
+    player.setAttribute("allow", "autoplay; fullscreen; picture-in-picture; encrypted-media");
+
     currentActiveServerKey = serverKey;
     currentSeasonNumber = season;
     currentEpisodeNumber = episode;

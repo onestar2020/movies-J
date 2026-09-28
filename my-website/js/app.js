@@ -5,6 +5,47 @@
 (function () {
   'use strict';
 
+  /* ---------- Site-wide anti-inspect guards (LAHAT ng pages) ---------- */
+  // Right-click + devtools shortcut blocking
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+  document.addEventListener('keydown', (e) => {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) ||
+      (e.ctrlKey && ['U', 'u', 'S', 's'].includes(e.key))
+    ) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // DevTools size heuristic: blur shield kapag may nakabukas na panel
+  let _shield = null;
+  setInterval(function () {
+    try {
+      var gapW = window.outerWidth - window.innerWidth;
+      var gapH = window.outerHeight - window.innerHeight;
+      var open = gapW > 160 || gapH > 160;
+      if (open && !_shield) {
+        _shield = document.createElement('div');
+        _shield.id = 'devtools-shield';
+        _shield.innerHTML =
+          '<div style="text-align:center;color:#fff;font-family:inherit;">' +
+          '<i class="fas fa-shield-halved" style="font-size:42px;color:#e50914;margin-bottom:14px;"></i>' +
+          '<h2 style="margin:0 0 8px;">Content Protected</h2>' +
+          '<p style="margin:0;color:#aaa;font-size:13px;">Please close Developer Tools to continue.</p>' +
+          '</div>';
+        _shield.style.cssText =
+          'position:fixed;inset:0;z-index:2147483647;background:rgba(5,5,8,0.985);backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:center;';
+        document.body.appendChild(_shield);
+        try { console.clear(); } catch (e) {}
+      } else if (!open && _shield) {
+        _shield.remove();
+        _shield = null;
+      }
+    } catch (e) { /* ignore */ }
+  }, 1200);
+
   const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
   /* ---------- Scroll progress bar + back-to-top ---------- */

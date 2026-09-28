@@ -18,7 +18,19 @@ import {
   serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
+// Admin identity (runtime-decoded, walang plaintext sa source)
+const _ak2 = ['M', 'j', 'P', 'r', '0', 't', '3', 'c', 't', '2', '0', '2', '6', '!'];
+const _adec2 = function (s) {
+  var b64 = s.split('~').join('').split('').reverse().join('');
+  b64 += '='.repeat((4 - (b64.length % 4)) % 4);
+  var x = atob(b64);
+  var out = '';
+  for (var i = 0; i < x.length; i++) {
+    out += String.fromCharCode(x.charCodeAt(i) ^ _ak2[i % _ak2.length].charCodeAt(0));
+  }
+  return out;
+};
+const DEDICATED_ADMIN_EMAIL = _adec2('QPF4yDatVUfNxI~DYEAA9zCjAUQT5~1WQ0gVC8FGpswJ');
 
 const BORDER_CLASSES = {
   emerald: "avatar-border-vip",

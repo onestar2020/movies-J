@@ -20,7 +20,19 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
+// Admin identity (runtime-decoded, para walang plaintext sa shipped source)
+const _ak = ['M', 'j', 'P', 'r', '0', 't', '3', 'c', 't', '2', '0', '2', '6', '!'];
+const _adec = function (s) {
+  var b64 = s.split('~').join('').split('').reverse().join('');
+  b64 += '='.repeat((4 - (b64.length % 4)) % 4);
+  var x = atob(b64);
+  var out = '';
+  for (var i = 0; i < x.length; i++) {
+    out += String.fromCharCode(x.charCodeAt(i) ^ _ak[i % _ak.length].charCodeAt(0));
+  }
+  return out;
+};
+const DEDICATED_ADMIN_EMAIL = _adec('QPF4yDatVUfNxI~DYEAA9zCjAUQT5~1WQ0gVC8FGpswJ');
 
 // ================= PROFILE CUSTOMIZATION (libre para sa LAHAT) =================
 const RANK_TIERS = {

@@ -169,9 +169,14 @@ export async function loginWithGoogle() {
     const user = result.user;
 
     const userRef = doc(db, "users", user.uid);
-    const snap = await getDoc(userRef);
+    let snap = null;
+    try {
+      snap = await getDoc(userRef);
+    } catch (permErr) {
+      console.warn("Ban-check read blocked (Firestore rules):", permErr && permErr.code);
+    }
 
-    if (snap.exists() && snap.data().isBanned === true) {
+    if (snap && snap.exists() && snap.data().isBanned === true) {
       await signOut(auth);
       showAuthToast("Your account has been banned by the administrator.", "error");
       return;
@@ -213,9 +218,14 @@ export async function loginWithEmail(email, password) {
     }
 
     const userRef = doc(db, "users", result.user.uid);
-    const snap = await getDoc(userRef);
+    let snap = null;
+    try {
+      snap = await getDoc(userRef);
+    } catch (permErr) {
+      console.warn("Ban-check read blocked (Firestore rules):", permErr && permErr.code);
+    }
 
-    if (snap.exists() && snap.data().isBanned === true) {
+    if (snap && snap.exists() && snap.data().isBanned === true) {
       await signOut(auth);
       showAuthToast("Your account has been banned by the administrator.", "error");
       return;
@@ -316,24 +326,34 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   setupContactAdminModalHTML();
 
   onAuthStateChanged(auth, async (user) => {
+    try {
     const authContainer = document.getElementById("auth-nav-container");
 
     if (user && (user.emailVerified || user.providerData.some(p => p.providerId === 'google.com'))) {
       const userRef = doc(db, "users", user.uid);
-      let userDoc = await getDoc(userRef);
-
-      if (!userDoc.exists()) {
-        await syncUserToFirestore(user);
+      let userDoc = null;
+      try {
         userDoc = await getDoc(userRef);
+      } catch (permErr) {
+        console.warn("User profile fetch blocked (Firestore rules):", permErr && permErr.code);
       }
 
-      if (userDoc.exists() && userDoc.data().isBanned === true && user.email !== DEDICATED_ADMIN_EMAIL) {
+      if (userDoc && !userDoc.exists()) {
+        try {
+          await syncUserToFirestore(user);
+          userDoc = await getDoc(userRef);
+        } catch (syncErr) {
+          console.warn("Profile sync skipped (Firestore rules):", syncErr && syncErr.code);
+        }
+      }
+
+      if (userDoc && userDoc.exists() && userDoc.data().isBanned === true && user.email !== DEDICATED_ADMIN_EMAIL) {
         await signOut(auth);
         showAuthToast("Your account has been banned by the administrator.", "error");
         return;
       }
 
-      let userData = userDoc.exists() ? userDoc.data() : user;
+      let userData = (userDoc && userDoc.exists()) ? userDoc.data() : user;
       const isAdmin = user.email === DEDICATED_ADMIN_EMAIL;
 
       // Realtime listener sa sariling user document
@@ -346,6 +366,8 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           return;
         }
         updateUserUIEffects(liveData, isAdmin);
+      }, (listenErr) => {
+        console.warn("Realtime profile listener blocked (Firestore rules):", listenErr && listenErr.code);
       });
 
       if (authContainer) {
@@ -447,7 +469,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
 
               <div class="dropdown-actions-list">
                 ${isAdmin ? `
-                  <a href="admin-donations.html" class="profile-action-btn admin-link">
+                  <a href="admin.html" class="profile-action-btn admin-link">
                     <i class="fas fa-gauge-high"></i> <span>Admin Control Panel</span>
                   </a>
                 ` : ''}
@@ -621,7 +643,57 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
       }
       if (onGuestMode) onGuestMode();
     }
+    } catch (renderErr) {
+      console.error("Auth UI render failed - showing safe fallback:", renderErr);
+      renderSafeFallbackUI();
+    }
   });
+}
+
+// Safety net: kung mag-crash man ang normal render (hal. Firestore rules blocked),
+// may makikita pa ring Sign In / profile UI ang user imbes na blangko.
+function renderSafeFallbackUI() {
+  const authContainer = document.getElementById("auth-nav-container");
+  if (!authContainer || authContainer.innerHTML.trim() !== "") return;
+
+  authContainer.innerHTML = `
+    <div style="position:relative; display:inline-block; margin-left: 8px;" id="user-profile-dropdown">
+      <div id="user-profile-btn" class="nav-profile-pill">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=MoviesJ" class="nav-user-avatar" alt="Avatar" id="nav-avatar-img" />
+        <span class="nav-user-name" id="nav-user-name-label">Account</span>
+        <i class="fas fa-chevron-down nav-dropdown-icon"></i>
+      </div>
+      <div id="user-dropdown-menu" class="dropdown-menu" style="display:none; position:absolute; top:46px; z-index:99999;">
+        <div class="dropdown-header" style="padding:14px 15px;">
+          <p style="color:#aaa; font-size:12px; margin:0 0 10px;">We couldn't load your full profile right now. Sign in again to restore everything.</p>
+          <button id="fallback-signin-btn" style="width:100%; padding:9px; background:linear-gradient(135deg,#e50914,#b0060f); color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:12px;">
+            <i class="fas fa-right-to-bracket"></i> Sign In / Switch Account
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const pill = document.getElementById("user-profile-btn");
+  const menu = document.getElementById("user-dropdown-menu");
+  if (pill && menu) {
+    pill.onclick = (e) => {
+      e.stopPropagation();
+      menu.style.display = menu.style.display === "none" ? "block" : "none";
+    };
+    document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target)) menu.style.display = "none";
+    });
+  }
+
+  const signInBtn = document.getElementById("fallback-signin-btn");
+  if (signInBtn) {
+    signInBtn.onclick = async () => {
+      try { await signOut(auth); } catch (e) { /* ignore */ }
+      switchAuthMode("login");
+      openAuthModal();
+    };
+  }
 }
 
 function updateUserUIEffects(data, isAdmin = false) {
@@ -1009,7 +1081,7 @@ function setupAuthModalHTML() {
 
 function openAuthModal() {
   const modal = document.getElementById("auth-custom-modal");
-  if (modal) modal.style.display = "block";
+  if (modal) modal.style.display = "flex";
 }
 
 function closeAuthModal() {

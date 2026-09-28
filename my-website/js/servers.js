@@ -51,6 +51,9 @@
   }
   setInterval(function () {
     try {
+      // SKIP sa mobile/touch — ang browser chrome ng mobile ay laging may
+      // malaking outer/inner gap = false positive na "Content Protected"!
+      if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return;
       var w = window;
       var gapW = w.outerWidth - w.innerWidth;
       var gapH = w.outerHeight - w.innerHeight;

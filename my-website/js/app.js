@@ -20,9 +20,13 @@
   });
 
   // DevTools size heuristic: blur shield kapag may nakabukas na panel
+  // SKIP sa mobile/touch devices — ang browser chrome ng mobile (URL bar, bottom
+  // toolbar) ay laging gumagawa ng malaking outer/inner gap = false positive!
+  // Desktop lang (pointer: fine) ang magpa-patak nito.
   let _shield = null;
   setInterval(function () {
     try {
+      if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return;
       var gapW = window.outerWidth - window.innerWidth;
       var gapH = window.outerHeight - window.innerHeight;
       var open = gapW > 160 || gapH > 160;

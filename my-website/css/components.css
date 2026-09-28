@@ -88,8 +88,9 @@
   transform: scale(1.06);
 }
 
-/* Icon buttons (bell, bookmark, history) */
-.nav-actions button,
+/* Icon buttons (bell, bookmark, history) — direct children lang ng .nav-actions
+   para hindi tamaan ang mga buttons sa loob ng user dropdown menu */
+.nav-actions > button,
 .changelog-nav-btn,
 .watchlist-nav-btn,
 .watch-history-btn {

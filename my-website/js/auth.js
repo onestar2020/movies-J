@@ -447,7 +447,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                 <!-- Profile Customizer (libre para sa LAHAT ng users) -->
                 <div class="cosmetics-toolbar">
                   <button id="toggle-cosmetics-btn" class="cosmetics-btn"><i class="fas fa-wand-magic-sparkles"></i> Customize Profile</button>
-                  <div id="cosmetics-panel" class="cosmetics-panel" style="display:none;">
+                  <div id="cosmetics-panel" class="cosmetics-panel">
                     <label>Avatar Ring:</label>
                     <select id="user-border-select">
                       ${AVATAR_BORDERS.map(b => `<option value="${b.id}" ${userData.avatarBorder === b.id ? 'selected' : ''}>${b.label}</option>`).join('')}
@@ -536,7 +536,10 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         if (toggleCosmeticsBtn) {
           toggleCosmeticsBtn.onclick = (e) => {
             e.stopPropagation();
-            cosmeticsPanel.classList.toggle("open");
+            const isOpen = cosmeticsPanel.classList.toggle("open");
+            // Belt and suspenders: i-set din ang inline style para siguradong
+            // talo kahit anong CSS specificity o cached stylesheet
+            cosmeticsPanel.style.display = isOpen ? "grid" : "none";
           };
         }
 

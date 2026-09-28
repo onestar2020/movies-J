@@ -50,6 +50,40 @@
     } catch (e) { /* ignore */ }
   }, 1200);
 
+  /* ---------- Visit & Activity Tracking (para sa Admin Dashboard) ---------- */
+  // Lightweight: 1 fetch kada visit. Aggregate lang — walang personal data na naka-save.
+  (function trackVisit() {
+    try {
+      var FIREBASE_RTDB = 'https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app';
+      var today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      var dayKey = 'stats/' + today;
+
+      fetch(FIREBASE_RTDB + '/' + dayKey + '.json', { method: 'GET' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (day) {
+          day = day || {};
+          var body = {
+            views: ((day.views || 0) + 1),
+            lastUpdated: Date.now()
+          };
+          // Unique visitor: random ID sa localStorage (walang PII)
+          try {
+            var vid = localStorage.getItem('mj_vid');
+            if (!vid) {
+              vid = 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+              localStorage.setItem('mj_vid', vid);
+            }
+            body['visitors/' + vid] = true;
+          } catch (e) {}
+          return fetch(FIREBASE_RTDB + '/' + dayKey + '.json', {
+            method: 'PATCH',
+            body: JSON.stringify(body)
+          });
+        })
+        .catch(function () {});
+    } catch (e) { /* tracking failure = hindi kritikal */ }
+  })();
+
   const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
   /* ---------- Scroll progress bar + back-to-top ---------- */
@@ -261,7 +295,7 @@
   async function initAuthIfAvailable() {
     if (!document.getElementById('auth-nav-container')) return;
     try {
-      const mod = await import('./auth.js?v=3');
+      const mod = await import('./auth.js?v=8');
       if (typeof mod.initAuthObserver === 'function') {
         mod.initAuthObserver();
       }

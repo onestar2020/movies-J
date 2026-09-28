@@ -25,45 +25,264 @@ const TMDB_PROXY = 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev
 
 const ADMIN_UID = 'ys5KRWrQmbYsLAue4wjKBZmFZnF2'; 
 
-// ================= GLOBAL USER REWARD CONTROLLER =================
-// Ginagamit ito para baguhin ang Role, Avatar Border, at Name Glow ng kahit sinong user
-window.updateUserReward = async function(userId, field, value) {
-    if (!userId) return;
-    try {
-        const userRef = doc(db, "users", userId);
-        await setDoc(userRef, { [field]: value }, { merge: true });
-        console.log(`[Admin] User ${userId} ${field} updated to ${value}`);
-    } catch (err) {
-        console.error("Error updating user reward:", err);
-        alert("Failed to update user reward in Firestore.");
-    }
-};
+// ================= USERS DATABASE (movies-j-stream project) =================
+// Ang mga registered users ay nakatira sa "movies-j-stream" Firestore — hiwalay
+// na app instance, pero pareho ang Firebase Auth session (same Google account).
+import { initializeApp as initStreamApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+import {
+    getAuth as getStreamAuth,
+    signInWithPopup as streamSignInWithPopup,
+    signOut as streamSignOut,
+    onAuthStateChanged as streamOnAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+import {
+    getFirestore as getStreamFirestore,
+    collection as streamCollection,
+    getDocs as streamGetDocs,
+    doc as streamDoc,
+    updateDoc as streamUpdateDoc
+} from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
+const STREAM_CONFIG = {
+    apiKey: "AIzaSyDGVvGPJt95ZHTp9Hm349ouyWemFktbwNY",
+    authDomain: "movies-j-stream.firebaseapp.com",
+    databaseURL: "https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "movies-j-stream",
+    storageBucket: "movies-j-stream.firebasestorage.app",
+    messagingSenderId: "1066305700283",
+    appId: "1:1066305700283:web:1b94c85927d4b88240789e"
+};
+const streamApp = getApps().some(a => a.options.projectId === 'movies-j-stream')
+    ? getApp('movies-j-stream')
+    : initStreamApp(STREAM_CONFIG, 'movies-j-stream');
+const streamAuth = getStreamAuth(streamApp);
+const streamDb = getStreamFirestore(streamApp);
+
+// Admin identity (runtime-decoded, hindi plaintext)
+const _ak = ['M','j','P','r','0','t','3','c','t','2','0','2','6','!'];
+const _adec = function (s) {
+    var b64 = s.split('~').join('').split('').reverse().join('');
+    b64 += '='.repeat((4 - (b64.length % 4)) % 4);
+    var x = atob(b64);
+    var out = '';
+    for (var i = 0; i < x.length; i++) {
+        out += String.fromCharCode(x.charCodeAt(i) ^ _ak[i % _ak.length].charCodeAt(0));
+    }
+    return out;
+};
+const ADMIN_EMAIL = _adec('QPF4yDatVUfNxI~DYEAA9zCjAUQT5~1WQ0gVC8FGpswJ');
+
+// ================= GATE + TABS + STATS + USERS =================
+const gate = document.getElementById('adminGate');
+const tabsEl = document.getElementById('adminTabs');
+const sectionUsers = document.getElementById('section-users');
+const sectionVault = document.getElementById('section-vault');
+const gateStatus = document.getElementById('gateStatus');
+
+function showGate(msg) {
+    if (gate) {
+        gate.style.display = 'block';
+        if (msg && gateStatus) { gateStatus.textContent = msg; gateStatus.style.display = 'block'; }
+    }
+    if (tabsEl) tabsEl.style.display = 'none';
+    if (sectionUsers) sectionUsers.style.display = 'none';
+    if (sectionVault) sectionVault.style.display = 'none';
+}
+function showPanel() {
+    if (gate) gate.style.display = 'none';
+    if (tabsEl) tabsEl.style.display = 'flex';
+    if (sectionUsers) sectionUsers.style.display = 'block';
+    if (sectionVault) sectionVault.style.display = 'none';
+}
+
+// Tabs switching
+document.querySelectorAll('.admin-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.getAttribute('data-tab');
+        if (sectionUsers) sectionUsers.style.display = tab === 'users' ? 'block' : 'none';
+        if (sectionVault) sectionVault.style.display = tab === 'vault' ? 'block' : 'none';
+    });
+});
+
+const RTDB = 'https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+function timeAgo(iso) {
+    try {
+        const d = new Date(iso);
+        const s = Math.floor((Date.now() - d.getTime()) / 1000);
+        if (isNaN(s)) return '';
+        if (s < 60) return 'just now';
+        if (s < 3600) return Math.floor(s / 60) + 'm ago';
+        if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+        return Math.floor(s / 86400) + 'd ago';
+    } catch (e) { return ''; }
+}
+
+async function loadStats() {
+    const summary = document.getElementById('statsSummary');
+    const chart = document.getElementById('statsChart');
+    if (!summary || !chart) return;
+    try {
+        const res = await fetch(RTDB + '/stats.json');
+        const data = (await res.json()) || {};
+        const days = [];
+        for (let i = 13; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            days.push(d.toISOString().slice(0, 10));
+        }
+        let totViews = 0, totVisitors = 0, todayViews = 0;
+        const today = days[13];
+        const rows = days.map(day => {
+            const v = data[day] || {};
+            const views = v.views || 0;
+            const visitors = v.visitors ? Object.keys(v.visitors).length : 0;
+            totViews += views;
+            totVisitors += visitors;
+            if (day === today) todayViews = views;
+            return { day, views, visitors };
+        });
+        const maxVal = Math.max(1, ...rows.map(r => Math.max(r.views, r.visitors)));
+        summary.innerHTML = `
+            <div class="stat-box"><div class="val">${totViews.toLocaleString()}</div><div class="lbl">Views (14d)</div></div>
+            <div class="stat-box"><div class="val">${totVisitors.toLocaleString()}</div><div class="lbl">Unique Visitors (14d)</div></div>
+            <div class="stat-box"><div class="val">${todayViews.toLocaleString()}</div><div class="lbl">Views Today</div></div>`;
+        chart.innerHTML = rows.map(r => `
+            <div class="chart-col" title="${r.day}: ${r.views} views, ${r.visitors} visitors">
+                <div class="chart-bars">
+                    <div class="chart-bar views" style="height:${Math.round((r.views / maxVal) * 100)}%"></div>
+                    <div class="chart-bar visitors" style="height:${Math.round((r.visitors / maxVal) * 100)}%"></div>
+                </div>
+                <div class="chart-label">${r.day.slice(5)}</div>
+            </div>`).join('');
+    } catch (err) {
+        console.error('Stats load error:', err);
+        if (summary) summary.innerHTML = '<p style="color:#ff6b6b;">Failed to load stats.</p>';
+    }
+}
+
+let _allUsers = [];
+
+async function loadUsers() {
+    const listEl = document.getElementById('usersList');
+    const countEl = document.getElementById('userCount');
+    if (!listEl) return;
+    try {
+        const snap = await streamGetDocs(streamCollection(streamDb, 'users'));
+        _allUsers = [];
+        snap.forEach(d => _allUsers.push(d.data()));
+        renderUsers();
+        if (countEl) countEl.textContent = _allUsers.length;
+    } catch (err) {
+        console.error('Users load error:', err);
+        listEl.innerHTML = '<p style="color:#ff6b6b;">Failed to load users: ' + (err.code || err.message) + '</p>';
+    }
+}
+
+function renderUsers() {
+    const listEl = document.getElementById('usersList');
+    if (!listEl) return;
+    const q = (document.getElementById('userSearch')?.value || '').toLowerCase().trim();
+    const filtered = q ? _allUsers.filter(u =>
+        (u.displayName || '').toLowerCase().includes(q) ||
+        (u.email || '').toLowerCase().includes(q)
+    ) : _allUsers;
+    // Sort: admin first, then by lastActive (pinakabago sa taas)
+    filtered.sort((a, b) => {
+        const aAdmin = (a.email || '') === ADMIN_EMAIL ? 1 : 0;
+        const bAdmin = (b.email || '') === ADMIN_EMAIL ? 1 : 0;
+        if (aAdmin !== bAdmin) return bAdmin - aAdmin;
+        return (b.lastActive || b.lastLogin || b.createdAt || '').localeCompare(a.lastActive || a.lastLogin || a.createdAt || '');
+    });
+    if (filtered.length === 0) {
+        listEl.innerHTML = '<p style="text-align:center;color:#888;">Walang nahanap na users.</p>';
+        return;
+    }
+    listEl.innerHTML = filtered.map(u => {
+        const isAdminUser = (u.email || '') === ADMIN_EMAIL;
+        const isOnline = u.lastActive ? (Date.now() - new Date(u.lastActive).getTime() < 300000) : false;
+        const banned = !!u.isBanned;
+        const when = u.lastActive ? timeAgo(u.lastActive) : (u.createdAt ? 'joined ' + timeAgo(u.createdAt) : '');
+        return `
+        <div class="user-item">
+            <img src="${u.photoURL || 'images/logo-192.png'}" alt="" referrerpolicy="no-referrer" onerror="this.src='images/logo-192.png'">
+            <div class="user-info">
+                <h4>${(u.displayName || 'User') + (isAdminUser ? ' 👑' : '')}</h4>
+                <p>${u.email || u.uid}</p>
+            </div>
+            <div class="user-meta">
+                <span class="badge ${banned ? 'badge-banned' : (isAdminUser ? 'badge-admin' : 'badge-free')}">${banned ? 'Banned' : (isAdminUser ? 'Admin' : 'Member')}</span>
+                ${isOnline && !banned ? '<span class="badge badge-online">Online</span>' : ''}
+                <span class="when">${when}</span>
+            </div>
+            <div class="user-actions">
+                ${!isAdminUser ? `<button class="${banned ? 'btn-unban' : 'btn-ban'}" data-uid="${u.uid}" data-ban="${banned ? '0' : '1'}">${banned ? 'Unban' : 'Ban'}</button>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+
+    listEl.querySelectorAll('.user-actions button').forEach(btn => {
+        btn.onclick = async () => {
+            const uid = btn.getAttribute('data-uid');
+            const toBan = btn.getAttribute('data-ban') === '1';
+            if (!confirm(toBan ? 'I-ban ang user na ito?' : 'I-unban ang user na ito?')) return;
+            btn.disabled = true;
+            try {
+                await streamUpdateDoc(streamDoc(streamDb, 'users', uid), { isBanned: toBan });
+                const local = _allUsers.find(x => x.uid === uid);
+                if (local) local.isBanned = toBan;
+                renderUsers();
+            } catch (err) {
+                alert('Failed: ' + (err.code || err.message));
+                btn.disabled = false;
+            }
+        };
+    });
+}
+
+const searchInput = document.getElementById('userSearch');
+if (searchInput) searchInput.addEventListener('input', renderUsers);
+
+// Refresh button para sa stats (dinagdag para handy)
+// ================= STREAM AUTH STATE (gate) =================
+streamOnAuthStateChanged(streamAuth, (user) => {
+    if (user && user.email === ADMIN_EMAIL) {
+        showPanel();
+        loadStats();
+        loadUsers();
+    } else if (user) {
+        showGate('ACCESS DENIED: Hindi ito ang admin account (' + user.email + ').');
+    } else {
+        showGate();
+    }
+});
+
+const gateLoginBtn = document.getElementById('gateLoginBtn');
+if (gateLoginBtn) {
+    gateLoginBtn.onclick = () => streamSignInWithPopup(streamAuth, provider);
+}
+
+// ================= VAULT AUTH (lumang logic, movies-j-vault) =================
 onAuthStateChanged(auth, (user) => {
     const list = document.getElementById('inventoryList');
-    if (user) {
-        if (user.uid !== ADMIN_UID) {
-            alert("ACCESS DENIED: Hindi ka awtorisado para sa page na ito.");
-            signOut(auth).then(() => window.location.href = "index.html");
-            return;
-        }
-        if (list) loadInventory();
+    if (!list) return;
+    if (user && user.uid === ADMIN_UID) {
+        loadInventory();
     } else {
-        if (list) {
-            list.innerHTML = `
-                <div style="text-align:center; padding:40px; border: 2px dashed #333; border-radius: 10px;">
-                    <i class="fas fa-user-shield" style="font-size: 2.5rem; color: #ff9800; margin-bottom: 15px;"></i>
-                    <h3 style="color: #fff;">Admin Area Restricted</h3>
-                    <button id="manualAdminLogin" class="submit-btn" style="max-width: 250px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Login with Google
-                    </button>
-                </div>
-            `;
-            const loginBtn = document.getElementById('manualAdminLogin');
-            if (loginBtn) {
-                loginBtn.onclick = () => signInWithPopup(auth, provider);
-            }
-        }
+        list.innerHTML = `
+            <div style="text-align:center; padding:40px; border: 2px dashed #333; border-radius: 10px;">
+                <i class="fas fa-film" style="font-size: 2.5rem; color: #ff9800; margin-bottom: 15px;"></i>
+                <h3 style="color: #fff;">Vault Access Required</h3>
+                <p style="color:#888; font-size:0.8rem; margin-bottom:15px;">Mag-sign in sa vault project para makapag-upload.</p>
+                <button id="manualAdminLogin" class="submit-btn" style="max-width: 250px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Login with Google
+                </button>
+            </div>
+        `;
+        const loginBtn = document.getElementById('manualAdminLogin');
+        if (loginBtn) loginBtn.onclick = () => signInWithPopup(auth, provider);
     }
 });
 

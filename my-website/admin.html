@@ -35,11 +35,86 @@
         .inv-actions button { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 5px; }
         .btn-edit { background: #4caf50; color: white; }
         .btn-delete { background: #ff4444; color: white; }
+
+        /* Tabs */
+        .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .admin-tab { flex: 1; background: #1a1a1a; color: #aaa; border: 1px solid #333; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 0.95rem; transition: 0.2s; font-family: 'Inter', sans-serif; }
+        .admin-tab.active { background: #ff9800; color: #000; border-color: #ff9800; }
+
+        /* Stats */
+        .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .stat-box { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 14px; text-align: center; }
+        .stat-box .val { font-size: 1.4rem; font-weight: bold; color: #ff9800; }
+        .stat-box .lbl { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+        .stats-chart { display: flex; align-items: stretch; gap: 6px; height: 130px; padding: 10px 0 4px; border-bottom: 1px solid #333; }
+        .chart-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .chart-bars { flex: 1; display: flex; align-items: flex-end; justify-content: center; gap: 2px; }
+        .chart-bar { width: 42%; max-width: 16px; border-radius: 3px 3px 0 0; min-height: 2px; }
+        .chart-bar.views { background: linear-gradient(180deg, #ff9800, #e65100); }
+        .chart-bar.visitors { background: linear-gradient(180deg, #42a5f5, #1565c0); }
+        .chart-label { font-size: 0.58rem; color: #666; text-align: center; margin-top: 5px; overflow: hidden; white-space: nowrap; }
+        .chart-legend { display: flex; gap: 16px; margin-top: 10px; font-size: 0.7rem; color: #888; }
+        .chart-legend span::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+        .chart-legend .lg-views::before { background: #ff9800; }
+        .chart-legend .lg-visitors::before { background: #42a5f5; }
+
+        /* Users list */
+        .user-item { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .user-item img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #222; flex-shrink: 0; }
+        .user-info { flex: 1; min-width: 0; }
+        .user-info h4 { margin: 0 0 2px; color: #fff; font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .user-info p { margin: 0; font-size: 0.75rem; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .user-meta { text-align: right; flex-shrink: 0; }
+        .user-meta .when { font-size: 0.7rem; color: #666; display: block; margin-top: 3px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; }
+        .badge-admin { background: #e50914; color: #fff; }
+        .badge-free { background: #333; color: #aaa; }
+        .badge-banned { background: #7f1d1d; color: #fca5a5; }
+        .badge-online { background: #14532d; color: #86efac; }
+        .user-actions button { padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: bold; margin-left: 4px; }
+        .btn-ban { background: #ff4444; color: white; }
+        .btn-unban { background: #4caf50; color: white; }
     </style>
 </head>
 <body>
 
     <div class="admin-container">
+        <!-- Admin Gate -->
+        <div id="adminGate" class="admin-card">
+            <div style="text-align:center; padding:20px;">
+                <i class="fas fa-user-shield" style="font-size: 2.5rem; color: #ff9800; margin-bottom: 15px;"></i>
+                <h3 style="color: #fff; margin: 0 0 8px;">Admin Area Restricted</h3>
+                <p style="color:#888; font-size: 0.85rem; margin: 0 0 18px;">Mag-sign in gamit ang admin Google account.</p>
+                <button id="gateLoginBtn" class="submit-btn" style="max-width: 260px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Login with Google
+                </button>
+                <p id="gateStatus" style="color:#ff6b6b; font-size: 0.8rem; margin-top: 12px; display:none;"></p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div id="adminTabs" class="admin-tabs" style="display:none;">
+            <button class="admin-tab active" data-tab="users">👥 Users &amp; Stats</button>
+            <button class="admin-tab" data-tab="vault">🎬 Vault Upload</button>
+        </div>
+
+        <!-- ===== USERS & STATS SECTION ===== -->
+        <div id="section-users" style="display:none;">
+            <div class="admin-card">
+                <h2>📊 Site Stats — Last 14 Days</h2>
+                <div id="statsSummary" class="stats-summary"><p style="color:#888;">Loading stats...</p></div>
+                <div id="statsChart" class="stats-chart"></div>
+                <div class="chart-legend"><span class="lg-views">Page Views</span><span class="lg-visitors">Unique Visitors</span></div>
+            </div>
+            <div class="admin-card">
+                <h2>👥 Registered Users (<span id="userCount">0</span>)</h2>
+                <input type="text" id="userSearch" placeholder="Search name o email..." style="width:100%; padding:12px; border-radius:8px; border:1px solid #333; background:#1a1a1a; color:white; font-size:0.95rem; box-sizing:border-box; outline:none; margin-bottom:15px;">
+                <div id="usersList"><p style="text-align:center;color:#888;">Loading users...</p></div>
+            </div>
+        </div>
+
+        <!-- ===== VAULT SECTION ===== -->
+        <div id="section-vault" style="display:none;">
         <div class="admin-card">
             <h2 id="formHeader">🎬 Upload to Vault</h2>
             <form id="uploadForm">
@@ -104,8 +179,9 @@
                 <p style="text-align: center; color: #888;">Loading movies...</p>
             </div>
         </div>
+        </div><!-- /section-vault -->
     </div>
 
-    <script type="module" src="js/admin.js"></script>
+    <script type="module" src="js/admin.js?v=2"></script>
 </body>
 </html>

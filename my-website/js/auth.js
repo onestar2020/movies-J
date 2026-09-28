@@ -305,6 +305,7 @@ async function syncUserToFirestore(user) {
         photoURL: user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.uid}`,
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
+        lastActive: new Date().toISOString(),
         isBanned: false,
         role: "free",
         avatarBorder: "none",
@@ -314,7 +315,8 @@ async function syncUserToFirestore(user) {
       await setDoc(userRef, {
         displayName: user.displayName || snap.data().displayName || "User",
         photoURL: snap.data().photoURL || user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.uid}`,
-        lastLogin: new Date().toISOString()
+        lastLogin: new Date().toISOString(),
+        lastActive: new Date().toISOString()
       }, { merge: true });
     }
   } catch (err) {

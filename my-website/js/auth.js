@@ -340,7 +340,6 @@ function compressAvatar(file, size = 180, quality = 0.8) {
 // Observer + Realtime Profile Rendering
 export function initAuthObserver(onUserLoggedIn, onGuestMode) {
   setupAuthModalHTML();
-  setupContactAdminModalHTML();
 
   onAuthStateChanged(auth, async (user) => {
     try {
@@ -495,10 +494,6 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                   </a>
                 ` : ''}
 
-                <button id="menu-contact-admin-btn" class="profile-action-btn">
-                  <i class="fas fa-envelope-open-text" style="color:#e50914;"></i> <span>Support & Inquiries</span>
-                </button>
-
                 <button id="menu-logout-btn" class="profile-action-btn logout-action-btn">
                   <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
                 </button>
@@ -510,7 +505,6 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         const profileBtn = document.getElementById("user-profile-btn");
         const dropMenu = document.getElementById("user-dropdown-menu");
         const logoutBtn = document.getElementById("menu-logout-btn");
-        const contactAdminBtn = document.getElementById("menu-contact-admin-btn");
 
         profileBtn.onclick = (e) => {
           e.stopPropagation();
@@ -525,14 +519,6 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
             if (dropMenu) dropMenu.style.display = "none";
           }
         });
-
-        if (contactAdminBtn) {
-          contactAdminBtn.onclick = (e) => {
-            e.stopPropagation();
-            dropMenu.style.display = "none";
-            openContactAdminModal(userData);
-          };
-        }
 
         logoutBtn.onclick = (e) => {
           e.stopPropagation();

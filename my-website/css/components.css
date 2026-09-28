@@ -490,6 +490,95 @@
   100% { text-shadow: 0 0 10px rgba(229, 9, 20, 0.9); }
 }
 
+/* Name gradients (profile customizer) */
+.name-gradient-sunset {
+  background: linear-gradient(90deg, #ff8a00, #e50914, #ff5f9e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.name-gradient-ocean {
+  background: linear-gradient(90deg, #4da3ff, #2ee6a8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.name-gradient-candy {
+  background: linear-gradient(90deg, #ff5f9e, #b16dff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.name-gradient-matrix {
+  background: linear-gradient(90deg, #00ff88, #00b34a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.name-gradient-royal {
+  background: linear-gradient(90deg, #ffb938, #ffe08a, #ffb938);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Dropdown card themes (profile customizer) */
+#user-dropdown-menu.card-theme-crimson {
+  background: linear-gradient(165deg, #1c0a0d 0%, #14090b 55%, #0f0c10 100%);
+  border-color: rgba(229, 9, 20, 0.45);
+}
+#user-dropdown-menu.card-theme-ocean {
+  background: linear-gradient(165deg, #0a1626 0%, #0b1220 55%, #0d0f16 100%);
+  border-color: rgba(77, 163, 255, 0.4);
+}
+#user-dropdown-menu.card-theme-forest {
+  background: linear-gradient(165deg, #0a1f16 0%, #0b1a12 55%, #0d0f16 100%);
+  border-color: rgba(46, 230, 168, 0.4);
+}
+#user-dropdown-menu.card-theme-royal {
+  background: linear-gradient(165deg, #170f24 0%, #120c1d 55%, #0d0f16 100%);
+  border-color: rgba(177, 109, 255, 0.4);
+}
+#user-dropdown-menu.card-theme-sunset {
+  background: linear-gradient(165deg, #241505 0%, #1c120a 55%, #0f0d10 100%);
+  border-color: rgba(255, 185, 56, 0.4);
+}
+
+/* Cosmetics panel: label + select per row para sulat ang buong label */
+#cosmetics-panel {
+  display: none;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px 10px;
+  margin-top: 8px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+#cosmetics-panel.open { display: grid; }
+#cosmetics-panel label {
+  font-size: 0.6rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  align-self: end;
+}
+#cosmetics-panel select {
+  width: 100%;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line-strong);
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 0.7rem;
+  outline: none;
+  cursor: pointer;
+}
+#cosmetics-panel select:hover { border-color: rgba(229, 9, 20, 0.55); }
+.cosmetics-btn i { color: #e50914; }
+
 /* ================= MOBILE BOTTOM TAB BAR ================= */
 .mj-tabbar {
   position: fixed;

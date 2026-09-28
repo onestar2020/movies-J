@@ -38,6 +38,14 @@ const GLOW_CLASSES = {
   rgb: "name-glow-rgb"
 };
 
+const GRADIENT_CLASSES = {
+  sunset: "name-gradient-sunset",
+  ocean: "name-gradient-ocean",
+  candy: "name-gradient-candy",
+  matrix: "name-gradient-matrix",
+  royal: "name-gradient-royal"
+};
+
 function getCommentRoleBadge(role) {
   switch (role) {
     case "admin": return `<span class="user-role role-admin" style="font-size:9px; padding:2px 6px; margin-left:4px;"><i class="fas fa-shield-alt"></i> Admin</span>`;
@@ -810,7 +818,7 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
         allComments.forEach((data) => {
             const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
             const borderClass = BORDER_CLASSES[data.avatarBorder] || "";
-            const glowClass = GLOW_CLASSES[data.nameGlow] || "";
+            const glowClass = GRADIENT_CLASSES[data.nameGradient] || GLOW_CLASSES[data.nameGlow] || "";
             const roleBadge = getCommentRoleBadge(data.role);
 
             const card = document.createElement("div");
@@ -890,6 +898,7 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
                 let userRole = "free";
                 let avatarBorder = "none";
                 let nameGlow = "none";
+                let nameGradient = "none";
                 let userPhoto = user.photoURL || "images/logo-192.png";
 
                 const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -898,6 +907,7 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
                     userRole = user.email === DEDICATED_ADMIN_EMAIL ? "admin" : (uData.role || "free");
                     avatarBorder = uData.avatarBorder || "none";
                     nameGlow = uData.nameGlow || "none";
+                    nameGradient = uData.nameGradient || "none";
                     userPhoto = uData.photoURL || userPhoto;
                 }
 
@@ -911,6 +921,7 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
                     role: userRole,
                     avatarBorder: avatarBorder,
                     nameGlow: nameGlow,
+                    nameGradient: nameGradient,
                     text: text,
                     timestamp: Date.now(),
                     createdAt: serverTimestamp()

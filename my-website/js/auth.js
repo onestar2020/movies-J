@@ -22,37 +22,54 @@ import {
 
 const DEDICATED_ADMIN_EMAIL = "jayjovendinawanao2020@gmail.com";
 
-// ================= REWARD TIERS & COSMETIC DEFINITIONS =================
+// ================= PROFILE CUSTOMIZATION (libre para sa LAHAT) =================
 const RANK_TIERS = {
-  free: { label: "Free Member", badgeClass: "role-free", icon: "" },
-  vip: { label: "VIP SUPPORTER", badgeClass: "role-vip", icon: "fa-star" },
-  "top-donor": { label: "TOP DONOR", badgeClass: "role-top-donor", icon: "fa-crown" },
-  legendary: { label: "LEGENDARY BACKER", badgeClass: "role-legendary", icon: "fa-gem" }
+  free: { label: "Member", badgeClass: "role-free", icon: "" },
+  vip: { label: "SUPPORTER", badgeClass: "role-vip", icon: "fa-star" },
+  "top-donor": { label: "TOP SUPPORTER", badgeClass: "role-top-donor", icon: "fa-crown" },
+  legendary: { label: "LEGENDARY", badgeClass: "role-legendary", icon: "fa-gem" }
 };
 
 const AVATAR_BORDERS = [
-  { id: "none", label: "Default / Clean", class: "", tier: "free" },
-  { id: "emerald", label: "⭐ Emerald Supporter", class: "avatar-border-vip", tier: "vip" },
-  { id: "cyber", label: "⚡ Cyberpunk Neon Blue", class: "avatar-border-cyber", tier: "vip" },
-  { id: "fire", label: "🔥 Crimson Ember", class: "avatar-border-fire", tier: "vip" },
-  { id: "gold", label: "👑 Top Gold Crown", class: "avatar-border-gold", tier: "top-donor" },
-  { id: "amethyst", label: "💎 Royal Amethyst", class: "avatar-border-amethyst", tier: "top-donor" },
-  { id: "rainbow", label: "🌈 Cosmic RGB Pulse", class: "avatar-border-rainbow", tier: "legendary" }
+  { id: "none", label: "⚪ Default / Clean", class: "" },
+  { id: "emerald", label: "💚 Emerald Glow", class: "avatar-border-vip" },
+  { id: "cyber", label: "💙 Cyberpunk Neon", class: "avatar-border-cyber" },
+  { id: "fire", label: "❤️ Crimson Ember", class: "avatar-border-fire" },
+  { id: "gold", label: "💛 Royal Gold", class: "avatar-border-gold" },
+  { id: "amethyst", label: "💜 Royal Amethyst", class: "avatar-border-amethyst" },
+  { id: "rainbow", label: "🌈 Cosmic RGB Pulse", class: "avatar-border-rainbow" }
 ];
 
 const NAME_GLOWS = [
-  { id: "none", label: "Default White", class: "", tier: "free" },
-  { id: "emerald", label: "💚 Emerald Glow", class: "name-glow-emerald", tier: "vip" },
-  { id: "blue", label: "⚡ Cyan Plasma", class: "name-glow-blue", tier: "vip" },
-  { id: "red", label: "🔥 Fire Crimson", class: "name-glow-red", tier: "vip" },
-  { id: "gold", label: "✨ Shiny Gold", class: "name-glow-gold", tier: "top-donor" },
-  { id: "purple", label: "🔮 Mystic Purple", class: "name-glow-purple", tier: "top-donor" },
-  { id: "rgb", label: "🌈 Rainbow Aurora", class: "name-glow-rgb", tier: "legendary" }
+  { id: "none", label: "⚪ Default White", class: "" },
+  { id: "emerald", label: "💚 Emerald Glow", class: "name-glow-emerald" },
+  { id: "blue", label: "💙 Cyan Plasma", class: "name-glow-blue" },
+  { id: "red", label: "❤️ Fire Crimson", class: "name-glow-red" },
+  { id: "gold", label: "✨ Shiny Gold", class: "name-glow-gold" },
+  { id: "purple", label: "🔮 Mystic Purple", class: "name-glow-purple" },
+  { id: "rgb", label: "🌈 Rainbow Aurora", class: "name-glow-rgb" }
 ];
 
-function isCosmeticUnlocked(itemTierId, userRoleId) {
-  const weights = { "free": 0, "vip": 1, "top-donor": 2, "legendary": 3, "admin": 4 };
-  return (weights[userRoleId] || 0) >= (weights[itemTierId] || 0);
+const NAME_GRADIENTS = [
+  { id: "none", label: "⚪ Solid Color", class: "" },
+  { id: "sunset", label: "🌅 Sunset Blaze", class: "name-gradient-sunset" },
+  { id: "ocean", label: "🌊 Ocean Depth", class: "name-gradient-ocean" },
+  { id: "candy", label: "🍬 Candy Pop", class: "name-gradient-candy" },
+  { id: "matrix", label: "🟢 Matrix Green", class: "name-gradient-matrix" },
+  { id: "royal", label: "👑 Royal Gold", class: "name-gradient-royal" }
+];
+
+const CARD_THEMES = [
+  { id: "none", label: "⚫ Classic Dark", class: "" },
+  { id: "crimson", label: "🔴 Movies-J Red", class: "card-theme-crimson" },
+  { id: "ocean", label: "🔵 Deep Ocean", class: "card-theme-ocean" },
+  { id: "forest", label: "💚 Emerald Forest", class: "card-theme-forest" },
+  { id: "royal", label: "💜 Royal Purple", class: "card-theme-royal" },
+  { id: "sunset", label: "🌅 Sunset Gold", class: "card-theme-sunset" }
+];
+
+function findCosmetic(list, id) {
+  return (list.find(x => x.id === id) || {}).class || "";
 }
 
 // ================= RANDOM SURPRISE ME ROULETTE LOGIC =================
@@ -381,20 +398,22 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           ? { label: "Admin", badgeClass: "role-admin", icon: "fa-shield-alt" } 
           : (RANK_TIERS[userRole] || RANK_TIERS.free);
 
-        let borderClass = (AVATAR_BORDERS.find(b => b.id === userData.avatarBorder) || {}).class || "";
-        let glowClass = (NAME_GLOWS.find(g => g.id === userData.nameGlow) || {}).class || "";
+        let borderClass = findCosmetic(AVATAR_BORDERS, userData.avatarBorder);
+        let glowClass = findCosmetic(NAME_GLOWS, userData.nameGlow);
+        let gradientClass = findCosmetic(NAME_GRADIENTS, userData.nameGradient);
+        let cardThemeClass = findCosmetic(CARD_THEMES, userData.cardTheme);
 
-        const isDonor = userRole !== "free" || isAdmin;
+        const nameStyleClass = gradientClass || glowClass;
 
         authContainer.innerHTML = `
           <div style="position:relative; display:inline-block; margin-left: 8px;" id="user-profile-dropdown">
             <div id="user-profile-btn" class="nav-profile-pill">
               <img src="${currentAvatar}" class="nav-user-avatar ${borderClass}" alt="Avatar" id="nav-avatar-img" />
-              <span class="nav-user-name ${glowClass}" id="nav-user-name-label">${displayName.split(" ")[0]}</span>
+              <span class="nav-user-name ${nameStyleClass}" id="nav-user-name-label">${displayName.split(" ")[0]}</span>
               <i class="fas fa-chevron-down nav-dropdown-icon"></i>
             </div>
             
-            <div id="user-dropdown-menu" class="dropdown-menu" style="display:none; position:absolute; top:46px; z-index:99999;">
+            <div id="user-dropdown-menu" class="dropdown-menu ${cardThemeClass}" style="display:none; position:absolute; top:46px; z-index:99999;">
               <div class="dropdown-header">
                 <div class="profile-card-header">
                   <div class="profile-avatar-wrapper">
@@ -408,7 +427,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
 
                   <div class="profile-user-info">
                     <div class="profile-name-row">
-                      <span class="user-name ${glowClass}" id="user-display-name-label">${displayName.toUpperCase()}</span>
+                      <span class="user-name ${nameStyleClass}" id="user-display-name-label">${displayName.toUpperCase()}</span>
                       <button id="rename-profile-btn" class="rename-icon-btn" title="Edit Display Name"><i class="fas fa-pen"></i></button>
                     </div>
                     <div id="user-rank-badge-container">
@@ -426,29 +445,31 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
                   <button id="cancel-rename-btn" class="rename-action-btn btn-cancel" title="Cancel"><i class="fas fa-times"></i></button>
                 </div>
 
-                <!-- VIP Cosmetic Picker (Lilitaw LANG kung ginawang VIP/Donor ng Admin) -->
-                ${isDonor ? `
-                  <div class="cosmetics-toolbar">
-                    <button id="toggle-cosmetics-btn" class="cosmetics-btn"><i class="fas fa-wand-magic-sparkles"></i> Customize Borders & Glow</button>
-                    <div id="cosmetics-panel" class="cosmetics-panel" style="display:none;">
-                      <label>Avatar Border:</label>
-                      <select id="user-border-select">
-                        ${AVATAR_BORDERS.map(b => {
-                          const unlocked = isCosmeticUnlocked(b.tier, userRole);
-                          return `<option value="${b.id}" ${userData.avatarBorder === b.id ? 'selected' : ''} ${!unlocked ? 'disabled' : ''}>${b.label} ${!unlocked ? '🔒' : ''}</option>`;
-                        }).join('')}
-                      </select>
-                      
-                      <label style="margin-top:6px;">Name Glow Style:</label>
-                      <select id="user-glow-select">
-                        ${NAME_GLOWS.map(g => {
-                          const unlocked = isCosmeticUnlocked(g.tier, userRole);
-                          return `<option value="${g.id}" ${userData.nameGlow === g.id ? 'selected' : ''} ${!unlocked ? 'disabled' : ''}>${g.label} ${!unlocked ? '🔒' : ''}</option>`;
-                        }).join('')}
-                      </select>
-                    </div>
+                <!-- Profile Customizer (libre para sa LAHAT ng users) -->
+                <div class="cosmetics-toolbar">
+                  <button id="toggle-cosmetics-btn" class="cosmetics-btn"><i class="fas fa-wand-magic-sparkles"></i> Customize Profile</button>
+                  <div id="cosmetics-panel" class="cosmetics-panel" style="display:none;">
+                    <label>Avatar Ring:</label>
+                    <select id="user-border-select">
+                      ${AVATAR_BORDERS.map(b => `<option value="${b.id}" ${userData.avatarBorder === b.id ? 'selected' : ''}>${b.label}</option>`).join('')}
+                    </select>
+
+                    <label>Name Effect:</label>
+                    <select id="user-glow-select">
+                      ${NAME_GLOWS.map(g => `<option value="${g.id}" ${userData.nameGlow === g.id ? 'selected' : ''}>${g.label}</option>`).join('')}
+                    </select>
+
+                    <label>Name Gradient:</label>
+                    <select id="user-gradient-select">
+                      ${NAME_GRADIENTS.map(g => `<option value="${g.id}" ${userData.nameGradient === g.id ? 'selected' : ''}>${g.label}</option>`).join('')}
+                    </select>
+
+                    <label>Menu Theme:</label>
+                    <select id="user-card-theme-select">
+                      ${CARD_THEMES.map(t => `<option value="${t.id}" ${userData.cardTheme === t.id ? 'selected' : ''}>${t.label}</option>`).join('')}
+                    </select>
                   </div>
-                ` : ''}
+                </div>
 
                 <div class="profile-stats-grid">
                   <div class="stat-box">
@@ -518,31 +539,49 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
           logoutUser();
         };
 
-        // Cosmetics toggle & save
+        // Profile customizer toggle & save (4 options)
         const toggleCosmeticsBtn = document.getElementById("toggle-cosmetics-btn");
         const cosmeticsPanel = document.getElementById("cosmetics-panel");
         const borderSelect = document.getElementById("user-border-select");
         const glowSelect = document.getElementById("user-glow-select");
+        const gradientSelect = document.getElementById("user-gradient-select");
+        const cardThemeSelect = document.getElementById("user-card-theme-select");
 
         if (toggleCosmeticsBtn) {
           toggleCosmeticsBtn.onclick = (e) => {
             e.stopPropagation();
-            cosmeticsPanel.style.display = cosmeticsPanel.style.display === "block" ? "none" : "block";
+            cosmeticsPanel.classList.toggle("open");
           };
         }
 
-        if (borderSelect && glowSelect) {
+        if (borderSelect && glowSelect && gradientSelect && cardThemeSelect) {
+          let saveTimer = null;
           const handleEffectSave = async () => {
             const newBorder = borderSelect.value;
             const newGlow = glowSelect.value;
-            await setDoc(doc(db, "users", auth.currentUser.uid), {
-              avatarBorder: newBorder,
-              nameGlow: newGlow
-            }, { merge: true });
-            showAuthToast("Customization saved!", "success");
+            const newGradient = gradientSelect.value;
+            const newCardTheme = cardThemeSelect.value;
+            try {
+              await setDoc(doc(db, "users", auth.currentUser.uid), {
+                avatarBorder: newBorder,
+                nameGlow: newGlow,
+                nameGradient: newGradient,
+                cardTheme: newCardTheme
+              }, { merge: true });
+              showAuthToast("Customization saved!", "success");
+            } catch (err) {
+              console.warn("Customization save failed:", err);
+              showAuthToast("Could not save customization. Check your connection.", "error");
+            }
           };
-          borderSelect.onchange = handleEffectSave;
-          glowSelect.onchange = handleEffectSave;
+          const debouncedSave = () => {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(handleEffectSave, 600);
+          };
+          borderSelect.onchange = debouncedSave;
+          glowSelect.onchange = debouncedSave;
+          gradientSelect.onchange = debouncedSave;
+          cardThemeSelect.onchange = debouncedSave;
         }
 
         // Rename Handlers
@@ -703,8 +742,13 @@ function updateUserUIEffects(data, isAdmin = false) {
   const dropName = document.getElementById("user-display-name-label");
   const rankContainer = document.getElementById("user-rank-badge-container");
 
-  const borderClass = (AVATAR_BORDERS.find(b => b.id === data.avatarBorder) || {}).class || "";
-  const glowClass = (NAME_GLOWS.find(g => g.id === data.nameGlow) || {}).class || "";
+  const borderClass = findCosmetic(AVATAR_BORDERS, data.avatarBorder);
+  const glowClass = findCosmetic(NAME_GLOWS, data.nameGlow);
+  const gradientClass = findCosmetic(NAME_GRADIENTS, data.nameGradient);
+  const cardThemeClass = findCosmetic(CARD_THEMES, data.cardTheme);
+  const nameStyleClass = gradientClass || glowClass;
+
+  const dropMenu = document.getElementById("user-dropdown-menu");
 
   AVATAR_BORDERS.forEach(b => {
     if (b.class) {
@@ -713,11 +757,16 @@ function updateUserUIEffects(data, isAdmin = false) {
     }
   });
 
-  NAME_GLOWS.forEach(g => {
+  const allNameStyles = [...NAME_GLOWS, ...NAME_GRADIENTS];
+  allNameStyles.forEach(g => {
     if (g.class) {
       if (navName) navName.classList.remove(g.class);
       if (dropName) dropName.classList.remove(g.class);
     }
+  });
+
+  CARD_THEMES.forEach(t => {
+    if (t.class && dropMenu) dropMenu.classList.remove(t.class);
   });
 
   if (borderClass) {
@@ -725,10 +774,12 @@ function updateUserUIEffects(data, isAdmin = false) {
     if (dropAvatar) dropAvatar.classList.add(borderClass);
   }
 
-  if (glowClass) {
-    if (navName) navName.classList.add(glowClass);
-    if (dropName) dropName.classList.add(glowClass);
+  if (nameStyleClass) {
+    if (navName) navName.classList.add(nameStyleClass);
+    if (dropName) dropName.classList.add(nameStyleClass);
   }
+
+  if (cardThemeClass && dropMenu) dropMenu.classList.add(cardThemeClass);
 
   const role = isAdmin ? "admin" : (data.role || "free");
   const activeTier = isAdmin 

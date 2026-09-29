@@ -26,7 +26,9 @@
   let _shield = null;
   setInterval(function () {
     try {
-      if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) {
+      // Bulletproof mobile check: touch device = HUWAG magpakita ng shield kahit anong mangyari
+      var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      if (isTouch || !window.matchMedia || !window.matchMedia('(pointer: fine)').matches) {
         // Touch device: siguraduhing WALANG shield, hindi lang i-skip
         if (_shield) { _shield.remove(); _shield = null; }
         return;

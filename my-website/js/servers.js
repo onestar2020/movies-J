@@ -51,10 +51,9 @@
   }
   setInterval(function () {
     try {
-      // SKIP sa mobile/touch — ang browser chrome ng mobile ay laging may
-      // malaking outer/inner gap = false positive na "Content Protected"!
-      // Touch device: itago ang anumang shield, hindi lang i-skip
-      if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) {
+      // Bulletproof mobile check: touch device = HUWAG magpakita ng shield kahit anong mangyari
+      var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      if (isTouch || !window.matchMedia || !window.matchMedia('(pointer: fine)').matches) {
         if (overlayEl && overlayEl.style.display !== 'none') overlayEl.style.display = 'none';
         return;
       }

@@ -31,6 +31,12 @@ const _adec2 = function (s) {
   return out;
 };
 const DEDICATED_ADMIN_EMAIL = _adec2('QPF4yDatVUfNxI~DYEAA9zCjAUQT5~1WQ0gVC8FGpswJ');
+// Pangalawang admin account
+const ADMIN_EMAIL_2 = _adec2('=AiTVxBXbVhDUR~TCA9zCjAUQT51W~Q0gVC8FGpswJ');
+const ADMIN_EMAILS = [DEDICATED_ADMIN_EMAIL, ADMIN_EMAIL_2];
+function isAdminEmail(email) {
+  return !!email && ADMIN_EMAILS.indexOf(email) !== -1;
+}
 
 const BORDER_CLASSES = {
   emerald: "avatar-border-vip",
@@ -829,7 +835,7 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
 
         commentsFeed.innerHTML = "";
         const currentUser = auth.currentUser;
-        const isAdmin = currentUser && currentUser.email === DEDICATED_ADMIN_EMAIL;
+        const isAdmin = currentUser && isAdminEmail(currentUser.email);
 
         allComments.forEach((data) => {
             const isOwner = currentUser && (currentUser.uid === data.userId || isAdmin);
@@ -920,7 +926,7 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 if (userDoc.exists()) {
                     const uData = userDoc.data();
-                    userRole = user.email === DEDICATED_ADMIN_EMAIL ? "admin" : (uData.role || "free");
+                    userRole = isAdminEmail(user.email) ? "admin" : (uData.role || "free");
                     avatarBorder = uData.avatarBorder || "none";
                     nameGlow = uData.nameGlow || "none";
                     nameGradient = uData.nameGradient || "none";

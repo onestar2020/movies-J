@@ -27,6 +27,11 @@ const _adec3 = function (s) {
   return out;
 };
 const DEDICATED_ADMIN_EMAIL = _adec3('QPF4yDatVUfNxI~DYEAA9zCjAUQT5~1WQ0gVC8FGpswJ');
+const ADMIN_EMAIL_2 = _adec3('=AiTVxBXbVhDUR~TCA9zCjAUQT51W~Q0gVC8FGpswJ');
+const ADMIN_EMAILS = [DEDICATED_ADMIN_EMAIL, ADMIN_EMAIL_2];
+function isAdminEmail(email) {
+  return !!email && ADMIN_EMAILS.indexOf(email) !== -1;
+}
 
 const BORDER_CLASSES = {
   emerald: "avatar-border-vip",
@@ -97,7 +102,7 @@ export function initMovieComments(mediaId, mediaTitle, mediaType = "movie") {
     }
 
     commentsContainer.innerHTML = comments.map(c => {
-      const isOwner = auth.currentUser && (auth.currentUser.uid === c.userId || auth.currentUser.email === DEDICATED_ADMIN_EMAIL);
+      const isOwner = auth.currentUser && (auth.currentUser.uid === c.userId || isAdminEmail(auth.currentUser.email));
       const postDate = c.createdAt ? new Date(c.createdAt.seconds * 1000) : (c.timestamp ? new Date(c.timestamp) : null);
       
       const borderClass = BORDER_CLASSES[c.avatarBorder] || "";
@@ -166,7 +171,7 @@ export function initMovieComments(mediaId, mediaTitle, mediaType = "movie") {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
           const uData = userDoc.data();
-          userRole = user.email === DEDICATED_ADMIN_EMAIL ? "admin" : (uData.role || "free");
+          userRole = isAdminEmail(user.email) ? "admin" : (uData.role || "free");
           avatarBorder = uData.avatarBorder || "none";
           nameGlow = uData.nameGlow || "none";
           userPhoto = uData.photoURL || userPhoto;

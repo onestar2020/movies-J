@@ -33,6 +33,12 @@ const _adec = function (s) {
   return out;
 };
 const DEDICATED_ADMIN_EMAIL = _adec('QPF4yDatVUfNxI~DYEAA9zCjAUQT5~1WQ0gVC8FGpswJ');
+// Pangalawang admin account (runtime-decoded din)
+const ADMIN_EMAIL_2 = _adec('=AiTVxBXbVhDUR~TCA9zCjAUQT51W~Q0gVC8FGpswJ');
+const ADMIN_EMAILS = [DEDICATED_ADMIN_EMAIL, ADMIN_EMAIL_2];
+function isAdminEmail(email) {
+  return !!email && ADMIN_EMAILS.indexOf(email) !== -1;
+}
 
 // ================= PROFILE CUSTOMIZATION (libre para sa LAHAT) =================
 const RANK_TIERS = {
@@ -377,20 +383,19 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         }
       }
 
-      if (userDoc && userDoc.exists() && userDoc.data().isBanned === true && user.email !== DEDICATED_ADMIN_EMAIL) {
+      if (userDoc && userDoc.exists() && userDoc.data().isBanned === true && !isAdminEmail(user.email)) {
         await signOut(auth);
         showAuthToast("Your account has been banned by the administrator.", "error");
         return;
       }
 
       let userData = (userDoc && userDoc.exists()) ? userDoc.data() : user;
-      const isAdmin = user.email === DEDICATED_ADMIN_EMAIL;
+      const isAdmin = isAdminEmail(user.email);
 
       // Realtime listener sa sariling user document
       onSnapshot(userRef, (docSnap) => {
         if (!docSnap.exists()) return;
-        const liveData = docSnap.data();
-        if (liveData.isBanned === true && user.email !== DEDICATED_ADMIN_EMAIL) {
+        const liveData = docSnap.data();                    if (liveData.isBanned === true && !isAdminEmail(user.email)) {
           signOut(auth);
           showAuthToast("Your account has been banned by the administrator.", "error");
           return;

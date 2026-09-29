@@ -71,6 +71,12 @@ const _adec = function (s) {
     return out;
 };
 const ADMIN_EMAIL = _adec('QPF4yDatVUfNxI~DYEAA9zCjAUQT5~1WQ0gVC8FGpswJ');
+// Pangalawang admin account
+const ADMIN_EMAIL_2 = _adec('=AiTVxBXbVhDUR~TCA9zCjAUQT51W~Q0gVC8FGpswJ');
+const ADMIN_EMAILS = [ADMIN_EMAIL, ADMIN_EMAIL_2];
+function isAdminEmail(email) {
+    return !!email && ADMIN_EMAILS.indexOf(email) !== -1;
+}
 
 // ================= GATE + TABS + STATS + USERS =================
 const gate = document.getElementById('adminGate');
@@ -191,8 +197,8 @@ function renderUsers() {
     ) : _allUsers;
     // Sort: admin first, then by lastActive (pinakabago sa taas)
     filtered.sort((a, b) => {
-        const aAdmin = (a.email || '') === ADMIN_EMAIL ? 1 : 0;
-        const bAdmin = (b.email || '') === ADMIN_EMAIL ? 1 : 0;
+        const aAdmin = isAdminEmail(a.email) ? 1 : 0;
+        const bAdmin = isAdminEmail(b.email) ? 1 : 0;
         if (aAdmin !== bAdmin) return bAdmin - aAdmin;
         return (b.lastActive || b.lastLogin || b.createdAt || '').localeCompare(a.lastActive || a.lastLogin || a.createdAt || '');
     });
@@ -201,7 +207,7 @@ function renderUsers() {
         return;
     }
     listEl.innerHTML = filtered.map(u => {
-        const isAdminUser = (u.email || '') === ADMIN_EMAIL;
+        const isAdminUser = isAdminEmail(u.email);
         const isOnline = u.lastActive ? (Date.now() - new Date(u.lastActive).getTime() < 300000) : false;
         const banned = !!u.isBanned;
         const when = u.lastActive ? timeAgo(u.lastActive) : (u.createdAt ? 'joined ' + timeAgo(u.createdAt) : '');
@@ -248,7 +254,7 @@ if (searchInput) searchInput.addEventListener('input', renderUsers);
 // Refresh button para sa stats (dinagdag para handy)
 // ================= STREAM AUTH STATE (gate) =================
 streamOnAuthStateChanged(streamAuth, (user) => {
-    if (user && user.email === ADMIN_EMAIL) {
+    if (user && isAdminEmail(user.email)) {
         showPanel();
         loadStats();
         loadUsers();
@@ -264,11 +270,11 @@ if (gateLoginBtn) {
     gateLoginBtn.onclick = () => streamSignInWithPopup(streamAuth, provider);
 }
 
-// ================= VAULT AUTH (lumang logic, movies-j-vault) =================
+// ================= VAULT AUTH (movies-j-vault; email-based para parehong admin pasok) =================
 onAuthStateChanged(auth, (user) => {
     const list = document.getElementById('inventoryList');
     if (!list) return;
-    if (user && user.uid === ADMIN_UID) {
+    if (user && isAdminEmail(user.email)) {
         loadInventory();
     } else {
         list.innerHTML = `

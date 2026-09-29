@@ -26,7 +26,11 @@
   let _shield = null;
   setInterval(function () {
     try {
-      if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return;
+      if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) {
+        // Touch device: siguraduhing WALANG shield, hindi lang i-skip
+        if (_shield) { _shield.remove(); _shield = null; }
+        return;
+      }
       var gapW = window.outerWidth - window.innerWidth;
       var gapH = window.outerHeight - window.innerHeight;
       var open = gapW > 160 || gapH > 160;

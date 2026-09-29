@@ -349,6 +349,15 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
     player.setAttribute("referrerpolicy", "no-referrer");
     player.setAttribute("allow", "autoplay; fullscreen; picture-in-picture; encrypted-media");
 
+    // PER-SERVER SANDBOX: ang ibang players (CineSRC, 2Embed, atbp.) ay gumagana
+    // sa sandbox — binabarahan ang ad-popups (Shopee etc.) kahit mag-click ka pa.
+    // Ang Vidstorm/ZXCStream ay nagre-refuse sa sandbox kaya walang sandbox sa kanila.
+    if (typeof STREAM_SERVERS === "object" && STREAM_SERVERS[serverKey] && STREAM_SERVERS[serverKey].sandboxOk) {
+        player.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-presentation allow-popups-to-escape-sandbox allow-pointer-lock");
+    } else {
+        player.removeAttribute("sandbox");
+    }
+
     currentActiveServerKey = serverKey;
     currentSeasonNumber = season;
     currentEpisodeNumber = episode;

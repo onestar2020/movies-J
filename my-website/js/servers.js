@@ -113,6 +113,7 @@ var STREAM_SERVERS = {
     name: 'Server 2',
     type: 'iframe',
     enabled: true,
+    sandboxOk: true,
     movie: function (tmdbId) { return _H.cM + tmdbId; },
     tv: function (tmdbId, s, e) { s = s || 1; e = e || 1; return _H.cT + tmdbId + '?s=' + s + '&e=' + e; }
   },
@@ -121,6 +122,7 @@ var STREAM_SERVERS = {
     name: 'Server 3',
     type: 'iframe',
     enabled: true,
+    sandboxOk: true,
     movie: function (tmdbId) { return _H.eM + tmdbId; },
     tv: function (tmdbId, s, e) { s = s || 1; e = e || 1; return _H.eT + tmdbId + '&s=' + s + '&e=' + e; }
   },
@@ -137,6 +139,7 @@ var STREAM_SERVERS = {
     name: 'Server (Nova)',
     type: 'iframe',
     enabled: false,
+    sandboxOk: true,
     movie: function (tmdbId) { return _H.nM + tmdbId; },
     tv: function (tmdbId, s, e) { s = s || 1; e = e || 1; return _H.nT + tmdbId + '/' + s + '/' + e; }
   },

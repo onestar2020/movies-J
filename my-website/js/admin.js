@@ -213,7 +213,7 @@ function renderUsers() {
         const when = u.lastActive ? timeAgo(u.lastActive) : (u.createdAt ? 'joined ' + timeAgo(u.createdAt) : '');
         return `
         <div class="user-item">
-            <img src="${u.photoURL || 'images/logo-192.png'}" alt="" referrerpolicy="no-referrer" onerror="this.src='images/logo-192.png'">
+            <img src="${u.photoURL || 'images/logo-192.png'}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='images/logo-192.png'">
             <div class="user-info">
                 <h4>${(u.displayName || 'User') + (isAdminUser ? ' 👑' : '')}</h4>
                 <p>${u.email || u.uid}</p>

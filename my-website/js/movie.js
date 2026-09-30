@@ -864,7 +864,7 @@ function initCommentsSection(mediaId, mediaType, mediaTitle) {
             `;
 
             card.innerHTML = `
-                <img src="${data.userPhoto || 'images/logo-192.png'}" class="${borderClass}" alt="Avatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: #111;" />
+                <img src="${data.userPhoto || 'images/logo-192.png'}" class="${borderClass}" alt="Avatar" loading="lazy" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: #111;" />
                 <div style="flex: 1;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
                         <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">

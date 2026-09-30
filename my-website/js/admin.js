@@ -179,12 +179,43 @@ async function loadUsers() {
         const snap = await streamGetDocs(streamCollection(streamDb, 'users'));
         _allUsers = [];
         snap.forEach(d => _allUsers.push(d.data()));
+        await loadPresence(); // real-time online status mula sa RTDB
         renderUsers();
         if (countEl) countEl.textContent = _allUsers.length;
     } catch (err) {
         console.error('Users load error:', err);
         listEl.innerHTML = '<p style="color:#ff6b6b;">Failed to load users: ' + (err.code || err.message) + '</p>';
     }
+}
+
+// ================= REAL-TIME PRESENCE (RTDB) =================
+// presence/{uid} = timestamp ng huling heartbeat (kada 60s mula sa auth.js)
+const PRESENCE_ONLINE_MS = 150000; // 2.5 min: tatlong missed beats = offline
+let _presenceMap = {};
+let _presenceTimer = null;
+
+async function loadPresence() {
+    try {
+        const res = await fetch(RTDB + '/presence.json');
+        _presenceMap = await res.json() || {};
+    } catch (e) { _presenceMap = {}; }
+}
+
+function isUserOnline(uid) {
+    const ts = _presenceMap[uid];
+    if (!ts) return false;
+    return (Date.now() - Number(ts)) < PRESENCE_ONLINE_MS;
+}
+
+// Auto-refresh ng presence + dots kada 30s habang naka-bukas ang Users tab
+function startPresenceAutoRefresh() {
+    if (_presenceTimer) return;
+    _presenceTimer = setInterval(async () => {
+        if (document.hidden) return;
+        if (!document.getElementById('usersList')) return; // hindi sa Users tab
+        await loadPresence();
+        renderUsers();
+    }, 30000);
 }
 
 function renderUsers() {
@@ -208,12 +239,16 @@ function renderUsers() {
     }
     listEl.innerHTML = filtered.map(u => {
         const isAdminUser = isAdminEmail(u.email);
-        const isOnline = u.lastActive ? (Date.now() - new Date(u.lastActive).getTime() < 300000) : false;
+        const isOnline = isUserOnline(u.uid); // RTDB heartbeat-based, real-time
         const banned = !!u.isBanned;
         const when = u.lastActive ? timeAgo(u.lastActive) : (u.createdAt ? 'joined ' + timeAgo(u.createdAt) : '');
+        const dot = banned ? '<span class="presence-dot presence-offline" title="Banned"></span>' : (isOnline ? '<span class="presence-dot presence-online" title="Online ngayon"></span>' : '<span class="presence-dot presence-offline" title="Offline"></span>');
         return `
         <div class="user-item">
-            <img src="${u.photoURL || 'images/logo-192.png'}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='images/logo-192.png'">
+            <div class="avatar-wrap"> 
+                <img src="${u.photoURL || 'images/logo-192.png'}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='images/logo-192.png'">
+                ${dot}
+            </div>
             <div class="user-info">
                 <h4>${(u.displayName || 'User') + (isAdminUser ? ' 👑' : '')}</h4>
                 <p>${u.email || u.uid}</p>
@@ -258,6 +293,7 @@ streamOnAuthStateChanged(streamAuth, (user) => {
         showPanel();
         loadStats();
         loadUsers();
+        startPresenceAutoRefresh(); // real-time dots kada 30s
     } else if (user) {
         showGate('ACCESS DENIED: Hindi ito ang admin account (' + user.email + ').');
     } else {

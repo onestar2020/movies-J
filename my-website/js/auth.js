@@ -291,6 +291,7 @@ export async function forgotPassword(email) {
 // 5. User Logout
 export async function logoutUser() {
   try {
+    stopPresenceHeartbeat(); // offline agad sa admin dashboard
     await signOut(auth);
     showAuthToast("Logged out successfully.", "success");
   } catch (error) {
@@ -325,8 +326,51 @@ async function syncUserToFirestore(user) {
         lastActive: new Date().toISOString()
       }, { merge: true });
     }
+    startPresenceHeartbeat(user.uid); // real-time presence sa admin dashboard
   } catch (err) {
     console.warn("Firestore sync warning:", err);
+  }
+}
+
+/* ------------------------------------------------------------------
+   REAL-TIME PRESENCE HEARTBEAT (RTDB)
+   Nagpapadala ng "buhay pa ako" signal kada 60s habang naka-login
+   ang user. Binabasa ito ng admin dashboard para sa green (online) /
+   red (offline) dot. Auto-stop sa logout; auto-pause kapag hidden ang
+   tab (visibilitychange) para tipid sa reads.
+   ------------------------------------------------------------------ */
+let _presenceTimer = null;
+let _presenceUid = null;
+const PRESENCE_RTDB = 'https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+function startPresenceHeartbeat(uid) {
+  stopPresenceHeartbeat();
+  _presenceUid = uid;
+  const beat = function () {
+    if (!_presenceUid || document.hidden) return; // tipid kapag hidden ang tab
+    try {
+      fetch(PRESENCE_RTDB + '/presence/' + _presenceUid + '.json', {
+        method: 'PUT',
+        body: JSON.stringify(Date.now())
+      }).catch(function () {});
+    } catch (e) { /* ignore */ }
+  };
+  beat(); // agad na unang beat
+  _presenceTimer = setInterval(beat, 60000);
+  document.addEventListener('visibilitychange', beat);
+}
+
+function stopPresenceHeartbeat() {
+  if (_presenceTimer) { clearInterval(_presenceTimer); _presenceTimer = null; }
+  if (_presenceUid) {
+    const uid = _presenceUid;
+    _presenceUid = null;
+    try {
+      fetch(PRESENCE_RTDB + '/presence/' + uid + '.json', {
+        method: 'PUT',
+        body: 'null' // clear sa RTDB = offline agad
+      }).catch(function () {});
+  } catch (e) { /* ignore */ }
   }
 }
 
@@ -677,6 +721,7 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
 
       if (onUserLoggedIn) onUserLoggedIn(userData);
     } else {
+      stopPresenceHeartbeat(); // guest na / logout — offline sa dashboard
       if (authContainer) {
         authContainer.innerHTML = `
           <button id="nav-login-btn" style="background:linear-gradient(135deg,#e50914,#b0060f); color:#fff; border:none; padding:9px 20px; border-radius:24px; font-size:13px; font-weight:700; cursor:pointer; margin-left:10px; white-space:nowrap; display:inline-flex; align-items:center; gap:7px; box-shadow:0 4px 14px rgba(229,9,20,.35); transition:transform .18s ease, box-shadow .18s ease;">

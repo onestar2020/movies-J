@@ -391,6 +391,39 @@ function updatePlayer(serverKey, item, season = 1, episode = 1) {
 }
 
 
+/* ------------------------------------------------------------------
+   Ad popup focus recovery (best-effort)
+   Kapag nag-click/nag-move ang user sa page, may mga embed server na
+   naghahakot ng focus papunta sa ad tab. Hindi kayang i-close ng page
+   ang tab na hindi niya binuksan (browser security), PERO maibabalik
+   natin ang focus sa player para hindi matangay ang user - mananatili
+   na lang sa background ang ad tab.
+   Limitado sa 8-segundo window pagkatapos ng activity para hindi
+   makialam sa sadyang pag-switch ng user sa ibang tab/window.
+   ------------------------------------------------------------------ */
+(function () {
+    var armedUntil = 0;
+    var lastArm = 0;
+    function arm() { armedUntil = Date.now() + 8000; }
+    ['click', 'keydown', 'touchstart'].forEach(function (evt) {
+        document.addEventListener(evt, arm, true);
+    });
+    // Throttled mousemove arming (500ms) - sakop ang paghanda ng user sa pag-click sa player
+    document.addEventListener('mousemove', function () {
+        var now = Date.now();
+        if (now - lastArm > 500) { lastArm = now; arm(); }
+    }, true);
+    setInterval(function () {
+        try {
+            if (Date.now() > armedUntil) return;   // wala sa watch window
+            if (document.hasFocus()) return;       // nasa atin pa ang focus
+            armedUntil = 0;                        // one-shot per click lang
+            setTimeout(function () { if (!document.hasFocus()) window.focus(); }, 250);
+            setTimeout(function () { if (!document.hasFocus()) window.focus(); }, 900);
+        } catch (e) { /* ignore */ }
+    }, 400);
+})();
+
 /* ==============================================================================
    SECTION 5: TV SHOWS, SEASONS & EPISODES
    ============================================================================== */

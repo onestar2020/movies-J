@@ -280,6 +280,8 @@
   function buildBraveToast() {
     if (document.getElementById('braveFloatingToast')) return; // page already has one
     if (sessionStorage.getItem('movies_j_brave_toast_dismissed') === 'true') return;
+    // Skip kapag nasa Brave na ang user - hindi na kailangan ng promo
+    try { if (navigator.brave && typeof navigator.brave.isBrave === 'function') return; } catch (e) {}
     const toast = document.createElement('div');
     toast.id = 'braveFloatingToast';
     toast.className = 'brave-floating-toast';

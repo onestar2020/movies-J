@@ -192,13 +192,16 @@ async function loadUsers() {
 // presence/{uid} = timestamp ng huling heartbeat (kada 60s mula sa auth.js)
 const PRESENCE_ONLINE_MS = 150000; // 2.5 min: tatlong missed beats = offline
 let _presenceMap = {};
+let _guestPresence = {};
 let _presenceTimer = null;
 
 async function loadPresence() {
     try {
         const res = await fetch(RTDB + '/presence.json');
-        _presenceMap = await res.json() || {};
-    } catch (e) { _presenceMap = {}; }
+        const data = await res.json() || {};
+        _presenceMap = data || {};
+        _guestPresence = data.guests || {};
+    } catch (e) { _presenceMap = {}; _guestPresence = {}; }
 }
 
 function isUserOnline(uid) {
@@ -215,7 +218,63 @@ function startPresenceAutoRefresh() {
         if (!document.getElementById('usersList')) return; // hindi sa Users tab
         await loadPresence();
         renderUsers();
+        renderGuests();
     }, 30000);
+}
+
+// ================= GUEST VISITORS (hindi naka-login) =================
+function isGuestOnline(vid) {
+    const ts = _guestPresence[vid];
+    if (!ts) return false;
+    return (Date.now() - Number(ts)) < PRESENCE_ONLINE_MS;
+}
+
+function guestName(vid) {
+    // "Guest 1A2B" — huling 4 na karakter ng random visitor ID (walang PII)
+    const suffix = String(vid).replace(/[^a-zA-Z0-9]/g, '').slice(-4).toUpperCase() || '????';
+    return 'Guest ' + suffix;
+}
+
+function guestColor(vid) {
+    // Deterministic hue mula sa ID — consistent na avatar color per guest
+    let h = 0;
+    const s = String(vid);
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+    return 'hsl(' + h + ', 55%, 45%)';
+}
+
+function renderGuests() {
+    const listEl = document.getElementById('guestsList');
+    const countEl = document.getElementById('guestOnlineCount');
+    if (countEl) {
+        let online = 0;
+        Object.keys(_guestPresence).forEach(v => { if (isGuestOnline(v)) online++; });
+        countEl.textContent = online;
+    }
+    if (!listEl) return;
+    const vids = Object.keys(_guestPresence)
+        .filter(v => isGuestOnline(v))
+        .sort();
+    if (vids.length === 0) {
+        listEl.innerHTML = '<p style="text-align:center;color:#888;font-size:0.9rem;">Walang online na guests ngayon.</p>';
+        return;
+    }
+    listEl.innerHTML = vids.map(v => `
+        <div class="user-item">
+            <div class="avatar-wrap">
+                <div class="guest-avatar" style="background:${guestColor(v)}">${guestName(v).slice(-2)}</div>
+                <span class="presence-dot presence-online" title="Online ngayon"></span>
+            </div>
+            <div class="user-info">
+                <h4>${guestName(v)}</h4>
+                <p>Naka-login na bisita • walang account</p>
+            </div>
+            <div class="user-meta">
+                <span class="badge badge-free">Guest</span>
+                <span class="badge badge-online">Online</span>
+            </div>
+        </div>
+    `).join('');
 }
 
 function renderUsers() {
@@ -293,6 +352,7 @@ streamOnAuthStateChanged(streamAuth, (user) => {
         showPanel();
         loadStats();
         loadUsers();
+        loadPresence().then(renderGuests); // guests section
         startPresenceAutoRefresh(); // real-time dots kada 30s
     } else if (user) {
         showGate('ACCESS DENIED: Hindi ito ang admin account (' + user.email + ').');

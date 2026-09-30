@@ -66,6 +66,7 @@
         .user-item { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
         .user-item img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #222; flex-shrink: 0; }
         .avatar-wrap { position: relative; flex-shrink: 0; }
+        .guest-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.5px; }
         .presence-dot { position: absolute; bottom: -1px; right: -1px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #1a1a1a; }
         .presence-online { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,.8); animation: presencePulse 2s ease-in-out infinite; }
         .presence-offline { background: #ef4444; }
@@ -119,6 +120,11 @@
                 <h2>👥 Registered Users (<span id="userCount">0</span>)</h2>
                 <input type="text" id="userSearch" placeholder="Search name o email..." style="width:100%; padding:12px; border-radius:8px; border:1px solid #333; background:#1a1a1a; color:white; font-size:0.95rem; box-sizing:border-box; outline:none; margin-bottom:15px;">
                 <div id="usersList"><p style="text-align:center;color:#888;">Loading users...</p></div>
+            </div>
+            <div class="admin-card">
+                <h2>🕵️ Online Guests (<span id="guestOnlineCount">0</span>)</h2>
+                <p style="color:#888; font-size:0.85rem; margin:0 0 15px 0;">Mga bisitang naka-browse nang walang account — auto-refresh kada 30s.</p>
+                <div id="guestsList"><p style="text-align:center;color:#888;">Loading guests...</p></div>
             </div>
         </div>
 
@@ -191,6 +197,6 @@
         </div><!-- /section-vault -->
     </div>
 
-    <script type="module" src="js/admin.js?v=4"></script>
+    <script type="module" src="js/admin.js?v=5"></script>
 </body>
 </html>

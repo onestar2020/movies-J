@@ -90,6 +90,34 @@
     } catch (e) { /* tracking failure = hindi kritikal */ }
   })();
 
+  /* ---------- Guest Presence Heartbeat (para sa Admin Dashboard) ---------- */
+  // Kahit hindi naka-login, may "Guest XXXX" entry na may green/red dot sa dashboard.
+  // Gumagamit ng mj_vid (localStorage) — walang PII, random ID lang.
+  (function trackGuestPresence() {
+    try {
+      var RTDB = 'https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app';
+      var vid = null;
+      try { vid = localStorage.getItem('mj_vid'); } catch (e) {}
+      if (!vid) return; // strict browsers na block localStorage — skip
+      var key = 'presence/guests/' + vid.replace(/[^a-zA-Z0-9_-]/g, '');
+
+      var beat = function () {
+        if (document.hidden) return; // tipid kapag naka-background ang tab
+        try {
+          fetch(RTDB + '/' + key + '.json', {
+            method: 'PUT',
+            body: JSON.stringify(Date.now())
+          }).catch(function () {});
+        } catch (e) {}
+      };
+      beat();
+      setInterval(beat, 60000);
+      window.addEventListener('beforeunload', function () {
+        try { fetch(RTDB + '/' + key + '.json', { method: 'PUT', body: 'null', keepalive: true }); } catch (e) {}
+      });
+    } catch (e) { /* ignore */ }
+  })();
+
   const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
   /* ---------- Scroll progress bar + back-to-top ---------- */

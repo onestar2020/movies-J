@@ -51,7 +51,8 @@ function loadDefaultHomepageRows() {
     fetchTrending('movie').then(items => displayList(items, 'movies-list', true)),
     fetchTrending('tv').then(items => displayList(items, 'tvshows-list', true)),
     fetchTrendingAnime().then(items => displayList(items, 'anime-list', false)),
-    fetchDiscover('with_origin_country=PH&sort_by=popularity.desc', 'movie').then(items => displayList(items, 'pinoy-list', false))
+    fetchDiscover('with_origin_country=PH&sort_by=popularity.desc', 'movie').then(items => displayList(items, 'pinoy-list', false)),
+    fetchDiscover('with_origin_country=PH&without_genres=16&sort_by=popularity.desc', 'tv').then(items => displayList(items, 'pinoytv-list', false))
   ]).then(() => {
     setupHomepageCarousels();
   }).catch(error => console.error('Error loading trending lists:', error));
@@ -288,12 +289,16 @@ async function applyHomepageFilter(filter) {
     if (animeRow) animeRow.style.display = 'block';
     const pinoyRowAll = document.getElementById('pinoy-row');
     if (pinoyRowAll) pinoyRowAll.style.display = 'block';
+    const pinoyTvRowAll = document.getElementById('pinoytv-row');
+    if (pinoyTvRowAll) pinoyTvRowAll.style.display = 'block';
     loadDefaultHomepageRows();
     return;
   }
 
   const pinoyRow = document.getElementById('pinoy-row');
   if (pinoyRow) pinoyRow.style.display = 'none';
+  const pinoyTvRow = document.getElementById('pinoytv-row');
+  if (pinoyTvRow) pinoyTvRow.style.display = 'none';
   if (tvRow) tvRow.style.display = 'none';
   if (animeRow) animeRow.style.display = 'none';
   if (moviesRow) {

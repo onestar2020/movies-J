@@ -326,7 +326,6 @@ async function syncUserToFirestore(user) {
         lastActive: new Date().toISOString()
       }, { merge: true });
     }
-    startPresenceHeartbeat(user.uid); // real-time presence sa admin dashboard
   } catch (err) {
     console.warn("Firestore sync warning:", err);
   }
@@ -343,21 +342,27 @@ let _presenceTimer = null;
 let _presenceUid = null;
 const PRESENCE_RTDB = 'https://movies-j-stream-default-rtdb.asia-southeast1.firebasedatabase.app';
 
+function _presenceBeat() {
+  if (!_presenceUid || document.hidden) return; // tipid kapag hidden ang tab
+  try {
+    fetch(PRESENCE_RTDB + '/presence/' + _presenceUid + '.json', {
+      method: 'PUT',
+      body: JSON.stringify(Date.now())
+    }).catch(function () {});
+  } catch (e) { /* ignore */ }
+}
+let _visibilityWired = false;
+
 function startPresenceHeartbeat(uid) {
+  if (_presenceUid === uid && _presenceTimer) return; // same user, tumatakbo na — iwas race condition
   stopPresenceHeartbeat();
   _presenceUid = uid;
-  const beat = function () {
-    if (!_presenceUid || document.hidden) return; // tipid kapag hidden ang tab
-    try {
-      fetch(PRESENCE_RTDB + '/presence/' + _presenceUid + '.json', {
-        method: 'PUT',
-        body: JSON.stringify(Date.now())
-      }).catch(function () {});
-    } catch (e) { /* ignore */ }
-  };
-  beat(); // agad na unang beat
-  _presenceTimer = setInterval(beat, 60000);
-  document.addEventListener('visibilitychange', beat);
+  _presenceBeat(); // agad na unang beat
+  _presenceTimer = setInterval(_presenceBeat, 60000);
+  if (!_visibilityWired) { // isang listener lang sa buong app lifetime
+    _visibilityWired = true;
+    document.addEventListener('visibilitychange', _presenceBeat);
+  }
 }
 
 function stopPresenceHeartbeat() {
@@ -432,6 +437,9 @@ export function initAuthObserver(onUserLoggedIn, onGuestMode) {
         showAuthToast("Your account has been banned by the administrator.", "error");
         return;
       }
+
+      // Real-time presence: SA LAHAT ng login paths (fresh login + session restore)
+      startPresenceHeartbeat(user.uid);
 
       let userData = (userDoc && userDoc.exists()) ? userDoc.data() : user;
       const isAdmin = isAdminEmail(user.email);

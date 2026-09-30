@@ -50,7 +50,8 @@ function loadDefaultHomepageRows() {
   Promise.all([
     fetchTrending('movie').then(items => displayList(items, 'movies-list', true)),
     fetchTrending('tv').then(items => displayList(items, 'tvshows-list', true)),
-    fetchTrendingAnime().then(items => displayList(items, 'anime-list', false))
+    fetchTrendingAnime().then(items => displayList(items, 'anime-list', false)),
+    fetchDiscover('with_origin_country=PH&sort_by=popularity.desc', 'movie').then(items => displayList(items, 'pinoy-list', false))
   ]).then(() => {
     setupHomepageCarousels();
   }).catch(error => console.error('Error loading trending lists:', error));
@@ -285,10 +286,14 @@ async function applyHomepageFilter(filter) {
     }
     if (tvRow) tvRow.style.display = 'block';
     if (animeRow) animeRow.style.display = 'block';
+    const pinoyRowAll = document.getElementById('pinoy-row');
+    if (pinoyRowAll) pinoyRowAll.style.display = 'block';
     loadDefaultHomepageRows();
     return;
   }
 
+  const pinoyRow = document.getElementById('pinoy-row');
+  if (pinoyRow) pinoyRow.style.display = 'none';
   if (tvRow) tvRow.style.display = 'none';
   if (animeRow) animeRow.style.display = 'none';
   if (moviesRow) {
@@ -306,6 +311,10 @@ async function applyHomepageFilter(filter) {
     } else if (filter === 'kdrama') {
       if (titleElem) titleElem.innerHTML = 'Korean <b>Dramas</b>';
       const items = await fetchDiscover('with_original_language=ko&sort_by=popularity.desc', 'tv');
+      displayList(items, 'movies-list', false);
+    } else if (filter === 'pinoy') {
+      if (titleElem) titleElem.innerHTML = '🇵🇭 Pinoy <b>Movies</b>';
+      const items = await fetchDiscover('with_origin_country=PH&sort_by=popularity.desc', 'movie');
       displayList(items, 'movies-list', false);
     } else if (filter === 'top_rated') {
       if (titleElem) titleElem.innerHTML = 'Top Rated <b>All Time</b>';

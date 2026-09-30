@@ -101,6 +101,9 @@
         <button class="filter-chip" data-filter="kdrama">
           <i class="fas fa-heart"></i> K-Drama
         </button>
+        <button class="filter-chip" data-filter="pinoy">
+          <i class="fas fa-flag"></i> Pinoy
+        </button>
         <button class="filter-chip" data-filter="top_rated">
           <i class="fas fa-star"></i> Top Rated
         </button>
@@ -123,6 +126,14 @@
       <h2>Trending <b>Movies</b></h2>
       <div class="list-container">
         <div class="list" id="movies-list"></div>
+      </div>
+    </div>
+
+    <!-- Pinoy Movies -->
+    <div class="row" id="pinoy-row">
+      <h2>🇵🇭 Pinoy <b>Movies</b></h2>
+      <div class="list-container">
+        <div class="list" id="pinoy-list"></div>
       </div>
     </div>
 
@@ -231,7 +242,7 @@
   <script src="js/firebase-config.js" type="module"></script>
   <script src="js/auth.js?v=9" type="module"></script>
   <script src="js/app.js?v=10"></script>
-  <script src="js/home.js?v=4"></script>
+  <script src="js/home.js?v=5"></script>
   <script src="js/modern-nav.js?v=2"></script>
   <script src="js/watchHistory.js?v=2"></script>
   <script src="js/changelog.js" type="module"></script>

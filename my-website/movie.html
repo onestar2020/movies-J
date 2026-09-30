@@ -51,15 +51,7 @@
     </div>
   </header>
 
-  <!-- Floating Brave Ad-Block Toast -->
-  <div id="braveFloatingToast" class="brave-floating-toast">
-    <i class="fas fa-shield-halved brave-toast-icon"></i>
-    <div class="brave-toast-text">
-      <span>Tired of server pop-up ads? Use <strong>Brave Browser</strong> for ad-free streaming!</span><br>
-      <a href="https://brave.com/" target="_blank" rel="noopener noreferrer" class="brave-toast-link">Get Brave Browser &rarr;</a>
-    </div>
-    <button class="brave-toast-close" onclick="dismissBraveToast()" title="Close">&times;</button>
-  </div>
+  <!-- Floating Brave Ad-Block Toast: hawak na ng js/app.js (may Brave detection) -->
 
   <!-- Main Layout -->
   <div class="container">
@@ -181,20 +173,8 @@
     </div>
   </footer>
 
-  <!-- Inline helpers (toast + cast drag-scroll) -->
+  <!-- Inline helpers (cast drag-scroll) -->
   <script>
-    function dismissBraveToast() {
-      const toast = document.getElementById('braveFloatingToast');
-      if (toast) {
-        toast.style.display = 'none';
-        sessionStorage.setItem('movies_j_brave_toast_dismissed', 'true');
-      }
-    }
-    if (sessionStorage.getItem('movies_j_brave_toast_dismissed') === 'true') {
-      const t = document.getElementById('braveFloatingToast');
-      if (t) t.style.display = 'none';
-    }
-
     // Horizontal mouse wheel & drag-to-scroll for cast
     const castSlider = document.getElementById('cast-container');
     if (castSlider) {

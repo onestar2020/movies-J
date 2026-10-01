@@ -36,7 +36,7 @@ const SHELL_ASSETS = [
   'js/servers.js?v=8',
   'js/movie.js?v=8',
   'js/auth.js?v=11',
-  'js/browse.js?v=2'
+  'js/browse.js?v=3'
 ];
 
 // Install: precache the shell ( atomic-ish: hindi kailangan lahat OK para mag-install)

@@ -34,19 +34,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loadMoreBtn) {
         loadMoreBtn.onclick = () => {
             if (currentType === 'anime') fetchAnime();
+            else if (currentType === 'pinoytv') fetchPinoyTV();
             else fetchBrowseContent();
         };
     }
 
     if (currentType === 'anime') {
         fetchAnime();
+    } else if (currentType === 'pinoytv') {
+        fetchPinoyTV();
     } else {
         fetchBrowseContent();
     }
 
     const genreFilter = document.getElementById("genre-filter");
     if (genreFilter) {
-        if (currentType === 'anime') {
+        if (currentType === 'anime' || currentType === 'pinoytv') {
             genreFilter.style.display = 'none';
         } else {
             genreFilter.addEventListener("change", (e) => {
@@ -61,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function populateGenreFilter() {
     const filter = document.getElementById("genre-filter");
-    if (!filter || currentType === 'anime') return;
+    if (!filter || currentType === 'anime' || currentType === 'pinoytv') return;
     
     const targetMap = browseGenresMap[currentType] || browseGenresMap.movie;
     filter.innerHTML = `<option value="">All Genres</option>`;

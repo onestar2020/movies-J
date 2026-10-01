@@ -129,7 +129,7 @@ function setupUniversalEventListeners() {
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('js/sw.js')
+      navigator.serviceWorker.register('sw.js') // root para full-site scope (hindi lang /js/)
         .then(registration => console.log('✅ Service Worker registered:', registration.scope))
         .catch(error => console.error('❌ Service Worker failed:', error));
     });
@@ -137,14 +137,58 @@ function registerServiceWorker() {
 }
 
 function setupPWAInstall() {
-  const installBanner = document.getElementById('install-banner');
   const installBtnMobile = document.getElementById('installAppBtnMobile');
 
-  if (installBtnMobile) {
-    installBtnMobile.style.display = 'none';
-    installBtnMobile.classList.remove('visible');
+  // 7-day snooze kapag ni-dismiss ng user
+  const DISMISS_KEY = 'moviesJPWADismissed';
+  const dismissedAt = parseInt(localStorage.getItem(DISMISS_KEY), 10) || 0;
+  if (dismissedAt && (Date.now() - dismissedAt) < 7 * 24 * 60 * 60 * 1000) return;
+  if (dismissedAt) localStorage.removeItem(DISMISS_KEY);
+
+  // Dynamic install banner — gumagamit ng .install-banner styles sa css/pwa.css
+  // (gagawa lang kapag may pwa.css ang page: index / browse / collection)
+  let installBanner = document.getElementById('install-banner');
+  if (!installBanner && document.querySelector('link[href*="pwa.css"]')) {
+    installBanner = document.createElement('div');
+    installBanner.id = 'install-banner';
+    installBanner.innerHTML = `
+      <div class="install-banner-icon">
+        <img src="images/logo-192.png" alt="Movies-J">
+      </div>
+      <div class="install-banner-text">
+        <h3>Install Movies-J</h3>
+        <p>Isang tap para buksan, offline-ready — parang totoong app.</p>
+      </div>
+      <div class="install-banner-actions">
+        <button id="install-app-btn">Install</button>
+        <button id="dismiss-install-btn" aria-label="Close">&times;</button>
+      </div>`;
+    document.body.appendChild(installBanner);
   }
+  const installAppBtn = installBanner ? installBanner.querySelector('#install-app-btn') : null;
+  const dismissBtn = installBanner ? installBanner.querySelector('#dismiss-install-btn') : null;
+
   if (installBanner) installBanner.classList.remove('visible');
+
+  const showBanner = () => {
+    if (!installBanner || !deferredPrompt) return;
+    installBanner.classList.add('visible');
+    if (installAppBtn) {
+      installAppBtn.onclick = async () => {
+        if (!deferredPrompt) return;
+        installBanner.classList.remove('visible');
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      };
+    }
+    if (dismissBtn) {
+      dismissBtn.onclick = () => {
+        installBanner.classList.remove('visible');
+        localStorage.setItem(DISMISS_KEY, String(Date.now()));
+      };
+    }
+  };
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
@@ -164,6 +208,10 @@ function setupPWAInstall() {
         deferredPrompt = null;
       };
     }
+
+    // Hintaying muna ma-settle ang page bago lumabas ang banner
+    // (desktop: auto-nakatago via pwa.css media query)
+    setTimeout(showBanner, 4000);
   });
 }
 

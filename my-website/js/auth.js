@@ -1215,6 +1215,20 @@ window.mjIsLoggedIn = function () {
   try { return !!auth.currentUser; } catch (e) { return false; }
 };
 
+// Auth-ready promise: nagre-resolve sa unang onAuthStateChanged fire.
+// Ginagamit ng movie.js SPG gate para hintayin muna ang session restore
+// bago mag-deside kung guest o logged-in (otherwise race condition: palaging
+// "guest" ang kulot sa page load dahil async pa lang ang Firebase restore).
+if (!window.mjAuthReady) {
+  window.mjAuthReady = new Promise((resolve) => {
+    try {
+      const unsub = onAuthStateChanged(auth, () => { unsub(); resolve(); }, () => { unsub(); resolve(); });
+      // Safety: huwag hintayin nang forever
+      setTimeout(resolve, 5000);
+    } catch (e) { resolve(); }
+  });
+}
+
 window.mjOpenAuthModal = function () {
   try {
     switchAuthMode("login");

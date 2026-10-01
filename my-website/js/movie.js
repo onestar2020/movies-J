@@ -128,6 +128,9 @@ document.addEventListener("DOMContentLoaded", async () => {
        Home/browse na ang bahala sa badge + first confirm; dito double-check lang. */
     const isSpg = Array.isArray(item.genres) && item.genres.some(g => g.id === 10749);
     if (isSpg) {
+        // HINTAYIN muna ang Firebase session restore bago mag-deside (race condition fix:
+        // async pa ang auth restore sa page load, kaya nagiging false-guest ang kulot)
+        if (window.mjAuthReady) { try { await window.mjAuthReady; } catch (e) {} }
         const loggedIn = typeof window.mjIsLoggedIn === 'function' && window.mjIsLoggedIn();
         let confirmed = false;
         try { confirmed = sessionStorage.getItem('mjSpgConfirmed') === '1'; } catch (e) {}

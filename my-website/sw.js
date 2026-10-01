@@ -34,7 +34,7 @@ const SHELL_ASSETS = [
   'js/watchHistory.js?v=2',
   'js/changelog.js',
   'js/servers.js?v=8',
-  'js/movie.js?v=9',
+  'js/movie.js?v=10',
   'js/auth.js?v=12',
   'js/browse.js?v=4'
 ];

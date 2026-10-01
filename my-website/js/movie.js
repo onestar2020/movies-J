@@ -152,9 +152,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!confirmed) {
             document.body.classList.add('spg-locked-page');
             const css = document.createElement('style');
-            css.textContent = '.spg-locked-page > .container,.spg-locked-page > header{filter:blur(14px);pointer-events:none;user-select:none}';
+            // Self-contained styles (hindi umaasa sa home.js na wala sa movie.html)
+            css.textContent = '.spg-locked-page > .container,.spg-locked-page > header{filter:blur(14px);pointer-events:none;user-select:none}' +
+                '#spg-confirm-overlay{position:fixed;inset:0;z-index:3000;background:rgba(5,5,8,.88);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px}' +
+                '.spg-confirm-card{background:#16161d;border:1px solid rgba(229,9,20,.35);border-radius:14px;max-width:380px;width:100%;padding:26px 22px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.7)}' +
+                '.spg-confirm-icon{font-size:42px;margin-bottom:10px}' +
+                '.spg-confirm-card h3{margin:0 0 10px;color:#fff;font-size:1.05rem;font-family:inherit}' +
+                '.spg-confirm-card p{margin:0 0 18px;color:#b9b9c4;font-size:.88rem;line-height:1.5}' +
+                '.spg-confirm-actions{display:flex;gap:10px;justify-content:center}' +
+                '.spg-confirm-actions button{border:none;border-radius:24px;padding:10px 18px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit;transition:opacity .18s ease}' +
+                '.spg-confirm-actions button:hover{opacity:.85}' +
+                '#spg-cancel{background:#2a2a35;color:#ccc}' +
+                '#spg-continue{background:linear-gradient(135deg,#e50914,#b0060f);color:#fff;box-shadow:0 4px 14px rgba(229,9,20,.35)}';
             document.head.appendChild(css);
-            if (typeof window.mjEnsureSpgStyles === 'function') window.mjEnsureSpgStyles();
             const overlay = document.createElement('div');
             overlay.id = 'spg-confirm-overlay';
             overlay.innerHTML = `

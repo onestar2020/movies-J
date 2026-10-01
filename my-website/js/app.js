@@ -332,7 +332,7 @@
   async function initAuthIfAvailable() {
     if (!document.getElementById('auth-nav-container')) return;
     try {
-      const mod = await import('./auth.js?v=12');
+      const mod = await import('./auth.js?v=13');
       if (typeof mod.initAuthObserver === 'function') {
         mod.initAuthObserver();
       }

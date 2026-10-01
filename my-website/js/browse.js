@@ -182,6 +182,7 @@ function displayGridItems(items) {
         card.className = "movie-card loading"; 
 
         card.innerHTML = `
+            ${(typeof window.isSpgTitle === 'function' && window.isSpgTitle(item)) ? window.mjSpgLockBadge() : ''}
             <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
             <div class="card-info">
                 <h4>${item.title || item.name}</h4>

@@ -408,6 +408,11 @@ function compressAvatar(file, size = 180, quality = 0.8) {
 
 // Observer + Realtime Profile Rendering
 export function initAuthObserver(onUserLoggedIn, onGuestMode) {
+  // Single-boot guard: pigilan ang doble/multiple observer registration
+  // (app.js dynamic import + module self-boot + manual calls)
+  if (window.__mjAuthObserverStarted) return;
+  window.__mjAuthObserverStarted = true;
+
   setupAuthModalHTML();
 
   onAuthStateChanged(auth, async (user) => {
@@ -1199,4 +1204,34 @@ function openAuthModal() {
 function closeAuthModal() {
   const modal = document.getElementById("auth-custom-modal");
   if (modal) modal.style.display = "none";
+}
+
+/* ============================================================
+   GLOBAL HELPERS PARA SA SPG/LOGIN GATING (movie.js, home.js, browse.js)
+   Ito ang ginagamit ng ibang scripts para malaman kung naka-login
+   at para mabuksan ang auth modal kahit saang page.
+   ============================================================ */
+window.mjIsLoggedIn = function () {
+  try { return !!auth.currentUser; } catch (e) { return false; }
+};
+
+window.mjOpenAuthModal = function () {
+  try {
+    switchAuthMode("login");
+    openAuthModal();
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+// Self-boot: tatakbo rin ang auth observer kahit sa pages na walang
+// auth-nav-container (hal. movie.html) — kailangan ito ng SPG gate
+// at para gumana ang login modal sa movie page mismo.
+if (!document.getElementById('auth-nav-container')) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => initAuthObserver());
+  } else {
+    initAuthObserver();
+  }
 }

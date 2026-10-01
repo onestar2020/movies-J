@@ -28,6 +28,94 @@ const GENRE_MAP = {
 // Legacy alias (older code referenced genreMap)
 const genreMap = GENRE_MAP;
 
+/* ============================================================
+   SPG / LOGIN GATE HELPERS
+   Lahat ng titles na may Romance genre (10749) ay SPG:
+   - Guests: makikita pero may 🔒 lock badge; kailangan mag-login
+   - Logged-in: may 18+ SPG confirm pa bago ma-open
+   Ginagamit din ng browse.js at movie.js (window-level para global)
+   ============================================================ */
+function isSpgTitle(item) {
+  if (!item) return false;
+  return Array.isArray(item.genre_ids)
+    ? item.genre_ids.includes(10749)
+    : Array.isArray(item.genres)
+      ? item.genres.some(g => g.id === 10749)
+      : false;
+}
+window.isSpgTitle = isSpgTitle;
+
+// CSS ay JS-injected para gumana sa LAHAT ng pages (kahit movie.html na walang pwa.css)
+window.mjEnsureSpgStyles = function () {
+  if (document.getElementById('mj-spg-styles')) return;
+  const st = document.createElement('style');
+  st.id = 'mj-spg-styles';
+  st.textContent = `
+    .spg-lock-badge{position:absolute;top:6px;left:6px;z-index:3;background:linear-gradient(135deg,#e50914,#7a0509);color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;letter-spacing:.5px;box-shadow:0 2px 8px rgba(0,0,0,.55);pointer-events:none;display:inline-flex;align-items:center;gap:4px}
+    .spg-lock-badge i{font-size:9px}
+    #spg-confirm-overlay{position:fixed;inset:0;z-index:3000;background:rgba(5,5,8,.88);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px}
+    .spg-confirm-card{background:#16161d;border:1px solid rgba(229,9,20,.35);border-radius:14px;max-width:380px;width:100%;padding:26px 22px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.7)}
+    .spg-confirm-icon{font-size:42px;margin-bottom:10px}
+    .spg-confirm-card h3{margin:0 0 10px;color:#fff;font-size:1.05rem}
+    .spg-confirm-card p{margin:0 0 18px;color:#b9b9c4;font-size:.88rem;line-height:1.5}
+    .spg-confirm-actions{display:flex;gap:10px;justify-content:center}
+    .spg-confirm-actions button{border:none;border-radius:24px;padding:10px 18px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit;transition:opacity .18s ease}
+    .spg-confirm-actions button:hover{opacity:.85}
+    #spg-cancel{background:#2a2a35;color:#ccc}
+    #spg-continue{background:linear-gradient(135deg,#e50914,#b0060f);color:#fff;box-shadow:0 4px 14px rgba(229,9,20,.35)}
+  `;
+  document.head.appendChild(st);
+};
+
+window.mjSpgLockBadge = function () {
+  window.mjEnsureSpgStyles();
+  return '<span class="spg-lock-badge" title="SPG — Login required"><i class="fas fa-lock"></i> SPG</span>';
+};
+
+// Gate bago pumasok sa movie page. Returns true kung pwede na ituloy.
+window.mjSpgGate = function (item) {
+  if (!isSpgTitle(item)) return true;
+
+  const loggedIn = typeof window.mjIsLoggedIn === 'function' && window.mjIsLoggedIn();
+  if (!loggedIn) {
+    const handled = typeof window.mjOpenAuthModal === 'function' && window.mjOpenAuthModal();
+    if (!handled) {
+      // Fallback kung hindi available ang auth module sa page na ito
+      window.location.href = 'login.html';
+    }
+    return false;
+  }
+
+  // 18+ confirm — once per session para hindi nakakainis
+  try {
+    if (sessionStorage.getItem('mjSpgConfirmed') === '1') return true;
+  } catch (e) { /* ignore */ }
+
+  const overlay = document.createElement('div');
+  overlay.id = 'spg-confirm-overlay';
+  window.mjEnsureSpgStyles();
+  overlay.innerHTML = `
+    <div class="spg-confirm-card">
+      <div class="spg-confirm-icon">🔞</div>
+      <h3>SPG / Reader Discretion Advised</h3>
+      <p>Ang title na ito ay may romance/sensitive content na hindi angkop sa mga bata. Ipagpatuloy?</p>
+      <div class="spg-confirm-actions">
+        <button id="spg-cancel">Hindi</button>
+        <button id="spg-continue">Oo, 18+ Ako — Continue</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('#spg-cancel').onclick = () => overlay.remove();
+  overlay.querySelector('#spg-continue').onclick = () => {
+    try { sessionStorage.setItem('mjSpgConfirmed', '1'); } catch (e) { /* ignore */ }
+    overlay.remove();
+    window.__mjSpgPass = true;
+    goToMoviePage(item);
+  };
+  return false;
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
   initFirebasePresence();
   setupUniversalEventListeners();
@@ -280,6 +368,7 @@ function loadContinueWatching() {
     }
 
     card.innerHTML = `
+      ${isSpgTitle(item) ? window.mjSpgLockBadge() : ''}
       <img src="${posterSrc}" alt="${item.title || 'Movie'}" loading="lazy"
            onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
       <button class="remove-btn" title="Remove from history">
@@ -422,6 +511,7 @@ function displayList(items, containerId, showRanking = false) {
 
       movieCard.innerHTML = `
         ${rankingHtml}
+        ${isSpgTitle(item) ? window.mjSpgLockBadge() : ''}
         <span class="card-rating-badge"><i class="fas fa-star"></i> ${voteAvg}</span>
         <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy"
              onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
@@ -516,6 +606,7 @@ function renderWatchlistItems() {
     const poster = item.poster_path ? `${IMG_URL_W500}${item.poster_path}` : 'images/logo-192.png';
 
     div.innerHTML = `
+      ${isSpgTitle(item) ? window.mjSpgLockBadge() : ''}
       <img src="${poster}" alt="${item.title}" loading="lazy"
            onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
       <button class="remove-btn" title="Remove from Watchlist">
@@ -733,6 +824,9 @@ function setupHomepageCarousels() {
    ============================================================ */
 function goToMoviePage(item) {
   if (!item || !item.id) return;
+  // SPG gate: Romance titles need login + 18+ confirm (tawag muli after confirm via __mjSpgPass)
+  if (!window.__mjSpgPass && typeof window.mjSpgGate === 'function' && !window.mjSpgGate(item)) return;
+  window.__mjSpgPass = false;
   const itemType = item.type || item.media_type || (item.first_air_date || item.seasons || item.season ? 'tv' : 'movie');
 
   if (typeof saveToWatchHistory === 'function') {
@@ -836,6 +930,7 @@ async function searchTMDB() {
         const voteAvg = (item.vote_average || 0).toFixed(1);
         div.onclick = () => { closeSearchModal(); goToMoviePage(item); };
         div.innerHTML = `
+          ${isSpgTitle(item) ? window.mjSpgLockBadge() : ''}
           <span class="card-rating-badge"><i class="fas fa-star"></i> ${voteAvg}</span>
           <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name || ''}" loading="lazy"
                onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
@@ -896,7 +991,7 @@ function showDetailsModal(item) {
     });
   }
 
-  if (watchBtn) watchBtn.onclick = () => goToMoviePage(item);
+  if (watchBtn) watchBtn.onclick = () => goToMoviePage(item); // SPG gate nasa goToMoviePage na
 
   if (watchlistBtn && watchlistText) {
     const updateModalWatchlistState = () => {

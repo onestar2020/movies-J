@@ -122,9 +122,58 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     currentItemData = item;
 
-    if (!isEpisodic) {
-        const relStatus = getReleaseStatus(item.release_date);
-        isMovieReleased = relStatus.isReleased;
+    /* ---- SPG GATE (movie page level) ----
+       Romance (10749) titles: guests = login modal agad (walang laman ang page),
+       logged-in na walang session confirm = 18+ dialog bago mag-render.
+       Home/browse na ang bahala sa badge + first confirm; dito double-check lang. */
+    const isSpg = Array.isArray(item.genres) && item.genres.some(g => g.id === 10749);
+    if (isSpg) {
+        const loggedIn = typeof window.mjIsLoggedIn === 'function' && window.mjIsLoggedIn();
+        let confirmed = false;
+        try { confirmed = sessionStorage.getItem('mjSpgConfirmed') === '1'; } catch (e) {}
+
+        if (!loggedIn) {
+            // Itago ang page content at ilabas agad ang login modal
+            document.body.classList.add('spg-locked-page');
+            const css = document.createElement('style');
+            css.textContent = '.spg-locked-page > .container,.spg-locked-page > header{filter:blur(14px);pointer-events:none;user-select:none}';
+            document.head.appendChild(css);
+            setTimeout(() => {
+                if (!(typeof window.mjOpenAuthModal === 'function' && window.mjOpenAuthModal())) {
+                    window.location.href = 'login.html';
+                }
+            }, 300);
+            return; // huwag nang i-render ang iba pa
+        }
+
+        if (!confirmed) {
+            document.body.classList.add('spg-locked-page');
+            const css = document.createElement('style');
+            css.textContent = '.spg-locked-page > .container,.spg-locked-page > header{filter:blur(14px);pointer-events:none;user-select:none}';
+            document.head.appendChild(css);
+            if (typeof window.mjEnsureSpgStyles === 'function') window.mjEnsureSpgStyles();
+            const overlay = document.createElement('div');
+            overlay.id = 'spg-confirm-overlay';
+            overlay.innerHTML = `
+                <div class="spg-confirm-card">
+                    <div class="spg-confirm-icon">🔞</div>
+                    <h3>SPG / Reader Discretion Advised</h3>
+                    <p>Ang title na ito ay may romance/sensitive content na hindi angkop sa mga bata. Ipagpatuloy?</p>
+                    <div class="spg-confirm-actions">
+                        <button id="spg-cancel">Hindi</button>
+                        <button id="spg-continue">Oo, 18+ Ako — Continue</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(overlay);
+            overlay.querySelector('#spg-cancel').onclick = () => { window.location.href = 'index.html'; };
+            overlay.querySelector('#spg-continue').onclick = () => {
+                try { sessionStorage.setItem('mjSpgConfirmed', '1'); } catch (e) {}
+                overlay.remove();
+                document.body.classList.remove('spg-locked-page');
+                window.location.reload();
+            };
+            return; // huwag mag-render hangga't hindi na-confirm
+        }
     }
 
     const displayTitle = item.title || item.name || item.original_title || "Now Playing";
@@ -289,7 +338,17 @@ function populateServerSelector(item) {
     }
 
     if (typeof STREAM_SERVERS !== "undefined") {
-        const serverKeys = Object.keys(STREAM_SERVERS);
+        // Server order: PH TV titles (teleserye) = zxcstream (Server 4) muna —
+        // kapos si vidstorm sa episodes ng teleserye (404/wrong video), walang PH content si cinesrc.
+        // Saved server preference pa rin ang masusunod kung may naka-save na.
+        const isPhTv = isEpisodic && Array.isArray(item.origin_country) && item.origin_country.includes('PH');
+        const preferredFirst = isPhTv ? ['zxcstream', 'vidstorm', 'twoembed', 'cinesrc'] : null;
+        const serverKeys = preferredFirst
+            ? Object.keys(STREAM_SERVERS).sort((a, b) => {
+                const ia = preferredFirst.indexOf(a), ib = preferredFirst.indexOf(b);
+                return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+            })
+            : Object.keys(STREAM_SERVERS);
         let hasActive = false;
 
         serverKeys.forEach((key, index) => {

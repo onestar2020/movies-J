@@ -81,7 +81,7 @@ window.mjSpgGate = function (item) {
     const handled = typeof window.mjOpenAuthModal === 'function' && window.mjOpenAuthModal();
     if (!handled) {
       // Fallback kung hindi available ang auth module sa page na ito
-      window.location.href = 'login.html';
+      window.location.href = 'index.html#mj-login';
     }
     return false;
   }
@@ -120,6 +120,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   initFirebasePresence();
   setupUniversalEventListeners();
   registerServiceWorker();
+
+  // SPG STRICT: guest na na-redirect mula sa isang SPG title — buksan agad ang login modal
+  if (window.location.hash === '#mj-login') {
+    try { history.replaceState(null, '', window.location.pathname); } catch (e) {}
+    // hintayin ang auth module (dynamic import — hindi agad available sa page load)
+    let waited = 0;
+    while (typeof window.mjIsLoggedIn !== 'function' && waited < 4000) {
+      await new Promise(r => setTimeout(r, 100));
+      waited += 100;
+    }
+    if (window.mjAuthReady) { try { await window.mjAuthReady; } catch (e) {} }
+    if (typeof window.mjIsLoggedIn !== 'function' || !window.mjIsLoggedIn()) {
+      if (typeof window.mjOpenAuthModal === 'function') window.mjOpenAuthModal();
+    }
+  }
 
   if (document.getElementById('hero-section')) {
     loadFeaturedMovie();
@@ -954,9 +969,22 @@ window.searchTMDB = searchTMDB;
 /* ============================================================
    DETAILS MODAL — quick view with ratings, genres, watchlist
    ============================================================ */
-function showDetailsModal(item) {
+async function showDetailsModal(item) {
   const modal = document.getElementById('details-modal');
   if (!modal || !item) return;
+
+  // SPG STRICT: hindi maaaring buksan ng guest kahit ang details modal —
+  // login modal agad ang lalabas. Required talaga ang account bago mag-open.
+  if (window.isSpgTitle && window.isSpgTitle(item)) {
+    if (window.mjAuthReady) { try { await window.mjAuthReady; } catch (e) {} }
+    const loggedIn = typeof window.mjIsLoggedIn === 'function' && window.mjIsLoggedIn();
+    if (!loggedIn) {
+      if (!(typeof window.mjOpenAuthModal === 'function' && window.mjOpenAuthModal())) {
+        window.location.href = 'index.html#mj-login';
+      }
+      return; // HINDI bubuksan ang details modal
+    }
+  }
 
   document.body.classList.add('body-no-scroll');
 

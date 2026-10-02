@@ -136,17 +136,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         try { confirmed = sessionStorage.getItem('mjSpgConfirmed') === '1'; } catch (e) {}
 
         if (!loggedIn) {
-            // Itago ang page content at ilabas agad ang login modal
-            document.body.classList.add('spg-locked-page');
-            const css = document.createElement('style');
-            css.textContent = '.spg-locked-page > .container,.spg-locked-page > header{filter:blur(14px);pointer-events:none;user-select:none}';
-            document.head.appendChild(css);
-            setTimeout(() => {
-                if (!(typeof window.mjOpenAuthModal === 'function' && window.mjOpenAuthModal())) {
-                    window.location.href = 'login.html';
-                }
-            }, 300);
-            return; // huwag nang i-render ang iba pa
+            // SPG STRICT: hindi maaaring buksan ng guest ang page — ilipat agad sa
+            // homepage na may auto-login modal; pagkatapos mag-login, automatic babalik dito.
+            try { sessionStorage.setItem('mjSpgNext', window.location.pathname + window.location.search); } catch (e) {}
+            window.location.replace('index.html#mj-login');
+            return;
         }
 
         if (!confirmed) {

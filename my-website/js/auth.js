@@ -218,6 +218,8 @@ export async function loginWithGoogle() {
     }
 
     await syncUserToFirestore(user);
+    // SPG STRICT: kung may naka-save na destination (galing sa movie page redirect), dalhin doon
+    if (await mjConsumeSpgNext()) return;
     closeAuthModal();
     showAuthToast(`Welcome, ${user.displayName || "User"}!`, "success");
   } catch (error) {
@@ -267,6 +269,8 @@ export async function loginWithEmail(email, password) {
     }
 
     await syncUserToFirestore(result.user);
+    // SPG STRICT: kung may naka-save na destination (galing sa movie page redirect), dalhin doon
+    if (await mjConsumeSpgNext()) return;
     closeAuthModal();
     showAuthToast(`Welcome back, ${result.user.displayName || "User"}!`, "success");
   } catch (error) {
@@ -1204,6 +1208,8 @@ function openAuthModal() {
 function closeAuthModal() {
   const modal = document.getElementById("auth-custom-modal");
   if (modal) modal.style.display = "none";
+  // Kung nag-dismiss lang ang user ng login modal, i-clear ang naka-save na SPG destination
+  try { sessionStorage.removeItem('mjSpgNext'); } catch (e) { /* ignore */ }
 }
 
 /* ============================================================
@@ -1230,6 +1236,8 @@ if (!window.mjAuthReady) {
 }
 
 window.mjOpenAuthModal = function () {
+  const modal = document.getElementById("auth-custom-modal");
+  if (!modal) return false; // wala pa ang modal (hindi pa na-boot ang builder)
   try {
     switchAuthMode("login");
     openAuthModal();
@@ -1238,6 +1246,22 @@ window.mjOpenAuthModal = function () {
     return false;
   }
 };
+
+// SPG STRICT MODE: kapag na-redirect ang guest mula sa isang SPG title,
+// naka-save dito ang movie URL — pagkatapos ng matagumpay na login,
+// automatic na babalik sa title na iyon (18+ confirm pa rin ang susunod).
+async function mjConsumeSpgNext() {
+  try {
+    const nxt = sessionStorage.getItem('mjSpgNext');
+    if (!nxt) return false;
+    sessionStorage.removeItem('mjSpgNext');
+    window.location.href = nxt;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+window.mjConsumeSpgNext = mjConsumeSpgNext;
 
 // Self-boot: tatakbo rin ang auth observer kahit sa pages na walang
 // auth-nav-container (hal. movie.html) — kailangan ito ng SPG gate

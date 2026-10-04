@@ -345,18 +345,26 @@ function populateServerSelector(item) {
     }
 
     if (typeof STREAM_SERVERS !== "undefined") {
-        // Server order: PH TV titles (teleserye) = zxcstream (Server 4) muna —
-        // kapos si vidstorm sa episodes ng teleserye (404/wrong video), walang PH content si cinesrc.
+        // Server order fix (verified 2026-10-04):
+        // - vidstorm (S1) 404 na sa maraming titles (Reacher, Spider-Man BND) — cinesrc (S2) muna default.
+        // - zxcstream (S4) sira — lahat ng links redirect sa homepage nila na may IBANG show.
+        // - PH teleseryes: twoembed (S3) muna bago cinesrc (walang PH content si cinesrc; si 2embed meron).
         // Saved server preference pa rin ang masusunod kung may naka-save na.
         const isPhTv = isEpisodic && Array.isArray(item.origin_country) && item.origin_country.includes('PH');
-        const preferredFirst = isPhTv ? ['zxcstream', 'vidstorm', 'twoembed', 'cinesrc'] : null;
-        const serverKeys = preferredFirst
-            ? Object.keys(STREAM_SERVERS).sort((a, b) => {
-                const ia = preferredFirst.indexOf(a), ib = preferredFirst.indexOf(b);
-                return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-            })
-            : Object.keys(STREAM_SERVERS);
+        const preferredFirst = isPhTv ? ['twoembed', 'cinesrc', 'vidstorm'] : ['cinesrc', 'twoembed', 'vidstorm'];
+        const serverKeys = Object.keys(STREAM_SERVERS).sort((a, b) => {
+            const ia = preferredFirst.indexOf(a), ib = preferredFirst.indexOf(b);
+            return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+        });
         let hasActive = false;
+
+        // Saved-preference override: kung ang naka-save na server ng viewer ay sirang
+        // server (zxcstream = disabled na; vidstorm = maraming 404 ngayon), balewalain
+        // ang save at gamitin ang unang server sa bagong order. Pwedeng i-click pa rin
+        // nang manual ang Server 1 kung gusto talaga nila.
+        const savedKey = currentActiveServerKey;
+        const savedUsable = !!(savedKey && STREAM_SERVERS[savedKey] && STREAM_SERVERS[savedKey].enabled && savedKey !== 'vidstorm');
+        const targetKey = savedUsable ? savedKey : serverKeys.find(k => STREAM_SERVERS[k].enabled);
 
         serverKeys.forEach((key, index) => {
             const srv = STREAM_SERVERS[key];
@@ -367,8 +375,8 @@ function populateServerSelector(item) {
             btn.setAttribute('data-server', key);
             btn.textContent = srv.name;
             
-            // Check kung ito yung huling server na ginamit ng viewer
-            const isTargetServer = currentActiveServerKey ? (key === currentActiveServerKey) : (index === 0);
+            // Check kung ito ang target server (bagong order o usable na saved pref)
+            const isTargetServer = key === targetKey;
             
             if (isTargetServer) {
                 btn.classList.add("active");

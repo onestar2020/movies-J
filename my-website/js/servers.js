@@ -105,7 +105,7 @@ var _H = {
 var STREAM_SERVERS = {
   vidstorm: {
     id: 'vidstorm',
-    name: 'Server 1',
+    name: 'Server 4',
     type: 'iframe',
     enabled: true,
     movie: function (imdbId) { return _H.vM + imdbId + _H.vQ; },
@@ -125,17 +125,18 @@ var STREAM_SERVERS = {
     name: 'Server 3',
     type: 'iframe',
     enabled: true,
-    sandboxOk: true,
+    // WALANG sandbox: may sariling anti-sandbox check ang 2embed na nagpapakita ng
+    // "Sandboxed embed is not allowed!" sa ilang titles kapag naka-sandbox ang iframe.
+    // Kabayaran: hindi nababarahan ang ad popups nito (may focus recovery tayo).
     movie: function (tmdbId) { return _H.eM + tmdbId; },
     tv: function (tmdbId, s, e) { s = s || 1; e = e || 1; return _H.eT + tmdbId + '&s=' + s + '&e=' + e; }
   },
   zxcstream: {
     id: 'zxcstream',
-    name: 'Server 4',
+    // SERVER 1 na ito ayon sa request ng may-ari (2026-10-04): siya ang pinaka-
+    // gagana sa continue-watching flow at verified na may video sa Spider-Man BND.
+    name: 'Server 1',
     type: 'iframe',
-    // NOTE (2026-10-04): muling enabled ayon sa request ng may-ari. WARNING: minsan
-    // nagre-redirect ang deep links nila sa homepage nila na may IBANG show. Kaya
-    // ito ay LAGI sa dulo ng order at hindi kailanman default — manual click lang.
     enabled: true,
     movie: function (tmdbId) { return _H.zM + tmdbId; },
     tv: function (tmdbId, s, e) { s = s || 1; e = e || 1; return _H.zT + tmdbId + '/' + s + '/' + e; }

@@ -134,8 +134,8 @@ function displayContentGrid(items, clearGrid) {
             const posterUrl = typeof IMG_URL_W500 !== 'undefined' ? IMG_URL_W500 : 'https://image.tmdb.org/t/p/w500';
             
             movieCard.innerHTML = `
-                <img src="${posterUrl}${item.poster_path}" alt="${item.title || item.name}" loading="lazy">
-                <p class="movie-title">${item.title || item.name}</p>
+                <img src="${posterUrl}${item.poster_path}" alt="${window.mjPreferredTitle ? window.mjPreferredTitle(item) : (item.title || item.name)}" loading="lazy">
+                <p class="movie-title">${window.mjPreferredTitle ? window.mjPreferredTitle(item) : (item.title || item.name)}</p>
             `;
             grid.appendChild(movieCard);
         }

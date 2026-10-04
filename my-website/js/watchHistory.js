@@ -58,6 +58,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const sorted = history.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
+      // PH title fix: i-migrate ang mga lumang entry na may maling English lokal na title
+      // (hal. "Brothers" dapat "Ang Probinsyano") — re-save sa localStorage para permanent.
+      let titlesFixed = false;
+      sorted.forEach(item => {
+        if (item && (item.title === 'Brothers' || item.title === 'FPJ\'s Ang Probinsyano') && item.type === 'tv') {
+          item.title = 'Ang Probinsyano';
+          titlesFixed = true;
+        }
+      });
+      if (titlesFixed) {
+        try { localStorage.setItem("watchHistory", JSON.stringify(history)); } catch (e) {}
+      }
+
       sorted.forEach(item => {
         if (!item || !item.id) return;
 
@@ -121,7 +134,11 @@ function saveToWatchHistory(itemData) {
   try {
     const rawId = String(itemData.id);
     const mediaType = (itemData.type === "tv" || itemData.seasons || itemData.season || itemData.episode) ? "tv" : "movie";
-    const itemTitle = itemData.title || itemData.name || "Untitled";
+    // PH-aware title (hal. "Brothers" → "Ang Probinsyano")
+    let itemTitle = itemData.title || itemData.name || "Untitled";
+    if (itemData.type === "tv" && itemData.original_name && itemData.title && itemData.original_name !== itemData.title) {
+      itemTitle = itemData.original_name;
+    }
 
     let history = JSON.parse(localStorage.getItem("watchHistory") || "[]");
 

@@ -144,6 +144,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         if (!confirmed) {
+            // Huwag i-blur ang page habang naghihintay ng 18+ confirm (mas magandang tingin)
             document.body.classList.add('spg-locked-page');
             const css = document.createElement('style');
             // Self-contained styles (hindi umaasa sa home.js na wala sa movie.html)
@@ -183,7 +184,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    const displayTitle = item.title || item.name || item.original_title || "Now Playing";
+    // PH-aware title: "Brothers" → "Ang Probinsyano" (original_name ang kilala ng mga Pinoy)
+    const isPhShow = type === 'tv' && Array.isArray(item.origin_country) && item.origin_country.includes('PH');
+    const displayTitle = (isPhShow && item.original_name && item.original_name !== (item.title || item.name))
+        ? item.original_name
+        : (item.title || item.name || item.original_title || "Now Playing");
     document.title = `${displayTitle} - Stream`;
 
     const titleElem = document.getElementById("media-title");
@@ -345,26 +350,22 @@ function populateServerSelector(item) {
     }
 
     if (typeof STREAM_SERVERS !== "undefined") {
-        // Server order (verified 2026-10-04, ni-request ng may-ari na balikin ang S4):
-        // - cinesrc (S2) muna default — 8/8 verified sa audit (Reacher, Spidey BND, Breaking Bad, atbp.).
-        // - PH teleseryes: twoembed (S3) muna bago cinesrc (walang PH content si cinesrc).
-        // - vidstorm (S1) spotty: buhay sa lumang movies pero 404 sa bagong releases/ilang TV.
-        // - zxcstream (S4) huli lagi — minsan may maling video; manual click lang.
-        // Saved server preference masusunod KUNG hindi sirang server.
+        // Server order v3 (2026-10-04, ayon sa may-ari):
+        // - zxcstream = SERVER 1 at default (gumagana ang continue-watching dito).
+        // - PH teleseryes: twoembed (S3) muna (may PH content siya, walang sandbox issue).
+        // - Ang button label ay sa servers.js nakadepende (zxcstream="Server 1").
         const isPhTv = isEpisodic && Array.isArray(item.origin_country) && item.origin_country.includes('PH');
-        const preferredFirst = isPhTv ? ['twoembed', 'cinesrc', 'vidstorm', 'zxcstream'] : ['cinesrc', 'twoembed', 'vidstorm', 'zxcstream'];
+        const preferredFirst = isPhTv ? ["twoembed", "zxcstream", "cinesrc", "vidstorm"] : ["zxcstream", "cinesrc", "twoembed", "vidstorm"];
         const serverKeys = Object.keys(STREAM_SERVERS).sort((a, b) => {
             const ia = preferredFirst.indexOf(a), ib = preferredFirst.indexOf(b);
             return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
         });
         let hasActive = false;
 
-        // Saved-preference override: kung ang naka-save na server ng viewer ay
-        // vidstorm o zxcstream (spotty/sira ngayon), balewalain ang save at gamitin
-        // ang unang server sa bagong order. Pwedeng i-click pa rin nang manual ang
-        // Server 1 o Server 4 kung gusto talaga nila.
+        // Saved-preference: ang naka-save na server ng viewer ang masusunod;
+        // kung wala, ang una sa order (S1=zxcstream ngayon) ang default.
         const savedKey = currentActiveServerKey;
-        const savedUsable = !!(savedKey && STREAM_SERVERS[savedKey] && STREAM_SERVERS[savedKey].enabled && savedKey !== 'vidstorm' && savedKey !== 'zxcstream');
+        const savedUsable = !!(savedKey && STREAM_SERVERS[savedKey] && STREAM_SERVERS[savedKey].enabled);
         const targetKey = savedUsable ? savedKey : serverKeys.find(k => STREAM_SERVERS[k].enabled);
 
         serverKeys.forEach((key, index) => {

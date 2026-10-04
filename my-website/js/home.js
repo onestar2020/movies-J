@@ -45,6 +45,17 @@ function isSpgTitle(item) {
 }
 window.isSpgTitle = isSpgTitle;
 
+// PH-aware title: sa TMDB, ang "name" ng mga PH teleserye ay Ingles na lokal
+// (hal. "Brothers" para sa Ang Probinsyano). Ipakita ang original_name kapag
+// PH show at magkaiba — iyan ang totoong title na kilala ng mga Pinoy.
+window.mjPreferredTitle = function (item) {
+  if (!item) return '';
+  const n = item.title || item.name || '';
+  const on = item.original_name || '';
+  const isPh = Array.isArray(item.origin_country) && item.origin_country.includes('PH');
+  return (isPh && on && on !== n) ? on : n;
+};
+
 // CSS ay JS-injected para gumana sa LAHAT ng pages (kahit movie.html na walang pwa.css)
 window.mjEnsureSpgStyles = function () {
   if (document.getElementById('mj-spg-styles')) return;
@@ -528,10 +539,10 @@ function displayList(items, containerId, showRanking = false) {
         ${rankingHtml}
         ${isSpgTitle(item) ? window.mjSpgLockBadge() : ''}
         <span class="card-rating-badge"><i class="fas fa-star"></i> ${voteAvg}</span>
-        <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy"
+        <img src="${IMG_URL_W500}${item.poster_path}" alt="${window.mjPreferredTitle(item)}" loading="lazy"
              onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
         <div class="card-info">
-          <h4>${item.title || item.name}</h4>
+          <h4>${window.mjPreferredTitle(item)}</h4>
           <p><b>★ ${voteAvg}</b> • ${releaseYear}</p>
         </div>
       `;
@@ -563,7 +574,7 @@ function toggleWatchlist(item, btnElem) {
   } else {
     list.unshift({
       id: item.id,
-      title: item.title || item.name || 'Untitled',
+      title: (window.mjPreferredTitle && window.mjPreferredTitle(item)) || item.title || item.name || 'Untitled',
       poster_path: item.poster_path || '',
       type: item.media_type || (item.first_air_date ? 'tv' : 'movie'),
       vote_average: item.vote_average || 0,
@@ -754,7 +765,7 @@ function updateHeroSection() {
       heroSection.style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
     };
 
-    heroTitle.textContent = item.title || item.name || 'Untitled';
+    heroTitle.textContent = window.mjPreferredTitle(item) || 'Untitled';
     heroDesc.textContent = item.overview || '';
     watchBtn.onclick = () => goToMoviePage(item);
     infoBtn.onclick = () => showDetailsModal(item);
@@ -847,7 +858,7 @@ function goToMoviePage(item) {
   if (typeof saveToWatchHistory === 'function') {
     saveToWatchHistory({
       id: item.id,
-      title: item.title || item.name || 'Unknown Title',
+      title: (window.mjPreferredTitle && window.mjPreferredTitle(item)) || item.title || item.name || 'Unknown Title',
       poster_path: item.poster_path || '',
       type: itemType,
       season: item.season || 1,
@@ -950,7 +961,7 @@ async function searchTMDB() {
           <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name || ''}" loading="lazy"
                onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
           <div class="card-info">
-            <h4>${item.title || item.name || 'Untitled'}</h4>
+            <h4>${window.mjPreferredTitle(item) || 'Untitled'}</h4>
             <p>${releaseYear}</p>
           </div>`;
         container.appendChild(div);
@@ -1001,7 +1012,7 @@ async function showDetailsModal(item) {
 
   if (backdrop) backdrop.style.backgroundImage = item.backdrop_path ? `url(${IMG_W780}${item.backdrop_path})` : 'none';
   if (poster) poster.src = item.poster_path ? `${IMG_URL_W500}${item.poster_path}` : 'images/logo-192.png';
-  if (title) title.textContent = item.title || item.name || 'N/A';
+  if (title) title.textContent = window.mjPreferredTitle(item) || 'N/A';
   if (rating) rating.textContent = item.vote_average ? `★ ${item.vote_average.toFixed(1)}` : 'N/A';
   if (release) release.textContent = (item.release_date || item.first_air_date || 'N/A').substring(0, 4);
   if (desc) desc.textContent = item.overview || 'No description.';

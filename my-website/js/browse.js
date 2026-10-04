@@ -183,9 +183,9 @@ function displayGridItems(items) {
 
         card.innerHTML = `
             ${(typeof window.isSpgTitle === 'function' && window.isSpgTitle(item)) ? window.mjSpgLockBadge() : ''}
-            <img src="${IMG_URL_W500}${item.poster_path}" alt="${item.title || item.name}" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
+            <img src="${IMG_URL_W500}${item.poster_path}" alt="${window.mjPreferredTitle ? window.mjPreferredTitle(item) : (item.title || item.name)}" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading');">
             <div class="card-info">
-                <h4>${item.title || item.name}</h4>
+                <h4>${window.mjPreferredTitle ? window.mjPreferredTitle(item) : (item.title || item.name)}</h4>
                 <p>⭐ ${voteAvg} • ${releaseYear}</p>
             </div>
         `;

@@ -133,10 +133,10 @@ var STREAM_SERVERS = {
     id: 'zxcstream',
     name: 'Server 4',
     type: 'iframe',
-    // DISABLED (verified 2026-10-04): lahat ng deep links ay nagre-redirect sa
-    // homepage nila (zxcstream.icu) na nagpapakita ng IBANG show — mas masahol
-    // sa 404 dahil maling video ang napapanood. I-enable ulit kapag ayos na sila.
-    enabled: false,
+    // NOTE (2026-10-04): muling enabled ayon sa request ng may-ari. WARNING: minsan
+    // nagre-redirect ang deep links nila sa homepage nila na may IBANG show. Kaya
+    // ito ay LAGI sa dulo ng order at hindi kailanman default — manual click lang.
+    enabled: true,
     movie: function (tmdbId) { return _H.zM + tmdbId; },
     tv: function (tmdbId, s, e) { s = s || 1; e = e || 1; return _H.zT + tmdbId + '/' + s + '/' + e; }
   },

@@ -5,7 +5,7 @@
 //   - TMDB posters: stale-while-revalidate, capped cache
 //   - API/RTDB/stream embeds: HINDI ini-cache (live data at video)
 
-const CACHE_VERSION = 'movies-j-v6';
+const CACHE_VERSION = 'movies-j-v7';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const IMG_CACHE = CACHE_VERSION + '-imgs';
 const IMG_CACHE_MAX = 220; // poster cap para hindi lumaki nang walang hanggan
@@ -33,8 +33,8 @@ const SHELL_ASSETS = [
   'js/modern-nav.js?v=2',
   'js/watchHistory.js?v=2',
   'js/changelog.js',
-  'js/servers.js?v=9',
-  'js/movie.js?v=12',
+  'js/servers.js?v=10',
+  'js/movie.js?v=13',
   'js/auth.js?v=14',
   'js/browse.js?v=4'
 ];

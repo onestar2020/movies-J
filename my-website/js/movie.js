@@ -345,25 +345,26 @@ function populateServerSelector(item) {
     }
 
     if (typeof STREAM_SERVERS !== "undefined") {
-        // Server order fix (verified 2026-10-04):
-        // - vidstorm (S1) 404 na sa maraming titles (Reacher, Spider-Man BND) — cinesrc (S2) muna default.
-        // - zxcstream (S4) sira — lahat ng links redirect sa homepage nila na may IBANG show.
-        // - PH teleseryes: twoembed (S3) muna bago cinesrc (walang PH content si cinesrc; si 2embed meron).
-        // Saved server preference pa rin ang masusunod kung may naka-save na.
+        // Server order (verified 2026-10-04, ni-request ng may-ari na balikin ang S4):
+        // - cinesrc (S2) muna default — 8/8 verified sa audit (Reacher, Spidey BND, Breaking Bad, atbp.).
+        // - PH teleseryes: twoembed (S3) muna bago cinesrc (walang PH content si cinesrc).
+        // - vidstorm (S1) spotty: buhay sa lumang movies pero 404 sa bagong releases/ilang TV.
+        // - zxcstream (S4) huli lagi — minsan may maling video; manual click lang.
+        // Saved server preference masusunod KUNG hindi sirang server.
         const isPhTv = isEpisodic && Array.isArray(item.origin_country) && item.origin_country.includes('PH');
-        const preferredFirst = isPhTv ? ['twoembed', 'cinesrc', 'vidstorm'] : ['cinesrc', 'twoembed', 'vidstorm'];
+        const preferredFirst = isPhTv ? ['twoembed', 'cinesrc', 'vidstorm', 'zxcstream'] : ['cinesrc', 'twoembed', 'vidstorm', 'zxcstream'];
         const serverKeys = Object.keys(STREAM_SERVERS).sort((a, b) => {
             const ia = preferredFirst.indexOf(a), ib = preferredFirst.indexOf(b);
             return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
         });
         let hasActive = false;
 
-        // Saved-preference override: kung ang naka-save na server ng viewer ay sirang
-        // server (zxcstream = disabled na; vidstorm = maraming 404 ngayon), balewalain
-        // ang save at gamitin ang unang server sa bagong order. Pwedeng i-click pa rin
-        // nang manual ang Server 1 kung gusto talaga nila.
+        // Saved-preference override: kung ang naka-save na server ng viewer ay
+        // vidstorm o zxcstream (spotty/sira ngayon), balewalain ang save at gamitin
+        // ang unang server sa bagong order. Pwedeng i-click pa rin nang manual ang
+        // Server 1 o Server 4 kung gusto talaga nila.
         const savedKey = currentActiveServerKey;
-        const savedUsable = !!(savedKey && STREAM_SERVERS[savedKey] && STREAM_SERVERS[savedKey].enabled && savedKey !== 'vidstorm');
+        const savedUsable = !!(savedKey && STREAM_SERVERS[savedKey] && STREAM_SERVERS[savedKey].enabled && savedKey !== 'vidstorm' && savedKey !== 'zxcstream');
         const targetKey = savedUsable ? savedKey : serverKeys.find(k => STREAM_SERVERS[k].enabled);
 
         serverKeys.forEach((key, index) => {

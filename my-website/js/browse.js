@@ -20,7 +20,7 @@ const fullGenreMap = { ...browseGenresMap.movie, ...browseGenresMap.tv };
 document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
     currentType = urlParams.get('type') || 'movie';
-    const typeLabel = currentType === 'tv' ? 'TV Shows' : currentType === 'anime' ? 'Anime' : currentType === 'pinoytv' ? '🇵🇭 Pinoy Teleserye' : 'Movies';
+    const typeLabel = currentType === 'tv' ? 'TV Shows' : currentType === 'anime' ? 'Anime' : 'Movies';
     
     const titleEl = document.getElementById("browse-title");
     if (titleEl) titleEl.textContent = typeLabel;
@@ -34,22 +34,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loadMoreBtn) {
         loadMoreBtn.onclick = () => {
             if (currentType === 'anime') fetchAnime();
-            else if (currentType === 'pinoytv') fetchPinoyTV();
             else fetchBrowseContent();
         };
     }
 
     if (currentType === 'anime') {
         fetchAnime();
-    } else if (currentType === 'pinoytv') {
-        fetchPinoyTV();
     } else {
         fetchBrowseContent();
     }
 
     const genreFilter = document.getElementById("genre-filter");
     if (genreFilter) {
-        if (currentType === 'anime' || currentType === 'pinoytv') {
+        if (currentType === 'anime') {
             genreFilter.style.display = 'none';
         } else {
             genreFilter.addEventListener("change", (e) => {
@@ -64,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function populateGenreFilter() {
     const filter = document.getElementById("genre-filter");
-    if (!filter || currentType === 'anime' || currentType === 'pinoytv') return;
+    if (!filter || currentType === 'anime') return;
     
     const targetMap = browseGenresMap[currentType] || browseGenresMap.movie;
     filter.innerHTML = `<option value="">All Genres</option>`;
@@ -138,37 +135,6 @@ async function fetchAnime() {
     }
 }
 
-async function fetchPinoyTV() {
-    if (isLoading) return;
-    isLoading = true;
-    showLoading(true);
-
-    try {
-        // Pinoy Teleserye: PH origin + walang anime genre (16) para hindi isama ang anime co-productions
-        let endpoint = `${BASE_URL}/discover/tv?with_origin_country=PH&without_genres=16&sort_by=popularity.desc&page=${currentPage}`;
-        let directEndpoint = `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_DIRECT_KEY}&with_origin_country=PH&without_genres=16&sort_by=popularity.desc&page=${currentPage}`;
-
-        let res;
-        try {
-            res = await fetch(endpoint);
-            if (!res.ok) throw new Error("Proxy failed");
-        } catch (e) {
-            res = await fetch(directEndpoint);
-        }
-
-        const data = await res.json();
-        const items = data.results || [];
-        
-        displayGridItems(items.map(item => ({ ...item, media_type: 'tv' })));
-        currentPage++;
-    } catch (error) {
-        console.error("PinoyTV Fetch Error:", error);
-    } finally {
-        isLoading = false;
-        showLoading(false);
-    }
-}
-
 function displayGridItems(items) {
     const grid = document.getElementById("browse-grid");
     if (!grid) return;
@@ -213,7 +179,6 @@ function setupInfiniteScroll() {
     window.addEventListener('scroll', () => {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !isLoading) {
             if (currentType === 'anime') fetchAnime();
-            else if (currentType === 'pinoytv') fetchPinoyTV();
             else fetchBrowseContent();
         }
     });

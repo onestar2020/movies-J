@@ -37,13 +37,54 @@ const genreMap = GENRE_MAP;
    ============================================================ */
 function isSpgTitle(item) {
   if (!item) return false;
-  return Array.isArray(item.genre_ids)
+  const hasRomance = Array.isArray(item.genre_ids)
     ? item.genre_ids.includes(10749)
     : Array.isArray(item.genres)
       ? item.genres.some(g => g.id === 10749)
       : false;
+  if (hasRomance) return true;
+  // Mabilis na side-channel checks lang — walang network dito.
+  // Ang totoong Vivamax/softcore detection ay nasa mjCheckSpgDeep (async, cached).
+  if (item.adult === true) return true;
+  if (Array.isArray(item.production_companies) &&
+      item.production_companies.some(c => /vivamax/i.test(c.name || ''))) return true;
+  if (item.__mjSpg === true) return true; // na-flag na ng deep check
+  return false;
 }
 window.isSpgTitle = isSpgTitle;
+
+/* Deep SPG check: tinatanong ang TMDB details (keywords + companies) para
+   matukoy ang mga PH Vivamax/softcore titles na walang Romance genre.
+   Cached sa sessionStorage (positive at negative) — isang network call lang
+   kada title kada session. Ginagamit bago mag-open ng details modal at
+   bago mag-navigate sa movie page. */
+window.mjCheckSpgDeep = async function (item) {
+  if (!item || !item.id) return false;
+  if (isSpgTitle(item)) return true;
+  const mediaType = item.type || item.media_type || (item.first_air_date || item.name ? 'tv' : 'movie');
+  const cacheKey = 'mjSpgChk_' + mediaType + '_' + item.id;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached !== null) return cached === '1';
+  } catch (e) { /* ignore */ }
+  let isSpg = false;
+  try {
+    const BASE = (typeof BASE_URL !== 'undefined' && BASE_URL) ? BASE_URL : 'https://movies-j-api-proxy.jayjovendinawanao2020.workers.dev';
+    const res = await fetch(BASE + '/' + mediaType + '/' + item.id + '?append_to_response=keywords');
+    if (res.ok) {
+      const d = await res.json();
+      const kw = (d.keywords && (d.keywords.keywords || d.keywords.results)) || [];
+      const kwNames = kw.map(k => (k.name || '').toLowerCase());
+      const kwHit = kwNames.includes('softcore') || kwNames.includes('sexy') ||
+                    kwNames.includes('erotic') || kwNames.includes('erotic thriller');
+      const coHit = Array.isArray(d.production_companies) &&
+                    d.production_companies.some(c => /vivamax/i.test(c.name || ''));
+      isSpg = d.adult === true || kwHit || coHit;
+    }
+  } catch (e) { /* fail-open: hindi haharangan kapag offline ang check */ }
+  try { sessionStorage.setItem(cacheKey, isSpg ? '1' : '0'); } catch (e) { /* ignore */ }
+  return isSpg;
+};
 
 // PH-aware title: sa TMDB, ang "name" ng mga PH teleserye ay Ingles na lokal
 // (hal. "Brothers" para sa Ang Probinsyano). Ipakita ang original_name kapag
@@ -165,8 +206,7 @@ function loadDefaultHomepageRows() {
     fetchTrending('movie').then(items => displayList(items, 'movies-list', true)),
     fetchTrending('tv').then(items => displayList(items, 'tvshows-list', true)),
     fetchTrendingAnime().then(items => displayList(items, 'anime-list', false)),
-    fetchDiscover('with_origin_country=PH&sort_by=popularity.desc', 'movie').then(items => displayList(items, 'pinoy-list', false)),
-    fetchDiscover('with_origin_country=PH&without_genres=16&sort_by=popularity.desc', 'tv').then(items => displayList(items, 'pinoytv-list', false))
+    fetchDiscover('with_origin_country=PH&sort_by=popularity.desc', 'movie').then(items => displayList(items, 'pinoy-list', false))
   ]).then(() => {
     setupHomepageCarousels();
   }).catch(error => console.error('Error loading trending lists:', error));
@@ -452,16 +492,12 @@ async function applyHomepageFilter(filter) {
     if (animeRow) animeRow.style.display = 'block';
     const pinoyRowAll = document.getElementById('pinoy-row');
     if (pinoyRowAll) pinoyRowAll.style.display = 'block';
-    const pinoyTvRowAll = document.getElementById('pinoytv-row');
-    if (pinoyTvRowAll) pinoyTvRowAll.style.display = 'block';
     loadDefaultHomepageRows();
     return;
   }
 
   const pinoyRow = document.getElementById('pinoy-row');
   if (pinoyRow) pinoyRow.style.display = 'none';
-  const pinoyTvRow = document.getElementById('pinoytv-row');
-  if (pinoyTvRow) pinoyTvRow.style.display = 'none';
   if (tvRow) tvRow.style.display = 'none';
   if (animeRow) animeRow.style.display = 'none';
   if (moviesRow) {
@@ -850,9 +886,19 @@ function setupHomepageCarousels() {
    ============================================================ */
 function goToMoviePage(item) {
   if (!item || !item.id) return;
-  // SPG gate: Romance titles need login + 18+ confirm (tawag muli after confirm via __mjSpgPass)
+  // SPG gate: Romance/Vivamax titles need login + 18+ confirm (tawag muli after confirm via __mjSpgPass)
   if (!window.__mjSpgPass && typeof window.mjSpgGate === 'function' && !window.mjSpgGate(item)) return;
   window.__mjSpgPass = false;
+  // Deep SPG check para sa mga PH Vivamax title na hindi Romance ang genre:
+  // kapag positive, ipasok muli sa gate (ngayon ay SPG na ang item).
+  if (!window.__mjSpgPass && window.mjCheckSpgDeep && !window.isSpgTitle(item)) {
+    window.mjCheckSpgDeep(item).then(deepSpg => {
+      if (deepSpg) {
+        item.__mjSpg = true;
+        goToMoviePage(item); // muli — SPG gate na ang haharang
+      }
+    }).catch(() => {});
+  }
   const itemType = item.type || item.media_type || (item.first_air_date || item.seasons || item.season ? 'tv' : 'movie');
 
   if (typeof saveToWatchHistory === 'function') {
@@ -986,6 +1032,8 @@ async function showDetailsModal(item) {
 
   // SPG STRICT: hindi maaaring buksan ng guest kahit ang details modal —
   // login modal agad ang lalabas. Required talaga ang account bago mag-open.
+  // May deep check din (Vivamax/softcore keywords) para sa mga PH title na
+  // hindi Romance ang genre tulad ng Kesong Puti.
   if (window.isSpgTitle && window.isSpgTitle(item)) {
     if (window.mjAuthReady) { try { await window.mjAuthReady; } catch (e) {} }
     const loggedIn = typeof window.mjIsLoggedIn === 'function' && window.mjIsLoggedIn();
@@ -994,6 +1042,13 @@ async function showDetailsModal(item) {
         window.location.href = 'index.html#mj-login';
       }
       return; // HINDI bubuksan ang details modal
+    }
+  } else if (window.mjCheckSpgDeep) {
+    const deepSpg = await window.mjCheckSpgDeep(item);
+    if (deepSpg) {
+      item.__mjSpg = true; // tatak SPG — iwas infinite loop sa re-entry
+      showDetailsModal(item); // muli — SPG path na ang tatahakin
+      return;
     }
   }
 

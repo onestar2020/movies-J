@@ -5,7 +5,7 @@
 //   - TMDB posters: stale-while-revalidate, capped cache
 //   - API/RTDB/stream embeds: HINDI ini-cache (live data at video)
 
-const CACHE_VERSION = 'movies-j-v8';
+const CACHE_VERSION = 'movies-j-v9';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const IMG_CACHE = CACHE_VERSION + '-imgs';
 const IMG_CACHE_MAX = 220; // poster cap para hindi lumaki nang walang hanggan
@@ -28,15 +28,15 @@ const SHELL_ASSETS = [
   'css/home.css',
   'css/movie-page.css?v=4',
   'js/firebase-config.js',
-  'js/app.js?v=15',
-  'js/home.js?v=10',
+  'js/app.js?v=16',
+  'js/home.js?v=11',
   'js/modern-nav.js?v=2',
-  'js/watchHistory.js?v=3',
+  'js/watchHistory.js?v=4',
   'js/changelog.js',
   'js/servers.js?v=11',
-  'js/movie.js?v=14',
+  'js/movie.js?v=15',
   'js/auth.js?v=14',
-  'js/browse.js?v=5'
+  'js/browse.js?v=6'
 ];
 
 // Install: precache the shell ( atomic-ish: hindi kailangan lahat OK para mag-install)

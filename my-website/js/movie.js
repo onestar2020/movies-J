@@ -123,10 +123,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     currentItemData = item;
 
     /* ---- SPG GATE (movie page level) ----
-       Romance (10749) titles: guests = login modal agad (walang laman ang page),
+       Romance (10749), adult flag, Vivamax company, o softcore/sexy/erotic
+       keywords (para sa mga PH sexy movies tulad ng Kesong Puti na Drama lang
+       ang genre sa TMDB): guests = login modal agad (walang laman ang page),
        logged-in na walang session confirm = 18+ dialog bago mag-render.
        Home/browse na ang bahala sa badge + first confirm; dito double-check lang. */
-    const isSpg = Array.isArray(item.genres) && item.genres.some(g => g.id === 10749);
+    const kwRaw = (item.keywords && (item.keywords.keywords || item.keywords.results)) || [];
+    const kwNames = kwRaw.map(k => (k.name || '').toLowerCase());
+    const isVivamax = Array.isArray(item.production_companies) &&
+        item.production_companies.some(c => /vivamax/i.test(c.name || ''));
+    const isSpg = (Array.isArray(item.genres) && item.genres.some(g => g.id === 10749)) ||
+        item.adult === true || isVivamax ||
+        kwNames.includes('softcore') || kwNames.includes('sexy') ||
+        kwNames.includes('erotic') || kwNames.includes('erotic thriller');
     if (isSpg) {
         // HINTAYIN muna ang Firebase session restore bago mag-deside (race condition fix:
         // async pa ang auth restore sa page load, kaya nagiging false-guest ang kulot)
@@ -241,11 +250,11 @@ document.addEventListener("DOMContentLoaded", async () => {
    ============================================================================== */
 async function tryFetch(targetType, targetId) {
     try {
-        let res = await fetch(`${BASE_URL}/${targetType}/${targetId}?append_to_response=external_ids,credits,similar,videos`);
+        let res = await fetch(`${BASE_URL}/${targetType}/${targetId}?append_to_response=external_ids,credits,similar,videos,keywords`);
         if (res.ok) return await res.json();
     } catch(e) {}
     try {
-        let res = await fetch(`https://api.themoviedb.org/3/${targetType}/${targetId}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos`);
+        let res = await fetch(`https://api.themoviedb.org/3/${targetType}/${targetId}?api_key=${TMDB_DIRECT_KEY}&append_to_response=external_ids,credits,similar,videos,keywords`);
         if (res.ok) return await res.json();
     } catch(e) {}
     return null;

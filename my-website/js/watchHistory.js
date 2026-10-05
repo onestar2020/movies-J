@@ -80,13 +80,33 @@ document.addEventListener("DOMContentLoaded", function () {
         const historyItem = document.createElement("div");
         historyItem.className = "history-item";
 
-        // Click event para pumunta sa movie/tv page na may tamang URL parameters
+        // Click event para pumunta sa movie/tv page na may tamang URL parameters.
+        // SPG titles (Romance/Vivamax) hindi pwedeng direktang i-bypass — dadaan sa gate.
         historyItem.onclick = () => {
-          let targetUrl = `movie.html?id=${item.id}&type=${mediaType}`;
-          if (mediaType === "tv") {
-            targetUrl += `&season=${item.season || 1}&episode=${item.episode || 1}`;
+          const fakeItem = { ...item, type: mediaType };
+          if (typeof window.isSpgTitle === "function" && window.isSpgTitle(fakeItem)) {
+            if (window.mjAuthReady) {
+              window.mjAuthReady.then(() => {
+                const loggedIn = typeof window.mjIsLoggedIn === "function" && window.mjIsLoggedIn();
+                if (!loggedIn) {
+                  if (!(typeof window.mjOpenAuthModal === "function" && window.mjOpenAuthModal())) {
+                    window.location.href = "index.html#mj-login";
+                  }
+                  return;
+                }
+                if (sessionStorage.getItem("mjSpgConfirmed") === "1") { navigateHistoryItem(item, mediaType); return; }
+                window.__mjSpgPass = true;
+                if (typeof window.mjSpgGate === "function") { window.mjSpgGate(fakeItem); return; }
+                navigateHistoryItem(item, mediaType);
+              }).catch(() => navigateHistoryItem(item, mediaType));
+            } else {
+              window.__mjSpgPass = true;
+              if (typeof window.mjSpgGate === "function") { window.mjSpgGate(fakeItem); return; }
+              navigateHistoryItem(item, mediaType);
+            }
+            return;
           }
-          window.location.href = targetUrl;
+          navigateHistoryItem(item, mediaType);
         };
 
         const posterSrc = item.poster_path
@@ -126,6 +146,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+// --- Navigation helper para sa history items (ginagamit ng SPG gate flow) ---
+function navigateHistoryItem(item, mediaType) {
+  let targetUrl = `movie.html?id=${item.id}&type=${mediaType}`;
+  if (mediaType === "tv") {
+    targetUrl += `&season=${item.season || 1}&episode=${item.episode || 1}`;
+  }
+  window.location.href = targetUrl;
+}
 
 // --- Global function para sa pag-save ng history (Movie & TV show) ---
 function saveToWatchHistory(itemData) {

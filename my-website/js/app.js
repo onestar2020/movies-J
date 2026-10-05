@@ -168,7 +168,6 @@
         <a class="mj-tab ${tabActive('browse.html?type=movie') ? 'active' : ''}" href="browse.html?type=movie"><i class="fas fa-film"></i>Movies</a>
         <a class="mj-tab ${tabActive('browse.html?type=tv') ? 'active' : ''}" href="browse.html?type=tv"><i class="fas fa-tv"></i>TV Shows</a>
         <a class="mj-tab ${tabActive('browse.html?type=anime') ? 'active' : ''}" href="browse.html?type=anime"><i class="fas fa-dragon"></i>Anime</a>
-        <a class="mj-tab ${tabActive('browse.html?type=pinoytv') ? 'active' : ''}" href="browse.html?type=pinoytv"><i class="fas fa-flag"></i>Pinoy</a>
       </div>`;
     document.body.appendChild(bar);
   }

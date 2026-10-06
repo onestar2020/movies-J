@@ -15,7 +15,7 @@ const IMG_W780 = 'https://image.tmdb.org/t/p/w780';
 let slideshowInterval;
 let featuredItems = [];
 let currentFeaturedIndex = 0;
-let deferredPrompt;
+// (dating install-banner state — tinanggal na, walang install prompt na lalabas)
 
 const GENRE_MAP = {
   28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
@@ -291,81 +291,11 @@ function registerServiceWorker() {
 }
 
 function setupPWAInstall() {
-  const installBtnMobile = document.getElementById('installAppBtnMobile');
-
-  // 7-day snooze kapag ni-dismiss ng user
-  const DISMISS_KEY = 'moviesJPWADismissed';
-  const dismissedAt = parseInt(localStorage.getItem(DISMISS_KEY), 10) || 0;
-  if (dismissedAt && (Date.now() - dismissedAt) < 7 * 24 * 60 * 60 * 1000) return;
-  if (dismissedAt) localStorage.removeItem(DISMISS_KEY);
-
-  // Dynamic install banner — gumagamit ng .install-banner styles sa css/pwa.css
-  // (gagawa lang kapag may pwa.css ang page: index / browse / collection)
-  let installBanner = document.getElementById('install-banner');
-  if (!installBanner && document.querySelector('link[href*="pwa.css"]')) {
-    installBanner = document.createElement('div');
-    installBanner.id = 'install-banner';
-    installBanner.innerHTML = `
-      <div class="install-banner-icon">
-        <img src="images/logo-192.png" alt="Movies-J">
-      </div>
-      <div class="install-banner-text">
-        <h3>Install Movies-J</h3>
-        <p>Isang tap para buksan, offline-ready — parang totoong app.</p>
-      </div>
-      <div class="install-banner-actions">
-        <button id="install-app-btn">Install</button>
-        <button id="dismiss-install-btn" aria-label="Close">&times;</button>
-      </div>`;
-    document.body.appendChild(installBanner);
-  }
-  const installAppBtn = installBanner ? installBanner.querySelector('#install-app-btn') : null;
-  const dismissBtn = installBanner ? installBanner.querySelector('#dismiss-install-btn') : null;
-
-  if (installBanner) installBanner.classList.remove('visible');
-
-  const showBanner = () => {
-    if (!installBanner || !deferredPrompt) return;
-    installBanner.classList.add('visible');
-    if (installAppBtn) {
-      installAppBtn.onclick = async () => {
-        if (!deferredPrompt) return;
-        installBanner.classList.remove('visible');
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      };
-    }
-    if (dismissBtn) {
-      dismissBtn.onclick = () => {
-        installBanner.classList.remove('visible');
-        localStorage.setItem(DISMISS_KEY, String(Date.now()));
-      };
-    }
-  };
-
+  // Tinanggal na ang "Install Movies-J" banner — ayaw na ng install pop-up.
+  // Sinasampalan din ang beforeinstallprompt para hindi na rin lumabas
+  // ang native install prompt ng browser (Chrome/Edge) kahit kailan.
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
-    deferredPrompt = e;
-
-    if (installBtnMobile) {
-      installBtnMobile.style.display = '';
-      installBtnMobile.classList.add('visible');
-
-      installBtnMobile.onclick = async () => {
-        if (!deferredPrompt) return;
-        installBtnMobile.style.display = 'none';
-        installBtnMobile.classList.remove('visible');
-        if (installBanner) installBanner.classList.remove('visible');
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      };
-    }
-
-    // Hintaying muna ma-settle ang page bago lumabas ang banner
-    // (desktop: auto-nakatago via pwa.css media query)
-    setTimeout(showBanner, 4000);
   });
 }
 

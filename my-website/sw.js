@@ -29,7 +29,7 @@ const SHELL_ASSETS = [
   'css/movie-page.css?v=4',
   'js/firebase-config.js',
   'js/app.js?v=16',
-  'js/home.js?v=11',
+  'js/home.js?v=12',
   'js/modern-nav.js?v=2',
   'js/watchHistory.js?v=4',
   'js/changelog.js',

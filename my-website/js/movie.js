@@ -102,10 +102,71 @@ if (isNaN(currentEpisodeNumber)) currentEpisodeNumber = 1;
 
 
 /* ==============================================================================
+   SITE FULLSCREEN BUTTON
+   Ang fullscreen button na nasa LOOB ng player embeds (zxcstream/vidstorm/2embed)
+   ay cross-origin — minsan ayaw gumana dahil may sariling rules ang provider at
+   hindi ito kayang ayusin ng site mula sa labas. Kaya may sariling fullscreen
+   button ang site: kino-control nito ang .video-box wrapper (kasama ang iframe,
+   kaya fullscreen pa rin ang video) — gumagana kahit anong server ang pinili.
+============================================================================== */
+function setupSiteFullscreen() {
+    const box = document.querySelector(".video-box");
+    if (!box || document.getElementById("site-fs-btn")) return;
+
+    const css = document.createElement("style");
+    css.id = "site-fs-styles";
+    css.textContent = `
+        #site-fs-btn{position:absolute;top:12px;right:12px;z-index:20;width:38px;height:38px;border:none;border-radius:10px;background:rgba(10,10,14,.55);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s ease,background .2s ease;backdrop-filter:blur(4px)}
+        .video-box:hover #site-fs-btn{opacity:1;pointer-events:auto}
+        #site-fs-btn:hover{background:rgba(229,9,20,.85)}
+        @media (hover:none){#site-fs-btn{opacity:.8;pointer-events:auto}}
+        .video-box:fullscreen{border-radius:0;width:100vw;height:100vh;aspect-ratio:auto}
+        .video-box:fullscreen iframe{width:100%;height:100%}
+        .video-box:-webkit-full-screen{border-radius:0;width:100vw;height:100vh;aspect-ratio:auto}
+        .video-box:-webkit-full-screen iframe{width:100%;height:100%}
+    `;
+    document.head.appendChild(css);
+
+    const btn = document.createElement("button");
+    btn.id = "site-fs-btn";
+    btn.type = "button";
+    btn.title = "Fullscreen";
+    btn.setAttribute("aria-label", "Toggle fullscreen");
+    btn.innerHTML = '<i class="fas fa-expand"></i>';
+    box.appendChild(btn);
+
+    const isFs = () => document.fullscreenElement === box || document.webkitFullscreenElement === box;
+    const syncIcon = () => {
+        const icon = btn.querySelector("i");
+        if (icon) icon.className = isFs() ? "fas fa-compress" : "fas fa-expand";
+    };
+    const toggle = () => {
+        if (isFs()) {
+            const exit = document.exitFullscreen || document.webkitExitFullscreen;
+            if (exit) { try { exit.call(document); } catch (e) {} }
+        } else {
+            const req = box.requestFullscreen || box.webkitRequestFullscreen;
+            if (req) {
+                try {
+                    const p = req.call(box);
+                    if (p && p.catch) p.catch(function () {});
+                } catch (e) {}
+            }
+        }
+    };
+    btn.addEventListener("click", (ev) => { ev.preventDefault(); ev.stopPropagation(); toggle(); });
+    document.addEventListener("fullscreenchange", syncIcon);
+    document.addEventListener("webkitfullscreenchange", syncIcon);
+}
+
+/* ==============================================================================
    SECTION 2: INITIALIZATION / MAIN ENTRY POINT
    ============================================================================== */
 document.addEventListener("DOMContentLoaded", async () => {
     if (!id) return;
+
+    // Site-level fullscreen button (para gumana ang fullscreen kahit anong server)
+    setupSiteFullscreen();
 
     const item = await fetchDetails();
     if (!item) return;
